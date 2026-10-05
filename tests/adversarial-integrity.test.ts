@@ -184,31 +184,42 @@ test('F09 an explicit skip never changes the following prescription', () => {
   }
 });
 
-test('F09b DOCUMENTED DIVERGENCE: the overdue auto-skip in replan is not equivalent to skipWorkout', () => {
-  // spec 22 allows a missed workout to be moved or deleted, but doc 14 states that an overdue
-  // date "автоматически становится пропуском" and that a skip reserves the quality budget so
-  // that no replacement is scheduled. The two paths disagree: replan replays the missed quality
-  // on the very next day, while skipWorkout deletes it. Pinned so the sporting decision is visible.
+test('F09b an explicit skip and an automatic past-due miss produce the same state (approved decision 2)', () => {
   const s = createEngine(baseProfile({...experienced, availableRunsPerWeek: 4, actualRunsPerWeek: 3,
     averageWeeklyKm4Weeks: 28, longestUsualRunKm: 9, raceDate: dateAfter(90)}), NOW);
   const first = s.queue[0]!;
   const second = s.queue[1]!;
   assert.equal(first.countsAsQuality, true, 'precondition: the first slot is a quality session');
   assert.equal(second.countsAsQuality, false, 'precondition: the second slot is aerobic');
-  const skipped = skipWorkout(s, first.id, s.asOf);
-  const overdue = replan(s, dateAfter(1, s.asOf));
-  const keptAfterSkip = skipped.queue.find(w => w.id === second.id)!;
-  const keptAfterOverdue = overdue.queue.find(w => w.id === second.id)!;
-  assert.equal(keptAfterSkip.countsAsQuality, false, 'explicit skip keeps the next slot aerobic');
-  assert.deepEqual(keptAfterSkip, second, 'explicit skip preserves the next prescription exactly');
-  assert.equal(keptAfterOverdue.countsAsQuality, true, 'overdue replan escalates the next slot to a quality session');
-  assert.notDeepEqual(keptAfterOverdue, second, 'the two skip paths give different next-day prescriptions');
-  // The escalation stays safe: the weekly quality budget still holds.
-  const dates = [...overdue.history.filter(h => h.workout.countsAsQuality).map(h => h.result.date),
-                 ...overdue.queue.filter(w => w.countsAsQuality).map(w => w.scheduledDate)].sort();
-  for (const date of dates) {
-    const inWindow = dates.filter(x => Date.parse(x) <= Date.parse(date) && Date.parse(date) - Date.parse(x) < 7 * 86400000).length;
-    assert.ok(inWindow <= 2, 'the weekly quality budget still holds after an overdue replan');
+
+  const skipped = skipWorkout(s, first.id, s.asOf);        // explicit request, same day
+  const overdue = replan(s, dateAfter(1, s.asOf));         // the clock simply moved past the date
+
+  for (const [label, after] of [['skip', skipped], ['miss', overdue]] as const) {
+    assert.ok(!after.queue.some(w => w.id === first.id), `${label}: the missed session leaves the queue`);
+    assert.ok(after.skippedIds.includes(first.id), `${label}: the missed session is recorded as skipped`);
+    assert.equal(after.history.some(h => h.workout.id === first.id), false, `${label}: not counted as completed`);
+    const kept = after.queue.find(w => w.id === second.id)!;
+    assert.equal(kept.countsAsQuality, false, `${label}: the next load must not rise`);
+    assert.equal(kept.type, second.type, `${label}: the next session keeps its type`);
+    assert.equal(kept.main.dose.value, second.main.dose.value, `${label}: the next session keeps its dose`);
+    assert.equal(kept.scheduledDate, second.scheduledDate, `${label}: the next session is not pulled forward`);
+  }
+  // The two paths differ only in the clock they were evaluated at.
+  const nextOf = (a: EngineState) => a.queue.filter(w => w.id === second.id)
+    .map(w => ({type: w.type, dose: w.main.dose.value, quality: w.countsAsQuality}));
+  assert.deepEqual(nextOf(skipped), nextOf(overdue), 'both skip paths must agree');
+
+  // No compensating session appears on the day of the miss, and the budget still holds.
+  for (const after of [skipped, overdue]) {
+    assert.equal(after.queue.some(w => w.scheduledDate === first.scheduledDate), false,
+      'a missed session must not be replayed on the same day');
+    const dates = [...after.history.filter(h => h.workout.countsAsQuality).map(h => h.result.date),
+                   ...after.queue.filter(w => w.countsAsQuality).map(w => w.scheduledDate)].sort();
+    for (const date of dates) {
+      const inWindow = dates.filter(x => Date.parse(x) <= Date.parse(date) && Date.parse(date) - Date.parse(x) < 7 * 86400000).length;
+      assert.ok(inWindow <= 2, 'the weekly quality budget still holds after a miss');
+    }
   }
 });
 

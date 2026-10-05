@@ -177,17 +177,19 @@ test('B08 Training Capacity: exact thresholds qualify, one step below does not',
   assert.equal(assessCapacity(baseProfile({...t3, averageWeeklyKm4Weeks: 24.99})), 'T2');
   assert.equal(assessCapacity(baseProfile({...t2, longestUsualRunKm: 5.99})), 'T1');
   assert.equal(assessCapacity(baseProfile({...t3, longestUsualRunKm: 7.99})), 'T2');
-  assert.equal(assessCapacity(baseProfile({...t1, canRun3Km: false})), 'T0');
-  // SPECIFICATION AMBIGUITY (spec 7 lists "can run 3 km continuously" only under T1):
-  // T2/T3 parameter sets qualify even when that ability is absent. The engine contains the
-  // consequence — phase FOUNDATION and no quality at all. Pinned here so a change is noticed.
-  const notContinuous = baseProfile({...t2, canRun3Km: false});
-  assert.equal(assessCapacity(notContinuous), 'T2');
+  // Approved decision 3: continuous 3 km ability is mandatory for every category above T0 and
+  // overrides regular weeks, session count, weekly mileage and longest run.
+  for (const thresholds of [t1, t2, t3])
+    assert.equal(assessCapacity(baseProfile({...thresholds, canRun3Km: false})), 'T0',
+      `canRun3Km=false must force T0 for ${JSON.stringify(thresholds)}`);
+  const notContinuous = baseProfile({...t3, canRun3Km: false, longestUsualRunKm: 12, averageWeeklyKm4Weeks: 60});
   const contained = createEngine(notContinuous, NOW);
-  assert.equal(contained.decision.capacity, 'T2');
+  assert.equal(contained.decision.capacity, 'T0');
   assert.equal(contained.decision.phase, 'FOUNDATION');
+  assert.equal(contained.decision.gate, 'CLOSED');
   assert.equal(contained.decision.maximumQualityPerWeek, 0);
   assert.ok(contained.queue.every(w => !w.countsAsQuality));
+  assert.ok(contained.queue.every(w => !['VO2', 'SPECIFIC_3K'].includes(w.type)));
 });
 
 test('B09 Quality Experience boundaries: 2/3 sessions and 5/6 weeks', () => {

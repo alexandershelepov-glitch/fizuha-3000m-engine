@@ -1,15 +1,48 @@
-import type { EngineState, PerformanceSnapshot, Profile, SafetyData, TrainingBreak, WorkoutResult, WorkoutType } from './models.ts';
+import type { EngineState, PerformanceSnapshot, Profile, SafetyData, TrainingBreak, Workout, WorkoutResult, WorkoutType } from './models.ts';
 import { assessSafety, decide } from './assessment.ts';
 import { classify, yellowFamily } from './feedback.ts';
 import { day, validateProfile } from './validation.ts';
 import { generateQueue } from './workouts.ts';
 function copy(s: EngineState): EngineState { return structuredClone(s); }
-export function replan(state: EngineState, now = state.asOf): EngineState {
-  const s = copy(state); if (day(now) < day(s.asOf)) throw new Error('Clock cannot move backwards');
+/**
+ * Remove a workout from the plan. Approved decision 2: a missed session is deleted from the
+ * current queue, never becomes training debt, is never treated as a completed quality session
+ * and is never replayed as compensation. Both the explicit `skipWorkout` call and the automatic
+ * past-due detection in `replan` go through this single helper.
+ */
+function registerMiss(s: EngineState, w: Workout): void {
+  s.movedWorkouts = s.movedWorkouts.filter(m => m.id !== w.id);
+  if (!s.skippedIds.includes(w.id)) s.skippedIds.push(w.id);
+  if (!s.skippedWorkouts.some(m => m.id === w.id)) s.skippedWorkouts.push(structuredClone(w));
+}
+/** Queue entries whose date has passed without a recorded result and which are not yet skipped. */
+function pastDue(s: EngineState, now: string): Workout[] {
+  return s.queue.filter(w => day(w.scheduledDate) < day(now) && !s.history.some(h => h.workout.id === w.id) && !s.skippedIds.includes(w.id));
+}
+function advanceTo(s: EngineState, now: string): void {
+  if (day(now) < day(s.asOf)) throw new Error('Clock cannot move backwards');
   validateProfile(s.profile, now); s.asOf = now;
-  for (const w of s.queue) if (day(w.scheduledDate) < day(now) && !s.history.some(h => h.workout.id === w.id) && !s.skippedIds.includes(w.id)) { s.skippedIds.push(w.id); s.skippedWorkouts.push(w); }
+}
+/**
+ * Re-assess and rebuild the seven-day queue. `preserve` holds the queue the state had already
+ * committed to: after a skip the remaining prescriptions are kept as they were, so a missed
+ * session can never raise or pull forward the following load.
+ */
+function rebuildQueue(s: EngineState, now: string, preserve: Workout[] | null): EngineState {
   if (day(now) - day(s.lastAssessmentDate) >= 21 || s.profile.performanceMismatch === 'CLEAR') s.checkpointRequired = true;
-  s.decision = decide(s, now); s.queue = generateQueue(s, now); return s;
+  s.decision = decide(s, now);
+  const generated = generateQueue(s, now);
+  s.queue = preserve ? generated.map(w => preserve.find(old => old.id === w.id) ?? w) : generated;
+  return s;
+}
+export function replan(state: EngineState, now = state.asOf): EngineState {
+  const s = copy(state); advanceTo(s, now);
+  const before = s.queue;
+  const missed = pastDue(s, now);
+  for (const w of missed) registerMiss(s, w);
+  // An automatic past-due miss and an explicit skip must produce the same state (approved
+  // decision 2), so a miss freezes the remaining prescriptions instead of replaying the session.
+  return rebuildQueue(s, now, missed.length ? before : null);
 }
 export function createEngine(profile: Profile, now: string): EngineState {
   validateProfile(profile, now);
@@ -29,8 +62,8 @@ export function applyBreak(state: EngineState, b: TrainingBreak, now: string, ad
   const s = copy(state);
   if (addToProfile) s.profile.breaks.push(structuredClone(b));
   validateProfile(s.profile, now);
-  // Missing workouts are dropped, never replayed as debt.
-  s.queue.filter(w => day(w.scheduledDate) < day(now)).forEach(w => { s.skippedIds.push(w.id); s.skippedWorkouts.push(w); });
+  // Missing workouts are dropped, never replayed as debt (approved decision 2, same helper as a skip).
+  for (const w of pastDue(s, now)) registerMiss(s, w);
   s.successStreak = {}; s.greenPlusIds = [];
   if (b.reason === 'ILLNESS' || b.reason === 'INJURY') {
     s.profile.safety.needsAssessment = true; s.diagnosticHold = true; s.progressionBlocked = true;
@@ -126,18 +159,26 @@ export function updateTrainingData(state: EngineState, data: Partial<Omit<Profil
   return replan(s, now);
 }
 export function skipWorkout(state: EngineState, id: string, now = state.asOf): EngineState {
-  const s = copy(state); if (!s.queue.some(w => w.id === id)) throw new Error('Unknown workout');
-  s.movedWorkouts = s.movedWorkouts.filter(w => w.id !== id);
-  const omitted = s.queue.find(w => w.id === id)!
-  s.skippedIds.push(id); s.skippedWorkouts.push(structuredClone(omitted));
-  const next = replan(s, now);
-  next.queue = next.queue.map(w => s.queue.find(old => old.id === w.id) ?? w);
-  return next;
+  // Approved decision 2: this is the same operation as the automatic past-due miss in `replan`.
+  // Only the triggering event differs — an explicit request versus the clock moving past the date.
+  const s = copy(state);
+  const omitted = s.queue.find(w => w.id === id);
+  if (!omitted) throw new Error('Unknown workout');
+  const before = s.queue;
+  advanceTo(s, now);
+  registerMiss(s, omitted);
+  for (const w of pastDue(s, now)) registerMiss(s, w);
+  return rebuildQueue(s, now, before);
 }
 export function serialize(state: EngineState): string { return JSON.stringify(state); }
 export function deserialize(json: string): EngineState {
   const s = JSON.parse(json) as EngineState; if (s.version !== 1) throw new Error('Unsupported state version');
-  return replan(s, s.asOf);
+  // Restore the committed plan verbatim. Re-planning here would regenerate the queue and could
+  // replay a session that was already skipped or missed (approved decision 2): a save/load cycle
+  // must not resurrect a missed workout, so only the derived decision is recomputed.
+  validateProfile(s.profile, s.asOf);
+  s.decision = decide(s, s.asOf);
+  return s;
 }
 /** Moving preserves the dose and rejects density/weekly limit violations. */
 export function moveWorkout(state: EngineState, id: string, date: string): EngineState {

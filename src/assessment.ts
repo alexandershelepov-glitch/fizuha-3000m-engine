@@ -5,9 +5,12 @@ export function assessSafety(s: SafetyData): SafetyStatus {
   return s.needsAssessment || s.pain >= 2 ? 'HOLD' : 'OK';
 }
 export function assessCapacity(p: Profile): Capacity {
+  // Approved decision 3: continuous 3 km ability is mandatory for T1, T2 and T3. When it is
+  // absent the category is T0 regardless of mileage, session count or longest run.
+  if (!p.canRun3Km) return 'T0';
   if (p.regularRunningWeeks >= 12 && p.actualRunsPerWeek >= 4 && p.averageWeeklyKm4Weeks >= 25 && p.longestUsualRunKm >= 8) return 'T3';
   if (p.regularRunningWeeks >= 8 && p.actualRunsPerWeek >= 3 && p.averageWeeklyKm4Weeks >= 15 && p.longestUsualRunKm >= 6) return 'T2';
-  if (p.regularRunningWeeks >= 4 && p.actualRunsPerWeek >= 2 && p.averageWeeklyKm4Weeks >= 8 && p.canRun3Km) return 'T1';
+  if (p.regularRunningWeeks >= 4 && p.actualRunsPerWeek >= 2 && p.averageWeeklyKm4Weeks >= 8) return 'T1';
   return 'T0';
 }
 export function assessQuality(p: Profile): QualityExperience {
@@ -45,9 +48,14 @@ export function decide(s: EngineState, now: string): Decision {
   const feasibility = assessFeasibility(goalGap, (day(p.raceDate) - day(now)) / 7, capacity, quality, p.availableRunsPerWeek);
   const reasons: Decision['reasons'] = [];
   let phase: Phase;
+  // Order is normative. Approved decision 1: FOUNDATION wins over RE_ENTRY. A returning runner
+  // whose base category is FOUNDATION (no valid performance, cannot run 3 km continuously, T0,
+  // or LONG_TERM + T0/T1 + Q0) keeps phase FOUNDATION and receives the RE_ENTRY *load*
+  // restrictions as a modifier only. Phase RE_ENTRY is reserved for a returning prepared runner
+  // whose base phase would otherwise be DEVELOPMENT or SPECIFIC.
   if (safety !== 'OK' || s.diagnosticHold || s.relatedYellow) phase = 'HOLD_DIAGNOSTIC';
   else if (!p.performance || !p.canRun3Km || capacity === 'T0') phase = 'FOUNDATION';
-  // Explicit conservative resolution of scenario 11 / section 11 conflict.
+  // Explicit conservative resolution of scenario 11 / section 11 conflict (approved as a general rule).
   else if (feasibility === 'LONG_TERM' && (capacity === 'T1') && quality === 'Q0') { phase = 'FOUNDATION'; reasons.push('FOUNDATION_LONG_TERM_CONFLICT'); }
   else if (s.reentry && s.reentry.breakDays >= 8) phase = 'RE_ENTRY';
   else if (confidence === 'LOW') phase = capacity === 'T1' ? 'FOUNDATION' : 'HOLD_DIAGNOSTIC';
