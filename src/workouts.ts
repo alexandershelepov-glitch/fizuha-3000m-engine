@@ -13,7 +13,11 @@ export function initialDose(s: EngineState, type: WorkoutType): Dose {
   if (type === 'CONTROL') return {unit: 'METERS', value: 3000};
   if (type === 'REST') return {unit: 'MINUTES', value: 0};
   if (type === 'STRIDES') return {unit: 'METERS', value: 400};
-  const ordinary = s.profile.averageWeeklyKm4Weeks / Math.max(1, s.profile.actualRunsPerWeek) * 1000;
+  // Without a habitual running frequency there is no "ordinary easy" run: fall back to the
+  // documented no-history minimum (1 km RUN_WALK) instead of dividing by a guard of 1, which
+  // prescribed a single run equal to the athlete's entire weekly volume.
+  const runsPerWeek = s.profile.actualRunsPerWeek;
+  const ordinary = runsPerWeek > 0 ? s.profile.averageWeeklyKm4Weeks / runsPerWeek * 1000 : 0;
   return {unit: 'METERS', value: type === 'LONG_EASY' ? s.profile.longestUsualRunKm * 1000 : ordinary > 0 ? ordinary : 1000};
 }
 export function prescribe(s: EngineState, type: WorkoutType, date: string, id: string, factor = 1): Workout {

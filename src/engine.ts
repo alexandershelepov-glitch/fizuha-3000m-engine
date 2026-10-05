@@ -50,11 +50,17 @@ export function recordResult(state: EngineState, workoutId: string, result: Work
   const s = copy(state); const w = s.queue.find(w => w.id === workoutId);
   if (!w || s.history.some(h => h.workout.id === workoutId)) throw new Error('Unknown or completed workout');
   if (result.date !== w.scheduledDate || day(result.date) < day(s.asOf)) throw new Error('Result precedes prescription or state');
-  if (w.countsAsQuality) {
+  // Safety is classified before any administrative limit: a RED report must never be refused,
+  // because Safety has absolute priority over the quality budget (spec 4, spec 18).
+  const c = classify(w, result);
+  if (w.countsAsQuality && c.evaluation !== 'RED') {
+    // The queue authorised this session against the decision made on the session's own date,
+    // so acceptance must use the same decision rather than the possibly older state assessment.
+    const maxQuality = decide(s, result.date).maximumQualityPerWeek;
     const recent = s.history.filter(h => h.workout.countsAsQuality && day(result.date) - day(h.result.date) < 7);
-    if (recent.length >= s.decision.maximumQualityPerWeek || recent.some(h => (day(result.date) - day(h.result.date)) * 24 < h.workout.minimumRecoveryHoursBeforeQuality)) throw new Error('Recovery or quality limit violated');
+    if (recent.length >= maxQuality || recent.some(h => (day(result.date) - day(h.result.date)) * 24 < h.workout.minimumRecoveryHoursBeforeQuality)) throw new Error('Recovery or quality limit violated');
   }
-  const c = classify(w, result); const previous = s.history.filter(h => h.classified.evaluation === 'YELLOW').at(-1);
+  const previous = s.history.filter(h => h.classified.evaluation === 'YELLOW').at(-1);
   s.history.push({workout: structuredClone(w), result: structuredClone(result), classified: c});
   s.profile.safety = structuredClone(result.safety);
   if (c.evaluation === 'RED') {
