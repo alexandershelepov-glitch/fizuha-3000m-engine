@@ -1,0 +1,175 @@
+/**
+ * Adversarial audit — invalid, contradictory and hostile input.
+ *
+ * Two groups:
+ *  - "rejected": the engine must refuse the input.
+ *  - "documented gap": input that is currently accepted. These are pinned so that any
+ *    future change is visible; each one records a known validation weakness.
+ */
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {classify, createEngine, deserialize, moveWorkout, recordCheckpoint, recordResult,
+        replan, updateTrainingData} from '../src/index.ts';
+// NOTE: validation helpers are not re-exported by src/index.ts (audit API-surface gap).
+import {validateResult} from '../src/validation.ts';
+import type {Workout, WorkoutResult} from '../src/index.ts';
+import {NOW, dateAfter, experienced, feedback, healthy, profile as baseProfile} from './helpers.ts';
+
+function thresholdWorkout(): Workout {
+  const s = createEngine(baseProfile({...experienced, availableRunsPerWeek: 4, actualRunsPerWeek: 4,
+    averageWeeklyKm4Weeks: 28, longestUsualRunKm: 9}), NOW);
+  return s.queue.find(x => x.type === 'THRESHOLD')!;
+}
+const rejects = (fn: () => unknown, label: string) => assert.throws(fn, Error, label);
+
+// ------------------------------------------------------------ Profile input
+test('E01 rejected profile numbers', () => {
+  rejects(() => createEngine(baseProfile({targetTimeSeconds: 0}), NOW), 'target 0');
+  rejects(() => createEngine(baseProfile({targetTimeSeconds: -100}), NOW), 'negative target');
+  rejects(() => createEngine(baseProfile({targetTimeSeconds: NaN}), NOW), 'NaN target');
+  rejects(() => createEngine(baseProfile({targetTimeSeconds: Infinity}), NOW), 'Infinity target');
+  rejects(() => createEngine(baseProfile({averageWeeklyKm4Weeks: -5}), NOW), 'negative weekly km');
+  rejects(() => createEngine(baseProfile({averageWeeklyKm4Weeks: NaN}), NOW), 'NaN weekly km');
+  rejects(() => createEngine(baseProfile({longestUsualRunKm: -1}), NOW), 'negative long run');
+  rejects(() => createEngine(baseProfile({regularRunningWeeks: -1}), NOW), 'negative weeks');
+  rejects(() => createEngine(baseProfile({actualRunsPerWeek: -1}), NOW), 'negative runs');
+  rejects(() => createEngine(baseProfile({actualRunsPerWeek: 8}), NOW), 'runs above 7');
+  rejects(() => createEngine(baseProfile({availableRunsPerWeek: 0}), NOW), 'zero available sessions');
+  rejects(() => createEngine(baseProfile({availableRunsPerWeek: 8}), NOW), 'eight available sessions');
+  rejects(() => createEngine(baseProfile({availableRunsPerWeek: 2.5}), NOW), 'fractional available sessions');
+  rejects(() => createEngine(baseProfile({qualitySessions8Weeks: -1}), NOW), 'negative quality sessions');
+  rejects(() => createEngine(baseProfile({qualityWeeks8Weeks: 3, qualitySessions8Weeks: 2}), NOW), 'more quality weeks than sessions');
+  rejects(() => createEngine(baseProfile({qualityWeeks8Weeks: 0.5}), NOW), 'fractional quality weeks');
+});
+
+test('E02 rejected dates and calendar values', () => {
+  rejects(() => createEngine(baseProfile(), '2026-02-30'), 'impossible calendar date');
+  rejects(() => createEngine(baseProfile(), '2026-13-01'), 'month 13');
+  rejects(() => createEngine(baseProfile(), '05-10-2026'), 'wrong date format');
+  rejects(() => createEngine(baseProfile(), '2026/10/05'), 'slash separated date');
+  rejects(() => createEngine(baseProfile(), ''), 'empty date');
+  rejects(() => createEngine(baseProfile({performance: {timeSeconds: 900, date: dateAfter(1), source: 'TEST_3K'}}), NOW), 'future test result');
+  rejects(() => createEngine(baseProfile({performance: {timeSeconds: 0, date: NOW, source: 'TEST_3K'}}), NOW), 'zero performance time');
+  rejects(() => createEngine(baseProfile({performance: {timeSeconds: 900, date: NOW, source: 'GUESS' as never}}), NOW), 'invalid performance source');
+  rejects(() => createEngine(baseProfile({breaks: [{days: 0, endDate: NOW, reason: 'WORK'}]}), NOW), 'zero length break');
+  rejects(() => createEngine(baseProfile({breaks: [{days: 3, endDate: dateAfter(1), reason: 'WORK'}]}), NOW), 'break ending in the future');
+  rejects(() => createEngine(baseProfile({breaks: [{days: 3, endDate: NOW, reason: 'HOLIDAY' as never}]}), NOW), 'invalid break reason');
+  rejects(() => createEngine(baseProfile({breaks: [{days: 1.5, endDate: NOW, reason: 'WORK'}]}), NOW), 'fractional break length');
+  rejects(() => createEngine(baseProfile({performanceMismatch: 'MAYBE' as never}), NOW), 'invalid mismatch');
+});
+
+test('E03 rejected safety data', () => {
+  rejects(() => createEngine(baseProfile({safety: {...healthy(), pain: -1}}), NOW), 'negative pain');
+  rejects(() => createEngine(baseProfile({safety: {...healthy(), pain: 11}}), NOW), 'pain above 10');
+  rejects(() => createEngine(baseProfile({safety: {...healthy(), pain: NaN}}), NOW), 'NaN pain');
+  rejects(() => createEngine(baseProfile({safety: {...healthy(), swelling: 'yes' as never}}), NOW), 'non-boolean safety flag');
+  rejects(() => createEngine(baseProfile({safety: undefined as never}), NOW), 'missing safety block');
+});
+
+test('E04 rejected workout results', () => {
+  const w = thresholdWorkout();
+  const cases: [string, Partial<WorkoutResult>][] = [
+    ['completion below 0', {completionFraction: -0.1}],
+    ['completion above 1', {completionFraction: 1.1}],
+    ['completion NaN', {completionFraction: NaN}],
+    ['RPE below 0', {sessionRpe: -1}],
+    ['RPE above 10', {sessionRpe: 11}],
+    ['RPE NaN', {sessionRpe: NaN}],
+    ['RPE Infinity', {sessionRpe: Infinity}],
+    ['negative duration', {durationMinutes: -5}],
+    ['negative distance', {distanceMeters: -1}],
+    ['NaN distance', {distanceMeters: NaN}],
+    ['zero repeat distance', {repeats: [{distanceMeters: 0, seconds: 100}]}],
+    ['zero repeat seconds', {repeats: [{distanceMeters: 600, seconds: 0}]}],
+    ['negative rest', {restSeconds: [-1]}],
+    ['invalid yellow reason', {yellowReason: 'LAZINESS' as never}],
+    ['non-boolean fatigue flag', {unexpectedFatigue: 'yes' as never}],
+    ['missing safety', {safety: undefined as never}],
+  ];
+  for (const [label, over] of cases) rejects(() => classify(w, feedback(w, 'GREEN', over)), `classify: ${label}`);
+  rejects(() => validateResult(feedback(w, 'GREEN', {date: 'nonsense'})), 'malformed result date');
+});
+
+// ---------------------------------------------------------- Lifecycle input
+test('E05 rejected lifecycle operations', () => {
+  const s = createEngine(baseProfile(), NOW);
+  const w = s.queue[0]!;
+  rejects(() => recordResult(s, 'does-not-exist', feedback(w)), 'unknown workout id');
+  rejects(() => recordResult(s, w.id, feedback(w, 'GREEN', {date: dateAfter(3)})), 'result date differs from prescription');
+  rejects(() => recordResult(s, w.id, feedback(w, 'GREEN', {date: dateAfter(-1)})), 'result predates the state');
+  const done = recordResult(s, w.id, feedback(w));
+  rejects(() => recordResult(done, w.id, feedback(w)), 'duplicate submission of one workout');
+  rejects(() => replan(s, dateAfter(-1)), 'clock moving backwards');
+  rejects(() => recordCheckpoint(s, {timeSeconds: 900, date: dateAfter(5), source: 'TEST_3K'}, NOW), 'future checkpoint date');
+  rejects(() => recordCheckpoint(s, {timeSeconds: 900, date: NOW, source: 'GUESS' as never}, NOW), 'invalid checkpoint source');
+  rejects(() => updateTrainingData(s, {performance: {timeSeconds: 700, date: NOW, source: 'TEST_3K'}} as never, NOW), 'performance via updateTrainingData');
+  rejects(() => updateTrainingData(s, {safety: healthy()} as never, NOW), 'safety via updateTrainingData');
+  rejects(() => updateTrainingData(s, {breaks: []} as never, NOW), 'breaks via updateTrainingData');
+  rejects(() => moveWorkout(s, w.id, dateAfter(7)), 'move beyond the queue horizon');
+  rejects(() => moveWorkout(s, w.id, dateAfter(-1)), 'move into the past');
+  rejects(() => moveWorkout(s, s.queue[1]!.id, w.scheduledDate), 'move onto an occupied date');
+  rejects(() => deserialize(JSON.stringify({...s, version: 2})), 'unsupported state version');
+  const ill = createEngine(baseProfile({safety: {...healthy(), acuteIllness: true}}), NOW);
+  rejects(() => recordCheckpoint(ill, {timeSeconds: 900, date: NOW, source: 'TEST_3K'}, NOW), 'checkpoint while safety is not OK');
+});
+
+// ------------------------------------------------------- Documented gaps
+test('E06 DOCUMENTED GAP: contradictory training volumes are accepted', () => {
+  // A 40 km long run inside a 10 km training week, and 6 runs a week with 1 available slot.
+  const contradictory = createEngine(baseProfile({
+    averageWeeklyKm4Weeks: 10, longestUsualRunKm: 40, actualRunsPerWeek: 6, availableRunsPerWeek: 1,
+  }), NOW);
+  // Capacity stays conservative (the 10 km/week band caps it at T1), so the contradiction
+  // does not inflate Training Capacity — but nothing rejects the input either.
+  assert.equal(contradictory.decision.capacity, 'T1');
+  // Long run is taken straight from longestUsualRunKm with no sanity check against weekly volume.
+  const withLong = createEngine(baseProfile({
+    averageWeeklyKm4Weeks: 10, longestUsualRunKm: 40, actualRunsPerWeek: 3, availableRunsPerWeek: 3, raceDate: dateAfter(60),
+  }), NOW);
+  const long = withLong.queue.find(w => w.type === 'LONG_EASY');
+  assert.ok(long, 'precondition: a long easy run is prescribed');
+  assert.equal(long.main.dose.value, 40000, 'a 40 km long run is prescribed inside a 10 km training week');
+  // Pin the risk explicitly: nothing in validation cross-checks these fields today.
+  assert.doesNotThrow(() => createEngine(baseProfile({averageWeeklyKm4Weeks: 5, longestUsualRunKm: 50}), NOW));
+  assert.doesNotThrow(() => createEngine(baseProfile({actualRunsPerWeek: 6, availableRunsPerWeek: 1}), NOW));
+});
+
+test('E07 DOCUMENTED GAP: a race date in the past silently means "permanent taper"', () => {
+  const s = createEngine(baseProfile({...experienced, raceDate: dateAfter(-10)}), NOW);
+  assert.equal(s.decision.phase, 'TAPER');
+  assert.ok(s.decision.reasons.includes('TAPER_STARTED'));
+  // No post-race phase exists, so the engine treats a finished race as an ongoing taper.
+  assert.equal(replan(s, dateAfter(30)).decision.phase, 'TAPER');
+});
+
+test('E08 DOCUMENTED GAP: feasibility is not monotonic in the number of available sessions', async () => {
+  // spec 10 penalises exactly two available sessions; one session is not penalised at all.
+  const {assessFeasibility} = await import('../src/index.ts');
+  const scale = ['PLAUSIBLE', 'AMBITIOUS', 'LOW_PROBABILITY'];
+  const one = assessFeasibility(0.04, 6, 'T1', 'Q1', 1);
+  const two = assessFeasibility(0.04, 6, 'T1', 'Q1', 2);
+  const three = assessFeasibility(0.04, 6, 'T1', 'Q1', 3);
+  assert.equal(one, 'AMBITIOUS');
+  assert.equal(two, 'LOW_PROBABILITY');
+  assert.equal(three, 'AMBITIOUS');
+  assert.ok(scale.indexOf(one) < scale.indexOf(two),
+    'one available session must not be rated more feasible than two');
+  assert.equal(one, three, 'one and three sessions give the same verdict while two is worse');
+});
+
+test('E09 no scenario or persona identifiers drive the engine logic', async () => {
+  const {readFileSync, readdirSync} = await import('node:fs');
+  const dir = new URL('../src/', import.meta.url);
+  const banned = ['scenario', 'persona', 'character', 'персонаж', 'сценар'];
+  for (const file of readdirSync(dir)) {
+    // Comments may cite the originating task text; only executable code must be free of
+    // character numbering. Such comments are reported separately as a code-quality note.
+    const code = readFileSync(new URL(file, dir), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+    for (const token of banned) {
+      assert.ok(!code.toLowerCase().includes(token.toLowerCase()), `${file} uses "${token}" in executable code`);
+    }
+    assert.ok(!/\[\s*1\s*,\s*2\s*,\s*3\s*,\s*4\s*,\s*5\s*,\s*6/.test(code), `${file} contains a numbered character table`);
+  }
+});
