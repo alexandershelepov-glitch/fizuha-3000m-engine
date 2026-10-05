@@ -1,0 +1,18 @@
+{
+  "performance": {"timeSeconds": 920, "date": "2026-10-05", "source": "TEST_3K"},
+  "targetTimeSeconds": 896,
+  "raceDate": "2026-11-16",
+  "regularRunningWeeks": 20,
+  "actualRunsPerWeek": 3,
+  "availableRunsPerWeek": 3,
+  "averageWeeklyKm4Weeks": 16,
+  "longestUsualRunKm": 6,
+  "canRun3Km": true,
+  "qualitySessions8Weeks": 0,
+  "qualityWeeks8Weeks": 0,
+  "qualityMostlyTolerated": true,
+  "experience": {"threshold": false, "vo2": false, "specific3k": false},
+  "breaks": [],
+  "safety": {"pain": 0, "painIncreasing": false, "alteredMovement": false, "painWalkingOrRest": false, "swelling": false, "acuteIllness": false, "otherStop": false, "needsAssessment": false},
+  "performanceMismatch": "NONE"
+}
