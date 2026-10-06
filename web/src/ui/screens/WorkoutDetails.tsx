@@ -6,7 +6,7 @@ import {workoutPaceRange, workoutRest, workoutRpe} from '../display.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, EmptyState, KeyValue} from '../components/Layout.tsx';
 
-export function WorkoutDetails({workout, onBack, onEnterResult}: {workout: Workout | null; onBack: () => void; onEnterResult: () => void}): ReactNode {
+export function WorkoutDetails({workout, today, onBack, onEnterResult}: {workout: Workout | null; today: string; onBack: () => void; onEnterResult: () => void}): ReactNode {
   if (workout === null) {
     return (
       <div className="screen">
@@ -61,7 +61,12 @@ export function WorkoutDetails({workout, onBack, onEnterResult}: {workout: Worko
       </Card>
 
       <div className="actions">
-        <Button onClick={onEnterResult}>{todayText.workout.enterResult}</Button>
+        {/* Convenience only: the application layer refuses a result for a future session anyway. */}
+        {workout.scheduledDate > today ? (
+          <p className="hint">{todayText.workout.resultLater}</p>
+        ) : (
+          <Button onClick={onEnterResult}>{todayText.workout.enterResult}</Button>
+        )}
       </div>
     </div>
   );

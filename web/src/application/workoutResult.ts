@@ -15,7 +15,7 @@ import {recordWorkoutResult as engineRecord} from './engineGateway.ts';
 import type {EngineState, Evaluation, WorkoutResult, YellowReason} from './engineGateway.ts';
 import {toUiErrorFromUnknown} from './errorContract.ts';
 import type {UiError} from './errorContract.ts';
-import {assertRecordingOrder} from './invariants.ts';
+import {assertWorkoutResultAllowed} from './invariants.ts';
 import {diffPlan} from './planDiff.ts';
 import type {PlanChange} from './planDiff.ts';
 import {saveActiveCycle} from './storage.ts';
@@ -43,9 +43,9 @@ export interface RecordWorkoutDone {
 export type RecordWorkoutOutcome = {ok: true; done: RecordWorkoutDone} | {ok: false; error: UiError};
 
 export function submitWorkoutResult(request: RecordWorkoutRequest): RecordWorkoutOutcome {
-  // 1. INV-1: results are closed in chronological order.
+  // 1. A result describes a session that already happened, and INV-1 closes them oldest first.
   try {
-    assertRecordingOrder(request.engineState, request.workoutId, request.deviceToday);
+    assertWorkoutResultAllowed(request.engineState, request.workoutId, request.deviceToday);
   } catch (error) {
     return {ok: false, error: toUiErrorFromUnknown(error)};
   }

@@ -29,6 +29,9 @@ export interface UiError {
 const NON_RETRYABLE: readonly string[] = [
   // INV-1: repeating the same request cannot help while the past sessions stay unresolved.
   'PENDING_RESULT_BLOCKED',
+  // Waiting is the only way forward; the action itself stays valid on the session's own day.
+  'PENDING_RESULT_OUT_OF_ORDER',
+  'WORKOUT_RESULT_BEFORE_SCHEDULED_DATE',
   'EVENT_DATE_PASSED',
   'UNSUPPORTED_STATE_VERSION',
   'UNKNOWN_OR_COMPLETED_WORKOUT',

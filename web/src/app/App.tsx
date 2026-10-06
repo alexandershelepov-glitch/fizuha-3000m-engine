@@ -39,6 +39,7 @@ import {ResultForm} from '../ui/screens/ResultForm.tsx';
 import type {SubmitOutcome} from '../ui/screens/ResultForm.tsx';
 import {OutcomeMissing, ResultOutcome} from '../ui/screens/ResultOutcome.tsx';
 import {ClosedWorkout} from '../ui/screens/ClosedWorkout.tsx';
+import {ResultTooEarly} from '../ui/screens/ResultTooEarly.tsx';
 import {Notice} from '../ui/components/Layout.tsx';
 import {copyForError} from '../ui/copy/errors.ts';
 import {common, nav, notFound} from '../ui/copy/text.ts';
@@ -218,6 +219,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
         return (
           <WorkoutDetails
             workout={workout}
+            today={store.today}
             onBack={() => goTo({name: 'TODAY'})}
             onEnterResult={() => goTo({name: 'WORKOUT_RESULT', id: effective.id})}
           />
@@ -225,6 +227,10 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
       }
       case 'WORKOUT_RESULT': {
         const workout = store.engineState?.queue.find((entry) => entry.id === effective.id) ?? null;
+        if (workout !== null && workout.scheduledDate > store.today) {
+          // A direct link cannot close a session that has not happened yet either.
+          return <ResultTooEarly workout={workout} onBack={() => goTo({name: 'WORKOUT', id: effective.id})} />;
+        }
         if (workout !== null) {
           return (
             <ResultForm

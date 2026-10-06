@@ -48,7 +48,7 @@ test('BOUNDARY-04 the application layer never imports the UI', () => {
   }
 });
 
-test('BOUNDARY-05 the frontend never derives a verdict of its own', () => {
+test('BOUNDARY-05 every sport decision stays in the engine', () => {
   // Comparing a verdict the engine produced, in order to pick a tone or a label, is presentation and
   // stays allowed — the copy layer maps values to text by design. What is forbidden is *producing* a
   // verdict: calling the classifier, reading its internal metrics, or comparing the raw inputs it
@@ -68,4 +68,68 @@ test('BOUNDARY-05 the frontend never derives a verdict of its own', () => {
       assert.equal(pattern.test(file.text), false, `${file.path} must not use ${what}`);
     }
   }
+});
+
+test('BOUNDARY-06 the engine clock is advanced only through the guarded operation', () => {
+  // `replan` is the only clock-advancing call the application makes, and it may only be reached from
+  // the operation that consults INV-1 first: the gateway defines the wrapper, clockOps is its caller.
+  const referencing = sources.filter((file) => /\breplanTo\s*\(/.test(file.text)).map((file) => file.path);
+  assert.deepEqual(referencing.sort(), ['web/src/application/clockOps.ts', 'web/src/application/engineGateway.ts']);
+
+  const ops = sources.find((file) => file.path === 'web/src/application/clockOps.ts')!;
+  assert.ok(ops.text.includes('assertClockAdvanceAllowed'), 'the guard must be consulted');
+  assert.ok(
+    ops.text.indexOf('assertClockAdvanceAllowed') < ops.text.indexOf('replanTo('),
+    'the invariant must be checked before the engine is asked to rebuild the plan',
+  );
+});
+
+test('BOUNDARY-07 only creating a cycle may open onboarding', () => {
+  const production = sources.filter((file) => !/\.test\.tsx?$/.test(file.path));
+
+  // Opening onboarding lives in one place: adopting a cycle that was just created.
+  const adopters = production.filter((file) => /\badoptNewCycle\s*\(/.test(file.text)).map((file) => file.path);
+  assert.deepEqual(adopters.sort(), ['web/src/app/App.tsx', 'web/src/app/useCycleStore.ts']);
+
+  // Engine-driven updates of the active cycle use the path that leaves onboarding alone.
+  const app = production.find((file) => file.path === 'web/src/app/App.tsx')!;
+  assert.ok(/\breplaceActiveState\s*\(/.test(app.text), 'the update path must be used');
+  assert.ok(
+    app.text.indexOf('adoptNewCycle(') < app.text.indexOf('replaceActiveState('),
+    'the creation path and the update path must stay distinguishable',
+  );
+
+  // Recording a result is an update of the active cycle, never a new cycle.
+  assert.equal(
+    (app.text.match(/\badoptNewCycle\s*\(/g) ?? []).length,
+    1,
+    'only the creation handler may adopt a new cycle',
+  );
+  assert.ok(
+    (app.text.match(/\breplaceActiveState\s*\(/g) ?? []).length >= 2,
+    'every engine-driven update must use the update path',
+  );
+
+  // No generic method remains that would mean both and reopen onboarding by accident.
+  for (const file of production) {
+    assert.equal(/\badopt\s*\(/.test(file.text), false, `${file.path} must not use a generic adopt`);
+  }
+});
+
+test('BOUNDARY-08 a result reaches the engine only through the application operation', () => {
+  const production = sources.filter((file) => !/\.test\.tsx?$/.test(file.path));
+
+  // The gateway defines the wrapper for the public engine call, and the application operation is its
+  // only caller: UI -> submitWorkoutResult -> gateway -> engine.recordResult.
+  const referencing = production.filter((file) => /\brecordWorkoutResult\b/.test(file.text)).map((file) => file.path);
+  assert.deepEqual(referencing.sort(), ['web/src/application/engineGateway.ts', 'web/src/application/workoutResult.ts']);
+
+  // No screen and no shell code may name the wrapper or the engine call at all.
+  for (const file of production.filter((entry) => entry.path.startsWith('web/src/ui/') || entry.path.startsWith('web/src/app/'))) {
+    assert.equal(/\brecordWorkoutResult\b/.test(file.text), false, `${file.path} must not reach the recording wrapper`);
+    assert.equal(/\brecordResult\b/.test(file.text), false, `${file.path} must not reach the engine call`);
+  }
+
+  const app = production.find((file) => file.path === 'web/src/app/App.tsx')!;
+  assert.ok(/\bsubmitWorkoutResult\s*\(/.test(app.text), 'the shell must go through the application operation');
 });

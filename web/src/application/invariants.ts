@@ -28,10 +28,36 @@ export function earliestPending(engineState: EngineState, today: string): Workou
   return pendingResults(engineState, today)[0] ?? null;
 }
 
-export function assertRecordingOrder(engineState: EngineState, workoutId: string, today: string): void {
+/**
+ * Why a result can or cannot be recorded right now. A single source of truth for the guard and for
+ * the screens: the UI only mirrors this, it never decides it.
+ */
+export type ResultAvailability = 'AVAILABLE' | 'BEFORE_SCHEDULED_DATE' | 'OUT_OF_ORDER';
+
+export function resultAvailability(engineState: EngineState, workoutId: string, today: string): ResultAvailability {
+  const workout = engineState.queue.find((entry) => entry.id === workoutId);
+  // An unknown or already recorded session is the engine's business: this guard must not replace the
+  // engine's own UNKNOWN_OR_COMPLETED_WORKOUT check.
+  if (workout === undefined) return 'AVAILABLE';
+
+  // A result describes a session that has already happened, so it cannot be entered in advance.
+  if (workout.scheduledDate > today) return 'BEFORE_SCHEDULED_DATE';
+
+  // INV-1: results are closed from the oldest unresolved session, never out of order.
   const earliest = earliestPending(engineState, today);
-  if (earliest !== null && earliest.id !== workoutId) {
-    throw new ApplicationError('PENDING_RESULT_OUT_OF_ORDER', `the earlier session ${earliest.scheduledDate} is still open`);
+  if (earliest !== null && earliest.id !== workoutId) return 'OUT_OF_ORDER';
+
+  return 'AVAILABLE';
+}
+
+export function assertWorkoutResultAllowed(engineState: EngineState, workoutId: string, today: string): void {
+  const availability = resultAvailability(engineState, workoutId, today);
+  if (availability === 'BEFORE_SCHEDULED_DATE') {
+    throw new ApplicationError('WORKOUT_RESULT_BEFORE_SCHEDULED_DATE', `the session is scheduled for ${today} or later`);
+  }
+  if (availability === 'OUT_OF_ORDER') {
+    const earliest = earliestPending(engineState, today);
+    throw new ApplicationError('PENDING_RESULT_OUT_OF_ORDER', `the earlier session ${earliest?.scheduledDate ?? ''} is still open`);
   }
 }
 

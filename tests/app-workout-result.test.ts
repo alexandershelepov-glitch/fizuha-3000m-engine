@@ -11,7 +11,7 @@ import {diffPlan, nextWorkout, summariseWorkout} from '../web/src/application/pl
 import {loadActiveCycle, ACTIVE_CYCLE_KEY} from '../web/src/application/storage.ts';
 import {buildProfile} from '../web/src/application/questionnaire.ts';
 import {deriveToday} from '../web/src/application/uiState.ts';
-import {hasPendingResults, earliestPending} from '../web/src/application/invariants.ts';
+import {hasPendingResults, earliestPending, resultAvailability} from '../web/src/application/invariants.ts';
 import {deserializeEngineState} from '../web/src/application/engineGateway.ts';
 import type {EngineState} from '../web/src/application/engineGateway.ts';
 import {CYCLE_ID, CREATED_AT, draft, memoryStorage, repository} from './helpers-app.ts';
@@ -319,4 +319,150 @@ test('RESULT-12 a second submission of the same workout is refused by the engine
   if (second.ok) return;
   assert.equal(second.error.code, 'UNKNOWN_OR_COMPLETED_WORKOUT');
   assert.equal(fixture.storage.map.get(ACTIVE_CYCLE_KEY), JSON.stringify(first.done.appState));
+});
+
+test('FUTURE-01 a result for a session that has not happened yet is refused', () => {
+  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const future = fixture.engineState.queue.find((workout) => workout.scheduledDate > NOW);
+  assert.ok(future, 'the fixture must contain a future session');
+  const writesBefore = fixture.storage.writes;
+
+  const outcome = submitWorkoutResult({
+    repo: fixture.repo,
+    appState: fixture.appState,
+    engineState: fixture.engineState,
+    workoutId: future.id,
+    result: feedback(future, 'GREEN'),
+    deviceToday: NOW,
+  });
+
+  assert.equal(outcome.ok, false);
+  if (outcome.ok) return;
+  assert.equal(outcome.error.code, 'WORKOUT_RESULT_BEFORE_SCHEDULED_DATE');
+  assert.equal(outcome.error.fromEngine, false, 'this is an application rule, not an engine rejection');
+  assert.equal(outcome.error.retry, false, 'tomorrow the same request becomes valid, but not by repeating it now');
+
+  // Nothing changed anywhere: engine state, queue, history, envelope and storage.
+  assert.equal(fixture.storage.map.get(ACTIVE_CYCLE_KEY), fixture.raw);
+  assert.equal(fixture.storage.writes, writesBefore, 'a refused request must not write');
+  const reloaded = loadActiveCycle(fixture.repo);
+  assert.equal(reloaded.kind, 'READY');
+  if (reloaded.kind !== 'READY') return;
+  assert.deepEqual(reloaded.engineState.queue, fixture.engineState.queue);
+  assert.deepEqual(reloaded.engineState.history, []);
+  assert.deepEqual(reloaded.appState.cycle, fixture.appState.cycle);
+  assert.deepEqual(reloaded.appState.events, fixture.appState.events);
+});
+
+test('FUTURE-02 the same session becomes recordable on its own day, in order', () => {
+  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const tomorrow = dateAfter(1);
+  const earlier = fixture.engineState.queue.find((workout) => workout.scheduledDate === NOW)!;
+  const session = fixture.engineState.queue.find((workout) => workout.scheduledDate === tomorrow)!;
+
+  // Refused the day before, because the session has not happened yet.
+  const refused = submitWorkoutResult({
+    repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
+    workoutId: session.id, result: feedback(session, 'GREEN'), deviceToday: NOW,
+  });
+  assert.equal(refused.ok, false);
+  if (!refused.ok) assert.equal(refused.error.code, 'WORKOUT_RESULT_BEFORE_SCHEDULED_DATE');
+
+  // On its own day the date rule no longer applies; INV-1 still does, because yesterday is open.
+  const blocked = submitWorkoutResult({
+    repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
+    workoutId: session.id, result: feedback(session, 'GREEN'), deviceToday: tomorrow,
+  });
+  assert.equal(blocked.ok, false);
+  if (!blocked.ok) assert.equal(blocked.error.code, 'PENDING_RESULT_OUT_OF_ORDER');
+
+  // Once the earlier session is closed, the very same request is accepted.
+  const closed = submitWorkoutResult({
+    repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
+    workoutId: earlier.id, result: feedback(earlier, 'GREEN'), deviceToday: tomorrow,
+  });
+  assert.equal(closed.ok, true);
+  if (!closed.ok) return;
+
+  const accepted = submitWorkoutResult({
+    repo: fixture.repo, appState: closed.done.appState, engineState: closed.done.engineState,
+    workoutId: session.id, result: feedback(session, 'GREEN'), deviceToday: tomorrow,
+  });
+  assert.equal(accepted.ok, true);
+  if (!accepted.ok) return;
+  assert.deepEqual(accepted.done.engineState.history.map((entry) => entry.workout.id), [earlier.id, session.id]);
+});
+
+test('FUTURE-03 a session scheduled for today is recordable', () => {
+  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const today = fixture.engineState.queue.find((workout) => workout.scheduledDate === NOW);
+  assert.ok(today, 'the fixture must contain a session for today');
+
+  const outcome = submitWorkoutResult({
+    repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
+    workoutId: today.id, result: feedback(today, 'GREEN'), deviceToday: NOW,
+  });
+  assert.equal(outcome.ok, true);
+});
+
+test('FUTURE-04 an overdue session is still closed in chronological order, not by date only', () => {
+  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const today = dateAfter(4);
+  const overdue = fixture.engineState.queue.filter((workout) => workout.scheduledDate < today);
+  assert.ok(overdue.length >= 2, 'the fixture must contain several overdue sessions');
+  assert.ok(fixture.engineState.queue.some((workout) => workout.scheduledDate > today), 'and one in the future');
+
+  // The oldest one is allowed...
+  const first = submitWorkoutResult({
+    repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
+    workoutId: overdue[0]!.id, result: feedback(overdue[0]!, 'GREEN'), deviceToday: today,
+  });
+  assert.equal(first.ok, true);
+  if (!first.ok) return;
+
+  // ...the next overdue one is allowed after it...
+  const second = submitWorkoutResult({
+    repo: fixture.repo, appState: first.done.appState, engineState: first.done.engineState,
+    workoutId: overdue[1]!.id, result: feedback(overdue[1]!, 'GREEN'), deviceToday: today,
+  });
+  assert.equal(second.ok, true);
+
+  // ...and a future session is still refused, however many were closed.
+  const future = (second.ok ? second.done.engineState : first.done.engineState).queue.find((workout) => workout.scheduledDate > today)!;
+  const refused = submitWorkoutResult({
+    repo: fixture.repo,
+    appState: second.ok ? second.done.appState : first.done.appState,
+    engineState: second.ok ? second.done.engineState : first.done.engineState,
+    workoutId: future.id, result: feedback(future, 'GREEN'), deviceToday: today,
+  });
+  assert.equal(refused.ok, false);
+  if (!refused.ok) assert.equal(refused.error.code, 'WORKOUT_RESULT_BEFORE_SCHEDULED_DATE');
+});
+
+test('FUTURE-05 the guard does not replace the engine check for an unknown session', () => {
+  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const workout = firstWorkout(fixture.engineState);
+
+  const outcome = submitWorkoutResult({
+    repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
+    workoutId: 'no-such-workout', result: feedback(workout, 'GREEN'), deviceToday: NOW,
+  });
+
+  assert.equal(outcome.ok, false);
+  if (outcome.ok) return;
+  // The engine's own code, not an application code invented by the guard.
+  assert.equal(outcome.error.code, 'UNKNOWN_OR_COMPLETED_WORKOUT');
+  assert.equal(outcome.error.fromEngine, true);
+});
+
+test('FUTURE-06 availability is one decision shared by the guard and the screens', () => {
+  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const today = dateAfter(2);
+  const overdue = fixture.engineState.queue.filter((workout) => workout.scheduledDate < today);
+  const future = fixture.engineState.queue.find((workout) => workout.scheduledDate > today)!;
+
+  assert.equal(resultAvailability(fixture.engineState, overdue[0]!.id, today), 'AVAILABLE');
+  assert.equal(resultAvailability(fixture.engineState, overdue[1]!.id, today), 'OUT_OF_ORDER');
+  assert.equal(resultAvailability(fixture.engineState, future.id, today), 'BEFORE_SCHEDULED_DATE');
+  assert.equal(resultAvailability(fixture.engineState, 'unknown-id', today), 'AVAILABLE', 'the engine owns that case');
 });

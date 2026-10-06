@@ -14,6 +14,7 @@ import {createCycle} from '../application/cycle.ts';
 import {buildProfile, defaultDraft} from '../application/questionnaire.ts';
 import type {QuestionnaireDraft} from '../application/questionnaire.ts';
 import {workoutTypeText} from '../ui/copy/values.ts';
+import {resultAvailability} from '../application/invariants.ts';
 
 type User = ReturnType<typeof userEvent.setup>;
 
@@ -760,5 +761,71 @@ describe('closing a workout', () => {
     }
     // The closed session is gone from the plan, and the stored queue is what the screen displays.
     expect(screen.queryByText(/Уже закрыта/)).not.toBeInTheDocument();
+  });
+});
+
+describe('a session in the future', () => {
+  /** The first session of the stored queue that is scheduled after today. */
+  function futureWorkoutId(storage: KeyValueStorage): string {
+    const loaded = loadActiveCycle(createRepository(storage));
+    if (loaded.kind !== 'READY') throw new Error('fixture');
+    const future = loaded.engineState.queue.find((workout) => workout.scheduledDate > deviceToday());
+    if (!future) throw new Error('fixture: no future session');
+    return future.id;
+  }
+
+  test('its details are visible but the result cannot be entered yet', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await createCycleAndReachToday(user);
+
+    const id = futureWorkoutId(storage);
+    act(() => {
+      window.history.replaceState(null, '', `/workout/${id}`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+
+    // The prescription is shown: type, volume, mode.
+    expect(screen.getByText('Объём')).toBeInTheDocument();
+    expect(screen.getByText('Режим')).toBeInTheDocument();
+    // But the session cannot be closed in advance.
+    expect(screen.queryByRole('button', {name: 'Внести результат'})).not.toBeInTheDocument();
+    expect(screen.getByText('Результат можно внести в день тренировки или позже.')).toBeInTheDocument();
+  });
+
+  test('a direct link to its result form cannot close anything either', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await createCycleAndReachToday(user);
+
+    const id = futureWorkoutId(storage);
+    const raw = storage.map.get(ACTIVE_CYCLE_KEY);
+
+    act(() => {
+      window.history.replaceState(null, '', `/workout/${id}/result`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+
+    // The form is not offered at all, so there is nothing to submit.
+    expect(screen.queryByRole('button', {name: 'Сохранить результат'})).not.toBeInTheDocument();
+    expect(screen.getByText('Тренировка ещё не состоялась')).toBeInTheDocument();
+    expect(screen.getByText('Результат можно внести в день тренировки или позже.')).toBeInTheDocument();
+    expect(storage.map.get(ACTIVE_CYCLE_KEY)).toBe(raw);
+
+    // And the application refuses the same request even if it is made directly.
+    const loaded = loadActiveCycle(createRepository(storage));
+    if (loaded.kind !== 'READY') throw new Error('fixture');
+    expect(resultAvailability(loaded.engineState, id, deviceToday())).toBe('BEFORE_SCHEDULED_DATE');
+  });
+
+  test("today's session still carries the active CTA", async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await createCycleAndReachToday(user);
+
+    expect(screen.getByRole('button', {name: 'Внести результат'})).toBeInTheDocument();
   });
 });

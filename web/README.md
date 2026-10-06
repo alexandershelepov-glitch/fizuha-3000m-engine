@@ -70,6 +70,11 @@ Today → Workout Details → Внести результат → форма →
       → engine.recordResult → новое EngineState → serialize → save → Outcome → Today / План
 ```
 
+- Результат можно внести только за тренировку, которая уже состоялась: `scheduledDate <= deviceToday`.
+  Будущую тренировку запрещает application-guard `assertWorkoutResultAllowed` (код
+  `WORKOUT_RESULT_BEFORE_SCHEDULED_DATE`), поэтому ни UI, ни прямой маршрут `/workout/:id/result`,
+  ни прямой вызов операции не могут закрыть её заранее. Решение о доступности принимается в одном месте
+  (`resultAvailability`) и лишь отражается в интерфейсе.
 - `application/workoutResult.ts` — единственная операция записи результата. UI никогда не вызывает
   `recordResult` сам: операция проверяет порядок закрытия (INV-1), отдаёт решение engine, считает
   наблюдаемый diff, сериализует новое состояние и сохраняет его **до** возврата результата. При отказе engine

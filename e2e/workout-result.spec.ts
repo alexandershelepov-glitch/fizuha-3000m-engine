@@ -125,3 +125,37 @@ test('the same flow closes an overdue session from the pending state', async ({p
   expect(state.history.length).toBe(1);
   expect(stored).not.toBeNull();
 });
+
+test('a future session cannot be closed in advance', async ({page}) => {
+  await fillQuestionnaire(page);
+  await createCycleAndReachToday(page);
+  const before = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
+
+  // The plan lists today's session first and the next one second.
+  await page.getByRole('navigation', {name: 'Основные разделы'}).getByText('План').click();
+  await expect(page).toHaveURL(/\/plan$/);
+  const timeline = page.locator('.timeline__button');
+  await expect(timeline.first()).toBeVisible();
+  await timeline.nth(1).click();
+  await expect(page).toHaveURL(/\/workout\/[^/]+$/);
+
+  // The prescription is visible, but there is no way to enter a result yet.
+  await expect(page.getByText('Объём')).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Внести результат'})).toHaveCount(0);
+  await expect(page.getByText('Результат можно внести в день тренировки или позже.')).toBeVisible();
+
+  // Even the direct address of the form cannot close it.
+  const futureId = new URL(page.url()).pathname.split('/').pop()!;
+  await page.goto(`/workout/${futureId}/result`);
+  await expect(page.getByText('Тренировка ещё не состоялась')).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Сохранить результат'})).toHaveCount(0);
+  expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBe(before);
+
+  // Today's session is still recordable.
+  await page.goto('/today');
+  await page.getByRole('button', {name: 'Внести результат'}).click();
+  await page.getByRole('button', {name: 'Сохранить результат'}).click();
+  await expect(page).toHaveURL(/\/outcome$/);
+  const state = await readEngineState(page);
+  expect(state.history.length).toBe(1);
+});
