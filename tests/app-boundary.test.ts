@@ -28,7 +28,7 @@ test('BOUNDARY-02 the gateway imports only the public engine API', () => {
   const block = /import \{([\s\S]*?)\} from '\.\.\/\.\.\/\.\.\/src\/index\.ts'/.exec(gateway.text);
   assert.ok(block, 'the gateway must import from the package entry point');
   const imported = block[1]!.split(',').map((name) => name.trim()).filter(Boolean).sort();
-  assert.deepEqual(imported, ['EngineError', 'createEngine', 'deserialize', 'moveWorkout as engineMoveWorkout', 'recordCheckpoint as engineRecordCheckpoint', 'recordResult as engineRecordResult', 'replan', 'serialize', 'skipWorkout as engineSkipWorkout', 'taperDays', 'validateProfile']);
+  assert.deepEqual(imported, ['EngineError', 'PERFORMANCE_SOURCES', 'createEngine', 'deserialize', 'moveWorkout as engineMoveWorkout', 'recordCheckpoint as engineRecordCheckpoint', 'recordFinalResult as engineRecordFinalResult', 'recordResult as engineRecordResult', 'replan', 'serialize', 'skipWorkout as engineSkipWorkout', 'taperDays', 'updateTrainingData as engineUpdateTrainingData', 'validateProfile']);
 });
 
 test('BOUNDARY-03 the frontend never calls internal sport functions', () => {
@@ -206,4 +206,24 @@ test('BOUNDARY-11 an overdue session can never be moved', () => {
   for (const file of sources.filter((entry) => entry.path.startsWith('web/src/ui/'))) {
     assert.equal(/scheduledDate\s*[<>]\s*today/.test(file.text), false, `${file.path} must not decide availability itself`);
   }
+});
+
+test('BOUNDARY-12 parameter updates only reach the engine through their guarded operation', () => {
+  const production = sources.filter(f => !/\.test\.tsx?$/.test(f.path));
+  assert.deepEqual(production.filter(f => /\bupdateTrainingData\b/.test(f.text)).map(f => f.path).sort(), ['web/src/application/engineGateway.ts', 'web/src/application/parameters.ts']);
+  const operation = production.find(f => f.path.endsWith('/parameters.ts'))!;
+  assert.ok(operation.text.indexOf('assertClockAdvanceAllowed') < operation.text.indexOf('updateTrainingData('));
+});
+test('BOUNDARY-13 final recording only reaches the engine through the terminal operation', () => {
+  const production = sources.filter(f => !/\.test\.tsx?$/.test(f.path));
+  assert.deepEqual(production.filter(f => /\brecordFinalResult\b/.test(f.text)).map(f => f.path).sort(), ['web/src/application/engineGateway.ts', 'web/src/application/finalResult.ts']);
+});
+test('BOUNDARY-14 archive storage preserves opaque state and does not import engine internals', () => {
+  const archive = sources.find(f => f.path.endsWith('/archiveStorage.ts'))!;
+  assert.doesNotMatch(archive.text, /src\/index|src\/engine|deserialize|\.engineState\s*=/);
+  assert.ok(archive.text.includes('appState: structuredClone(appState)'));
+});
+test('BOUNDARY-15 terminal result has no ordinary clock guard', () => {
+  const operation = sources.find(f => f.path.endsWith('/finalResult.ts'))!;
+  assert.doesNotMatch(operation.text, /assertClockAdvanceAllowed/);
 });

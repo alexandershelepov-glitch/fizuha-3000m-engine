@@ -34,8 +34,9 @@ test('ROUTE-03 without an active cycle only the onboarding screens are reachable
   assert.deepEqual(guardRoute({name: 'FIRST_RUN'}, context), {route: {name: 'FIRST_RUN'}, redirected: false});
   assert.equal(guardRoute({name: 'QUESTIONNAIRE', step: 'RESULT'}, context).redirected, false);
   assert.equal(guardRoute({name: 'REVIEW'}, context).redirected, false);
+  assert.equal(guardRoute({name: 'HISTORY'}, context).redirected, false, 'archive remains reachable without active');
   // A direct link to a protected screen is not an error: it lands on the start screen.
-  for (const route of [{name: 'TODAY'}, {name: 'PLAN'}, {name: 'HISTORY'}, {name: 'PROFILE'}, {name: 'ASSESSMENT'}, {name: 'PLAN_READY'}, {name: 'WORKOUT', id: 'w1'}] as const) {
+  for (const route of [{name: 'TODAY'}, {name: 'PLAN'}, {name: 'PROFILE'}, {name: 'ASSESSMENT'}, {name: 'PLAN_READY'}, {name: 'WORKOUT', id: 'w1'}] as const) {
     const result = guardRoute(route as never, context);
     assert.deepEqual(result, {route: {name: 'FIRST_RUN'}, redirected: true}, `${route.name} must redirect`);
   }

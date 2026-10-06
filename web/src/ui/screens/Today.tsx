@@ -3,7 +3,7 @@ import {formatDateLong, formatTime} from '../../application/format.ts';
 import type {EngineState, Workout} from '../../application/engineGateway.ts';
 import {deriveToday} from '../../application/uiState.ts';
 import {phaseText, safetyStatusText} from '../copy/values.ts';
-import {common, skip as skipText, today as todayText} from '../copy/text.ts';
+import {common, skip as skipText, today as todayText, lifecycle} from '../copy/text.ts';
 import {workoutPaceRange, workoutTitle, workoutVolume} from '../display.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, KeyValue, Notice} from '../components/Layout.tsx';
@@ -46,7 +46,7 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
       {view.state === 'COMPLETED' ? (
         <Card title={todayText.completed.title}>
           <p className="paragraph">{todayText.completed.text}</p>
-          <Button onClick={() => onNavigate({name: 'HISTORY'})}>{todayText.completed.cta}</Button>
+          <Button onClick={() => onNavigate({name: 'CYCLE_SUMMARY', id: ''})}>{todayText.completed.cta}</Button>
         </Card>
       ) : null}
 
@@ -61,20 +61,23 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
       ) : null}
 
       {view.state === 'RACE_DAY' ? (
-        <Card title={todayText.raceDay.title}>
+        <Card title={lifecycle.raceTitle}>
           <KeyValue label={todayText.raceDay.distance} value={todayText.raceDay.distanceValue} />
           <KeyValue label={todayText.raceDay.goal} value={formatTime(profile.targetTimeSeconds)} />
           <KeyValue label={todayText.raceDay.date} value={formatDateLong(profile.raceDate)} />
           <p className="hint">{todayText.raceDay.note}</p>
-          <Button disabled title={todayText.raceDay.pendingNote}>{todayText.raceDay.cta}</Button>
-          <p className="hint">{todayText.raceDay.pendingNote}</p>
+          <KeyValue label={lifecycle.form} value={profile.performance ? formatTime(profile.performance.timeSeconds) : '—'} />
+          <Button onClick={() => onNavigate({name: 'FINAL_RESULT'})}>{lifecycle.finalCta}</Button>
+          <Button variant="ghost" onClick={() => onNavigate({name: 'HISTORY'})}>{lifecycle.later}</Button>
         </Card>
       ) : null}
 
       {view.state === 'AWAITING_FINAL_RESULT' ? (
         <Card title={todayText.awaiting.title}>
           <p className="paragraph">{todayText.awaiting.text}</p>
-          <Button disabled title={todayText.raceDay.pendingNote}>{todayText.awaiting.cta}</Button>
+          <p>{lifecycle.awaiting}</p>
+          <Button onClick={() => onNavigate({name: 'FINAL_RESULT'})}>{lifecycle.finalCta}</Button>
+          <Button variant="secondary" onClick={() => onNavigate({name: 'PROFILE'})}>{lifecycle.edit}</Button>
           <Button variant="ghost" onClick={() => onNavigate({name: 'HISTORY'})}>{todayText.awaiting.historyCta}</Button>
         </Card>
       ) : null}

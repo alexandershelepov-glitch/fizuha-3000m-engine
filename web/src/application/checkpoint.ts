@@ -8,6 +8,8 @@
  *
  * `recordCheckpoint` replans internally, so this is a clock-advancing operation and INV-1 applies.
  */
+import {ApplicationError} from './appError.ts';
+import {toUiErrorFromUnknown} from './errorContract.ts';
 import {assessmentSnapshotOf} from './appState.ts';
 import type {AppStateV1} from './appState.ts';
 import {assertClockAdvanceAllowed} from './invariants.ts';
@@ -38,6 +40,7 @@ export interface CheckpointDone {
 export type CheckpointOutcome = {ok: true; done: CheckpointDone} | {ok: false; error: UiError};
 
 export function submitCheckpoint(request: CheckpointRequest): CheckpointOutcome {
+  if (request.engineState.finalResultRecorded) return {ok: false, error: toUiErrorFromUnknown(new ApplicationError('CYCLE_COMPLETED'))};
   // Captured before the engine call: `recordCheckpoint` overwrites it, and the third checkpoint needs
   // the second one rather than the initial baseline.
   const previousPerformance = request.engineState.profile.performance?.timeSeconds ?? null;

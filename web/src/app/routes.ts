@@ -15,6 +15,10 @@ export type Route =
   | {name: 'PLAN'}
   | {name: 'HISTORY'}
   | {name: 'PROFILE'}
+  | {name: 'PARAMETERS'}
+  | {name: 'PARAMETERS_OUTCOME'}
+  | {name: 'FINAL_RESULT'}
+  | {name: 'CYCLE_SUMMARY'; id: string}
   | {name: 'WORKOUT'; id: string}
   | {name: 'WORKOUT_RESULT'; id: string}
   | {name: 'WORKOUT_OUTCOME'; id: string}
@@ -56,6 +60,12 @@ export function parseRoute(pathname: string, search = ''): Route {
   if (path === PATH.history) return {name: 'HISTORY'};
   if (path === PATH.profile) return {name: 'PROFILE'};
 
+  if (path === '/profile/parameters') return {name: 'PARAMETERS'};
+  if (path === '/profile/parameters/outcome') return {name: 'PARAMETERS_OUTCOME'};
+  if (path === '/final-result') return {name: 'FINAL_RESULT'};
+  const summary = /^\/history\/([^/]+)$/.exec(path);
+  if (summary) return {name: 'CYCLE_SUMMARY', id: decodeURIComponent(summary[1]!)};
+
   const result = /^\/workout\/([^/]+)\/result$/.exec(path);
   if (result) return {name: 'WORKOUT_RESULT', id: decodeURIComponent(result[1]!)};
 
@@ -85,6 +95,10 @@ export function routeToPath(route: Route): string {
     case 'PLAN': return PATH.plan;
     case 'HISTORY': return PATH.history;
     case 'PROFILE': return PATH.profile;
+    case 'PARAMETERS': return '/profile/parameters';
+    case 'PARAMETERS_OUTCOME': return '/profile/parameters/outcome';
+    case 'FINAL_RESULT': return '/final-result';
+    case 'CYCLE_SUMMARY': return `/history/${encodeURIComponent(route.id)}`;
     case 'WORKOUT': return `/workout/${encodeURIComponent(route.id)}`;
     case 'WORKOUT_RESULT': return `/workout/${encodeURIComponent(route.id)}/result`;
     case 'WORKOUT_OUTCOME': return `/workout/${encodeURIComponent(route.id)}/outcome`;
@@ -108,6 +122,7 @@ export interface RouteContext {
  * assessment is shown once, right after the cycle was created.
  */
 export function guardRoute(route: Route, context: RouteContext): {route: Route; redirected: boolean} {
+  if (route.name === 'HISTORY' || route.name === 'CYCLE_SUMMARY') return {route, redirected: false};
   if (!context.hasCycle) {
     if (route.name === 'NOT_FOUND') return {route, redirected: false};
     if (route.name === 'FIRST_RUN' || route.name === 'QUESTIONNAIRE' || route.name === 'REVIEW') return {route, redirected: false};

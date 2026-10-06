@@ -28,6 +28,7 @@ export interface UiError {
  */
 const NON_RETRYABLE: readonly string[] = [
   // INV-1: repeating the same request cannot help while the past sessions stay unresolved.
+  'CYCLE_COMPLETED', 'ACTIVE_CYCLE_EXISTS', 'UNSUPPORTED_ARCHIVE_VERSION', 'ARCHIVE_DAMAGED', 'ARCHIVE_CONFLICT', 'CYCLE_NOT_COMPLETED',
   'PENDING_RESULT_BLOCKED',
   // Waiting is the only way forward; the action itself stays valid on the session's own day.
   'PENDING_RESULT_OUT_OF_ORDER',

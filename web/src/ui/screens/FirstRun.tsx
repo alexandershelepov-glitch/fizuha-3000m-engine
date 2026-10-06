@@ -2,9 +2,9 @@ import {useState} from 'react';
 import type {ReactNode} from 'react';
 import {Button} from '../components/Button.tsx';
 import {Card, Notice} from '../components/Layout.tsx';
-import {app, firstRun} from '../copy/text.ts';
+import {app, firstRun, lifecycle} from '../copy/text.ts';
 
-export function FirstRun({onStart}: {onStart: () => void}): ReactNode {
+export function FirstRun({onStart, onHistory}: {onStart: () => void; onHistory?: () => void}): ReactNode {
   const [showHow, setShowHow] = useState(false);
 
   return (
@@ -39,6 +39,7 @@ export function FirstRun({onStart}: {onStart: () => void}): ReactNode {
         </Button>
       </div>
 
+      {onHistory ? <Button variant="secondary" onClick={onHistory}>{lifecycle.history}</Button> : null}
       <Notice tone="info">
         Все данные хранятся только на этом устройстве. Приложение работает без сети.
       </Notice>

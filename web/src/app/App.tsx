@@ -1,3 +1,14 @@
+import {archiveCompletedCycle, loadArchives} from '../application/archive.ts';
+import {createArchiveRepository} from '../application/archiveStorage.ts';
+import {submitFinalResult} from '../application/finalResult.ts';
+import {updateGoalAndRaceDate} from '../application/parameters.ts';
+import type {PerformanceSource} from '../application/engineGateway.ts';
+import {ParametersForm} from '../ui/screens/ParametersForm.tsx';
+import {ParametersOutcome} from '../ui/screens/ParametersOutcome.tsx';
+import {FinalResultForm} from '../ui/screens/FinalResultForm.tsx';
+import {CycleSummary} from '../ui/screens/CycleSummary.tsx';
+import {ArchiveList} from '../ui/screens/ArchiveList.tsx';
+import {lifecycle} from '../ui/copy/text.ts';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
 import {buildProfile} from '../application/questionnaire.ts';
@@ -63,6 +74,11 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
   const storage = probe.kind === 'AVAILABLE' ? probe.storage : null;
   const repo = useMemo(() => (storage === null ? null : createRepository(storage)), [storage]);
   const store = useCycleStore(repo);
+  const archiveRepo = useMemo(() => storage ? createArchiveRepository(storage) : null, [storage]);
+  const [archiveRevision, setArchiveRevision] = useState(0);
+  const archives = useMemo(() => archiveRepo ? loadArchives(archiveRepo) : null, [archiveRepo, archiveRevision]);
+  const [archiveError, setArchiveError] = useState<UiError | null>(null);
+  const [parameterChanges, setParameterChanges] = useState<readonly PlanChange[] | null>(null);
   const route = useRoute();
   const draftStore = useDraft(storage, store.today);
   const [refreshing, setRefreshing] = useState(false);
@@ -124,7 +140,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
   }, [repo, storage, store]);
 
   const handleRefreshPlan = useCallback(() => {
-    if (repo === null || store.appState === null || store.engineState === null) return;
+    if (repo === null || store.appState === null || store.engineState === null || store.engineState.finalResultRecorded) return;
     setRefreshing(true);
     setPlanError(null);
     // INV-1 is enforced inside the operation, not here: the UI cannot bypass it by calling directly.
@@ -199,10 +215,40 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     return {ok: true};
   }, [repo, store]);
 
+  const handleParameters = (targetTimeSeconds: number, raceDate: string) => {
+    if (!repo || !store.appState || !store.engineState) return {ok: false, error: {code: 'STORAGE_UNAVAILABLE', params: {}, retry: true, fromEngine: false} as UiError};
+    const result = updateGoalAndRaceDate({repo, appState: store.appState, engineState: store.engineState, targetTimeSeconds, raceDate, deviceToday: store.today, at: deviceTimestamp()});
+    if (result.ok) {
+      store.replaceActiveState(result.done); setParameterChanges(result.done.changes);
+      navigate(result.done.appState === store.appState ? {name: 'PROFILE'} : {name: 'PARAMETERS_OUTCOME'});
+    }
+    return result;
+  };
+
+  const handleArchive = (appState = store.appState) => {
+    if (!repo || !archiveRepo || !appState) return;
+    const result = archiveCompletedCycle({repo, archives: archiveRepo, appState, at: deviceTimestamp()});
+    setArchiveRevision(value => value + 1);
+    if (result.ok) { setArchiveError(null); store.reload(); }
+    else setArchiveError(result.error);
+    navigate({name: 'CYCLE_SUMMARY', id: appState.cycle.cycleId});
+  };
+
+  const handleFinal = (timeSeconds: number, source: PerformanceSource) => {
+    if (!repo || !store.appState || !store.engineState) return {ok: false, error: {code: 'STORAGE_UNAVAILABLE', params: {}, retry: true, fromEngine: false} as UiError};
+    const result = submitFinalResult({repo, appState: store.appState, engineState: store.engineState, timeSeconds, source, deviceToday: store.today, at: deviceTimestamp()});
+    if (result.ok) {
+      // The completed envelope is already durable; archive failure must not turn this into a failed result.
+      store.replaceActiveState(result.done); handleArchive(result.done.appState);
+    }
+    return result;
+  };
+
   const goTo = useCallback((next: Route) => {
     if (next.name !== 'QUESTIONNAIRE') setEngineError(null);
-    navigate(next);
-  }, []);
+    if (next.name === 'CYCLE_SUMMARY' && next.id === '' && store.appState) navigate({...next, id: store.appState.cycle.cycleId});
+    else navigate(next);
+  }, [store.appState]);
 
   if (store.load.kind === 'NO_STORAGE') return <StorageUnavailable onRetry={retryStorage} />;
 
@@ -230,10 +276,20 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     </div>
   );
 
+  function renderArchives(): ReactNode {
+    return <ArchiveList cycles={archives?.ok ? archives.cycles : []} error={archives && !archives.ok ? archives.error : null} onOpen={id => goTo({name: 'CYCLE_SUMMARY', id})} onRetry={() => setArchiveRevision(v => v + 1)} />;
+  }
+  function renderSummary(id: string): ReactNode {
+    const active = store.appState?.cycle.cycleId === id && store.engineState?.finalResultRecorded === true;
+    const appState = active ? store.appState : archives?.ok ? archives.cycles.find(c => c.cycleId === id)?.appState : null;
+    if (!appState) return <div className="screen"><h1>{lifecycle.missing}</h1>{archives && !archives.ok ? renderArchives() : <p>{lifecycle.missingText}</p>}<Button onClick={() => goTo({name: 'HISTORY'})}>{lifecycle.history}</Button></div>;
+    return <CycleSummary appState={appState} active={active} canStartNew={!hasCycle} error={active ? archiveError : null} onArchive={() => handleArchive(appState)} onNew={() => { clearDraft(storage); goTo({name: 'FIRST_RUN'}); }} onHistory={() => goTo({name: 'HISTORY'})} />;
+  }
+
   function renderScreen(): ReactNode {
     switch (effective.name) {
       case 'FIRST_RUN':
-        return <FirstRun onStart={() => goTo({name: 'QUESTIONNAIRE', step: 'RESULT'})} />;
+        return <FirstRun onStart={() => goTo({name: 'QUESTIONNAIRE', step: 'RESULT'})} onHistory={archives && (!archives.ok || archives.cycles.length) ? () => goTo({name: 'HISTORY'}) : undefined} />;
       case 'QUESTIONNAIRE':
         return (
           <Questionnaire
@@ -274,15 +330,28 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
           />
         );
       case 'PLAN':
+        if (store.engineState?.finalResultRecorded) return renderSummary(store.appState!.cycle.cycleId);
         return store.engineState === null ? null : (
           <Plan engineState={store.engineState} today={store.today} onNavigate={goTo} onRefreshPlan={handleRefreshPlan} refreshing={refreshing} />
         );
+      case 'PARAMETERS':
+        if (!store.engineState) return null;
+        if (store.engineState.finalResultRecorded) return renderSummary(store.appState!.cycle.cycleId);
+        return <ParametersForm key={store.appState!.cycle.cycleId} engineState={store.engineState} submit={handleParameters} onCancel={() => goTo({name: 'PROFILE'})} />;
+      case 'PARAMETERS_OUTCOME':
+        return store.appState ? <ParametersOutcome appState={store.appState} changes={parameterChanges} onContinue={() => goTo({name: 'PLAN'})} /> : null;
+      case 'FINAL_RESULT':
+        if (!store.engineState) return null;
+        if (store.engineState.finalResultRecorded) return renderSummary(store.appState!.cycle.cycleId);
+        return <FinalResultForm raceDate={store.engineState.profile.raceDate} submit={handleFinal} onCancel={() => goTo({name: 'TODAY'})} />;
+      case 'CYCLE_SUMMARY':
+        return renderSummary(effective.id);
       case 'HISTORY':
-        return store.appState === null || store.engineState === null ? null : (
-          <History appState={store.appState} engineState={store.engineState} onNavigate={goTo} />
+        return store.appState === null || store.engineState === null ? <div className="screen"><h1>{lifecycle.archives}</h1>{renderArchives()}<Button onClick={() => goTo({name: 'FIRST_RUN'})}>{lifecycle.newCycle}</Button></div> : (
+          <History appState={store.appState} engineState={store.engineState} onNavigate={goTo} archiveContent={renderArchives()} />
         );
       case 'PROFILE':
-        return store.appState === null || store.engineState === null ? null : <Profile appState={store.appState} engineState={store.engineState} />;
+        return store.appState === null || store.engineState === null ? null : <Profile appState={store.appState} engineState={store.engineState} onEdit={() => goTo({name: 'PARAMETERS'})} />;
       case 'WORKOUT': {
         const workout = store.engineState?.queue.find((entry) => entry.id === effective.id) ?? null;
         // The application rule decides what the screen may offer; the screen only mirrors it.
@@ -332,6 +401,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
         );
       }
       case 'CHECKPOINT':
+        if (store.engineState?.finalResultRecorded) return renderSummary(store.appState!.cycle.cycleId);
         return store.engineState === null ? null : (
           <CheckpointForm
             deviceToday={store.today}

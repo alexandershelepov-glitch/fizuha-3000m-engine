@@ -42,8 +42,8 @@ test('UI-01 every engine-driven Today state is reachable through real data', () 
   const beforeRace = engineState({raceDate: dateAfter(1)});
   const closed = recordResult(beforeRace, beforeRace.queue[0]!.id, feedback(beforeRace.queue[0]!));
   assert.equal(deriveToday(closed, dateAfter(2)).state, 'AWAITING_FINAL_RESULT');
-  // Until those sessions are closed, the pending result must win over the final one.
-  assert.equal(deriveToday(engineState({raceDate: dateAfter(2)}), dateAfter(3)).state, 'PENDING_RESULT');
+  // The terminal form must remain reachable even with old unresolved sessions; INV-1 still guards normal updates.
+  assert.equal(deriveToday(engineState({raceDate: dateAfter(2)}), dateAfter(3)).state, 'AWAITING_FINAL_RESULT');
 
   // A completed cycle.
   const racing = engineState({raceDate: NOW});
@@ -59,12 +59,12 @@ test('UI-01 every engine-driven Today state is reachable through real data', () 
 
 test('UI-02 the selection order is the documented one', () => {
   assert.deepEqual([...TODAY_STATES], [
-    'COMPLETED', 'PENDING_RESULT', 'AWAITING_FINAL_RESULT', 'RACE_DAY', 'TRAINING_HOLD',
+    'COMPLETED', 'AWAITING_FINAL_RESULT', 'RACE_DAY', 'PENDING_RESULT', 'TRAINING_HOLD',
     'TAPER', 'CHECKPOINT_REQUIRED', 'WORKOUT_TODAY', 'EMPTY_QUEUE', 'REST_DAY',
   ]);
   // A pending result outranks the taper: the plan is not recalculated before the result is recorded.
   const taperWithPending = engineState({raceDate: dateAfter(3), availableRunsPerWeek: 4});
-  assert.equal(deriveToday(taperWithPending, dateAfter(4)).state, 'PENDING_RESULT');
+  assert.equal(deriveToday(taperWithPending, dateAfter(2)).state, 'PENDING_RESULT');
   // A finished cycle outranks everything.
   const racing = engineState({raceDate: dateAfter(2)});
   const finished = recordFinalResult(racing, {timeSeconds: 900, date: racing.profile.raceDate, source: 'TEST_3K'}, dateAfter(3));

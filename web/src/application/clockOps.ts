@@ -5,6 +5,7 @@
  * is written to storage before anything is shown (INV-4). A failure leaves the previous state intact,
  * so the UI never displays a plan that was not persisted.
  */
+import {ApplicationError} from './appError.ts';
 import {assertClockAdvanceAllowed} from './invariants.ts';
 import {replanTo} from './engineGateway.ts';
 import type {EngineState} from './engineGateway.ts';
@@ -32,6 +33,7 @@ export type ClockAdvanceResult =
  */
 export function refreshPlan(request: ClockAdvanceRequest): ClockAdvanceResult {
   try {
+    if (request.engineState.finalResultRecorded) throw new ApplicationError('CYCLE_COMPLETED');
     assertClockAdvanceAllowed(request.engineState, request.deviceToday);
   } catch (error) {
     return {ok: false, error: toUiErrorFromUnknown(error)};

@@ -13,10 +13,11 @@ import type {Route} from '../../app/routes.ts';
 interface Props {
   readonly appState: AppStateV1;
   readonly engineState: EngineState;
+  readonly archiveContent?: ReactNode;
   readonly onNavigate: (route: Route) => void;
 }
 
-export function History({appState, engineState, onNavigate}: Props): ReactNode {
+export function History({appState, engineState, onNavigate, archiveContent}: Props): ReactNode {
   const [tab, setTab] = useState<'CURRENT' | 'ARCHIVE'>('CURRENT');
   // Newest first, both for the closed sessions the engine keeps and for the application events.
   const sessions = [...engineState.history].reverse();
@@ -71,7 +72,7 @@ export function History({appState, engineState, onNavigate}: Props): ReactNode {
           </Card>
         </>
       ) : (
-        <EmptyState title={history.emptyArchive} text={history.emptyArchiveHint}>
+        archiveContent ?? <EmptyState title={history.emptyArchive} text={history.emptyArchiveHint}>
           <Button variant="secondary" onClick={() => setTab('CURRENT')}>{history.tabCurrent}</Button>
         </EmptyState>
       )}

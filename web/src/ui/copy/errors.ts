@@ -67,6 +67,15 @@ export const errorCopy = {
  * `errorCopy`, which stays exhaustive over the engine's catalogue.
  */
 export const appErrorCopy = {
+  CYCLE_COMPLETED: fixed('Итоговый результат уже сохранён. Откройте итог цикла.', {title: 'Подготовка завершена', cta: 'Открыть итог', retry: false, showTechnicalDetails: false}),
+  ACTIVE_CYCLE_EXISTS: fixed('Сначала завершите и сохраните текущий цикл в архив. Предыдущий цикл не изменён.', {title: 'На устройстве уже есть цикл', cta: 'К текущему циклу', retry: false, showTechnicalDetails: false}),
+  INVALID_PARAMETERS: fixed('Введите время в формате ММ:СС и выберите существующую дату.', {title: 'Проверьте цель и дату', cta: 'Исправить', retry: true, showTechnicalDetails: false}),
+  ARCHIVE_UNAVAILABLE: fixed('Не удалось сохранить или прочитать архив. Итоговый результат остаётся в текущем цикле. Повторите архивацию.', {title: 'Архив недоступен', cta: 'Повторить архивацию', retry: true, showTechnicalDetails: true}),
+  UNSUPPORTED_ARCHIVE_VERSION: fixed('Архив создан другой версией приложения. Данные не удалены и не изменены.', {title: 'Несовместимая версия архива', cta: 'Обновить приложение', retry: false, showTechnicalDetails: true}),
+  ARCHIVE_DAMAGED: fixed('Не удалось прочитать архив. Данные не удалены и не изменены.', {title: 'Не удалось открыть архив', cta: 'Повторить', retry: false, showTechnicalDetails: true}),
+  ARCHIVE_CONFLICT: fixed('Для этого цикла обнаружены несовпадающие данные. Сохранённый архив не перезаписан; текущий цикл не удалён.', {title: 'Конфликт данных цикла', cta: 'Понятно', retry: false, showTechnicalDetails: true}),
+  CYCLE_NOT_COMPLETED: fixed('Сначала сохраните итоговый результат.', {title: 'Цикл ещё не завершён', cta: 'К текущему циклу', retry: false, showTechnicalDetails: false}),
+  ACTIVE_CLEAR_FAILED: fixed('Архив сохранён, но текущий цикл не удалось очистить. Повторите архивацию: дубликат создан не будет.', {title: 'Архивация не завершена', cta: 'Повторить архивацию', retry: true, showTechnicalDetails: true}),
   PAST_DUE_WORKOUT_CANNOT_MOVE: fixed('Просроченную тренировку нельзя перенести: её нужно закрыть результатом или отметить, что она не выполнена.', {title: 'Эту тренировку нельзя перенести', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
   WORKOUT_RESULT_BEFORE_SCHEDULED_DATE: fixed('Результат можно внести в день тренировки или позже.', {title: 'Тренировка ещё не состоялась', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
   PENDING_RESULT_OUT_OF_ORDER: fixed('Сначала закройте более раннюю тренировку: результаты вносятся по порядку, от самой давней к самой свежей.', {title: 'Есть более ранняя незакрытая тренировка', cta: 'Понятно', retry: false, showTechnicalDetails: false}),

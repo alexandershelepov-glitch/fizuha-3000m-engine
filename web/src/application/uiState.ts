@@ -16,9 +16,9 @@ import type {EngineState, Workout} from './engineGateway.ts';
  */
 export const TODAY_STATES = Object.freeze([
   'COMPLETED',
-  'PENDING_RESULT',
   'AWAITING_FINAL_RESULT',
   'RACE_DAY',
+  'PENDING_RESULT',
   'TRAINING_HOLD',
   'TAPER',
   'CHECKPOINT_REQUIRED',
@@ -53,9 +53,9 @@ export function deriveToday(engineState: EngineState, today: string = deviceToda
 
 function selectState(engineState: EngineState, today: string, workout: Workout | null, pending: readonly Workout[]): TodayState {
   if (engineState.finalResultRecorded) return 'COMPLETED';
-  if (pending.length > 0) return 'PENDING_RESULT';
   if (today > engineState.profile.raceDate) return 'AWAITING_FINAL_RESULT';
   if (today === engineState.profile.raceDate) return 'RACE_DAY';
+  if (pending.length > 0) return 'PENDING_RESULT';
   if (engineState.decision.safety !== 'OK') return 'TRAINING_HOLD';
   if (engineState.decision.phase === 'TAPER') return 'TAPER';
   if (engineState.checkpointRequired) return 'CHECKPOINT_REQUIRED';

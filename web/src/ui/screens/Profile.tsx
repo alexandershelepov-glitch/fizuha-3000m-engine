@@ -3,10 +3,11 @@ import {formatDateLong, formatTime} from '../../application/format.ts';
 import type {AppStateV1} from '../../application/appState.ts';
 import type {EngineState} from '../../application/engineGateway.ts';
 import {phaseText} from '../copy/values.ts';
-import {profile as profileText} from '../copy/text.ts';
+import {Button} from '../components/Button.tsx';
+import {lifecycle, profile as profileText} from '../copy/text.ts';
 import {Card, KeyValue, Notice} from '../components/Layout.tsx';
 
-export function Profile({appState, engineState}: {appState: AppStateV1; engineState: EngineState}): ReactNode {
+export function Profile({appState, engineState, onEdit}: {appState: AppStateV1; engineState: EngineState; onEdit?: () => void}): ReactNode {
   const {profile, decision} = engineState;
   const baseline = appState.cycle.baseline;
 
@@ -22,6 +23,8 @@ export function Profile({appState, engineState}: {appState: AppStateV1; engineSt
         <KeyValue label={profileText.goal} value={`3000 м за ${formatTime(profile.targetTimeSeconds)}`} />
         <KeyValue label={profileText.raceDate} value={formatDateLong(profile.raceDate)} />
       </Card>
+
+      {!engineState.finalResultRecorded && onEdit ? <Button onClick={onEdit}>{lifecycle.edit}</Button> : null}
 
       <Card title={profileText.cycle}>
         <KeyValue label={profileText.cycleStart} value={formatDateLong(appState.cycle.createdAt.slice(0, 10))} />

@@ -4,6 +4,7 @@
  * The order is fixed by INV-4: the new engine state is written to storage *before* anything is shown.
  * If the engine or the storage rejects the operation, no cycle is stored as successful.
  */
+import {ApplicationError} from './appError.ts';
 import {buildAppStateV1, assessmentSnapshotOf} from './appState.ts';
 import type {AppStateV1, CycleEvent, NewCycleInput} from './appState.ts';
 import {checkProfile, createEngineState, engineStateVersion, serializeEngineState} from './engineGateway.ts';
@@ -31,6 +32,7 @@ export type NewCycleResult =
  */
 export function createCycle(repo: CycleRepository, request: NewCycleRequest): NewCycleResult {
   try {
+    if (repo.read() !== null) throw new ApplicationError('ACTIVE_CYCLE_EXISTS');
     checkProfile(request.profile, request.deviceToday);
   } catch (error) {
     return {ok: false, error: toUiErrorFromUnknown(error), stage: 'VALIDATION'};

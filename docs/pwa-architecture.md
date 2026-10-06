@@ -425,3 +425,9 @@ invariants (§6), две аддитивные группы изменений AP
 требуется ни в одном сценарии.
 
 Переход к wireframes возможен; блокируют только B1–B6, из которых программно значим B2.
+
+## 11. Реализованный final lifecycle
+
+В срезе `pwa/final-lifecycle` реализованы изменение цели/даты, terminal Final Result, безопасный versioned archive всех completed cycles, summary/reload и новый цикл. Контракт и storage sequence описаны в [final-lifecycle.md](final-lifecycle.md).
+
+Уточнение прежнего INV-1: обычные clock-sensitive действия остаются заблокированы pending-тренировками, но `recordFinalResult` — terminal transition и к этому запрету не относится. Поэтому race/awaiting screens доступны раньше pending screen, сохраняя pending guard обычных действий. Immutable baseline, opaque engine state и append-only события сохранены.

@@ -10,10 +10,13 @@
  */
 import {
   EngineError,
+  PERFORMANCE_SOURCES,
   createEngine,
   deserialize,
   moveWorkout as engineMoveWorkout,
   recordCheckpoint as engineRecordCheckpoint,
+  recordFinalResult as engineRecordFinalResult,
+  updateTrainingData as engineUpdateTrainingData,
   recordResult as engineRecordResult,
   replan,
   serialize,
@@ -57,7 +60,7 @@ import type {
   YellowReason,
 } from '../../../src/index.ts';
 
-export {EngineError};
+export {EngineError, PERFORMANCE_SOURCES};
 
 /** A safe, mechanical view of a thrown value. */
 export interface EngineErrorView {
@@ -154,4 +157,12 @@ export function viewEngineError(value: unknown): EngineErrorView {
   if (isEngineError(value)) return {code: value.code, params: value.details, fromEngine: true};
   if (value instanceof ApplicationError) return {code: value.code, params: {}, fromEngine: false};
   return {code: 'UNKNOWN', params: {}, fromEngine: false};
+}
+
+/** Public delegates; only the corresponding application operations may call these. */
+export function updateTrainingData(state: EngineState, data: {targetTimeSeconds?: number; raceDate?: string}, now: string): EngineState {
+  return engineUpdateTrainingData(state, data, now);
+}
+export function recordFinalResult(state: EngineState, performance: PerformanceSnapshot, now: string): EngineState {
+  return engineRecordFinalResult(state, performance, now);
 }
