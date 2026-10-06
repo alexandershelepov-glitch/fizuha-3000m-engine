@@ -17,7 +17,7 @@ export default defineConfig({
     target: 'es2022',
     sourcemap: false,
   },
-  server: {port: 5173, strictPort: true},
+  server: {host: '127.0.0.1', port: 5173, strictPort: true},
   // Bind IPv4 explicitly: the E2E runner probes 127.0.0.1 while `localhost` may resolve to ::1.
   preview: {host: '127.0.0.1', port: 4173, strictPort: true},
   test: {
