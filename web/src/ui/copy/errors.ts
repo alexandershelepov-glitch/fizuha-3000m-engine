@@ -67,6 +67,7 @@ export const errorCopy = {
  * `errorCopy`, which stays exhaustive over the engine's catalogue.
  */
 export const appErrorCopy = {
+  PAST_DUE_WORKOUT_CANNOT_MOVE: fixed('Просроченную тренировку нельзя перенести: её нужно закрыть результатом или отметить, что она не выполнена.', {title: 'Эту тренировку нельзя перенести', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
   WORKOUT_RESULT_BEFORE_SCHEDULED_DATE: fixed('Результат можно внести в день тренировки или позже.', {title: 'Тренировка ещё не состоялась', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
   PENDING_RESULT_OUT_OF_ORDER: fixed('Сначала закройте более раннюю тренировку: результаты вносятся по порядку, от самой давней к самой свежей.', {title: 'Есть более ранняя незакрытая тренировка', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
   PENDING_RESULT_BLOCKED: fixed('Пока результат за прошлую дату не внесён, план не пересчитывается: иначе эта тренировка была бы списана как пропущенная. Сначала закройте её.', {title: 'Сначала закройте прошлую тренировку', cta: 'Понятно', retry: false, showTechnicalDetails: false}),

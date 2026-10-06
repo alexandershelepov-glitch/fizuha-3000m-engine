@@ -173,3 +173,37 @@ test('BOUNDARY-09 every engine transition stays behind its application operation
     'web/src/application/transition.ts',
   ]);
 });
+
+test('BOUNDARY-10 a skip cause is derived by the application, never supplied', () => {
+  const production = sources.filter((file) => !/\.test\.tsx?$/.test(file.path));
+
+  // No module may state a cause as an argument: the only place a concrete cause is produced is the
+  // operation itself, from the session's own date.
+  for (const file of production) {
+    const stated = /cause\s*:\s*'(VOLUNTARY|PAST_DUE)'\s*[,}]/.test(file.text);
+    assert.equal(stated && file.path !== 'web/src/application/workoutSchedule.ts', false, `${file.path} must not state a skip cause`);
+  }
+
+  const ops = production.find((file) => file.path === 'web/src/application/workoutSchedule.ts')!;
+  assert.ok(/isOverdue\s*\(/.test(ops.text), 'the reason must come from the application overdue rule');
+  assert.ok(/'PAST_DUE'/.test(ops.text) && /'VOLUNTARY'/.test(ops.text));
+  // And that rule compares the session's own date with the device date, in one place.
+  const invariants = production.find((file) => file.path === 'web/src/application/invariants.ts')!;
+  assert.ok(/scheduledDate\s*<\s*today/.test(invariants.text), 'the overdue rule must compare the session date');
+
+  // The operation's request has no cause field, so a screen cannot pass one.
+  assert.equal(/readonly cause/.test(ops.text), false, 'the caller must not be able to state a reason');
+});
+
+test('BOUNDARY-11 an overdue session can never be moved', () => {
+  const invariants = sources.find((file) => file.path === 'web/src/application/invariants.ts')!;
+  // The rule is part of the application decision, before the order rule, and it is a real refusal.
+  assert.ok(/action === 'MOVE' && isOverdue\(workout, today\)/.test(invariants.text), 'the past-due move rule must exist');
+  assert.ok(invariants.text.includes("'PAST_DUE_CANNOT_MOVE'"), 'the availability must name the refusal');
+  assert.ok(invariants.text.includes("'PAST_DUE_WORKOUT_CANNOT_MOVE'"), 'the guard must raise the application code');
+
+  // The screens consult that decision instead of comparing dates themselves.
+  for (const file of sources.filter((entry) => entry.path.startsWith('web/src/ui/'))) {
+    assert.equal(/scheduledDate\s*[<>]\s*today/.test(file.text), false, `${file.path} must not decide availability itself`);
+  }
+});

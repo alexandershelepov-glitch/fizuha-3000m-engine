@@ -5,7 +5,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {replan} from '../src/index.ts';
-import {moveScheduledWorkout} from '../web/src/application/workoutSchedule.ts';
+import {moveScheduledWorkout, skipScheduledWorkout} from '../web/src/application/workoutSchedule.ts';
 import {submitWorkoutResult} from '../web/src/application/workoutResult.ts';
 import {loadActiveCycle, ACTIVE_CYCLE_KEY} from '../web/src/application/storage.ts';
 import {CREATED_AT, appCycle} from './helpers-app.ts';
@@ -178,4 +178,85 @@ test('MOVE-10 the observable diff describes the new plan from the engine queue',
   for (const entry of outcome.done.engineState.queue) {
     assert.ok(entry.id === workout.id ? entry.scheduledDate === toDate : beforeIds.has(entry.id) || true);
   }
+});
+
+test('MOVE-11 an overdue session can never be moved into the future', () => {
+  const fixture = appCycle({availableRunsPerWeek: 4});
+  const today = dateAfter(3);
+  const overdue = fixture.engineState.queue.filter((workout) => workout.scheduledDate < today);
+  assert.ok(overdue.length >= 2, 'the fixture must contain several overdue sessions');
+  const writesBefore = fixture.storage.writes;
+
+  // The oldest one and the next one: neither may be postponed, whatever their position in the queue.
+  for (const workout of overdue) {
+    for (const target of [dateAfter(3), dateAfter(5)]) {
+      const outcome = moveScheduledWorkout({
+        repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
+        workoutId: workout.id, toDate: target, deviceToday: today, at: CREATED_AT,
+      });
+      assert.equal(outcome.ok, false, `${workout.scheduledDate} must not move to ${target}`);
+      if (!outcome.ok) {
+        assert.equal(outcome.error.code, 'PAST_DUE_WORKOUT_CANNOT_MOVE');
+        assert.equal(outcome.error.fromEngine, false, 'this is an application rule, not an engine refusal');
+      }
+    }
+  }
+
+  // Nothing was touched: no write, the same envelope, the same queue, no event.
+  assert.equal(fixture.storage.writes, writesBefore);
+  assert.equal(fixture.storage.map.get(ACTIVE_CYCLE_KEY), fixture.raw);
+  const reloaded = loadActiveCycle(fixture.repo);
+  assert.equal(reloaded.kind, 'READY');
+  if (reloaded.kind !== 'READY') return;
+  assert.deepEqual(reloaded.engineState.queue, fixture.engineState.queue);
+  assert.equal(reloaded.appState.events.length, 1, 'the log did not grow');
+});
+
+test('MOVE-12 a session scheduled for today or later can still be moved', () => {
+  // Today, with nothing overdue.
+  const todayCycle = appCycle({availableRunsPerWeek: 4});
+  const todayWorkout = todayCycle.engineState.queue.find((workout) => workout.scheduledDate === NOW)!;
+  const todayOutcome = moveScheduledWorkout({
+    repo: todayCycle.repo, appState: todayCycle.appState, engineState: todayCycle.engineState,
+    workoutId: todayWorkout.id, toDate: dateAfter(6), deviceToday: NOW, at: CREATED_AT,
+  });
+  assert.equal(todayOutcome.ok, true, 'a session that has not passed may be moved');
+
+  // A future session, with nothing overdue either.
+  const futureCycle = appCycle({availableRunsPerWeek: 4});
+  const futureWorkout = futureCycle.engineState.queue.find((workout) => workout.scheduledDate > NOW)!;
+  const taken = new Set(futureCycle.engineState.queue.map((workout) => workout.scheduledDate));
+  const free = Array.from({length: 7}, (_, offset) => dateAfter(offset)).find((date) => date >= NOW && !taken.has(date))!;
+  const futureOutcome = moveScheduledWorkout({
+    repo: futureCycle.repo, appState: futureCycle.appState, engineState: futureCycle.engineState,
+    workoutId: futureWorkout.id, toDate: free, deviceToday: NOW, at: CREATED_AT,
+  });
+  assert.equal(futureOutcome.ok, true, 'a future session may be moved inside the plan');
+  if (futureOutcome.ok) {
+    assert.equal(futureOutcome.done.engineState.queue.find((workout) => workout.id === futureWorkout.id)?.scheduledDate, free);
+  }
+});
+
+test('MOVE-13 once the overdue sessions are resolved, moving works again', () => {
+  const fixture = appCycle({availableRunsPerWeek: 4});
+  const today = dateAfter(1);
+  const overdue = fixture.engineState.queue.find((workout) => workout.scheduledDate < today)!;
+
+  const closed = skipScheduledWorkout({
+    repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
+    workoutId: overdue.id, deviceToday: today, at: CREATED_AT,
+  });
+  assert.equal(closed.ok, true);
+  if (!closed.ok) return;
+
+  const movable = closed.done.engineState.queue.find((workout) => workout.scheduledDate >= today && workout.movable);
+  assert.ok(movable, 'the rebuilt plan must offer a movable session');
+  const taken = new Set(closed.done.engineState.queue.map((workout) => workout.scheduledDate));
+  const free = Array.from({length: 7}, (_, offset) => dateAfter(offset)).find((date) => date >= today && !taken.has(date))!;
+
+  const outcome = moveScheduledWorkout({
+    repo: fixture.repo, appState: closed.done.appState, engineState: closed.done.engineState,
+    workoutId: movable.id, toDate: free, deviceToday: today, at: CREATED_AT,
+  });
+  assert.equal(outcome.ok, true, 'INV-1 is satisfied again, so the plan can be adjusted');
 });

@@ -38,7 +38,12 @@ export type WorkoutAction = 'RESULT' | 'SKIP' | 'MOVE';
  * Why an action is or is not allowed right now. A single source of truth for the guards and for the
  * screens: the UI only mirrors this, it never decides it.
  */
-export type ActionAvailability = 'AVAILABLE' | 'BEFORE_SCHEDULED_DATE' | 'OUT_OF_ORDER';
+export type ActionAvailability = 'AVAILABLE' | 'BEFORE_SCHEDULED_DATE' | 'PAST_DUE_CANNOT_MOVE' | 'OUT_OF_ORDER';
+
+/** A session whose date is already behind the device date is overdue, whatever the queue says. */
+export function isOverdue(workout: Workout, today: string): boolean {
+  return workout.scheduledDate < today;
+}
 
 export function actionAvailability(engineState: EngineState, workoutId: string, today: string, action: WorkoutAction): ActionAvailability {
   const workout = engineState.queue.find((entry) => entry.id === workoutId);
@@ -49,6 +54,11 @@ export function actionAvailability(engineState: EngineState, workoutId: string, 
   // A result describes a session that has already happened, so it cannot be entered in advance.
   // Skipping or moving a future session is a legitimate decision about the plan.
   if (action === 'RESULT' && workout.scheduledDate > today) return 'BEFORE_SCHEDULED_DATE';
+
+  // An overdue session is resolved by its result or by marking it as not done. Moving it into the
+  // future would reopen a session the user has already passed, which INV-1 forbids: a miss must be
+  // accounted for, not postponed. This is checked before the order rule so the reason is precise.
+  if (action === 'MOVE' && isOverdue(workout, today)) return 'PAST_DUE_CANNOT_MOVE';
 
   // INV-1: while an older session is unresolved, no newer one may be resolved, moved or replanned.
   const earliest = earliestPending(engineState, today);
@@ -65,6 +75,9 @@ export function assertWorkoutActionAllowed(engineState: EngineState, workoutId: 
   const availability = actionAvailability(engineState, workoutId, today, action);
   if (availability === 'BEFORE_SCHEDULED_DATE') {
     throw new ApplicationError('WORKOUT_RESULT_BEFORE_SCHEDULED_DATE', `the session is scheduled for ${today} or later`);
+  }
+  if (availability === 'PAST_DUE_CANNOT_MOVE') {
+    throw new ApplicationError('PAST_DUE_WORKOUT_CANNOT_MOVE', 'an overdue session is resolved by its result or by marking it as not done');
   }
   if (availability === 'OUT_OF_ORDER') {
     const earliest = earliestPending(engineState, today);

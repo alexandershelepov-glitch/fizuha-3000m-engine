@@ -1049,3 +1049,88 @@ describe('history of actions', () => {
     expect(screen.getByText('Цикл создан')).toBeInTheDocument();
   });
 });
+
+describe('an overdue session', () => {
+  function overdueWorkoutId(storage: KeyValueStorage): string {
+    const loaded = loadActiveCycle(createRepository(storage));
+    if (loaded.kind !== 'READY') throw new Error('fixture');
+    const overdue = loaded.engineState.queue.find((workout) => workout.scheduledDate < deviceToday());
+    if (!overdue) throw new Error('fixture: no overdue session');
+    return overdue.id;
+  }
+
+  test('offers its result and the not-done action, but no move', async () => {
+    const user = userEvent.setup();
+    const today = deviceToday();
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedCycle(today, addDays(today, -2))});
+    render(<App storage={storage} />);
+
+    const id = overdueWorkoutId(storage);
+    act(() => {
+      window.history.replaceState(null, '', `/workout/${id}`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+
+    // The session can be closed, and the reason is not the screen's business.
+    expect(screen.getByRole('button', {name: 'Внести результат'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Не смогу выполнить'})).toBeInTheDocument();
+    // Moving it back into the future is refused, and the screen explains why.
+    expect(screen.queryByRole('button', {name: 'Перенести'})).not.toBeInTheDocument();
+    expect(screen.getByText('Дата тренировки уже прошла. Внесите результат или отметьте, что она не выполнена.')).toBeInTheDocument();
+
+    // The second action on Today closes it as not done.
+    await clickIn(user, screen.getByRole('navigation', {name: 'Основные разделы'}), 'Сегодня');
+    await click(user, 'Я её не выполнял');
+    const after = storedEngineState(storage);
+    expect(after.appState.events.filter((event) => event.type === 'WORKOUT_SKIPPED')[0]).toMatchObject({cause: 'PAST_DUE'});
+  });
+
+  test('a direct link to its move screen cannot perform the move', async () => {
+    const today = deviceToday();
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedCycle(today, addDays(today, -2))});
+    render(<App storage={storage} />);
+
+    const id = overdueWorkoutId(storage);
+    const raw = storage.map.get(ACTIVE_CYCLE_KEY);
+
+    act(() => {
+      window.history.replaceState(null, '', `/workout/${id}/move`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+
+    expect(screen.getByText('Эту тренировку нельзя перенести')).toBeInTheDocument();
+    expect(screen.queryByRole('button', {name: 'Перенести'})).not.toBeInTheDocument();
+    expect(storage.map.get(ACTIVE_CYCLE_KEY)).toBe(raw);
+  });
+
+  test("today's session keeps the move action", async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await createCycleAndReachToday(user);
+
+    await click(user, 'Открыть тренировку');
+    expect(screen.getByRole('button', {name: 'Перенести'})).toBeInTheDocument();
+  });
+});
+
+describe('the skip reason', () => {
+  test('is derived from the session date, not from the screen', async () => {
+    // Today's session is a voluntary decision.
+    const today = deviceToday();
+    const todayStorage = memoryStorage();
+    render(<App storage={todayStorage} />);
+    await createCycleAndReachToday(userEvent.setup());
+    await click(userEvent.setup(), 'Открыть тренировку');
+    await click(userEvent.setup(), 'Не смогу выполнить');
+    await click(userEvent.setup(), 'Пропустить');
+    expect(storedEngineState(todayStorage).appState.events.filter((event) => event.type === 'WORKOUT_SKIPPED')[0]).toMatchObject({cause: 'VOLUNTARY'});
+
+    // A session of two days ago is a miss, even though the same action was used.
+    cleanup();
+    const oldStorage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedCycle(today, addDays(today, -2))});
+    render(<App storage={oldStorage} />);
+    await click(userEvent.setup(), 'Я её не выполнял');
+    expect(storedEngineState(oldStorage).appState.events.filter((event) => event.type === 'WORKOUT_SKIPPED')[0]).toMatchObject({cause: 'PAST_DUE'});
+  });
+});

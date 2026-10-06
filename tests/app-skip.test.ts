@@ -4,7 +4,7 @@
  */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {skipScheduledWorkout} from '../web/src/application/workoutSchedule.ts';
+import {skipCauseFor, skipScheduledWorkout} from '../web/src/application/workoutSchedule.ts';
 import {loadActiveCycle, ACTIVE_CYCLE_KEY} from '../web/src/application/storage.ts';
 import {deriveToday} from '../web/src/application/uiState.ts';
 import {earliestPending, hasPendingResults} from '../web/src/application/invariants.ts';
@@ -19,7 +19,7 @@ test('SKIP-01 a voluntary skip removes the session from the queue and logs the r
 
   const outcome = skipScheduledWorkout({
     repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
-    workoutId: workout.id, cause: 'VOLUNTARY', deviceToday: NOW, at: CREATED_AT,
+    workoutId: workout.id, deviceToday: NOW, at: CREATED_AT,
   });
 
   assert.equal(outcome.ok, true);
@@ -29,7 +29,7 @@ test('SKIP-01 a voluntary skip removes the session from the queue and logs the r
 
   const events = outcome.done.appState.events;
   assert.equal(events.length, 2);
-  assert.deepEqual(events[1], {type: 'WORKOUT_SKIPPED', at: CREATED_AT, workoutId: workout.id, scheduledDate: workout.scheduledDate, workoutType: workout.type, cause: 'VOLUNTARY'});
+  assert.deepEqual(events[1], {type: 'WORKOUT_SKIPPED', at: CREATED_AT, workoutId: workout.id, scheduledDate: workout.scheduledDate, workoutType: workout.type, cause: 'VOLUNTARY'}, 'a session scheduled for today is a voluntary decision');
   assert.equal(fixture.storage.map.get(ACTIVE_CYCLE_KEY), JSON.stringify(outcome.done.appState));
 });
 
@@ -40,7 +40,7 @@ test('SKIP-02 a past-due skip is logged with its own cause', () => {
 
   const outcome = skipScheduledWorkout({
     repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
-    workoutId: pending.id, cause: 'PAST_DUE', deviceToday: today, at: CREATED_AT,
+    workoutId: pending.id, deviceToday: today, at: CREATED_AT,
   });
 
   assert.equal(outcome.ok, true);
@@ -56,27 +56,31 @@ test('SKIP-02 a past-due skip is logged with its own cause', () => {
   assert.equal(JSON.stringify(outcome.done.engineState).includes('PAST_DUE'), false);
 });
 
-test('SKIP-03 the two causes are distinguishable in the log and only there', () => {
-  const voluntary = appCycle({availableRunsPerWeek: 4});
-  const voluntaryOutcome = skipScheduledWorkout({
-    repo: voluntary.repo, appState: voluntary.appState, engineState: voluntary.engineState,
-    workoutId: firstWorkout(voluntary.engineState).id, cause: 'VOLUNTARY', deviceToday: NOW, at: CREATED_AT,
-  });
-  assert.equal(voluntaryOutcome.ok, true);
-
-  const missed = appCycle({availableRunsPerWeek: 4});
-  const missedOutcome = skipScheduledWorkout({
-    repo: missed.repo, appState: missed.appState, engineState: missed.engineState,
-    workoutId: firstWorkout(missed.engineState).id, cause: 'PAST_DUE', deviceToday: NOW, at: CREATED_AT,
-  });
-  assert.equal(missedOutcome.ok, true);
-  if (!voluntaryOutcome.ok || !missedOutcome.ok) return;
-
+test('SKIP-03 the cause follows the session date and only the application states it', () => {
   const causeOf = (events: readonly {type: string; cause?: string}[]) => events.find((event) => event.type === 'WORKOUT_SKIPPED')?.cause;
-  assert.equal(causeOf(voluntaryOutcome.done.appState.events), 'VOLUNTARY');
-  assert.equal(causeOf(missedOutcome.done.appState.events), 'PAST_DUE');
-  // Both produced the same engine transition, which is the engine's own contract.
-  assert.deepEqual(voluntaryOutcome.done.engineState.skippedIds, missedOutcome.done.engineState.skippedIds);
+
+  // The session is scheduled for the device date: a decision about today.
+  const todayCycle = appCycle({availableRunsPerWeek: 4});
+  const todayOutcome = skipScheduledWorkout({
+    repo: todayCycle.repo, appState: todayCycle.appState, engineState: todayCycle.engineState,
+    workoutId: firstWorkout(todayCycle.engineState).id, deviceToday: NOW, at: CREATED_AT,
+  });
+  assert.equal(todayOutcome.ok, true);
+  if (!todayOutcome.ok) return;
+  assert.equal(causeOf(todayOutcome.done.appState.events), 'VOLUNTARY');
+
+  // The same session, seen the next day: it is overdue, and the log says so.
+  const overdueCycle = appCycle({availableRunsPerWeek: 4});
+  const overdueOutcome = skipScheduledWorkout({
+    repo: overdueCycle.repo, appState: overdueCycle.appState, engineState: overdueCycle.engineState,
+    workoutId: firstWorkout(overdueCycle.engineState).id, deviceToday: dateAfter(1), at: CREATED_AT,
+  });
+  assert.equal(overdueOutcome.ok, true);
+  if (!overdueOutcome.ok) return;
+  assert.equal(causeOf(overdueOutcome.done.appState.events), 'PAST_DUE');
+
+  // Both produced the same engine transition: the engine does not know about the reason.
+  assert.deepEqual(todayOutcome.done.engineState.skippedIds, overdueOutcome.done.engineState.skippedIds);
 });
 
 test('SKIP-04 only the chosen session is resolved, never the other overdue ones', () => {
@@ -87,7 +91,7 @@ test('SKIP-04 only the chosen session is resolved, never the other overdue ones'
 
   const outcome = skipScheduledWorkout({
     repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
-    workoutId: overdue[0]!.id, cause: 'PAST_DUE', deviceToday: today, at: CREATED_AT,
+    workoutId: overdue[0]!.id, deviceToday: today, at: CREATED_AT,
   });
 
   assert.equal(outcome.ok, true);
@@ -108,7 +112,7 @@ test('SKIP-05 an older unresolved session blocks a newer one, whatever the cause
   for (const target of [overdue[1]!, future]) {
     const outcome = skipScheduledWorkout({
       repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
-      workoutId: target.id, cause: 'VOLUNTARY', deviceToday: today, at: CREATED_AT,
+      workoutId: target.id, deviceToday: today, at: CREATED_AT,
     });
     assert.equal(outcome.ok, false, `${target.scheduledDate} must not be resolvable yet`);
     if (!outcome.ok) assert.equal(outcome.error.code, 'PENDING_RESULT_OUT_OF_ORDER');
@@ -122,14 +126,14 @@ test('SKIP-06 skipping the same session twice is refused by the engine', () => {
 
   const first = skipScheduledWorkout({
     repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
-    workoutId: workout.id, cause: 'VOLUNTARY', deviceToday: NOW, at: CREATED_AT,
+    workoutId: workout.id, deviceToday: NOW, at: CREATED_AT,
   });
   assert.equal(first.ok, true);
   if (!first.ok) return;
 
   const second = skipScheduledWorkout({
     repo: fixture.repo, appState: first.done.appState, engineState: first.done.engineState,
-    workoutId: workout.id, cause: 'VOLUNTARY', deviceToday: NOW, at: CREATED_AT,
+    workoutId: workout.id, deviceToday: NOW, at: CREATED_AT,
   });
   assert.equal(second.ok, false);
   if (second.ok) return;
@@ -148,7 +152,7 @@ test('SKIP-07 a storage failure leaves the previous state active and unlogged', 
   const outcome = skipScheduledWorkout({
     repo: {read: () => null, write: () => { throw new Error('quota'); }, clear: () => undefined},
     appState: fixture.appState, engineState: fixture.engineState,
-    workoutId: workout.id, cause: 'VOLUNTARY', deviceToday: NOW, at: CREATED_AT,
+    workoutId: workout.id, deviceToday: NOW, at: CREATED_AT,
   });
 
   assert.equal(outcome.ok, false);
@@ -169,14 +173,14 @@ test('SKIP-08 repeated pending sessions are resolved oldest first', () => {
 
   const first = skipScheduledWorkout({
     repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
-    workoutId: overdue[0]!.id, cause: 'PAST_DUE', deviceToday: today, at: CREATED_AT,
+    workoutId: overdue[0]!.id, deviceToday: today, at: CREATED_AT,
   });
   assert.equal(first.ok, true);
   if (!first.ok) return;
 
   const second = skipScheduledWorkout({
     repo: fixture.repo, appState: first.done.appState, engineState: first.done.engineState,
-    workoutId: overdue[1]!.id, cause: 'PAST_DUE', deviceToday: today, at: CREATED_AT,
+    workoutId: overdue[1]!.id, deviceToday: today, at: CREATED_AT,
   });
   assert.equal(second.ok, true);
   if (!second.ok) return;
@@ -189,7 +193,7 @@ test('SKIP-09 a skip is not a result: the engine history stays empty', () => {
   const fixture = appCycle({availableRunsPerWeek: 4});
   const outcome = skipScheduledWorkout({
     repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
-    workoutId: firstWorkout(fixture.engineState).id, cause: 'VOLUNTARY', deviceToday: NOW, at: CREATED_AT,
+    workoutId: firstWorkout(fixture.engineState).id, deviceToday: NOW, at: CREATED_AT,
   });
   assert.equal(outcome.ok, true);
   if (!outcome.ok) return;
@@ -197,4 +201,49 @@ test('SKIP-09 a skip is not a result: the engine history stays empty', () => {
   // And the observable diff mentions the changed next session only because it really changed.
   assert.ok(outcome.done.changes.length > 0);
   assert.equal(outcome.done.changes[0]!.kind, 'NEXT_WORKOUT_CHANGED');
+});
+
+test('SKIP-10 a future session is a voluntary decision, never a miss', () => {
+  const fixture = appCycle({availableRunsPerWeek: 4});
+  const future = fixture.engineState.queue.find((workout) => workout.scheduledDate > NOW)!;
+
+  const outcome = skipScheduledWorkout({
+    repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
+    workoutId: future.id, deviceToday: NOW, at: CREATED_AT,
+  });
+
+  assert.equal(outcome.ok, true);
+  if (!outcome.ok) return;
+  const event = outcome.done.appState.events.find((entry) => entry.type === 'WORKOUT_SKIPPED');
+  assert.equal(event?.type === 'WORKOUT_SKIPPED' ? event.cause : null, 'VOLUNTARY');
+  assert.equal(event?.type === 'WORKOUT_SKIPPED' ? event.scheduledDate : null, future.scheduledDate);
+});
+
+test('SKIP-11 the cause is derived, so a false reason cannot be written', () => {
+  // The operation's interface has no cause at all: the only source is the session's own date.
+  const request: Parameters<typeof skipScheduledWorkout>[0] = {
+    repo: appCycle({availableRunsPerWeek: 4}).repo,
+    appState: appCycle({availableRunsPerWeek: 4}).appState,
+    engineState: appCycle({availableRunsPerWeek: 4}).engineState,
+    workoutId: 'irrelevant',
+    deviceToday: NOW,
+    at: CREATED_AT,
+  };
+  assert.equal(Object.prototype.hasOwnProperty.call(request, 'cause'), false);
+
+  // And the derived reason matches the date for every case.
+  assert.equal(skipCauseFor({scheduledDate: dateAfter(-3)} as never, NOW), 'PAST_DUE');
+  assert.equal(skipCauseFor({scheduledDate: NOW} as never, NOW), 'VOLUNTARY');
+  assert.equal(skipCauseFor({scheduledDate: dateAfter(2)} as never, NOW), 'VOLUNTARY');
+
+  // The engine state never carries an application cause.
+  const fixture = appCycle({availableRunsPerWeek: 4});
+  const outcome = skipScheduledWorkout({
+    repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
+    workoutId: firstWorkout(fixture.engineState).id, deviceToday: dateAfter(1), at: CREATED_AT,
+  });
+  assert.equal(outcome.ok, true);
+  if (!outcome.ok) return;
+  assert.equal(JSON.stringify(outcome.done.engineState).includes('PAST_DUE'), false);
+  assert.equal(JSON.stringify(outcome.done.engineState).includes('VOLUNTARY'), false);
 });

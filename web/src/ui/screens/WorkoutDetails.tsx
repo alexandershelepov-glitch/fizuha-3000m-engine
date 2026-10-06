@@ -1,6 +1,7 @@
 import {useRef, useState} from 'react';
 import type {ReactNode} from 'react';
 import {formatDateLong} from '../../application/format.ts';
+import type {ActionAvailability} from '../../application/invariants.ts';
 import type {Workout} from '../../application/engineGateway.ts';
 import {anchorText, doseUnitText, effortCueText, mainModeText, workoutGoalText, workoutTypeText} from '../copy/values.ts';
 import {common, today as todayText} from '../copy/text.ts';
@@ -17,15 +18,17 @@ export interface SkipOutcome {
 
 interface DetailsProps {
   readonly workout: Workout | null;
-  readonly today: string;
+  /** The application's own decision about this session; the screen only mirrors it. */
+  readonly resultAvailability: ActionAvailability;
+  readonly moveAvailability: ActionAvailability;
   readonly onBack: () => void;
   readonly onEnterResult: () => void;
   readonly onMove: () => void;
-  /** Records the voluntary skip; the application decides and persists it. */
+  /** Records the skip; the application derives the reason and persists it. */
   readonly skip: () => SkipOutcome;
 }
 
-export function WorkoutDetails({workout, today, onBack, onEnterResult, onMove, skip}: DetailsProps): ReactNode {
+export function WorkoutDetails({workout, resultAvailability, moveAvailability, onBack, onEnterResult, onMove, skip}: DetailsProps): ReactNode {
   const [askSkip, setAskSkip] = useState(false);
   const [skipError, setSkipError] = useState<{code: string; params?: {min?: number; max?: number; value?: number}} | null>(null);
   const [busy, setBusy] = useState(false);
@@ -104,14 +107,17 @@ export function WorkoutDetails({workout, today, onBack, onEnterResult, onMove, s
       )}
 
       <div className="actions">
-        {/* Convenience only: the application layer refuses a result for a future session anyway. */}
-        {workout.scheduledDate > today ? (
-          <p className="hint">{todayText.workout.resultLater}</p>
-        ) : (
+        {/* The application owns these decisions; this screen only shows what it allows. */}
+        {resultAvailability === 'AVAILABLE' ? (
           <Button onClick={onEnterResult}>{todayText.workout.enterResult}</Button>
+        ) : (
+          <p className="hint">{resultAvailability === 'BEFORE_SCHEDULED_DATE' ? todayText.workout.resultLater : moveText.notAllowed.outOfOrder.title}</p>
         )}
         {/* The engine owns the horizon, occupancy, recovery and quality rules for a move. */}
-        {workout.movable ? <Button variant="secondary" onClick={onMove}>{moveText.action}</Button> : null}
+        {workout.movable && moveAvailability === 'AVAILABLE' ? (
+          <Button variant="secondary" onClick={onMove}>{moveText.action}</Button>
+        ) : null}
+        {moveAvailability === 'PAST_DUE_CANNOT_MOVE' ? <p className="hint">{moveText.notAllowed.overdue.text}</p> : null}
         <Button variant="ghost" onClick={() => setAskSkip(true)}>{skipText.action}</Button>
       </div>
 

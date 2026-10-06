@@ -7,7 +7,7 @@
 import type {AppStateV1, CycleEvent} from './appState.ts';
 import type {EngineState, Workout} from './engineGateway.ts';
 import {moveWorkout, skipWorkout} from './engineGateway.ts';
-import {assertWorkoutActionAllowed} from './invariants.ts';
+import {assertWorkoutActionAllowed, isOverdue} from './invariants.ts';
 import type {PlanChange} from './planDiff.ts';
 import type {CycleRepository} from './storage.ts';
 import {applyEngineTransition} from './transition.ts';
@@ -17,12 +17,22 @@ import type {UiError} from './errorContract.ts';
 /** Taken from the event schema itself, so the log and the operation cannot drift apart. */
 export type SkipCause = Extract<CycleEvent, {type: 'WORKOUT_SKIPPED'}>['cause'];
 
+/**
+ * Why a session was skipped, derived from the session's own date and the device date.
+ *
+ * The caller cannot state it: a screen must not be able to write a false reason into the log. A
+ * session that has not happened yet is a voluntary decision about the plan; a session whose date is
+ * already behind is a miss.
+ */
+export function skipCauseFor(workout: Workout, deviceToday: string): SkipCause {
+  return isOverdue(workout, deviceToday) ? 'PAST_DUE' : 'VOLUNTARY';
+}
+
 export interface SkipWorkoutRequest {
   readonly repo: CycleRepository;
   readonly appState: AppStateV1;
   readonly engineState: EngineState;
   readonly workoutId: string;
-  readonly cause: SkipCause;
   readonly deviceToday: string;
   /** Wall-clock stamp of the user's action. */
   readonly at: string;
@@ -67,9 +77,16 @@ export function skipScheduledWorkout(request: SkipWorkoutRequest): ScheduleOutco
     event: () => {
       const workout = findWorkout(request.engineState, request.workoutId);
       // The engine still holds the skipped session in `skippedWorkouts`, so only the reason and the
-      // moment of the decision are logged here.
+      // moment of the decision are logged here; the reason follows from the session's own date.
       if (workout === undefined) return null;
-      return {type: 'WORKOUT_SKIPPED', at: request.at, workoutId: workout.id, scheduledDate: workout.scheduledDate, workoutType: workout.type, cause: request.cause};
+      return {
+        type: 'WORKOUT_SKIPPED',
+        at: request.at,
+        workoutId: workout.id,
+        scheduledDate: workout.scheduledDate,
+        workoutType: workout.type,
+        cause: skipCauseFor(workout, request.deviceToday),
+      };
     },
   });
   return outcome;

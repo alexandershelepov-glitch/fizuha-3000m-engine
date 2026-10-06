@@ -148,3 +148,37 @@ test('a required checkpoint is recorded and the new form is kept', async ({page}
   await page.reload();
   expect((await readEngineState(page)).profile.performance?.timeSeconds).toBe(890);
 });
+
+test('an overdue session cannot be moved back into the future', async ({page}) => {
+  await page.clock.install();
+  await fillQuestionnaire(page);
+  await createCycleAndReachToday(page);
+
+  // Two days later the session is overdue and still unresolved.
+  await page.clock.setFixedTime(new Date(Date.now() + 2 * 86_400_000));
+  await page.reload();
+  await expect(page.getByText('Предыдущая тренировка ещё не закрыта')).toBeVisible();
+
+  // The earliest session of the queue is the one that has passed.
+  const overdueId = [...(await readEngineState(page)).queue].sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))[0]!.id;
+
+  // The only ways out are its result or marking it as not done.
+  await page.goto(`/workout/${overdueId}`);
+  await expect(page.getByText('Дата тренировки уже прошла. Внесите результат или отметьте, что она не выполнена.')).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Перенести'})).toHaveCount(0);
+  await expect(page.getByRole('button', {name: 'Внести результат'})).toBeVisible();
+
+  // A direct address of the move screen refuses it as well, and nothing is written.
+  const before = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
+  await page.goto(`/workout/${overdueId}/move`);
+  await expect(page.getByText('Эту тренировку нельзя перенести')).toBeVisible();
+  expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBe(before);
+
+  // And the pending session is closed as a miss, with the reason derived by the application.
+  await page.goto('/today');
+  await page.getByRole('button', {name: 'Я её не выполнял'}).click();
+  const after = await readActiveCycle(page);
+  const skipped = after.events.filter((event) => event.type === 'WORKOUT_SKIPPED');
+  expect(skipped.length).toBe(1);
+  expect(skipped[0]).toMatchObject({cause: 'PAST_DUE', workoutId: overdueId});
+});

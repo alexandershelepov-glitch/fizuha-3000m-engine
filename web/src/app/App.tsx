@@ -7,7 +7,7 @@ import {createCycle} from '../application/cycle.ts';
 import {refreshPlan} from '../application/clockOps.ts';
 import {submitWorkoutResult} from '../application/workoutResult.ts';
 import {moveScheduledWorkout, skipScheduledWorkout} from '../application/workoutSchedule.ts';
-import type {SkipCause} from '../application/workoutSchedule.ts';
+import {actionAvailability} from '../application/invariants.ts';
 import {submitCheckpoint} from '../application/checkpoint.ts';
 import type {PerformanceSnapshot} from '../application/engineGateway.ts';
 import {nextWorkout} from '../application/planDiff.ts';
@@ -44,6 +44,7 @@ import type {SubmitOutcome} from '../ui/screens/ResultForm.tsx';
 import {OutcomeMissing, ResultOutcome} from '../ui/screens/ResultOutcome.tsx';
 import {ClosedWorkout} from '../ui/screens/ClosedWorkout.tsx';
 import {MoveWorkout} from '../ui/screens/MoveWorkout.tsx';
+import {MoveNotAllowed} from '../ui/screens/MoveNotAllowed.tsx';
 import type {MoveSubmitOutcome} from '../ui/screens/MoveWorkout.tsx';
 import {CheckpointForm} from '../ui/screens/CheckpointForm.tsx';
 import type {CheckpointSubmitOutcome} from '../ui/screens/CheckpointForm.tsx';
@@ -154,12 +155,13 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     return {ok: true};
   }, [repo, storage, store]);
 
-  const handleSkip = useCallback((workoutId: string, cause: SkipCause): SkipOutcome => {
+  const handleSkip = useCallback((workoutId: string): SkipOutcome => {
     if (repo === null || store.appState === null || store.engineState === null) return {ok: false, error: {code: 'STORAGE_UNAVAILABLE'}};
     setBusy(true);
+    // The reason is derived inside the operation from the session's date; the shell cannot state it.
     const outcome = skipScheduledWorkout({
       repo, appState: store.appState, engineState: store.engineState,
-      workoutId, cause, deviceToday: store.today, at: deviceTimestamp(),
+      workoutId, deviceToday: store.today, at: deviceTimestamp(),
     });
     setBusy(false);
     if (!outcome.ok) return {ok: false, error: {code: outcome.error.code, params: outcome.error.params}};
@@ -268,7 +270,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
             onRefreshPlan={handleRefreshPlan}
             refreshing={refreshing}
             busy={busy}
-            onSkipPending={(workoutId) => handleSkip(workoutId, 'PAST_DUE')}
+            onSkipPending={(workoutId) => handleSkip(workoutId)}
           />
         );
       case 'PLAN':
@@ -283,15 +285,21 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
         return store.appState === null || store.engineState === null ? null : <Profile appState={store.appState} engineState={store.engineState} />;
       case 'WORKOUT': {
         const workout = store.engineState?.queue.find((entry) => entry.id === effective.id) ?? null;
+        // The application rule decides what the screen may offer; the screen only mirrors it.
+        const availability = store.engineState === null ? null : {
+          result: actionAvailability(store.engineState, effective.id, store.today, 'RESULT'),
+          move: actionAvailability(store.engineState, effective.id, store.today, 'MOVE'),
+        };
         return (
           <WorkoutDetails
             workout={workout}
-            today={store.today}
+            resultAvailability={availability?.result ?? 'AVAILABLE'}
+            moveAvailability={availability?.move ?? 'AVAILABLE'}
             onBack={() => goTo({name: 'TODAY'})}
             onEnterResult={() => goTo({name: 'WORKOUT_RESULT', id: effective.id})}
             onMove={() => goTo({name: 'WORKOUT_MOVE', id: effective.id})}
             skip={() => {
-              const result = handleSkip(effective.id, 'VOLUNTARY');
+              const result = handleSkip(effective.id);
               if (result.ok) goTo({name: 'TODAY'});
               return result;
             }}
@@ -302,6 +310,16 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
         const workout = store.engineState?.queue.find((entry) => entry.id === effective.id) ?? null;
         if (workout === null || store.engineState === null) {
           return <OutcomeMissing onOpenPlan={() => goTo({name: 'PLAN'})} />;
+        }
+        // A direct link cannot bypass the rule either: the same application decision is consulted here.
+        const moveAvailability = actionAvailability(store.engineState, effective.id, store.today, 'MOVE');
+        if (moveAvailability !== 'AVAILABLE') {
+          return (
+            <MoveNotAllowed
+              reason={moveAvailability}
+              onBack={() => goTo({name: 'WORKOUT', id: effective.id})}
+            />
+          );
         }
         return (
           <MoveWorkout
