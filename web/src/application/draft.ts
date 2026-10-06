@@ -10,8 +10,9 @@ import type {QuestionnaireDraft} from './questionnaire.ts';
 import {QUESTIONNAIRE_DRAFT_KEY} from './storage.ts';
 import type {KeyValueStorage} from './storage.ts';
 
-export function loadDraft(storage: KeyValueStorage, today: string): QuestionnaireDraft {
+export function loadDraft(storage: KeyValueStorage | null, today: string): QuestionnaireDraft {
   const fallback = defaultDraft(today);
+  if (storage === null) return fallback;
   const raw = storage.getItem(QUESTIONNAIRE_DRAFT_KEY);
   if (raw === null) return fallback;
   try {
@@ -24,7 +25,8 @@ export function loadDraft(storage: KeyValueStorage, today: string): Questionnair
   }
 }
 
-export function saveDraft(storage: KeyValueStorage, draft: QuestionnaireDraft): void {
+export function saveDraft(storage: KeyValueStorage | null, draft: QuestionnaireDraft): void {
+  if (storage === null) return;
   try {
     storage.setItem(QUESTIONNAIRE_DRAFT_KEY, JSON.stringify(draft));
   } catch {
@@ -32,7 +34,8 @@ export function saveDraft(storage: KeyValueStorage, draft: QuestionnaireDraft): 
   }
 }
 
-export function clearDraft(storage: KeyValueStorage): void {
+export function clearDraft(storage: KeyValueStorage | null): void {
+  if (storage === null) return;
   try {
     storage.removeItem(QUESTIONNAIRE_DRAFT_KEY);
   } catch {

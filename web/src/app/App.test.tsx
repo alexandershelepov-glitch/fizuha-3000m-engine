@@ -3,13 +3,15 @@
  * driven through the real components in jsdom. Storage is injected, so every test controls exactly
  * what the application is allowed to read.
  */
-import {afterEach, beforeEach, describe, expect, test} from 'vitest';
+import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
 import {cleanup, fireEvent, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {App} from './App.tsx';
 import {ACTIVE_CYCLE_KEY, createRepository, loadActiveCycle} from '../application/storage.ts';
 import type {KeyValueStorage} from '../application/storage.ts';
 import {addDays, deviceToday, formatDateLong} from '../application/format.ts';
+import {createCycle} from '../application/cycle.ts';
+import {buildProfile, defaultDraft} from '../application/questionnaire.ts';
 
 type User = ReturnType<typeof userEvent.setup>;
 
@@ -372,5 +374,97 @@ describe('navigation', () => {
     for (const label of ['Изменить этап', 'Изменить допуск', 'Изменить план', 'Изменить тренировку']) {
       expect(screen.queryByRole('button', {name: label})).not.toBeInTheDocument();
     }
+  });
+});
+
+/** A stored cycle created two days ago, so it still holds unrecorded sessions (INV-1). */
+function seedStaleCycle(today: string): string {
+  const filled = {...defaultDraft(today), resultTime: '15:20', resultDate: addDays(today, -10), targetTime: '14:30', raceDate: addDays(today, 56)};
+  const built = buildProfile(filled);
+  if (!built.ok) throw new Error('fixture: the draft must build');
+  const seed = memoryStorage();
+  const created = createCycle(createRepository(seed), {
+    profile: built.profile,
+    deviceToday: addDays(today, -2),
+    cycleId: 'cycle-stale',
+    createdAt: `${addDays(today, -2)}T09:00:00.000Z`,
+    locale: 'ru-RU',
+  });
+  if (!created.ok) throw new Error('fixture: the cycle must be created');
+  const raw = seed.map.get(ACTIVE_CYCLE_KEY);
+  if (raw === undefined) throw new Error('fixture: the cycle must be stored');
+  return raw;
+}
+
+describe('INV-1: a pending result blocks every clock-advancing action', () => {
+  test('Today reports it, the plan offers no refresh, and nothing is written', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedStaleCycle(deviceToday())});
+    render(<App storage={storage} />);
+    const raw = storage.map.get(ACTIVE_CYCLE_KEY);
+
+    expect(screen.getByText('Предыдущая тренировка ещё не закрыта')).toBeInTheDocument();
+
+    await clickIn(user, screen.getByRole('navigation', {name: 'Основные разделы'}), 'План');
+    expect(path()).toBe('/plan');
+    // The screen must not offer an action the application layer would refuse.
+    expect(screen.queryByRole('button', {name: 'Обновить план'})).not.toBeInTheDocument();
+    expect(screen.getByText('Предыдущая тренировка ещё не закрыта')).toBeInTheDocument();
+    expect(storage.map.get(ACTIVE_CYCLE_KEY)).toBe(raw);
+  });
+});
+
+describe('a damaged record never becomes a dead end', () => {
+  test('the damaged cycle is deleted only after an explicit confirmation', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: '{not json'});
+    render(<App storage={storage} />);
+
+    expect(screen.getByText('Не удалось прочитать сохранённые данные')).toBeInTheDocument();
+
+    // The first tap only asks for confirmation.
+    await click(user, 'Начать заново');
+    expect(screen.getByText('Удалить повреждённый цикл?')).toBeInTheDocument();
+    await click(user, 'Отмена');
+    expect(screen.queryByText('Удалить повреждённый цикл?')).not.toBeInTheDocument();
+    expect(storage.map.get(ACTIVE_CYCLE_KEY)).toBe('{not json');
+
+    // Confirming removes the record and the user can really start over.
+    await click(user, 'Начать заново');
+    await click(user, 'Удалить и начать заново');
+    expect(storage.map.has(ACTIVE_CYCLE_KEY)).toBe(false);
+    await click(user, 'Начать подготовку');
+    expect(path()).toBe('/questionnaire?step=RESULT');
+  });
+
+  test('an incompatible record is never offered for deletion', () => {
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: JSON.stringify({formatVersion: 99, cycle: {}})});
+    render(<App storage={storage} />);
+
+    expect(screen.getByText('Данные несовместимы с текущей версией')).toBeInTheDocument();
+    expect(screen.queryByRole('button', {name: 'Начать заново'})).not.toBeInTheDocument();
+    expect(storage.map.has(ACTIVE_CYCLE_KEY)).toBe(true);
+  });
+});
+
+describe('a device without permanent storage', () => {
+  test('the shell refuses to start instead of pretending the cycle is saved', async () => {
+    const user = userEvent.setup();
+    const denied = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('denied', 'SecurityError');
+    });
+
+    try {
+      render(<App />);
+      expect(screen.getByText('Цикл нельзя надёжно сохранить')).toBeInTheDocument();
+      expect(screen.queryByRole('button', {name: 'Начать подготовку'})).not.toBeInTheDocument();
+      expect(window.localStorage.getItem(ACTIVE_CYCLE_KEY)).toBeNull();
+    } finally {
+      denied.mockRestore();
+    }
+
+    // Once the device allows storage again, retrying leads to a working shell.
+    await click(user, 'Повторить');
+    expect(screen.getByRole('button', {name: 'Начать подготовку'})).toBeInTheDocument();
   });
 });

@@ -6,7 +6,9 @@
  * from the engine is never rendered.
  */
 import type {EngineErrorCode} from '../../application/engineGateway.ts';
+import {isEngineErrorCode} from '../../application/errorContract.ts';
 import type {UiError} from '../../application/errorContract.ts';
+import type {AppErrorCode} from '../../application/appError.ts';
 
 export interface ErrorCopy {
   readonly title: string;
@@ -60,10 +62,20 @@ export const errorCopy = {
   MOVE_QUALITY_LIMIT_VIOLATION: fixed('Перенос нарушит недельный лимит. Выберите дату в другой неделе.', {title: 'В этой неделе уже достаточно качественных тренировок', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
 } satisfies Record<EngineErrorCode, ErrorCopy>;
 
+/**
+ * Texts for the application's own error codes. They are not engine codes and never appear in
+ * `errorCopy`, which stays exhaustive over the engine's catalogue.
+ */
+export const appErrorCopy = {
+  PENDING_RESULT_BLOCKED: fixed('Пока результат за прошлую дату не внесён, план не пересчитывается: иначе эта тренировка была бы списана как пропущенная. Сначала закройте её.', {title: 'Сначала закройте прошлую тренировку', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
+  STORAGE_UNAVAILABLE: fixed('Браузер не позволяет сохранить данные на этом устройстве. Пока это так, начинать подготовку нельзя: план не переживёт перезагрузку или закрытие вкладки.', {title: 'Цикл нельзя надёжно сохранить', cta: 'Повторить', retry: true, showTechnicalDetails: true}),
+} satisfies Record<AppErrorCode, ErrorCopy>;
+
 /** Safe fallback: an unknown failure never breaks the interface and never shows raw details. */
 export const UNKNOWN_ERROR_COPY: ErrorCopy = fixed('Попробуйте ещё раз. Если не получится, перезапустите приложение.', {title: 'Что-то пошло не так', cta: 'Повторить', retry: true, showTechnicalDetails: true});
 
 export function copyForError(error: UiError): ErrorCopy {
+  if (isEngineErrorCode(error.code)) return errorCopy[error.code];
   if (error.code === 'UNKNOWN') return UNKNOWN_ERROR_COPY;
-  return errorCopy[error.code];
+  return appErrorCopy[error.code];
 }

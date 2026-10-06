@@ -6,6 +6,7 @@
  * and no plan is ever computed here.
  */
 import {daysBetween, deviceToday} from './format.ts';
+import {pendingResults} from './invariants.ts';
 import type {EngineState, Workout} from './engineGateway.ts';
 
 /**
@@ -38,11 +39,6 @@ export interface TodayView {
   readonly daysToRace: number;
   /** Workouts dated before today that are neither recorded nor skipped (INV-1). */
   readonly pendingWorkouts: readonly Workout[];
-}
-
-/** Entries the engine still holds for past dates: recorded and skipped ones are already gone. */
-function pendingResults(engineState: EngineState, today: string): Workout[] {
-  return engineState.queue.filter(workout => workout.scheduledDate < today);
 }
 
 export function deriveToday(engineState: EngineState, today: string = deviceToday()): TodayView {

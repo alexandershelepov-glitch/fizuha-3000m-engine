@@ -1,11 +1,16 @@
+import {useState} from 'react';
 import type {ReactNode} from 'react';
 import type {LoadCycleResult} from '../../application/storage.ts';
-import {load} from '../copy/text.ts';
+import {common, load} from '../copy/text.ts';
 import {Button} from '../components/Button.tsx';
 import {Notice} from '../components/Layout.tsx';
 
-/** Explicit load failures: the application never repairs or discards stored data silently. */
-export function LoadError({result, onStartOver}: {result: LoadCycleResult; onStartOver: () => void}): ReactNode {
+/**
+ * Explicit load failures. The application never repairs or discards stored data on its own: a damaged
+ * record can only be removed after the user confirms it, and an incompatible one is never removed.
+ */
+export function LoadError({result, onDiscard}: {result: LoadCycleResult; onDiscard: () => void}): ReactNode {
+  const [confirming, setConfirming] = useState(false);
   if (result.kind === 'READY' || result.kind === 'EMPTY') return null;
 
   const content = {
@@ -16,15 +21,30 @@ export function LoadError({result, onStartOver}: {result: LoadCycleResult; onSta
   }[result.kind];
 
   return (
-    <div className="screen screen--centered">
-      <Notice tone="danger" title={content.title}>
-        <p>{content.text}</p>
-      </Notice>
-      {result.kind === 'DAMAGED' ? (
-        <div className="actions">
-          <Button onClick={onStartOver}>{content.cta}</Button>
+    <div className="app">
+      <main className="app__main">
+        <div className="screen screen--centered">
+          <Notice tone="danger" title={content.title}>
+            <p>{content.text}</p>
+          </Notice>
+
+          {result.kind === 'DAMAGED' ? (
+            confirming ? (
+              <Notice tone="warn" title={load.confirmTitle}>
+                <p>{load.confirmText}</p>
+                <div className="actions">
+                  <Button onClick={onDiscard}>{load.confirmCta}</Button>
+                  <Button variant="ghost" onClick={() => setConfirming(false)}>{common.cancel}</Button>
+                </div>
+              </Notice>
+            ) : (
+              <div className="actions">
+                <Button onClick={() => setConfirming(true)}>{content.cta}</Button>
+              </div>
+            )
+          ) : null}
         </div>
-      ) : null}
+      </main>
     </div>
   );
 }

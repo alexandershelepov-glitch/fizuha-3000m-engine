@@ -17,6 +17,8 @@ import {
   taperDays,
   validateProfile,
 } from '../../../src/index.ts';
+import {ApplicationError} from './appError.ts';
+import type {AppErrorCode} from './appError.ts';
 import type {
   Anchor,
   BreakReason,
@@ -54,7 +56,7 @@ export {EngineError};
 
 /** A safe, mechanical view of a thrown value. */
 export interface EngineErrorView {
-  code: EngineErrorCode | 'UNKNOWN';
+  code: EngineErrorCode | AppErrorCode | 'UNKNOWN';
   params: {min?: number; max?: number; value?: number};
   /** False when the value was not raised by the engine at all. */
   fromEngine: boolean;
@@ -116,5 +118,6 @@ export function isEngineError(value: unknown): value is EngineError {
  */
 export function viewEngineError(value: unknown): EngineErrorView {
   if (isEngineError(value)) return {code: value.code, params: value.details, fromEngine: true};
+  if (value instanceof ApplicationError) return {code: value.code, params: {}, fromEngine: false};
   return {code: 'UNKNOWN', params: {}, fromEngine: false};
 }

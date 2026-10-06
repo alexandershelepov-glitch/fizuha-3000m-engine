@@ -150,7 +150,13 @@ test('the build is installable and keeps working offline', async ({page, context
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
   await page.getByRole('button', {name: 'Посмотреть план'}).click();
   await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
-  await page.waitForFunction(() => navigator.serviceWorker.controller !== null, undefined, {timeout: 15_000});
+
+  // The document that registers the worker is not controlled by it; the next navigation is. Reload
+  // once online, confirm the worker is in charge, and only then cut the network.
+  await page.reload();
+  await expect
+    .poll(async () => page.evaluate(() => navigator.serviceWorker.controller !== null), {timeout: 15_000})
+    .toBe(true);
   await page.reload();
   await expect(page.getByRole('navigation', {name: 'Основные разделы'})).toBeVisible();
 
@@ -160,4 +166,64 @@ test('the build is installable and keeps working offline', async ({page, context
   await expect(page.getByRole('navigation', {name: 'Основные разделы'})).toBeVisible();
   await expect(page.getByRole('button', {name: 'Начать подготовку'})).toHaveCount(0);
   await context.setOffline(false);
+});
+
+test('INV-1: two days later an unrecorded session blocks the plan refresh', async ({page}) => {
+  await page.clock.install();
+  await fillQuestionnaire(page);
+  await page.getByRole('button', {name: 'Рассчитать план'}).click();
+  await page.getByRole('button', {name: 'Посмотреть план'}).click();
+  await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
+  const before = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
+
+  // The user comes back two days later and never recorded those sessions.
+  await page.clock.setFixedTime(new Date(Date.now() + 2 * 86_400_000));
+  await page.reload();
+
+  await expect(page.getByText('Предыдущая тренировка ещё не закрыта')).toBeVisible();
+
+  // The plan must not offer an action the application layer would refuse anyway.
+  await page.getByRole('navigation', {name: 'Основные разделы'}).getByText('План').click();
+  await expect(page.getByText('Предыдущая тренировка ещё не закрыта')).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Обновить план'})).toHaveCount(0);
+
+  // Nothing was written off: the stored cycle is exactly as it was.
+  expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBe(before);
+});
+
+test('a damaged record can be discarded, but only after a confirmation', async ({page}) => {
+  await page.evaluate((key) => window.localStorage.setItem(key, '{not json'), ACTIVE_CYCLE);
+  await page.goto('/today');
+
+  await expect(page.getByText('Не удалось прочитать сохранённые данные')).toBeVisible();
+  await page.getByRole('button', {name: 'Начать заново'}).click();
+  await expect(page.getByText('Удалить повреждённый цикл?')).toBeVisible();
+
+  // Cancelling keeps the data and the screen.
+  await page.getByRole('button', {name: 'Отмена'}).click();
+  expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBe('{not json');
+  await expect(page.getByText('Не удалось прочитать сохранённые данные')).toBeVisible();
+
+  // Confirming removes it and leads out of the dead end.
+  await page.getByRole('button', {name: 'Начать заново'}).click();
+  await page.getByRole('button', {name: 'Удалить и начать заново'}).click();
+  await expect(page.getByRole('button', {name: 'Начать подготовку'})).toBeVisible();
+  expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBeNull();
+
+  await page.getByRole('button', {name: 'Начать подготовку'}).click();
+  await expect(page).toHaveURL(/step=RESULT$/);
+});
+
+test('a browser that denies storage is reported instead of silently using memory', async ({page}) => {
+  await page.addInitScript(() => {
+    Storage.prototype.setItem = function setItem(): void {
+      throw new DOMException('denied', 'SecurityError');
+    };
+  });
+  await page.goto('/');
+
+  await expect(page.getByText('Цикл нельзя надёжно сохранить')).toBeVisible();
+  // No working screen is offered, so a cycle that would not survive a reload cannot be started.
+  await expect(page.getByRole('button', {name: 'Начать подготовку'})).toHaveCount(0);
+  expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBeNull();
 });

@@ -7,9 +7,14 @@
  */
 import {viewEngineError} from './engineGateway.ts';
 import type {EngineErrorCode, EngineErrorView} from './engineGateway.ts';
+import {APP_ERROR_CODES} from './appError.ts';
+import type {AppErrorCode} from './appError.ts';
+
+/** Every code the UI can meet: the engine's, the application's own, and the safe fallback. */
+export type UiErrorCode = EngineErrorCode | AppErrorCode | 'UNKNOWN';
 
 export interface UiError {
-  readonly code: EngineErrorCode | 'UNKNOWN';
+  readonly code: UiErrorCode;
   readonly params: {min?: number; max?: number; value?: number};
   /** False when repeating the same action cannot succeed (ui-copy §10.4). */
   readonly retry: boolean;
@@ -22,6 +27,8 @@ export interface UiError {
  * Mirrors ui-copy §10.4.
  */
 const NON_RETRYABLE: readonly string[] = [
+  // INV-1: repeating the same request cannot help while the past sessions stay unresolved.
+  'PENDING_RESULT_BLOCKED',
   'EVENT_DATE_PASSED',
   'UNSUPPORTED_STATE_VERSION',
   'UNKNOWN_OR_COMPLETED_WORKOUT',
@@ -32,6 +39,11 @@ const NON_RETRYABLE: readonly string[] = [
   'FINAL_RESULT_BEFORE_EVENT',
   'WORKOUT_BLOCKED_BY_PHASE_OR_SAFETY',
 ];
+
+/** True only for codes raised by the engine, which is what engine-specific maps may be indexed by. */
+export function isEngineErrorCode(code: UiErrorCode): code is EngineErrorCode {
+  return code !== 'UNKNOWN' && !(APP_ERROR_CODES as readonly string[]).includes(code);
+}
 
 export function toUiError(view: EngineErrorView): UiError {
   return {code: view.code, params: view.params, retry: !NON_RETRYABLE.includes(view.code), fromEngine: view.fromEngine};

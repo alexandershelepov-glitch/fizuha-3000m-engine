@@ -2,9 +2,10 @@ import type {ReactNode} from 'react';
 import {addDays, formatDateLong, formatTime} from '../../application/format.ts';
 import {taperDaysFor} from '../../application/engineGateway.ts';
 import type {EngineState} from '../../application/engineGateway.ts';
+import {hasPendingResults} from '../../application/invariants.ts';
 import {workoutDate, workoutTitle, workoutVolume} from '../display.ts';
 import {phaseText, phaseWhy} from '../copy/values.ts';
-import {common, plan} from '../copy/text.ts';
+import {common, nav, plan, today as todayText} from '../copy/text.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, KeyValue, Notice} from '../components/Layout.tsx';
 import type {Route} from '../../app/routes.ts';
@@ -21,6 +22,9 @@ export function Plan({engineState, today, onNavigate, onRefreshPlan, refreshing}
   const {profile, decision, queue} = engineState;
   const taperStart = addDays(profile.raceDate, -taperDaysFor(decision.capacity, decision.quality));
   const todayWorkout = queue.find((workout) => workout.scheduledDate === today) ?? null;
+  // INV-1: an unrecorded past session blocks every clock-advancing action, so the screen must not
+  // offer one. The application layer refuses the call as well, independently of this rendering.
+  const pending = hasPendingResults(engineState, today);
 
   return (
     <div className="screen">
@@ -71,9 +75,16 @@ export function Plan({engineState, today, onNavigate, onRefreshPlan, refreshing}
         <p className="hint">{plan.raceNote}</p>
       </Card>
 
-      <div className="actions">
-        <Button variant="secondary" onClick={onRefreshPlan} disabled={refreshing}>{refreshing ? common.loading : plan.refresh}</Button>
-      </div>
+      {pending ? (
+        <Notice tone="warn" title={todayText.pendingResult.title}>
+          <p>{todayText.pendingResult.text}</p>
+          <Button onClick={() => onNavigate({name: 'TODAY'})}>{nav.today}</Button>
+        </Notice>
+      ) : (
+        <div className="actions">
+          <Button variant="secondary" onClick={onRefreshPlan} disabled={refreshing}>{refreshing ? common.loading : plan.refresh}</Button>
+        </div>
+      )}
     </div>
   );
 }

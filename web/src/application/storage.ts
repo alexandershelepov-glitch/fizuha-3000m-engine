@@ -5,6 +5,7 @@
  * it and is read back only through the official `deserialize`. Nothing is ever repaired silently:
  * every failure class is reported so the UI can show an explicit state.
  */
+import {ApplicationError} from './appError.ts';
 import {parseAppState} from './appState.ts';
 import type {AppStateV1} from './appState.ts';
 import {deserializeEngineState, isEngineError, viewEngineError} from './engineGateway.ts';
@@ -81,7 +82,25 @@ export function loadActiveCycle(repo: CycleRepository): LoadCycleResult {
   }
 }
 
-/** Write the whole envelope in one operation. Throws if the storage rejects the write. */
+/**
+ * Write the whole envelope in one operation and verify that the device really kept it.
+ *
+ * A storage that accepts a write and then drops it silently is not persistence. This is treated as a
+ * failure instead of letting the user believe the cycle is safe — the application never substitutes
+ * temporary memory for permanent storage.
+ */
 export function saveActiveCycle(repo: CycleRepository, appState: AppStateV1): void {
-  repo.write(JSON.stringify(appState));
+  const raw = JSON.stringify(appState);
+  repo.write(raw);
+  if (repo.read() !== raw) throw new ApplicationError('STORAGE_UNAVAILABLE', 'the stored cycle could not be read back');
 }
+
+/** Remove the active cycle. Only ever called after the user explicitly asked for it (WF-31.d). */
+export function discardActiveCycle(repo: CycleRepository): void {
+  repo.clear();
+}
+
+/** Result of checking whether this device can keep a cycle at all. */
+export type StorageProbe =
+  | {readonly kind: 'AVAILABLE'; readonly storage: KeyValueStorage}
+  | {readonly kind: 'UNAVAILABLE'};

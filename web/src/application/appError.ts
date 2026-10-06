@@ -1,0 +1,18 @@
+/**
+ * Application-level error codes.
+ *
+ * They are deliberately separate from the engine's `EngineErrorCode`: these are failures of the
+ * application's own rules (an invariant it must not break, a device that cannot store data), not
+ * rejections produced by the sport engine or by profile validation.
+ */
+export const APP_ERROR_CODES = Object.freeze(['PENDING_RESULT_BLOCKED', 'STORAGE_UNAVAILABLE'] as const);
+export type AppErrorCode = (typeof APP_ERROR_CODES)[number];
+
+export class ApplicationError extends Error {
+  readonly code: AppErrorCode;
+  constructor(code: AppErrorCode, message?: string) {
+    super(message ?? code);
+    this.name = 'ApplicationError';
+    this.code = code;
+  }
+}

@@ -10,7 +10,11 @@ export interface DraftStore {
   reset(today: string): void;
 }
 
-export function useDraft(storage: KeyValueStorage, today: string): DraftStore {
+/**
+ * The draft lives in the same permanent storage as the cycle. When there is none, the questionnaire
+ * still works but nothing is persisted — the shell never pretends that temporary memory is storage.
+ */
+export function useDraft(storage: KeyValueStorage | null, today: string): DraftStore {
   const [draft, setDraft] = useState<QuestionnaireDraft>(() => loadDraft(storage, today));
 
   const update = useCallback((patch: Partial<QuestionnaireDraft>) => {

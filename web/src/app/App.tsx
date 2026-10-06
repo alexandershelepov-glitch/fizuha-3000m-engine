@@ -4,19 +4,18 @@ import {buildProfile} from '../application/questionnaire.ts';
 import {STEP_FOR_FIELD, STEP_FOR_CODE} from '../application/questionnaire.ts';
 import type {QuestionnaireDraft, QuestionnaireStep} from '../application/questionnaire.ts';
 import {createCycle} from '../application/cycle.ts';
-import {applyEngineState} from '../application/cycle.ts';
+import {refreshPlan} from '../application/clockOps.ts';
 import {newCycleId} from '../application/draft.ts';
 import {deviceTimestamp} from '../application/format.ts';
 import {clearDraft} from '../application/draft.ts';
-import {replanTo} from '../application/engineGateway.ts';
-import {saveActiveCycle} from '../application/storage.ts';
-import {toUiErrorFromUnknown} from '../application/errorContract.ts';
+import {createRepository} from '../application/storage.ts';
+import {isEngineErrorCode} from '../application/errorContract.ts';
 import type {UiError} from '../application/errorContract.ts';
 import type {KeyValueStorage} from '../application/storage.ts';
 import {guardRoute, routeToPath} from './routes.ts';
 import type {Route} from './routes.ts';
 import {navigate, useRoute} from './useRouter.ts';
-import {browserRepository, browserStorage, useCycleStore} from './useCycleStore.ts';
+import {useCycleStore, useStorageProbe} from './useCycleStore.ts';
 import {useDraft} from './useDraft.ts';
 import {FirstRun} from '../ui/screens/FirstRun.tsx';
 import {Questionnaire} from '../ui/screens/Questionnaire.tsx';
@@ -30,6 +29,7 @@ import {History} from '../ui/screens/History.tsx';
 import {Profile} from '../ui/screens/Profile.tsx';
 import {WorkoutDetails} from '../ui/screens/WorkoutDetails.tsx';
 import {LoadError} from '../ui/screens/LoadError.tsx';
+import {StorageUnavailable} from '../ui/screens/StorageUnavailable.tsx';
 import {Notice} from '../ui/components/Layout.tsx';
 import {copyForError} from '../ui/copy/errors.ts';
 import {common, nav, notFound} from '../ui/copy/text.ts';
@@ -38,9 +38,10 @@ import {Button} from '../ui/components/Button.tsx';
 const LOCALE = 'ru-RU';
 
 export function App({storage: injected}: {storage?: KeyValueStorage} = {}): ReactNode {
-  const storage = useMemo(() => injected ?? browserStorage(), [injected]);
-  const repo = useMemo(() => browserRepository(storage), [storage]);
-  const store = useCycleStore(repo, storage);
+  const {probe, retry: retryStorage} = useStorageProbe(injected);
+  const storage = probe.kind === 'AVAILABLE' ? probe.storage : null;
+  const repo = useMemo(() => (storage === null ? null : createRepository(storage)), [storage]);
+  const store = useCycleStore(repo);
   const route = useRoute();
   const draftStore = useDraft(storage, store.today);
   const [refreshing, setRefreshing] = useState(false);
@@ -66,6 +67,8 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
       return {kind: 'PROBLEMS', step: {name: 'QUESTIONNAIRE', step: STEP_FOR_FIELD[first.field]}};
     }
 
+    if (repo === null) return {kind: 'ENGINE_ERROR', error: {code: 'STORAGE_UNAVAILABLE', params: {}, retry: true, fromEngine: false}, step: null};
+
     const result = createCycle(repo, {
       profile: built.profile,
       deviceToday: store.today,
@@ -76,7 +79,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
 
     if (!result.ok) {
       const code = result.error.code;
-      const step = code === 'UNKNOWN' ? undefined : STEP_FOR_CODE[code];
+      const step = isEngineErrorCode(code) ? STEP_FOR_CODE[code] : undefined;
       if (step) setEngineError({error: result.error, step});
       return {kind: 'ENGINE_ERROR', error: result.error, step: step ? {name: 'QUESTIONNAIRE', step} : null};
     }
@@ -87,19 +90,14 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
   }, [repo, storage, store]);
 
   const handleRefreshPlan = useCallback(() => {
-    if (store.appState === null || store.engineState === null) return;
+    if (repo === null || store.appState === null || store.engineState === null) return;
     setRefreshing(true);
     setPlanError(null);
-    try {
-      const next = replanTo(store.engineState, store.today);
-      const envelope = applyEngineState(store.appState, next);
-      saveActiveCycle(repo, envelope);
-      store.adopt({appState: envelope, engineState: next});
-    } catch (error) {
-      setPlanError(toUiErrorFromUnknown(error));
-    } finally {
-      setRefreshing(false);
-    }
+    // INV-1 is enforced inside the operation, not here: the UI cannot bypass it by calling directly.
+    const result = refreshPlan({repo, appState: store.appState, engineState: store.engineState, deviceToday: store.today});
+    if (result.ok) store.adopt({appState: result.appState, engineState: result.engineState});
+    else setPlanError(result.error);
+    setRefreshing(false);
   }, [repo, store]);
 
   const goTo = useCallback((next: Route) => {
@@ -107,21 +105,11 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     navigate(next);
   }, []);
 
+  if (store.load.kind === 'NO_STORAGE') return <StorageUnavailable onRetry={retryStorage} />;
+
   if (store.load.kind === 'DAMAGED' || store.load.kind === 'UNSUPPORTED_FORMAT' || store.load.kind === 'UNSUPPORTED_ENGINE_STATE' || store.load.kind === 'IMPOSSIBLE_STATE') {
-    return (
-      <div className="app">
-        <main className="app__main">
-          <LoadError
-            result={store.load}
-            onStartOver={() => {
-              if (store.load.kind !== 'DAMAGED') return;
-              // The damaged record is not deleted automatically; starting over writes a new cycle.
-              navigate({name: 'FIRST_RUN'});
-            }}
-          />
-        </main>
-      </div>
-    );
+    // The damaged record is removed only after the confirmation inside LoadError.
+    return <LoadError result={store.load} onDiscard={() => store.discardDamagedCycle()} />;
   }
 
   return (

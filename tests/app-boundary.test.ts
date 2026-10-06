@@ -57,3 +57,17 @@ test('BOUNDARY-05 every sport decision stays in the engine', () => {
     }
   }
 });
+
+test('BOUNDARY-06 the engine clock is advanced only through the guarded operation', () => {
+  // `replan` is the only clock-advancing call the application makes, and it may only be reached from
+  // the operation that consults INV-1 first: the gateway defines the wrapper, clockOps is its caller.
+  const referencing = sources.filter((file) => /\breplanTo\s*\(/.test(file.text)).map((file) => file.path);
+  assert.deepEqual(referencing.sort(), ['web/src/application/clockOps.ts', 'web/src/application/engineGateway.ts']);
+
+  const ops = sources.find((file) => file.path === 'web/src/application/clockOps.ts')!;
+  assert.ok(ops.text.includes('assertClockAdvanceAllowed'), 'the guard must be consulted');
+  assert.ok(
+    ops.text.indexOf('assertClockAdvanceAllowed') < ops.text.indexOf('replanTo('),
+    'the invariant must be checked before the engine is asked to rebuild the plan',
+  );
+});
