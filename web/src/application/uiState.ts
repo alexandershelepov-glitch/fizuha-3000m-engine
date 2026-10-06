@@ -1,0 +1,78 @@
+/**
+ * Derivation of the UI state from engine data (docs/wireframes.md §2).
+ *
+ * This is a pure mapping, not a decision: it only reads what the engine already decided
+ * (`decision`, `queue`, `checkpointRequired`, `finalResultRecorded`). No thresholds, no prediction,
+ * and no plan is ever computed here.
+ */
+import {daysBetween, deviceToday} from './format.ts';
+import type {EngineState, Workout} from './engineGateway.ts';
+
+/**
+ * Every state of the Today screen. The order below is the documented selection order: the first
+ * matching entry wins. States that this slice does not render yet are still derived, so adding them
+ * later is a rendering change rather than an architectural one.
+ */
+export const TODAY_STATES = Object.freeze([
+  'COMPLETED',
+  'PENDING_RESULT',
+  'AWAITING_FINAL_RESULT',
+  'RACE_DAY',
+  'TRAINING_HOLD',
+  'TAPER',
+  'CHECKPOINT_REQUIRED',
+  'WORKOUT_TODAY',
+  'EMPTY_QUEUE',
+  'REST_DAY',
+] as const);
+export type TodayState = (typeof TODAY_STATES)[number];
+
+export interface TodayView {
+  readonly state: TodayState;
+  readonly deviceToday: string;
+  /** The workout scheduled for today, when the engine placed one. */
+  readonly workout: Workout | null;
+  /** The next known session after today, taken from the engine queue only. */
+  readonly nextWorkout: Workout | null;
+  /** Days until the race; negative once the date has passed. */
+  readonly daysToRace: number;
+  /** Workouts dated before today that are neither recorded nor skipped (INV-1). */
+  readonly pendingWorkouts: readonly Workout[];
+}
+
+/** Entries the engine still holds for past dates: recorded and skipped ones are already gone. */
+function pendingResults(engineState: EngineState, today: string): Workout[] {
+  return engineState.queue.filter(workout => workout.scheduledDate < today);
+}
+
+export function deriveToday(engineState: EngineState, today: string = deviceToday()): TodayView {
+  const workout = engineState.queue.find(entry => entry.scheduledDate === today) ?? null;
+  const nextWorkout = engineState.queue.find(entry => entry.scheduledDate > today) ?? null;
+  const pending = pendingResults(engineState, today);
+  const daysToRace = daysBetween(today, engineState.profile.raceDate);
+
+  const state = selectState(engineState, today, workout, pending);
+  return {state, deviceToday: today, workout, nextWorkout, daysToRace, pendingWorkouts: pending};
+}
+
+function selectState(engineState: EngineState, today: string, workout: Workout | null, pending: readonly Workout[]): TodayState {
+  if (engineState.finalResultRecorded) return 'COMPLETED';
+  if (pending.length > 0) return 'PENDING_RESULT';
+  if (today > engineState.profile.raceDate) return 'AWAITING_FINAL_RESULT';
+  if (today === engineState.profile.raceDate) return 'RACE_DAY';
+  if (engineState.decision.safety !== 'OK') return 'TRAINING_HOLD';
+  if (engineState.decision.phase === 'TAPER') return 'TAPER';
+  if (engineState.checkpointRequired) return 'CHECKPOINT_REQUIRED';
+  if (workout !== null) return 'WORKOUT_TODAY';
+  if (engineState.queue.length === 0) return 'EMPTY_QUEUE';
+  return 'REST_DAY';
+}
+
+/** Cycle status, derived exactly as pwa-architecture.md §3 prescribes. */
+export type CycleStatus = 'ACTIVE' | 'AWAITING_FINAL_RESULT' | 'COMPLETED';
+
+export function deriveCycleStatus(engineState: EngineState, today: string = deviceToday()): CycleStatus {
+  if (engineState.finalResultRecorded) return 'COMPLETED';
+  if (today > engineState.profile.raceDate) return 'AWAITING_FINAL_RESULT';
+  return 'ACTIVE';
+}

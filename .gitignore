@@ -25,6 +25,11 @@ credentials.json
 secrets.json
 .npmrc
 
+# PWA / E2E artefacts
+test-results/
+playwright-report/
+blob-report/
+
 # Caches
 .cache/
 .tmp/

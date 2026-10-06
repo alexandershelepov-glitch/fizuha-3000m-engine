@@ -1,0 +1,69 @@
+/**
+ * Russian texts for every public engine error code, ported from docs/ui-copy.md §10.
+ *
+ * The map is exhaustive on purpose: a new code in the engine catalog fails the build until the text
+ * exists. Text may depend on `details`, for example `NUMBER_OUT_OF_RANGE`. The English `message`
+ * from the engine is never rendered.
+ */
+import type {EngineErrorCode} from '../../application/engineGateway.ts';
+import type {UiError} from '../../application/errorContract.ts';
+
+export interface ErrorCopy {
+  readonly title: string;
+  readonly text: (params: UiError['params']) => string;
+  readonly cta: string;
+  /** Whether the action can safely be attempted again (mirrors the application contract). */
+  readonly retry: boolean;
+  /** Whether technical details belong in the hidden diagnostics block only. */
+  readonly showTechnicalDetails: boolean;
+}
+
+const fixed = (text: string, extra: Omit<ErrorCopy, 'text'>): ErrorCopy => ({...extra, text: () => text});
+
+const rangeText = ({min, max}: UiError['params']): string => {
+  if (min === undefined) return 'Введите значение в допустимом диапазоне.';
+  if (max === undefined || !Number.isFinite(max)) return `Введите значение не меньше ${min}.`;
+  return `Введите значение от ${min} до ${max}.`;
+};
+
+export const errorCopy = {
+  INVALID_DATE_FORMAT: fixed('Дата должна быть в формате ГГГГ-ММ-ДД.', {title: 'Проверьте дату', cta: 'Изменить дату', retry: true, showTechnicalDetails: false}),
+  INVALID_CALENDAR_DATE: fixed('Проверьте число и месяц.', {title: 'Такой даты не существует', cta: 'Изменить дату', retry: true, showTechnicalDetails: false}),
+  NUMBER_OUT_OF_RANGE: {title: 'Значение вне допустимого диапазона', text: rangeText, cta: 'Исправить', retry: true, showTechnicalDetails: false},
+  INVALID_SAFETY_FLAG: fixed('Обновите экран и ответьте на вопросы ещё раз.', {title: 'Не удалось прочитать ответ о состоянии', cta: 'Повторить', retry: true, showTechnicalDetails: false}),
+  INVALID_PROFILE_FLAG: fixed('Проверьте ответы об опыте и подготовке.', {title: 'Не удалось прочитать один из ответов', cta: 'Проверить данные', retry: true, showTechnicalDetails: false}),
+  INVALID_QUALITY_WEEKS: fixed('Число недель с качественными тренировками не может быть больше их общего количества.', {title: 'Проверьте данные о качественных тренировках', cta: 'Исправить', retry: true, showTechnicalDetails: false}),
+  INVALID_MISMATCH: fixed('Обновите экран и попробуйте снова.', {title: 'Не удалось прочитать оценку расхождения', cta: 'Обновить', retry: true, showTechnicalDetails: false}),
+  INVALID_PERFORMANCE_SOURCE: fixed('Укажите, откуда результат: контрольный забег или официальный старт.', {title: 'Не удалось определить тип результата', cta: 'Выбрать тип', retry: true, showTechnicalDetails: false}),
+  INVALID_BREAK_REASON: fixed('Выберите один из предложенных вариантов.', {title: 'Укажите причину перерыва', cta: 'Выбрать причину', retry: true, showTechnicalDetails: false}),
+  INVALID_BREAK: fixed('Перерыв указывается целым числом дней и не может заканчиваться в будущем.', {title: 'Проверьте данные о перерыве', cta: 'Исправить', retry: true, showTechnicalDetails: false}),
+  FUTURE_PERFORMANCE: fixed('Укажите дату, которая уже наступила.', {title: 'Дата результата в будущем', cta: 'Изменить дату', retry: true, showTechnicalDetails: false}),
+  AVAILABILITY_NOT_INTEGER: fixed('Доступное количество тренировок в неделю — целое число от 1 до 7.', {title: 'Укажите целое число тренировок', cta: 'Исправить', retry: true, showTechnicalDetails: false}),
+  INVALID_YELLOW_REASON: fixed('Выберите причину из списка.', {title: 'Не удалось прочитать причину', cta: 'Выбрать причину', retry: true, showTechnicalDetails: false}),
+  INVALID_FATIGUE_FLAG: fixed('Ответьте, была ли усталость необычно сильной.', {title: 'Не удалось прочитать ответ об усталости', cta: 'Ответить', retry: true, showTechnicalDetails: false}),
+  EVENT_DATE_PASSED: fixed('Обычный план этого цикла завершён: тренировки не назначаются после дня забега. Внесите результат забега, чтобы закрыть цикл.', {title: 'Дата старта уже прошла', cta: 'Внести результат', retry: false, showTechnicalDetails: false}),
+  CLOCK_BACKWARDS: fixed('Нельзя вернуться к более ранней дате. Проверьте дату на устройстве.', {title: 'Дата раньше сохранённой', cta: 'Обновить', retry: true, showTechnicalDetails: false}),
+  UNSUPPORTED_STATE_VERSION: fixed('Сохранённый цикл создан другой версией приложения. Обновите приложение; данные не удалены.', {title: 'Данные несовместимы с текущей версией', cta: 'Обновить приложение', retry: false, showTechnicalDetails: true}),
+  WORKOUT_BLOCKED_BY_PHASE_OR_SAFETY: fixed('Такой тип работы недоступен на текущем этапе или при текущем состоянии.', {title: 'Эта тренировка сейчас не назначается', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
+  UNKNOWN_WORKOUT: fixed('Возможно, план уже обновлён. Откройте раздел «План» заново.', {title: 'Тренировка не найдена', cta: 'Обновить план', retry: true, showTechnicalDetails: false}),
+  UNKNOWN_OR_COMPLETED_WORKOUT: fixed('Обновите план и проверьте актуальную тренировку.', {title: 'Результат уже внесён или тренировка изменилась', cta: 'Обновить план', retry: false, showTechnicalDetails: false}),
+  RESULT_PRECEDES_STATE: fixed('Внести результат можно за тренировку текущего или более позднего дня плана.', {title: 'Результат за более ранний день', cta: 'Обновить план', retry: false, showTechnicalDetails: false}),
+  RECOVERY_OR_QUALITY_LIMIT: fixed('Отчёт относится к тренировке, которая нарушает восстановление или недельный лимит качественных работ.', {title: 'Слишком близко к предыдущей тренировке', cta: 'Обновить план', retry: false, showTechnicalDetails: false}),
+  PROTECTED_FIELD: fixed('Изменение доступно только через отдельное действие приложения.', {title: 'Эти данные нельзя изменить здесь', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
+  CHECKPOINT_NOT_PERMITTED: fixed('Результат контрольного забега можно внести, когда нет ограничений: завершены облегчённые тренировки после перерыва и состояние позволяет нагрузку.', {title: 'Контрольный забег сейчас недоступен', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
+  INVALID_CHECKPOINT_DATE: fixed('Дата не может быть в будущем или раньше предыдущего результата.', {title: 'Проверьте дату контрольного забега', cta: 'Изменить дату', retry: true, showTechnicalDetails: false}),
+  FINAL_RESULT_NOT_ON_EVENT_DATE: fixed('Результат итогового забега вносится только за дату старта.', {title: 'Дата должна совпадать с днём забега', cta: 'Изменить дату', retry: true, showTechnicalDetails: false}),
+  FINAL_RESULT_BEFORE_EVENT: fixed('Результат итогового забега можно внести не раньше дня старта.', {title: 'Забег ещё не состоялся', cta: 'Внести позже', retry: false, showTechnicalDetails: false}),
+  MOVE_OUTSIDE_HORIZON: fixed('Новая дата должна быть в пределах ближайших дней плана и не позже дня забега.', {title: 'Перенести можно только внутри плана', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
+  MOVE_OCCUPIED_DATE: fixed('Выберите свободный день.', {title: 'На эту дату уже есть тренировка', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
+  MOVE_RECOVERY_VIOLATION: fixed('Между качественными тренировками нужен интервал не меньше двух дней.', {title: 'Слишком близко к другой тренировке', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
+  MOVE_QUALITY_LIMIT_VIOLATION: fixed('Перенос нарушит недельный лимит. Выберите дату в другой неделе.', {title: 'В этой неделе уже достаточно качественных тренировок', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
+} satisfies Record<EngineErrorCode, ErrorCopy>;
+
+/** Safe fallback: an unknown failure never breaks the interface and never shows raw details. */
+export const UNKNOWN_ERROR_COPY: ErrorCopy = fixed('Попробуйте ещё раз. Если не получится, перезапустите приложение.', {title: 'Что-то пошло не так', cta: 'Повторить', retry: true, showTechnicalDetails: true});
+
+export function copyForError(error: UiError): ErrorCopy {
+  if (error.code === 'UNKNOWN') return UNKNOWN_ERROR_COPY;
+  return errorCopy[error.code];
+}
