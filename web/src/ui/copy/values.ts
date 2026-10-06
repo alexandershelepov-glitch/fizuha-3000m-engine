@@ -200,3 +200,14 @@ export const evaluationSign = {
   RED: '⏸',
 } satisfies Record<Evaluation, string>;
 
+
+/** Spoken names for the subjective load scale: the number alone is not enough on its own. */
+export const scaleLabels: Readonly<Record<number, string>> = {
+  0: 'нагрузки не было',
+  2: 'очень легко',
+  4: 'легко',
+  5: 'умеренно',
+  7: 'тяжело, но контролируемо',
+  9: 'очень тяжело',
+  10: 'предельно тяжело',
+};

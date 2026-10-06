@@ -6,7 +6,7 @@ import {workoutPaceRange, workoutRest, workoutRpe} from '../display.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, EmptyState, KeyValue} from '../components/Layout.tsx';
 
-export function WorkoutDetails({workout, onBack}: {workout: Workout | null; onBack: () => void}): ReactNode {
+export function WorkoutDetails({workout, onBack, onEnterResult}: {workout: Workout | null; onBack: () => void; onEnterResult: () => void}): ReactNode {
   if (workout === null) {
     return (
       <div className="screen">
@@ -59,6 +59,10 @@ export function WorkoutDetails({workout, onBack}: {workout: Workout | null; onBa
       <Card title={todayText.workout.anchor}>
         <p className="paragraph">{anchorText[workout.anchor]}</p>
       </Card>
+
+      <div className="actions">
+        <Button onClick={onEnterResult}>{todayText.workout.enterResult}</Button>
+      </div>
     </div>
   );
 }

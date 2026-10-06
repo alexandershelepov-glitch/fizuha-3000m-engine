@@ -3,7 +3,7 @@
  * Purely presentational — no threshold, range or verdict is computed here.
  */
 import {formatDateShort, formatTime} from '../application/format.ts';
-import type {SafetyData, Workout} from '../application/engineGateway.ts';
+import type {DoseUnit, SafetyData, Workout, WorkoutType} from '../application/engineGateway.ts';
 import {doseUnitText, mainModeText, workoutGoalText, workoutTypeText} from './copy/values.ts';
 import {today as todayText} from './copy/text.ts';
 
@@ -64,4 +64,17 @@ export function safetyHasFlags(safety: SafetyData): boolean {
 
 export function restSummaryText(hasNext: boolean): string {
   return hasNext ? todayText.rest.next : todayText.rest.noNext;
+}
+
+/** A compact, human line for a prescription: type, volume and date. */
+export function workoutSummaryText(summary: {type: WorkoutType; date: string; doseValue: number; doseUnit: DoseUnit; repeats: number; repeatMeters: number | null}): string {
+  const volume = summary.repeats > 1 && summary.repeatMeters !== null
+    ? `${summary.repeats} × ${Math.round(summary.repeatMeters)} м`
+    : `${summary.doseValue} ${doseUnitText[summary.doseUnit]}`;
+  return `${workoutTypeText[summary.type].label} · ${volume} · ${formatDateShort(summary.date)}`;
+}
+
+/** Pace range as the engine ordered it. */
+export function paceRangeText(pace: readonly [number, number] | null): string | null {
+  return pace === null ? null : `${formatTime(pace[0])}–${formatTime(pace[1])} /км`;
 }

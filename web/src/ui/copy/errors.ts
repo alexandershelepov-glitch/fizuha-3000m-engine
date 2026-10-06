@@ -67,6 +67,7 @@ export const errorCopy = {
  * `errorCopy`, which stays exhaustive over the engine's catalogue.
  */
 export const appErrorCopy = {
+  PENDING_RESULT_OUT_OF_ORDER: fixed('Сначала закройте более раннюю тренировку: результаты вносятся по порядку, от самой давней к самой свежей.', {title: 'Есть более ранняя незакрытая тренировка', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
   PENDING_RESULT_BLOCKED: fixed('Пока результат за прошлую дату не внесён, план не пересчитывается: иначе эта тренировка была бы списана как пропущенная. Сначала закройте её.', {title: 'Сначала закройте прошлую тренировку', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
   STORAGE_UNAVAILABLE: fixed('Браузер не позволяет сохранить данные на этом устройстве. Пока это так, начинать подготовку нельзя: план не переживёт перезагрузку или закрытие вкладки.', {title: 'Цикл нельзя надёжно сохранить', cta: 'Повторить', retry: true, showTechnicalDetails: true}),
 } satisfies Record<AppErrorCode, ErrorCopy>;

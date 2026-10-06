@@ -5,7 +5,7 @@
  * application's own rules (an invariant it must not break, a device that cannot store data), not
  * rejections produced by the sport engine or by profile validation.
  */
-export const APP_ERROR_CODES = Object.freeze(['PENDING_RESULT_BLOCKED', 'STORAGE_UNAVAILABLE'] as const);
+export const APP_ERROR_CODES = Object.freeze(['PENDING_RESULT_BLOCKED', 'PENDING_RESULT_OUT_OF_ORDER', 'STORAGE_UNAVAILABLE'] as const);
 export type AppErrorCode = (typeof APP_ERROR_CODES)[number];
 
 export class ApplicationError extends Error {

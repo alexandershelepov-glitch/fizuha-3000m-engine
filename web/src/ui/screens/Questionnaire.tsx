@@ -6,7 +6,8 @@ import {breakReasonText, mismatchText, performanceSourceText} from '../copy/valu
 import {common, questionnaire} from '../copy/text.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, Progress} from '../components/Layout.tsx';
-import {Checkbox, Choice, Field, Scale, TextInput, Toggle} from '../components/Field.tsx';
+import {Checkbox, Choice, Field, TextInput, Toggle} from '../components/Field.tsx';
+import {SafetyFields} from '../components/SafetyFields.tsx';
 import {problemsForStep} from '../validation.ts';
 import type {DraftStore} from '../../app/useDraft.ts';
 import type {Route} from '../../app/routes.ts';
@@ -169,28 +170,13 @@ function QualityStep({draft, update, error}: StepProps): ReactNode {
 }
 
 function SafetyStep({draft, update, error}: StepProps): ReactNode {
-  const setSafety = (patch: Partial<QuestionnaireDraft['safety']>): void => update({safety: {...draft.safety, ...patch}});
-  const flags: readonly {key: keyof QuestionnaireDraft['safety']; label: string}[] = [
-    {key: 'painIncreasing', label: questionnaire.safety.painIncreasing},
-    {key: 'alteredMovement', label: questionnaire.safety.alteredMovement},
-    {key: 'painWalkingOrRest', label: questionnaire.safety.painWalkingOrRest},
-    {key: 'swelling', label: questionnaire.safety.swelling},
-    {key: 'acuteIllness', label: questionnaire.safety.acuteIllness},
-    {key: 'otherStop', label: questionnaire.safety.otherStop},
-    {key: 'needsAssessment', label: questionnaire.safety.needsAssessment},
-  ];
   return (
-    <>
-      <Field id="pain" label={questionnaire.safety.pain} hint={questionnaire.safety.painHint} error={error('safety')}>
-        <Scale id="pain" value={draft.safety.pain} onChange={(next) => setSafety({pain: next})} min={0} max={10} labelFor={(value) => `${questionnaire.safety.pain}: ${value}`} />
-      </Field>
-      {flags.map((flag) => (
-        <Field key={flag.key} id={flag.key} label={flag.label}>
-          <Toggle id={flag.key} value={Boolean(draft.safety[flag.key])} onChange={(next) => setSafety({[flag.key]: next})} yes={questionnaire.yes} no={questionnaire.no} />
-        </Field>
-      ))}
-      <p className="hint">{questionnaire.safety.footnote}</p>
-    </>
+    <SafetyFields
+      idPrefix="safety"
+      safety={draft.safety}
+      onChange={(next) => update({safety: next})}
+      error={error('safety')}
+    />
   );
 }
 

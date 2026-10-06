@@ -16,6 +16,8 @@ export type Route =
   | {name: 'HISTORY'}
   | {name: 'PROFILE'}
   | {name: 'WORKOUT'; id: string}
+  | {name: 'WORKOUT_RESULT'; id: string}
+  | {name: 'WORKOUT_OUTCOME'; id: string}
   | {name: 'NOT_FOUND'};
 
 export const PATH = {
@@ -51,7 +53,13 @@ export function parseRoute(pathname: string, search = ''): Route {
   if (path === PATH.history) return {name: 'HISTORY'};
   if (path === PATH.profile) return {name: 'PROFILE'};
 
-  const workout = /^\/workout\/(.+)$/.exec(path);
+  const result = /^\/workout\/([^/]+)\/result$/.exec(path);
+  if (result) return {name: 'WORKOUT_RESULT', id: decodeURIComponent(result[1]!)};
+
+  const outcome = /^\/workout\/([^/]+)\/outcome$/.exec(path);
+  if (outcome) return {name: 'WORKOUT_OUTCOME', id: decodeURIComponent(outcome[1]!)};
+
+  const workout = /^\/workout\/([^/]+)$/.exec(path);
   if (workout) return {name: 'WORKOUT', id: decodeURIComponent(workout[1]!)};
 
   return {name: 'NOT_FOUND'};
@@ -69,6 +77,8 @@ export function routeToPath(route: Route): string {
     case 'HISTORY': return PATH.history;
     case 'PROFILE': return PATH.profile;
     case 'WORKOUT': return `/workout/${encodeURIComponent(route.id)}`;
+    case 'WORKOUT_RESULT': return `/workout/${encodeURIComponent(route.id)}/result`;
+    case 'WORKOUT_OUTCOME': return `/workout/${encodeURIComponent(route.id)}/outcome`;
     case 'NOT_FOUND': return PATH.firstRun;
   }
 }

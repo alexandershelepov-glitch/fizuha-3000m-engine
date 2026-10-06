@@ -21,6 +21,21 @@ export function hasPendingResults(engineState: EngineState, today: string): bool
 }
 
 /**
+ * The earliest unresolved session. Results are closed in chronological order, so recording a later
+ * training while an earlier one is still open is refused rather than silently reordering INV-1.
+ */
+export function earliestPending(engineState: EngineState, today: string): Workout | null {
+  return pendingResults(engineState, today)[0] ?? null;
+}
+
+export function assertRecordingOrder(engineState: EngineState, workoutId: string, today: string): void {
+  const earliest = earliestPending(engineState, today);
+  if (earliest !== null && earliest.id !== workoutId) {
+    throw new ApplicationError('PENDING_RESULT_OUT_OF_ORDER', `the earlier session ${earliest.scheduledDate} is still open`);
+  }
+}
+
+/**
  * Gate in front of every clock-advancing operation (`replan` and, later, the flows that move the
  * clock for other reasons).
  *

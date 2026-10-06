@@ -12,6 +12,7 @@ import {
   EngineError,
   createEngine,
   deserialize,
+  recordResult as engineRecordResult,
   replan,
   serialize,
   taperDays,
@@ -35,6 +36,7 @@ import type {
   Feasibility,
   FeedbackField,
   Gate,
+  HistoryEntry,
   PerformanceMismatch,
   PerformanceSnapshot,
   PerformanceSource,
@@ -63,7 +65,7 @@ export interface EngineErrorView {
 }
 export type {
   Anchor, BreakReason, Capacity, ClassifiedResult, Confidence, Decision, Dose, DoseUnit, EffortCue,
-  EngineErrorCode, EngineState, Evaluation, Feasibility, FeedbackField, Gate, PerformanceMismatch, PerformanceSnapshot,
+  EngineErrorCode, EngineState, Evaluation, Feasibility, FeedbackField, Gate, HistoryEntry, PerformanceMismatch, PerformanceSnapshot,
   PerformanceSource, Phase, Profile, QualityExperience, ReasonCode, SafetyData, SafetyStatus, Workout,
   WorkoutGoal, WorkoutMainMode, WorkoutResult, WorkoutType, YellowReason,
 };
@@ -84,6 +86,14 @@ export function checkProfile(profile: Profile, deviceToday: string): void {
  */
 export function taperDaysFor(capacity: Capacity, quality: QualityExperience): number {
   return taperDays(capacity, quality);
+}
+
+/**
+ * Record a completed session. The engine classifies it and rebuilds the queue; the application never
+ * derives an evaluation, never edits the queue and never creates a workout.
+ */
+export function recordWorkoutResult(state: EngineState, workoutId: string, result: WorkoutResult): EngineState {
+  return engineRecordResult(state, workoutId, result);
 }
 
 /** Rebuild the plan for the same or a later date. The engine decides the new queue. */

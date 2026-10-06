@@ -5,6 +5,11 @@ import {STEP_FOR_FIELD, STEP_FOR_CODE} from '../application/questionnaire.ts';
 import type {QuestionnaireDraft, QuestionnaireStep} from '../application/questionnaire.ts';
 import {createCycle} from '../application/cycle.ts';
 import {refreshPlan} from '../application/clockOps.ts';
+import {submitWorkoutResult} from '../application/workoutResult.ts';
+import {nextWorkout} from '../application/planDiff.ts';
+import type {PlanChange} from '../application/planDiff.ts';
+import {clearResultDraft} from '../application/draft.ts';
+import type {WorkoutResult} from '../application/engineGateway.ts';
 import {newCycleId} from '../application/draft.ts';
 import {deviceTimestamp} from '../application/format.ts';
 import {clearDraft} from '../application/draft.ts';
@@ -30,6 +35,10 @@ import {Profile} from '../ui/screens/Profile.tsx';
 import {WorkoutDetails} from '../ui/screens/WorkoutDetails.tsx';
 import {LoadError} from '../ui/screens/LoadError.tsx';
 import {StorageUnavailable} from '../ui/screens/StorageUnavailable.tsx';
+import {ResultForm} from '../ui/screens/ResultForm.tsx';
+import type {SubmitOutcome} from '../ui/screens/ResultForm.tsx';
+import {OutcomeMissing, ResultOutcome} from '../ui/screens/ResultOutcome.tsx';
+import {ClosedWorkout} from '../ui/screens/ClosedWorkout.tsx';
 import {Notice} from '../ui/components/Layout.tsx';
 import {copyForError} from '../ui/copy/errors.ts';
 import {common, nav, notFound} from '../ui/copy/text.ts';
@@ -47,6 +56,13 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
   const [refreshing, setRefreshing] = useState(false);
   const [planError, setPlanError] = useState<UiError | null>(null);
   const [engineError, setEngineError] = useState<{error: UiError; step: QuestionnaireStep} | null>(null);
+  /**
+   * Observable changes of the last recorded result. They live in the session only: after a reload the
+   * outcome screen still shows the engine's verdict, its reason and the new plan, because all of that
+   * is derived from the stored state; only this list is gone, and it is then omitted rather than
+   * reconstructed.
+   */
+  const [outcome, setOutcome] = useState<{workoutId: string; changes: readonly PlanChange[]} | null>(null);
 
   const hasCycle = store.load.kind === 'READY';
   const guarded = guardRoute(route, {hasCycle, onboardingInProgress: store.onboardingInProgress});
@@ -101,6 +117,27 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     else setPlanError(result.error);
     setRefreshing(false);
   }, [repo, store]);
+
+  const handleSubmitResult = useCallback((workoutId: string, result: WorkoutResult): SubmitOutcome => {
+    if (repo === null || store.appState === null || store.engineState === null) {
+      return {ok: false, error: {code: 'STORAGE_UNAVAILABLE'}};
+    }
+    const recorded = submitWorkoutResult({
+      repo,
+      appState: store.appState,
+      engineState: store.engineState,
+      workoutId,
+      result,
+      deviceToday: store.today,
+    });
+    if (!recorded.ok) return {ok: false, error: {code: recorded.error.code, params: recorded.error.params}};
+
+    store.replaceActiveState({appState: recorded.done.appState, engineState: recorded.done.engineState});
+    clearResultDraft(storage);
+    setOutcome({workoutId, changes: recorded.done.changes});
+    navigate({name: 'WORKOUT_OUTCOME', id: workoutId});
+    return {ok: true};
+  }, [repo, storage, store]);
 
   const goTo = useCallback((next: Route) => {
     if (next.name !== 'QUESTIONNAIRE') setEngineError(null);
@@ -178,7 +215,47 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
         return store.appState === null || store.engineState === null ? null : <Profile appState={store.appState} engineState={store.engineState} />;
       case 'WORKOUT': {
         const workout = store.engineState?.queue.find((entry) => entry.id === effective.id) ?? null;
-        return <WorkoutDetails workout={workout} onBack={() => goTo({name: 'TODAY'})} />;
+        return (
+          <WorkoutDetails
+            workout={workout}
+            onBack={() => goTo({name: 'TODAY'})}
+            onEnterResult={() => goTo({name: 'WORKOUT_RESULT', id: effective.id})}
+          />
+        );
+      }
+      case 'WORKOUT_RESULT': {
+        const workout = store.engineState?.queue.find((entry) => entry.id === effective.id) ?? null;
+        if (workout !== null) {
+          return (
+            <ResultForm
+              workout={workout}
+              storage={storage}
+              submit={(result) => handleSubmitResult(workout.id, result)}
+              onCancel={() => goTo({name: 'WORKOUT', id: effective.id})}
+            />
+          );
+        }
+        // Not in the queue: either it was already recorded, or the plan moved on.
+        const closed = store.engineState?.history.some((entry) => entry.workout.id === effective.id) ?? false;
+        return closed
+          ? <ClosedWorkout onOpenPlan={() => goTo({name: 'PLAN'})} onBackToToday={() => goTo({name: 'TODAY'})} />
+          : <OutcomeMissing onOpenPlan={() => goTo({name: 'PLAN'})} />;
+      }
+      case 'WORKOUT_OUTCOME': {
+        if (store.engineState === null) return null;
+        const entry = store.engineState.history.find((item) => item.workout.id === effective.id) ?? null;
+        if (entry === null) return <OutcomeMissing onOpenPlan={() => goTo({name: 'PLAN'})} />;
+        return (
+          <ResultOutcome
+            entry={entry}
+            engineState={store.engineState}
+            today={store.today}
+            nextWorkout={nextWorkout(store.engineState, store.today)}
+            changes={outcome !== null && outcome.workoutId === effective.id ? outcome.changes : null}
+            onContinue={() => goTo({name: 'TODAY'})}
+            onOpenPlan={() => goTo({name: 'PLAN'})}
+          />
+        );
       }
       case 'NOT_FOUND':
         return (

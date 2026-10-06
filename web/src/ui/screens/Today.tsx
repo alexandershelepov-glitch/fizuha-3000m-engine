@@ -47,10 +47,12 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
         </Card>
       ) : null}
 
-      {view.state === 'PENDING_RESULT' ? (
+      {view.state === 'PENDING_RESULT' && view.pendingWorkouts[0] !== undefined ? (
         <Notice tone="warn" title={todayText.pendingResult.title}>
           <p>{todayText.pendingResult.text}</p>
-          <p className="hint">{todayText.pendingResult.note}</p>
+          <KeyValue label={workoutTitle(view.pendingWorkouts[0])} value={formatDateLong(view.pendingWorkouts[0].scheduledDate)} />
+          {/* Results are closed in chronological order, so the CTA always points at the earliest one. */}
+          <Button onClick={() => onNavigate({name: 'WORKOUT_RESULT', id: view.pendingWorkouts[0]!.id})}>{todayText.pendingResult.cta}</Button>
         </Notice>
       ) : null}
 
@@ -88,7 +90,11 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
       ) : null}
 
       {(view.state === 'WORKOUT_TODAY' || (view.workout !== null && (view.state === 'TAPER' || view.state === 'CHECKPOINT_REQUIRED'))) && view.workout !== null ? (
-        <WorkoutCard workout={view.workout} onOpen={() => onNavigate({name: 'WORKOUT', id: view.workout!.id})} />
+        <WorkoutCard
+          workout={view.workout}
+          onOpen={() => onNavigate({name: 'WORKOUT', id: view.workout!.id})}
+          onEnterResult={() => onNavigate({name: 'WORKOUT_RESULT', id: view.workout!.id})}
+        />
       ) : null}
 
       {view.state === 'REST_DAY' ? (
@@ -118,13 +124,14 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
   );
 }
 
-function WorkoutCard({workout, onOpen}: {workout: Workout; onOpen: () => void}): ReactNode {
+function WorkoutCard({workout, onOpen, onEnterResult}: {workout: Workout; onOpen: () => void; onEnterResult: () => void}): ReactNode {
   const pace = workoutPaceRange(workout);
   return (
     <Card title={workoutTitle(workout)}>
       <KeyValue label={todayText.workout.volume} value={workoutVolume(workout)} />
       {pace ? <KeyValue label={todayText.workout.pace} value={pace} /> : null}
       <Button onClick={onOpen}>{todayText.workout.open}</Button>
+      <Button variant="secondary" onClick={onEnterResult}>{todayText.workout.enterResult}</Button>
     </Card>
   );
 }

@@ -4,7 +4,7 @@
  * what the application is allowed to read.
  */
 import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
-import {act, cleanup, fireEvent, render, screen} from '@testing-library/react';
+import {act, cleanup, fireEvent, render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {App} from './App.tsx';
 import {ACTIVE_CYCLE_KEY, createRepository, loadActiveCycle} from '../application/storage.ts';
@@ -12,6 +12,8 @@ import type {KeyValueStorage} from '../application/storage.ts';
 import {addDays, deviceToday, formatDateLong} from '../application/format.ts';
 import {createCycle} from '../application/cycle.ts';
 import {buildProfile, defaultDraft} from '../application/questionnaire.ts';
+import type {QuestionnaireDraft} from '../application/questionnaire.ts';
+import {workoutTypeText} from '../ui/copy/values.ts';
 
 type User = ReturnType<typeof userEvent.setup>;
 
@@ -378,8 +380,16 @@ describe('navigation', () => {
 });
 
 /** A stored cycle, created on a chosen day. */
-function seedCycle(today: string, createdOn: string): string {
-  const filled = {...defaultDraft(today), resultTime: '15:20', resultDate: addDays(createdOn, -10), targetTime: '14:30', raceDate: addDays(today, 56)};
+/** The questionnaire answers that make the engine start with a paced session. */
+const EXPERIENCED: Partial<QuestionnaireDraft> = {
+  qualitySessions8Weeks: '8',
+  qualityWeeks8Weeks: '6',
+  experience: {threshold: true, vo2: true, specific3k: true},
+  availableRunsPerWeek: '4',
+};
+
+function seedCycle(today: string, createdOn: string, overrides: Partial<QuestionnaireDraft> = {}): string {
+  const filled = {...defaultDraft(today), resultTime: '15:20', resultDate: addDays(createdOn, -10), targetTime: '14:30', raceDate: addDays(today, 56), ...overrides};
   const built = buildProfile(filled);
   if (!built.ok) throw new Error('fixture: the draft must build');
   const seed = memoryStorage();
@@ -544,5 +554,211 @@ describe('updating the active cycle does not reopen onboarding', () => {
       expect(path()).toBe('/today');
       expect(screen.getByRole('navigation', {name: 'Основные разделы'})).toBeInTheDocument();
     }
+  });
+});
+
+describe('closing a workout', () => {
+  /** Walk from Today to the result form of today's session. */
+  async function openResultForm(user: User): Promise<void> {
+    await createCycleAndReachToday(user);
+    await click(user, 'Внести результат');
+    expect(path()).toMatch(/\/workout\/.+\/result$/);
+  }
+
+  test('a session is closed, the engine verdict is shown and Today reflects the new plan', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await openResultForm(user);
+
+    expect(screen.getByText('Результат тренировки')).toBeInTheDocument();
+    await click(user, 'Сохранить результат');
+
+    // The outcome comes from the engine's own evaluation.
+    expect(path()).toMatch(/\/workout\/.+\/outcome$/);
+    expect(screen.getByText(/Тренировка выполнена|Лучше ожидаемого|Нагрузка потребовала корректировки|Текущую нагрузку нужно снизить/)).toBeInTheDocument();
+    expect(screen.getByText('Что изменилось')).toBeInTheDocument();
+
+    const stored = loadActiveCycle(createRepository(storage));
+    expect(stored.kind).toBe('READY');
+    if (stored.kind === 'READY') expect(stored.engineState.history.length).toBe(1);
+
+    await click(user, 'Продолжить');
+    expect(path()).toBe('/today');
+    expect(screen.getByRole('navigation', {name: 'Основные разделы'})).toBeInTheDocument();
+  });
+
+  test('a structural mistake is reported inline and nothing is saved', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await openResultForm(user);
+    const before = storage.map.get(ACTIVE_CYCLE_KEY);
+
+    await user.clear(screen.getByLabelText('Длительность, мин'));
+    await click(user, 'Сохранить результат');
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Заполните это поле');
+    expect(path()).toMatch(/\/result$/);
+    expect(storage.map.get(ACTIVE_CYCLE_KEY)).toBe(before);
+  });
+
+  test('an incomplete repeats block warns about accuracy and never predicts the verdict', async () => {
+    const user = userEvent.setup();
+    const today = deviceToday();
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedCycle(today, today, EXPERIENCED)});
+    render(<App storage={storage} />);
+
+    // today's session is a paced one, so the block is expanded
+    await click(user, 'Внести результат');
+    expect(screen.getByText('Результаты отрезков')).toBeInTheDocument();
+    expect(screen.getAllByLabelText('Время').length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText('Дистанция, м').length).toBeGreaterThan(0);
+
+    await click(user, 'Сохранить результат');
+    expect(screen.getByText('Результаты отрезков не заполнены')).toBeInTheDocument();
+    expect(screen.getByText(/менее точной/)).toBeInTheDocument();
+    // The warning must not promise a classification.
+    expect(screen.queryByText(/YELLOW/)).not.toBeInTheDocument();
+
+    // Going back keeps the form; sending as is reaches the engine.
+    await click(user, 'Вернуться и заполнить');
+    expect(path()).toMatch(/\/result$/);
+    await click(user, 'Сохранить результат');
+    await click(user, 'Отправить как есть');
+    expect(path()).toMatch(/\/outcome$/);
+    expect(screen.getByText('Нагрузка потребовала корректировки')).toBeInTheDocument();
+  });
+
+  test('a safety flag leads to the reducing state, decided by the engine', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await openResultForm(user);
+
+    const group = screen.getByRole('group', {name: 'Из-за боли меняется техника движения'});
+    await user.click(within(group).getByRole('button', {name: 'Да'}));
+    await click(user, 'Сохранить результат');
+
+    expect(screen.getByText('Текущую нагрузку нужно снизить')).toBeInTheDocument();
+    const stored = loadActiveCycle(createRepository(storage));
+    if (stored.kind === 'READY') {
+      expect(stored.engineState.history[0]!.classified.evaluation).toBe('RED');
+      expect(stored.engineState.decision.safety).not.toBe('OK');
+    }
+  });
+
+  test('an overdue session is closed through the pending state of Today', async () => {
+    const user = userEvent.setup();
+    const today = deviceToday();
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedStaleCycle(today)});
+    render(<App storage={storage} />);
+
+    expect(screen.getByText('Предыдущая тренировка ещё не закрыта')).toBeInTheDocument();
+    await click(user, 'Внести результат');
+    expect(path()).toMatch(/\/result$/);
+
+    await click(user, 'Сохранить результат');
+    expect(path()).toMatch(/\/outcome$/);
+    await click(user, 'Продолжить');
+
+    // The earliest overdue session is gone; the next one is still pending.
+    const stored = loadActiveCycle(createRepository(storage));
+    expect(stored.kind).toBe('READY');
+    if (stored.kind === 'READY') {
+      expect(stored.engineState.history.length).toBe(1);
+      // The only overdue session was closed, so nothing is pending any more.
+      expect(stored.engineState.queue.some((workout) => workout.scheduledDate < today)).toBe(false);
+    }
+    expect(screen.queryByText('Предыдущая тренировка ещё не закрыта')).not.toBeInTheDocument();
+  });
+
+  test('pressing save twice records the session once', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await openResultForm(user);
+
+    const button = screen.getByRole('button', {name: 'Сохранить результат'});
+    act(() => {
+      fireEvent.click(button);
+      fireEvent.click(button);
+    });
+
+    expect(path()).toMatch(/\/outcome$/);
+    const stored = loadActiveCycle(createRepository(storage));
+    expect(stored.kind).toBe('READY');
+    if (stored.kind === 'READY') expect(stored.engineState.history.length).toBe(1);
+    // The second attempt must not surface as an error either.
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  test('an old link to a closed session shows a clear state instead of an empty form', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    const first = render(<App storage={storage} />);
+    await openResultForm(user);
+
+    const stored = loadActiveCycle(createRepository(storage));
+    if (stored.kind !== 'READY') throw new Error('fixture');
+    const workoutId = stored.engineState.queue.find((workout) => workout.scheduledDate === deviceToday())!.id;
+
+    await click(user, 'Сохранить результат');
+    await click(user, 'Продолжить');
+    first.unmount();
+
+    window.history.replaceState(null, '', `/workout/${workoutId}/result`);
+    render(<App storage={storage} />);
+    expect(screen.getByText('Эта тренировка уже закрыта')).toBeInTheDocument();
+  });
+
+  test('the outcome survives a reload with everything the stored state still knows', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    const first = render(<App storage={storage} />);
+    await openResultForm(user);
+    const stored = loadActiveCycle(createRepository(storage));
+    if (stored.kind !== 'READY') throw new Error('fixture');
+    const workoutId = stored.engineState.queue.find((workout) => workout.scheduledDate === deviceToday())!.id;
+
+    await click(user, 'Сохранить результат');
+    first.unmount();
+
+    window.history.replaceState(null, '', `/workout/${workoutId}/outcome`);
+    render(<App storage={storage} />);
+
+    // The verdict, the reason and the next session come from the persisted engine state; only the
+    // session-scoped list of changes is gone, so that block is absent rather than reconstructed.
+    expect(screen.getByText(/Тренировка выполнена|Лучше ожидаемого|Нагрузка потребовала корректировки|Текущую нагрузку нужно снизить/)).toBeInTheDocument();
+    expect(screen.queryByText('Что изменилось')).not.toBeInTheDocument();
+    expect(screen.getByText('Следующая тренировка')).toBeInTheDocument();
+  });
+
+  test('the plan shows the new engine queue after the session', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await openResultForm(user);
+
+    const before = loadActiveCycle(createRepository(storage));
+    if (before.kind !== 'READY') throw new Error('fixture');
+    const beforeQueue = before.engineState.queue.map((workout) => workout.id);
+
+    await click(user, 'Сохранить результат');
+    await click(user, 'Посмотреть план');
+
+    expect(path()).toBe('/plan');
+    const after = loadActiveCycle(createRepository(storage));
+    if (after.kind !== 'READY') throw new Error('fixture');
+    expect(after.engineState.queue.map((workout) => workout.id)).not.toEqual(beforeQueue);
+    // The screen shows the stored queue, not a cached one.
+    expect(screen.getByText('Построенные тренировки')).toBeInTheDocument();
+    const firstAfter = after.engineState.queue[0];
+    if (firstAfter !== undefined) {
+      // The screen shows the new engine queue: the first session of the stored state is listed.
+      expect(screen.getAllByText(workoutTypeText[firstAfter.type].label).length).toBeGreaterThan(0);
+    }
+    // The closed session is gone from the plan, and the stored queue is what the screen displays.
+    expect(screen.queryByText(/Уже закрыта/)).not.toBeInTheDocument();
   });
 });

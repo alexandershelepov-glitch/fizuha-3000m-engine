@@ -7,7 +7,8 @@
  */
 import {defaultDraft} from './questionnaire.ts';
 import type {QuestionnaireDraft} from './questionnaire.ts';
-import {QUESTIONNAIRE_DRAFT_KEY} from './storage.ts';
+import {QUESTIONNAIRE_DRAFT_KEY, RESULT_DRAFT_KEY} from './storage.ts';
+import type {ResultDraft} from './resultForm.ts';
 import type {KeyValueStorage} from './storage.ts';
 
 export function loadDraft(storage: KeyValueStorage | null, today: string): QuestionnaireDraft {
@@ -48,4 +49,44 @@ export function newCycleId(): string {
   const cryptoApi = globalThis.crypto;
   if (cryptoApi && typeof cryptoApi.randomUUID === 'function') return cryptoApi.randomUUID();
   return `cycle-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+interface StoredResultDraft {
+  readonly workoutId: string;
+  readonly draft: ResultDraft;
+}
+
+/**
+ * Result form draft for one workout. It is dropped as soon as the result is stored, and it is never
+ * read by the engine.
+ */
+export function loadResultDraft(storage: KeyValueStorage | null, workoutId: string): ResultDraft | null {
+  if (storage === null) return null;
+  const raw = storage.getItem(RESULT_DRAFT_KEY);
+  if (raw === null) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<StoredResultDraft>;
+    if (parsed.workoutId !== workoutId || typeof parsed.draft !== 'object' || parsed.draft === null) return null;
+    return parsed.draft;
+  } catch {
+    return null;
+  }
+}
+
+export function saveResultDraft(storage: KeyValueStorage | null, workoutId: string, draft: ResultDraft): void {
+  if (storage === null) return;
+  try {
+    storage.setItem(RESULT_DRAFT_KEY, JSON.stringify({workoutId, draft} satisfies StoredResultDraft));
+  } catch {
+    // A draft that cannot be stored must never block the form.
+  }
+}
+
+export function clearResultDraft(storage: KeyValueStorage | null): void {
+  if (storage === null) return;
+  try {
+    storage.removeItem(RESULT_DRAFT_KEY);
+  } catch {
+    // ignore
+  }
 }

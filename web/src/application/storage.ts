@@ -17,6 +17,11 @@ export const ACTIVE_CYCLE_KEY = 'fizuha.activeCycle';
  * §8.1 stays untouched — but the wireframes (§0.6) require the answers to survive a reload.
  */
 export const QUESTIONNAIRE_DRAFT_KEY = 'fizuha.questionnaireDraft';
+/**
+ * Draft of the result form, keyed by workout id. Like the questionnaire draft it holds unsaved user
+ * input only — no sport state, nothing the engine would keep.
+ */
+export const RESULT_DRAFT_KEY = 'fizuha.resultDraft';
 
 /** The slice of the Web Storage API the application actually uses. */
 export interface KeyValueStorage {
