@@ -4,11 +4,8 @@
  */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {applyBreak, createEngine, deserialize, moveWorkout, recordCheckpoint, recordResult,
-        replan, serialize, skipWorkout} from '../src/index.ts';
-// NOTE: src/index.ts does not re-export validation.ts, so the calendar helpers are
-// imported from their own module. Recorded in the audit report as an API-surface gap.
-import {addDays, day} from '../src/validation.ts';
+import {addDays, applyBreak, createEngine, day, deserialize, moveWorkout, recordCheckpoint,
+        recordResult, replan, serialize, skipWorkout} from '../src/index.ts';
 import type {EngineState, PerformanceSnapshot, Profile, TrainingBreak, WorkoutResult} from '../src/index.ts';
 import {NOW, dateAfter, experienced, feedback, profile as baseProfile} from './helpers.ts';
 

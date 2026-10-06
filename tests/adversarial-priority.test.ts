@@ -180,12 +180,16 @@ test('C11 an OPEN gate is closed again by RED, with no quality left anywhere', (
 });
 
 test('C12 TAPER suppresses the diagnostic CONTROL workout without losing the checkpoint request', () => {
-  let s = createEngine(baseProfile({raceDate: dateAfter(4)}), NOW);
-  assert.equal(s.decision.phase, 'TAPER');
-  s = replan(s, dateAfter(21));
-  const inTaper = replan(createEngine(baseProfile({raceDate: dateAfter(4)}), NOW), NOW);
+  const inTaper = createEngine(baseProfile({raceDate: dateAfter(4)}), NOW);
+  assert.equal(inTaper.decision.phase, 'TAPER');
   assert.ok(!inTaper.queue.some(w => w.type === 'CONTROL'), 'no 3 km time trial inside the taper');
+  assert.ok(inTaper.queue.length > 0, 'the taper still plans sessions');
+  assert.ok(inTaper.queue.every(w => w.scheduledDate <= inTaper.profile.raceDate), 'nothing is planned after the race date');
   assert.ok(inTaper.queue.every(w => w.volumeFactor === 0.6), 'taper reduces volume for every session');
+  // The checkpoint request itself survives inside the active window.
+  const carried = replan(inTaper, inTaper.profile.raceDate);
+  assert.equal(carried.decision.phase, 'TAPER');
+  assert.ok(!carried.queue.some(w => w.type === 'CONTROL'));
 });
 
 test('C13 RED outranks the diagnostic-hold release path: an ordinary GREEN REST cannot clear it', () => {

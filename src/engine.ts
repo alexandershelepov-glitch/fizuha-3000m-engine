@@ -183,7 +183,7 @@ export function deserialize(json: string): EngineState {
 /** Moving preserves the dose and rejects density/weekly limit violations. */
 export function moveWorkout(state: EngineState, id: string, date: string): EngineState {
   const s = copy(state); const w = s.queue.find(w => w.id === id);
-  if (!w || !w.movable || day(date) < day(s.asOf) || day(date) >= day(s.asOf) + 7) throw new Error('Move outside queue horizon');
+  if (!w || !w.movable || day(date) < day(s.asOf) || day(date) >= day(s.asOf) + 7 || day(date) > day(s.profile.raceDate)) throw new Error('Move outside queue horizon');
   if (s.queue.some(other => other.id !== id && other.scheduledDate === date) || s.history.some(h => h.result.date === date)) throw new Error('Occupied date');
   if (w.countsAsQuality) {
     const others = [...s.history.filter(h => h.workout.countsAsQuality).map(h => ({date: h.result.date, hours: h.workout.minimumRecoveryHoursBeforeQuality})), ...s.queue.filter(other => other.id !== id && other.countsAsQuality).map(other => ({date: other.scheduledDate, hours: other.minimumRecoveryHoursBeforeQuality}))];

@@ -3,15 +3,13 @@
  *
  * Two groups:
  *  - "rejected": the engine must refuse the input.
- *  - "documented gap": input that is currently accepted. These are pinned so that any
- *    future change is visible; each one records a known validation weakness.
+ *  - "documented gap": input that is still accepted. These are pinned so that any future
+ *    change is visible; each one records a remaining, deliberately unpatched weakness.
  */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {classify, createEngine, deserialize, moveWorkout, recordCheckpoint, recordResult,
-        replan, updateTrainingData} from '../src/index.ts';
-// NOTE: validation helpers are not re-exported by src/index.ts (audit API-surface gap).
-import {validateResult} from '../src/validation.ts';
+        replan, updateTrainingData, validateResult, EventDatePassedError} from '../src/index.ts';
 import type {Workout, WorkoutResult} from '../src/index.ts';
 import {NOW, dateAfter, experienced, feedback, healthy, profile as baseProfile} from './helpers.ts';
 
@@ -134,27 +132,37 @@ test('E06 DOCUMENTED GAP: contradictory training volumes are accepted', () => {
   assert.doesNotThrow(() => createEngine(baseProfile({actualRunsPerWeek: 6, availableRunsPerWeek: 1}), NOW));
 });
 
-test('E07 DOCUMENTED GAP: a race date in the past silently means "permanent taper"', () => {
-  const s = createEngine(baseProfile({...experienced, raceDate: dateAfter(-10)}), NOW);
-  assert.equal(s.decision.phase, 'TAPER');
-  assert.ok(s.decision.reasons.includes('TAPER_STARTED'));
-  // No post-race phase exists, so the engine treats a finished race as an ongoing taper.
-  assert.equal(replan(s, dateAfter(30)).decision.phase, 'TAPER');
+test('E07 a race date in the past is rejected with EVENT_DATE_PASSED (approved decision 1)', () => {
+  // The gap is closed: there is deliberately no post-race phase, so a passed race date is refused.
+  for (const offset of [-1, -10, -400]) {
+    assert.throws(() => createEngine(baseProfile({...experienced, raceDate: dateAfter(offset)}), NOW),
+      (e: unknown) => e instanceof EventDatePassedError && (e as EventDatePassedError).code === 'EVENT_DATE_PASSED',
+      `raceDate ${dateAfter(offset)} must be rejected`);
+  }
+  // The message carries the machine-readable code as well.
+  assert.throws(() => createEngine(baseProfile({raceDate: dateAfter(-1)}), NOW), /EVENT_DATE_PASSED/);
 });
 
-test('E08 DOCUMENTED GAP: feasibility is not monotonic in the number of available sessions', async () => {
-  // spec 10 penalises exactly two available sessions; one session is not penalised at all.
+test('E08 feasibility is monotonic in the number of available sessions (approved decision 2)', async () => {
+  // <= 2 available sessions step the verdict down one level; 3 or more do not.
   const {assessFeasibility} = await import('../src/index.ts');
+  // The scale index grows as the verdict gets worse, so a larger index means a less favourable goal.
   const scale = ['PLAUSIBLE', 'AMBITIOUS', 'LOW_PROBABILITY'];
-  const one = assessFeasibility(0.04, 6, 'T1', 'Q1', 1);
-  const two = assessFeasibility(0.04, 6, 'T1', 'Q1', 2);
-  const three = assessFeasibility(0.04, 6, 'T1', 'Q1', 3);
-  assert.equal(one, 'AMBITIOUS');
-  assert.equal(two, 'LOW_PROBABILITY');
-  assert.equal(three, 'AMBITIOUS');
-  assert.ok(scale.indexOf(one) < scale.indexOf(two),
-    'one available session must not be rated more feasible than two');
-  assert.equal(one, three, 'one and three sessions give the same verdict while two is worse');
+  for (const [gap, weeks, t, q] of [[0.04, 6, 'T1', 'Q1'], [0.05, 8, 'T2', 'Q1'], [0.08, 10, 'T2', 'Q2'], [0.12, 14, 'T2', 'Q2']] as const) {
+    const values = [1, 2, 3, 4, 5, 6, 7].map(available => assessFeasibility(gap, weeks, t as never, q as never, available)!);
+    assert.equal(values[0], values[1], `one and two available sessions must agree (gap=${gap})`);
+    for (let i = 0; i < values.length - 1; i++) {
+      assert.ok(scale.indexOf(values[i]!) >= scale.indexOf(values[i + 1]!),
+        `the verdict must not worsen as availability grows: ${values.join(' -> ')} (gap=${gap})`);
+    }
+    assert.equal(scale.indexOf(values[0]!) - scale.indexOf(values[2]!), 1,
+      `<=2 sessions step the verdict down exactly one level (gap=${gap})`);
+    assert.equal(values[2], values[6], `3+ sessions are unaffected (gap=${gap})`);
+  }
+  // The 3+ branch is untouched: exactly the previous behaviour.
+  assert.equal(assessFeasibility(0.05, 6, 'T2', 'Q1', 2), 'AMBITIOUS');
+  assert.equal(assessFeasibility(0.05, 6, 'T2', 'Q1', 3), 'PLAUSIBLE');
+  assert.equal(assessFeasibility(0.03, 6, 'T0', 'Q0', 1), 'PLAUSIBLE', 'no modifier at or below the 3% threshold');
 });
 
 test('E09 no scenario or persona identifiers drive the engine logic', async () => {

@@ -7,7 +7,7 @@
  */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {createEngine, decide, moveWorkout, recordResult, replan, resolveDiagnostic} from '../src/index.ts';
+import {createEngine, day, decide, moveWorkout, recordResult, replan, resolveDiagnostic} from '../src/index.ts';
 import type {EngineState, Profile} from '../src/index.ts';
 import {NOW, dateAfter, experienced, feedback, healthy, profile as baseProfile} from './helpers.ts';
 
@@ -81,7 +81,10 @@ test('A04 swept queue is always recordable (GREEN and RED) across profiles and d
           }
           const q = s.queue.find(w => w.countsAsQuality);
           if (q) s = recordResult(s, q.id, feedback(q));
-          s = replan(s, dateAfter(2, s.asOf));
+          // The active plan ends on the race date, so the sweep must not run past it.
+          if (s.asOf >= s.profile.raceDate) break;
+          const next = dateAfter(2, s.asOf);
+          s = replan(s, day(next) > day(s.profile.raceDate) ? s.profile.raceDate : next);
         }
       }
     }

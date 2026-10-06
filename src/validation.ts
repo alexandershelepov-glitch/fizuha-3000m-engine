@@ -13,8 +13,24 @@ export function validateSafety(s: SafetyData): void {
   number(s.pain, 0, 10);
   for (const field of ['painIncreasing', 'alteredMovement', 'painWalkingOrRest', 'swelling', 'acuteIllness', 'otherStop', 'needsAssessment'] as const) if (typeof s[field] !== 'boolean') throw new Error('Invalid safety flag');
 }
+/**
+ * Controlled failure raised when the active v1.0 plan would operate after the target race date.
+ * The engine is active up to and including `raceDate`; there is deliberately no post-race phase.
+ */
+export class EventDatePassedError extends Error {
+  readonly code = 'EVENT_DATE_PASSED';
+  constructor(message = 'EVENT_DATE_PASSED: the active plan works only up to and including the target race date') {
+    super(message); this.name = 'EventDatePassedError';
+  }
+}
+/** `raceDate = now` is valid; only `now > raceDate` is rejected. */
+export function validateEventDate(p: Profile, now: string): void {
+  if (day(now) > day(p.raceDate)) throw new EventDatePassedError();
+}
 export function validateProfile(p: Profile, now: string): void {
-  day(now); day(p.raceDate); number(p.targetTimeSeconds, 1);
+  day(now); day(p.raceDate);
+  validateEventDate(p, now);
+  number(p.targetTimeSeconds, 1);
   for (const n of [p.regularRunningWeeks, p.actualRunsPerWeek, p.averageWeeklyKm4Weeks, p.longestUsualRunKm, p.qualitySessions8Weeks]) number(n, 0);
   number(p.actualRunsPerWeek, 0, 7); number(p.availableRunsPerWeek, 1, 7);
   if (!Number.isInteger(p.availableRunsPerWeek)) throw new Error('Availability must be integer');

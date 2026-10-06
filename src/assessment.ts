@@ -36,7 +36,9 @@ export function assessFeasibility(gap: number | null, weeks: number, t: Capacity
   else base = weeks >= 3 ? 'PLAUSIBLE' : 'AMBITIOUS';
   const scale = ['PLAUSIBLE', 'AMBITIOUS', 'LOW_PROBABILITY'] as const;
   let index = scale.indexOf(base);
-  if (gap > 0.03 + 1e-12) index += Number(!trained) + Number(q === 'Q0') + Number(available === 2);
+  // Approved decision 2: at most two available sessions step Goal Feasibility down one level, so
+  // one available session can never be rated more favourably than two on otherwise equal data.
+  if (gap > 0.03 + 1e-12) index += Number(!trained) + Number(q === 'Q0') + Number(available <= 2);
   return scale[Math.min(2, index)]!;
 }
 export function taperDays(t: Capacity, q: QualityExperience): number { return t === 'T3' && q === 'Q2' ? 10 : t === 'T2' || t === 'T3' ? 7 : 5; }
