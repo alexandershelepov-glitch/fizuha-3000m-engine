@@ -558,6 +558,21 @@ describe('updating the active cycle does not reopen onboarding', () => {
   });
 });
 
+/** The first session of the stored queue that is scheduled after today. */
+function futureWorkoutId(storage: KeyValueStorage): string {
+  const loaded = loadActiveCycle(createRepository(storage));
+  if (loaded.kind !== 'READY') throw new Error('fixture');
+  const future = loaded.engineState.queue.find((workout) => workout.scheduledDate > deviceToday());
+  if (!future) throw new Error('fixture: no future session');
+  return future.id;
+}
+
+function storedEngineState(storage: KeyValueStorage) {
+  const loaded = loadActiveCycle(createRepository(storage));
+  if (loaded.kind !== 'READY') throw new Error('fixture');
+  return {appState: loaded.appState, engineState: loaded.engineState};
+}
+
 describe('closing a workout', () => {
   /** Walk from Today to the result form of today's session. */
   async function openResultForm(user: User): Promise<void> {
@@ -765,15 +780,6 @@ describe('closing a workout', () => {
 });
 
 describe('a session in the future', () => {
-  /** The first session of the stored queue that is scheduled after today. */
-  function futureWorkoutId(storage: KeyValueStorage): string {
-    const loaded = loadActiveCycle(createRepository(storage));
-    if (loaded.kind !== 'READY') throw new Error('fixture');
-    const future = loaded.engineState.queue.find((workout) => workout.scheduledDate > deviceToday());
-    if (!future) throw new Error('fixture: no future session');
-    return future.id;
-  }
-
   test('its details are visible but the result cannot be entered yet', async () => {
     const user = userEvent.setup();
     const storage = memoryStorage();
@@ -827,5 +833,219 @@ describe('a session in the future', () => {
     await createCycleAndReachToday(user);
 
     expect(screen.getByRole('button', {name: 'Внести результат'})).toBeInTheDocument();
+  });
+});
+
+describe('skipping a session', () => {
+  test('the confirmation can be cancelled without changing anything', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await createCycleAndReachToday(user);
+    const raw = storage.map.get(ACTIVE_CYCLE_KEY);
+
+    await click(user, 'Открыть тренировку');
+    await click(user, 'Не смогу выполнить');
+    expect(screen.getByText('Пропустить эту тренировку?')).toBeInTheDocument();
+    await click(user, 'Отмена');
+
+    expect(screen.queryByText('Пропустить эту тренировку?')).not.toBeInTheDocument();
+    expect(storage.map.get(ACTIVE_CYCLE_KEY)).toBe(raw);
+  });
+
+  test('confirming records the skip, updates the plan and returns to Today', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await createCycleAndReachToday(user);
+
+    const before = storedEngineState(storage);
+    const todayWorkout = before.engineState.queue.find((workout) => workout.scheduledDate === deviceToday());
+    expect(todayWorkout).toBeDefined();
+
+    await click(user, 'Открыть тренировку');
+    await click(user, 'Не смогу выполнить');
+    await click(user, 'Пропустить');
+
+    expect(path()).toBe('/today');
+    expect(screen.getByRole('navigation', {name: 'Основные разделы'})).toBeInTheDocument();
+    const after = storedEngineState(storage);
+    expect(after.engineState.queue.some((workout) => workout.id === todayWorkout!.id)).toBe(false);
+    expect(after.engineState.history.length).toBe(0);
+    const skipped = after.appState.events.filter((event) => event.type === 'WORKOUT_SKIPPED');
+    expect(skipped.length).toBe(1);
+    expect(skipped[0]).toMatchObject({cause: 'VOLUNTARY', workoutId: todayWorkout!.id});
+  });
+
+  test('an overdue session can be closed as not done from Today', async () => {
+    const user = userEvent.setup();
+    const today = deviceToday();
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedCycle(today, addDays(today, -2))});
+    render(<App storage={storage} />);
+
+    expect(screen.getByText('Предыдущая тренировка ещё не закрыта')).toBeInTheDocument();
+    await click(user, 'Я её не выполнял');
+
+    expect(path()).toBe('/today');
+    const after = storedEngineState(storage);
+    const skipped = after.appState.events.filter((event) => event.type === 'WORKOUT_SKIPPED');
+    expect(skipped.length).toBe(1);
+    expect(skipped[0]).toMatchObject({cause: 'PAST_DUE'});
+    // The overdue session of the seeded cycle is resolved, so Today is no longer pending.
+    expect(screen.queryByText('Предыдущая тренировка ещё не закрыта')).not.toBeInTheDocument();
+  });
+});
+
+describe('moving a session', () => {
+  test('a future session can be moved and the new date is kept', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await createCycleAndReachToday(user);
+
+    const id = futureWorkoutId(storage);
+    const before = storedEngineState(storage);
+    const original = before.engineState.queue.find((workout) => workout.id === id)!;
+    const occupiedDates = new Set(before.engineState.queue.map((workout) => workout.scheduledDate));
+    const target = Array.from({length: 7}, (_, offset) => addDays(before.engineState.asOf, offset))
+      .find((date) => date >= deviceToday() && date < before.engineState.profile.raceDate && !occupiedDates.has(date))!;
+    expect(target).toBeDefined();
+
+    act(() => {
+      window.history.replaceState(null, '', `/workout/${id}/move`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    expect(screen.getByText('Перенести тренировку')).toBeInTheDocument();
+    expect(screen.getByText(formatDateLong(original.scheduledDate))).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', {name: new RegExp(formatDateLong(target))}));
+    await click(user, 'Перенести');
+
+    // Back on the details of the same session, now showing the new date.
+    expect(path()).toBe(`/workout/${id}`);
+    expect(screen.getByText(formatDateLong(target))).toBeInTheDocument();
+    const after = storedEngineState(storage);
+    expect(after.engineState.queue.find((workout) => workout.id === id)?.scheduledDate).toBe(target);
+    expect(after.appState.events.filter((event) => event.type === 'WORKOUT_MOVED').length).toBe(1);
+  });
+
+  test('a date the engine refuses is reported by its code', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await createCycleAndReachToday(user);
+
+    const id = futureWorkoutId(storage);
+    const state = storedEngineState(storage);
+    const original = state.engineState.queue.find((workout) => workout.id === id)!;
+    // The next session already lives on that date.
+    const occupied = state.engineState.queue.find((workout) => workout.scheduledDate !== original.scheduledDate && workout.scheduledDate > deviceToday())!.scheduledDate;
+    const raw = storage.map.get(ACTIVE_CYCLE_KEY);
+
+    act(() => {
+      window.history.replaceState(null, '', `/workout/${id}/move`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await user.click(screen.getByRole('radio', {name: new RegExp(formatDateLong(occupied))}));
+    await click(user, 'Перенести');
+
+    expect(screen.getByText('На эту дату уже есть тренировка')).toBeInTheDocument();
+    expect(storage.map.get(ACTIVE_CYCLE_KEY)).toBe(raw);
+  });
+});
+
+describe('recording a checkpoint', () => {
+  test('a required checkpoint is recorded and the assessment screen shows both values', async () => {
+    const user = userEvent.setup();
+    const today = deviceToday();
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedCycle(today, today, {hasResult: false})});
+    render(<App storage={storage} />);
+
+    expect(screen.getByText('Нужен контрольный результат')).toBeInTheDocument();
+    await click(user, 'Внести контрольный результат');
+    expect(path()).toBe('/checkpoint');
+
+    await user.type(screen.getByLabelText('Результат на 3000 м'), '14:50');
+    await click(user, 'Сохранить результат');
+
+    expect(path()).toBe('/checkpoint/outcome');
+    expect(screen.getByText('Оценка обновлена')).toBeInTheDocument();
+    expect(screen.getByText('14:50')).toBeInTheDocument();
+    expect(screen.getByText('Предыдущая форма')).toBeInTheDocument();
+
+    const after = storedEngineState(storage);
+    expect(after.engineState.profile.performance?.timeSeconds).toBe(890);
+    expect(after.engineState.checkpointRequired).toBe(false);
+
+    await click(user, 'Продолжить');
+    expect(path()).toBe('/today');
+    expect(screen.queryByText('Нужен контрольный результат')).not.toBeInTheDocument();
+  });
+
+  test('the immutable baseline keeps the first assessment', async () => {
+    const user = userEvent.setup();
+    const today = deviceToday();
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedCycle(today, today)});
+    render(<App storage={storage} />);
+
+    act(() => {
+      window.history.replaceState(null, '', '/checkpoint');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await user.type(screen.getByLabelText('Результат на 3000 м'), '14:50');
+    await click(user, 'Сохранить результат');
+
+    const after = storedEngineState(storage);
+    expect(after.appState.cycle.baseline.performance?.timeSeconds).toBe(920);
+    expect(after.engineState.profile.performance?.timeSeconds).toBe(890);
+  });
+
+  test('an impossible date is reported by the engine code', async () => {
+    const user = userEvent.setup();
+    const today = deviceToday();
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedCycle(today, today, {hasResult: false})});
+    render(<App storage={storage} />);
+
+    await click(user, 'Внести контрольный результат');
+    await user.type(screen.getByLabelText('Результат на 3000 м'), '14:50');
+    fireEvent.change(screen.getByLabelText('Дата результата'), {target: {value: addDays(today, 1)}});
+    await click(user, 'Сохранить результат');
+
+    // The interface bounds the calendar, and the application refuses the same request anyway.
+    expect(path()).toBe('/checkpoint');
+    expect(screen.queryByText('Оценка обновлена')).not.toBeInTheDocument();
+    expect(storage.map.get(ACTIVE_CYCLE_KEY)).not.toBeNull();
+  });
+
+  test('a malformed time is refused before the engine is asked', async () => {
+    const user = userEvent.setup();
+    const today = deviceToday();
+    const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedCycle(today, today, {hasResult: false})});
+    render(<App storage={storage} />);
+
+    await click(user, 'Внести контрольный результат');
+    await user.type(screen.getByLabelText('Результат на 3000 м'), '14.50');
+    await click(user, 'Сохранить результат');
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Введите время в формате ММ:СС');
+    expect(path()).toBe('/checkpoint');
+  });
+});
+
+describe('history of actions', () => {
+  test('skips, moves and checkpoints appear as chronological facts', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await createCycleAndReachToday(user);
+
+    await click(user, 'Открыть тренировку');
+    await click(user, 'Не смогу выполнить');
+    await click(user, 'Пропустить');
+
+    await clickIn(user, screen.getByRole('navigation', {name: 'Основные разделы'}), 'История');
+    expect(screen.getByText('События цикла')).toBeInTheDocument();
+    expect(screen.getByText(/Тренировка пропущена/)).toBeInTheDocument();
+    expect(screen.getByText('Цикл создан')).toBeInTheDocument();
   });
 });

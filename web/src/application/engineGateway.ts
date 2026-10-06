@@ -12,9 +12,12 @@ import {
   EngineError,
   createEngine,
   deserialize,
+  moveWorkout as engineMoveWorkout,
+  recordCheckpoint as engineRecordCheckpoint,
   recordResult as engineRecordResult,
   replan,
   serialize,
+  skipWorkout as engineSkipWorkout,
   taperDays,
   validateProfile,
 } from '../../../src/index.ts';
@@ -94,6 +97,27 @@ export function taperDaysFor(capacity: Capacity, quality: QualityExperience): nu
  */
 export function recordWorkoutResult(state: EngineState, workoutId: string, result: WorkoutResult): EngineState {
   return engineRecordResult(state, workoutId, result);
+}
+
+/**
+ * Skip a scheduled session. The clock is deliberately left where the state already is: the engine
+ * writes off every past-due session when it is asked to advance to `now`, and an explicit decision
+ * about one session must never resolve the others (INV-1).
+ */
+export function skipWorkout(state: EngineState, workoutId: string, now: string): EngineState {
+  return engineSkipWorkout(state, workoutId, now);
+}
+
+/** Move a session to another date. The engine owns horizon, occupancy, recovery and quality rules. */
+export function moveWorkout(state: EngineState, workoutId: string, date: string): EngineState {
+  return engineMoveWorkout(state, workoutId, date);
+}
+
+/**
+ * Record a new 3000 m assessment. The engine overwrites Current Performance and rebuilds the plan.
+ */
+export function recordCheckpoint(state: EngineState, performance: PerformanceSnapshot, now: string): EngineState {
+  return engineRecordCheckpoint(state, performance, now);
 }
 
 /** Rebuild the plan for the same or a later date. The engine decides the new queue. */

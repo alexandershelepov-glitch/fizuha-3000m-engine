@@ -56,9 +56,32 @@ export async function createCycleAndReachToday(page: Page): Promise<void> {
   await expect(page.getByRole('navigation', {name: 'Основные разделы'})).toBeVisible();
 }
 
-export async function readEngineState(page: Page): Promise<{history: unknown[]; queue: {id: string; scheduledDate: string}[]}> {
+export interface StoredCycle {
+  formatVersion: number;
+  cycle: {engineState: string; baseline: {performance: {timeSeconds: number} | null; targetTimeSeconds: number}};
+  events: {type: string; cause?: string; workoutId?: string; fromDate?: string; toDate?: string}[];
+}
+
+export async function readActiveCycle(page: Page): Promise<StoredCycle> {
+  const stored = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
+  if (stored === null) throw new Error('no active cycle is stored');
+  return JSON.parse(stored) as StoredCycle;
+}
+
+export async function readEngineState(page: Page): Promise<{history: unknown[]; queue: {id: string; scheduledDate: string; type: string}[]; asOf: string; checkpointRequired: boolean; profile: {performance: {timeSeconds: number} | null}}> {
   const stored = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
   if (stored === null) throw new Error('no active cycle is stored');
   const envelope = JSON.parse(stored) as {cycle: {engineState: string}};
-  return JSON.parse(envelope.cycle.engineState) as {history: unknown[]; queue: {id: string; scheduledDate: string}[]};
+  return JSON.parse(envelope.cycle.engineState) as {history: unknown[]; queue: {id: string; scheduledDate: string; type: string}[]; asOf: string; checkpointRequired: boolean; profile: {performance: {timeSeconds: number} | null}};
+}
+
+/** The questionnaire answered without a current result, so the engine asks for a checkpoint. */
+export async function fillQuestionnaireWithoutResult(page: Page): Promise<void> {
+  await page.goto('/questionnaire?step=RESULT');
+  await page.getByRole('button', {name: 'Нет результата'}).click();
+  for (let step = 0; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
+  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await expect(page.getByText('Проверьте данные')).toBeVisible();
 }

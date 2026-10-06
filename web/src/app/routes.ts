@@ -18,6 +18,9 @@ export type Route =
   | {name: 'WORKOUT'; id: string}
   | {name: 'WORKOUT_RESULT'; id: string}
   | {name: 'WORKOUT_OUTCOME'; id: string}
+  | {name: 'WORKOUT_MOVE'; id: string}
+  | {name: 'CHECKPOINT'}
+  | {name: 'CHECKPOINT_OUTCOME'}
   | {name: 'NOT_FOUND'};
 
 export const PATH = {
@@ -59,6 +62,12 @@ export function parseRoute(pathname: string, search = ''): Route {
   const outcome = /^\/workout\/([^/]+)\/outcome$/.exec(path);
   if (outcome) return {name: 'WORKOUT_OUTCOME', id: decodeURIComponent(outcome[1]!)};
 
+  const move = /^\/workout\/([^/]+)\/move$/.exec(path);
+  if (move) return {name: 'WORKOUT_MOVE', id: decodeURIComponent(move[1]!)};
+
+  if (path === '/checkpoint') return {name: 'CHECKPOINT'};
+  if (path === '/checkpoint/outcome') return {name: 'CHECKPOINT_OUTCOME'};
+
   const workout = /^\/workout\/([^/]+)$/.exec(path);
   if (workout) return {name: 'WORKOUT', id: decodeURIComponent(workout[1]!)};
 
@@ -79,6 +88,9 @@ export function routeToPath(route: Route): string {
     case 'WORKOUT': return `/workout/${encodeURIComponent(route.id)}`;
     case 'WORKOUT_RESULT': return `/workout/${encodeURIComponent(route.id)}/result`;
     case 'WORKOUT_OUTCOME': return `/workout/${encodeURIComponent(route.id)}/outcome`;
+    case 'WORKOUT_MOVE': return `/workout/${encodeURIComponent(route.id)}/move`;
+    case 'CHECKPOINT': return '/checkpoint';
+    case 'CHECKPOINT_OUTCOME': return '/checkpoint/outcome';
     case 'NOT_FOUND': return PATH.firstRun;
   }
 }

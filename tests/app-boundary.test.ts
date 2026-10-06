@@ -28,7 +28,7 @@ test('BOUNDARY-02 the gateway imports only the public engine API', () => {
   const block = /import \{([\s\S]*?)\} from '\.\.\/\.\.\/\.\.\/src\/index\.ts'/.exec(gateway.text);
   assert.ok(block, 'the gateway must import from the package entry point');
   const imported = block[1]!.split(',').map((name) => name.trim()).filter(Boolean).sort();
-  assert.deepEqual(imported, ['EngineError', 'createEngine', 'deserialize', 'recordResult as engineRecordResult', 'replan', 'serialize', 'taperDays', 'validateProfile']);
+  assert.deepEqual(imported, ['EngineError', 'createEngine', 'deserialize', 'moveWorkout as engineMoveWorkout', 'recordCheckpoint as engineRecordCheckpoint', 'recordResult as engineRecordResult', 'replan', 'serialize', 'skipWorkout as engineSkipWorkout', 'taperDays', 'validateProfile']);
 });
 
 test('BOUNDARY-03 the frontend never calls internal sport functions', () => {
@@ -132,4 +132,44 @@ test('BOUNDARY-08 a result reaches the engine only through the application opera
 
   const app = production.find((file) => file.path === 'web/src/app/App.tsx')!;
   assert.ok(/\bsubmitWorkoutResult\s*\(/.test(app.text), 'the shell must go through the application operation');
+});
+
+test('BOUNDARY-09 every engine transition stays behind its application operation', () => {
+  const production = sources.filter((file) => !/\.test\.tsx?$/.test(file.path));
+
+  // Each public transition is reachable from exactly one application operation, plus the gateway that
+  // defines the wrapper. A screen cannot reach any of them.
+  const transitions: [string, string[]][] = [
+    ['moveWorkout', ['web/src/application/engineGateway.ts', 'web/src/application/workoutSchedule.ts']],
+    ['skipWorkout', ['web/src/application/engineGateway.ts', 'web/src/application/workoutSchedule.ts']],
+    ['recordCheckpoint', ['web/src/application/checkpoint.ts', 'web/src/application/engineGateway.ts']],
+  ];
+  for (const [name, expected] of transitions) {
+    const referencing = production.filter((file) => new RegExp(`\\b${name}\\b`).test(file.text)).map((file) => file.path).sort();
+    assert.deepEqual(referencing, [...expected].sort(), `${name} must stay behind its operation`);
+  }
+
+  for (const file of production.filter((entry) => entry.path.startsWith('web/src/ui/') || entry.path.startsWith('web/src/app/'))) {
+    for (const name of ['moveWorkout', 'skipWorkout', 'recordCheckpoint']) {
+      assert.equal(new RegExp(`\\b${name}\\b`).test(file.text), false, `${file.path} must not reference ${name}`);
+    }
+  }
+
+  // A checkpoint replans, so it advances the clock and must be guarded by INV-1 before the engine runs.
+  const checkpoint = production.find((file) => file.path === 'web/src/application/checkpoint.ts')!;
+  assert.ok(checkpoint.text.includes('assertClockAdvanceAllowed'), 'the checkpoint must consult INV-1');
+  assert.ok(
+    checkpoint.text.indexOf('assertClockAdvanceAllowed') < checkpoint.text.indexOf('recordCheckpoint('),
+    'the invariant must be checked before the engine is asked to record',
+  );
+
+  // Persistence is centralised: only the storage module, the cycle service and the two operations that
+  // own a transition write the envelope, and each of them writes it before returning.
+  const writers = production.filter((file) => /saveActiveCycle\s*\(/.test(file.text)).map((file) => file.path).sort();
+  assert.deepEqual(writers, [
+    'web/src/application/clockOps.ts',
+    'web/src/application/cycle.ts',
+    'web/src/application/storage.ts',
+    'web/src/application/transition.ts',
+  ]);
 });

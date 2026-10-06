@@ -4,7 +4,10 @@ import type {QuestionnaireDraft} from '../web/src/application/questionnaire.ts';
 import type {KeyValueStorage} from '../web/src/application/storage.ts';
 import {createRepository} from '../web/src/application/storage.ts';
 import type {CycleRepository} from '../web/src/application/storage.ts';
-import {NOW, dateAfter, healthy} from './helpers.ts';
+import {NOW, dateAfter, healthy, profile} from './helpers.ts';
+import {createCycle} from '../web/src/application/cycle.ts';
+import {buildProfile} from '../web/src/application/questionnaire.ts';
+import {ACTIVE_CYCLE_KEY} from '../web/src/application/storage.ts';
 
 /** A draft that the engine accepts, close to what a real user would type. */
 export function draft(overrides: Partial<QuestionnaireDraft> = {}): QuestionnaireDraft {
@@ -69,3 +72,25 @@ export const TODAY_LABELS: Record<string, string> = {
   EMPTY_QUEUE: 'На ближайшие дни тренировок нет',
   REST_DAY: 'Сегодня восстановление',
 };
+
+/** A real cycle, created through the application service, ready for a transition test. */
+export function appCycle(overrides: Record<string, unknown> = {}, createdOn = NOW) {
+  const built = buildProfile(draft({resultDate: createdOn}));
+  if (!built.ok) throw new Error('fixture: the draft must build');
+  const storage = memoryStorage();
+  const created = createCycle(repository(storage), {
+    profile: profile({...built.profile, ...overrides}),
+    deviceToday: createdOn,
+    cycleId: CYCLE_ID,
+    createdAt: CREATED_AT,
+    locale: 'ru-RU',
+  });
+  if (!created.ok) throw new Error('fixture: the cycle must be created');
+  return {
+    storage,
+    repo: repository(storage),
+    appState: created.appState,
+    engineState: created.engineState,
+    raw: storage.map.get(ACTIVE_CYCLE_KEY)!,
+  };
+}

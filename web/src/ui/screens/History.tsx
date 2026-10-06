@@ -1,14 +1,26 @@
 import {useState} from 'react';
 import type {ReactNode} from 'react';
-import {formatDateLong} from '../../application/format.ts';
-import type {AppStateV1} from '../../application/appState.ts';
-import {history} from '../copy/text.ts';
+import {formatDateLong, formatDateShort, formatTime} from '../../application/format.ts';
+import type {AppStateV1, CycleEvent} from '../../application/appState.ts';
+import type {EngineState} from '../../application/engineGateway.ts';
+import {evaluationSign, evaluationText} from '../copy/values.ts';
+import {history, historyItems} from '../copy/text.ts';
+import {workoutTitle} from '../display.ts';
 import {Button} from '../components/Button.tsx';
-import {Card, EmptyState} from '../components/Layout.tsx';
+import {Card, EmptyState, Sign} from '../components/Layout.tsx';
 import type {Route} from '../../app/routes.ts';
 
-export function History({appState, onNavigate}: {appState: AppStateV1; onNavigate: (route: Route) => void}): ReactNode {
+interface Props {
+  readonly appState: AppStateV1;
+  readonly engineState: EngineState;
+  readonly onNavigate: (route: Route) => void;
+}
+
+export function History({appState, engineState, onNavigate}: Props): ReactNode {
   const [tab, setTab] = useState<'CURRENT' | 'ARCHIVE'>('CURRENT');
+  // Newest first, both for the closed sessions the engine keeps and for the application events.
+  const sessions = [...engineState.history].reverse();
+  const events = [...appState.events].reverse();
 
   return (
     <div className="screen">
@@ -29,12 +41,34 @@ export function History({appState, onNavigate}: {appState: AppStateV1; onNavigat
 
       {tab === 'CURRENT' ? (
         <>
-          <Card>
-            <p className="hint">{`Цикл создан: ${formatDateLong(appState.cycle.createdAt.slice(0, 10))}`}</p>
+          {sessions.length === 0 ? (
+            <EmptyState title={history.emptyCurrent} text={history.emptyCurrentHint}>
+              <Button onClick={() => onNavigate({name: 'PLAN'})}>{history.toPlan}</Button>
+            </EmptyState>
+          ) : (
+            <Card title="Тренировки">
+              <ul className="list">
+                {sessions.map((entry) => (
+                  <li key={entry.workout.id} className="list__item">
+                    <Sign sign={evaluationSign[entry.classified.evaluation]} label={evaluationText[entry.classified.evaluation].label} />
+                    <span className="hint">{`${workoutTitle(entry.workout)} · ${formatDateShort(entry.workout.scheduledDate)}`}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          {/* The engine keeps the sessions; everything else the user did is in the application log. */}
+          <Card title="События цикла">
+            <ul className="list">
+              {events.map((event, index) => (
+                <li key={`${event.type}-${index}`} className="list__item">
+                  <span>{describeEvent(event)}</span>
+                  <span className="hint">{` · ${formatDateLong(event.at.slice(0, 10))}`}</span>
+                </li>
+              ))}
+            </ul>
           </Card>
-          <EmptyState title={history.emptyCurrent} text={history.emptyCurrentHint}>
-            <Button onClick={() => onNavigate({name: 'PLAN'})}>{history.toPlan}</Button>
-          </EmptyState>
         </>
       ) : (
         <EmptyState title={history.emptyArchive} text={history.emptyArchiveHint}>
@@ -43,4 +77,22 @@ export function History({appState, onNavigate}: {appState: AppStateV1; onNavigat
       )}
     </div>
   );
+}
+
+/** One factual line per logged action. Nothing is derived and no reason is invented here. */
+function describeEvent(event: CycleEvent): string {
+  switch (event.type) {
+    case 'CYCLE_CREATED':
+      return historyItems.CYCLE_CREATED;
+    case 'WORKOUT_SKIPPED':
+      return `${event.cause === 'PAST_DUE' ? historyItems.WORKOUT_SKIPPED_PAST_DUE : historyItems.WORKOUT_SKIPPED_VOLUNTARY} · ${formatDateShort(event.scheduledDate)}`;
+    case 'WORKOUT_MOVED':
+      return `${historyItems.WORKOUT_MOVED} · ${historyItems.moved(formatDateShort(event.fromDate), formatDateShort(event.toDate))}`;
+    case 'CHECKPOINT_RECORDED':
+      return `${historyItems.CHECKPOINT_RECORDED} · ${historyItems.performance(event.previousPerformance === null ? null : formatTime(event.previousPerformance), formatTime(event.result.timeSeconds))}`;
+    case 'TRAINING_PARAMETERS_CHANGED':
+      return historyItems.TRAINING_PARAMETERS_CHANGED;
+    case 'FINAL_RESULT_RECORDED':
+      return `${historyItems.FINAL_RESULT_RECORDED} · ${formatTime(event.result.timeSeconds)}`;
+  }
 }

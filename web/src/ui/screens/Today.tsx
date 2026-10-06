@@ -3,7 +3,7 @@ import {formatDateLong, formatTime} from '../../application/format.ts';
 import type {EngineState, Workout} from '../../application/engineGateway.ts';
 import {deriveToday} from '../../application/uiState.ts';
 import {phaseText, safetyStatusText} from '../copy/values.ts';
-import {common, today as todayText} from '../copy/text.ts';
+import {common, skip as skipText, today as todayText} from '../copy/text.ts';
 import {workoutPaceRange, workoutTitle, workoutVolume} from '../display.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, KeyValue, Notice} from '../components/Layout.tsx';
@@ -15,9 +15,12 @@ interface Props {
   readonly onNavigate: (route: Route) => void;
   readonly onRefreshPlan: () => void;
   readonly refreshing: boolean;
+  /** Records the overdue session as simply not done; the application logs the reason. */
+  readonly onSkipPending: (workoutId: string) => void;
+  readonly busy: boolean;
 }
 
-export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing}: Props): ReactNode {
+export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing, onSkipPending, busy}: Props): ReactNode {
   const view = deriveToday(engineState, today);
   const {decision, profile} = engineState;
 
@@ -51,8 +54,9 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
         <Notice tone="warn" title={todayText.pendingResult.title}>
           <p>{todayText.pendingResult.text}</p>
           <KeyValue label={workoutTitle(view.pendingWorkouts[0])} value={formatDateLong(view.pendingWorkouts[0].scheduledDate)} />
-          {/* Results are closed in chronological order, so the CTA always points at the earliest one. */}
+          {/* Unresolved sessions are handled oldest first, so both actions point at the earliest one. */}
           <Button onClick={() => onNavigate({name: 'WORKOUT_RESULT', id: view.pendingWorkouts[0]!.id})}>{todayText.pendingResult.cta}</Button>
+          <Button variant="secondary" onClick={() => onSkipPending(view.pendingWorkouts[0]!.id)} disabled={busy}>{skipText.pendingAction}</Button>
         </Notice>
       ) : null}
 
@@ -78,7 +82,7 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
       {view.state === 'CHECKPOINT_REQUIRED' ? (
         <Notice tone="info" title={todayText.checkpoint.title}>
           <p>{todayText.checkpoint.text}</p>
-          <p className="hint">{todayText.checkpoint.pendingNote}</p>
+          <Button onClick={() => onNavigate({name: 'CHECKPOINT'})}>{todayText.checkpoint.cta}</Button>
         </Notice>
       ) : null}
 

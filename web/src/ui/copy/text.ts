@@ -240,8 +240,7 @@ export const today = {
   checkpoint: {
     title: 'Нужен контрольный результат',
     text: 'Контрольный забег на 3000 м уточняет текущую форму, чтобы план оставался точным.',
-    cta: 'Что это значит?',
-    pendingNote: 'Ввод контрольного результата появится в следующем обновлении приложения.',
+    cta: 'Внести контрольный результат',
   },
   hold: {
     title: 'Обычные тренировки приостановлены',
@@ -402,6 +401,73 @@ export const resultForm = {
     text: 'Возможно, план уже обновлён. Откройте раздел «План» заново.',
     cta: 'Обновить план',
   },
+} as const;
+
+export const skip = {
+  action: 'Не смогу выполнить',
+  confirmTitle: 'Пропустить эту тренировку?',
+  confirmText: 'План будет обновлён. Пропущенный объём не переносится.',
+  confirm: 'Пропустить',
+  cancel: 'Отмена',
+  /** The second way to resolve an overdue session, next to entering its result. */
+  pendingAction: 'Я её не выполнял',
+} as const;
+
+export const move = {
+  action: 'Перенести',
+  title: 'Перенести тренировку',
+  current: 'Текущая дата',
+  pick: 'Новая дата',
+  horizonHint: 'Показаны даты внутри текущего плана. Восстановление и недельный лимит проверяет приложение.',
+  submit: 'Перенести',
+  cancel: 'Отмена',
+  noDates: 'Подходящих дат в текущем плане нет.',
+  reason: {
+    action: 'Действие с тренировкой',
+  },
+} as const;
+
+export const checkpoint = {
+  title: 'Контрольный забег',
+  intro: 'Результат обновит текущую форму. Дальнейший план будет построен от него.',
+  time: 'Результат на 3000 м',
+  timeHint: 'Формат ММ:СС, например 14:30',
+  date: 'Дата результата',
+  source: 'Откуда результат',
+  submit: 'Сохранить результат',
+  saving: 'Сохраняем…',
+  cancel: 'Отмена',
+  cta: 'Внести контрольный результат',
+  outcome: {
+    title: 'Оценка обновлена',
+    previous: 'Предыдущая форма',
+    current: 'Текущая форма',
+    goal: 'Цель',
+    phase: 'Текущий этап',
+    feasibility: 'Оценка цели',
+    gate: 'Использование целевого темпа',
+    changes: 'Что изменилось',
+    noChanges: 'План не изменился',
+    continue: 'Продолжить',
+    openPlan: 'Посмотреть план',
+  },
+  missing: {
+    title: 'Контрольный результат не найден',
+    text: 'На этом устройстве ещё не сохранён ни один контрольный результат.',
+    cta: 'К плану',
+  },
+} as const;
+
+export const historyItems = {
+  CYCLE_CREATED: 'Цикл создан',
+  WORKOUT_SKIPPED_VOLUNTARY: 'Тренировка пропущена',
+  WORKOUT_SKIPPED_PAST_DUE: 'Тренировка не выполнена',
+  WORKOUT_MOVED: 'Тренировка перенесена',
+  CHECKPOINT_RECORDED: 'Контрольный результат',
+  TRAINING_PARAMETERS_CHANGED: 'Параметры подготовки изменены',
+  FINAL_RESULT_RECORDED: 'Итоговый результат',
+  moved: (from: string, to: string): string => `${from} → ${to}`,
+  performance: (from: string | null, to: string): string => (from === null ? to : `${from} → ${to}`),
 } as const;
 
 export const outcome = {

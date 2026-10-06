@@ -6,6 +6,10 @@ import type {QuestionnaireDraft, QuestionnaireStep} from '../application/questio
 import {createCycle} from '../application/cycle.ts';
 import {refreshPlan} from '../application/clockOps.ts';
 import {submitWorkoutResult} from '../application/workoutResult.ts';
+import {moveScheduledWorkout, skipScheduledWorkout} from '../application/workoutSchedule.ts';
+import type {SkipCause} from '../application/workoutSchedule.ts';
+import {submitCheckpoint} from '../application/checkpoint.ts';
+import type {PerformanceSnapshot} from '../application/engineGateway.ts';
 import {nextWorkout} from '../application/planDiff.ts';
 import type {PlanChange} from '../application/planDiff.ts';
 import {clearResultDraft} from '../application/draft.ts';
@@ -39,6 +43,12 @@ import {ResultForm} from '../ui/screens/ResultForm.tsx';
 import type {SubmitOutcome} from '../ui/screens/ResultForm.tsx';
 import {OutcomeMissing, ResultOutcome} from '../ui/screens/ResultOutcome.tsx';
 import {ClosedWorkout} from '../ui/screens/ClosedWorkout.tsx';
+import {MoveWorkout} from '../ui/screens/MoveWorkout.tsx';
+import type {MoveSubmitOutcome} from '../ui/screens/MoveWorkout.tsx';
+import {CheckpointForm} from '../ui/screens/CheckpointForm.tsx';
+import type {CheckpointSubmitOutcome} from '../ui/screens/CheckpointForm.tsx';
+import {CheckpointOutcome} from '../ui/screens/CheckpointOutcome.tsx';
+import type {SkipOutcome} from '../ui/screens/WorkoutDetails.tsx';
 import {ResultTooEarly} from '../ui/screens/ResultTooEarly.tsx';
 import {Notice} from '../ui/components/Layout.tsx';
 import {copyForError} from '../ui/copy/errors.ts';
@@ -64,6 +74,10 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
    * reconstructed.
    */
   const [outcome, setOutcome] = useState<{workoutId: string; changes: readonly PlanChange[]} | null>(null);
+  /** Changes of the last checkpoint, kept for the session that recorded it. */
+  const [checkpointChanges, setCheckpointChanges] = useState<readonly PlanChange[] | null>(null);
+  /** True while an engine transition is being applied, so a second tap cannot start another one. */
+  const [busy, setBusy] = useState(false);
 
   const hasCycle = store.load.kind === 'READY';
   const guarded = guardRoute(route, {hasCycle, onboardingInProgress: store.onboardingInProgress});
@@ -140,6 +154,49 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     return {ok: true};
   }, [repo, storage, store]);
 
+  const handleSkip = useCallback((workoutId: string, cause: SkipCause): SkipOutcome => {
+    if (repo === null || store.appState === null || store.engineState === null) return {ok: false, error: {code: 'STORAGE_UNAVAILABLE'}};
+    setBusy(true);
+    const outcome = skipScheduledWorkout({
+      repo, appState: store.appState, engineState: store.engineState,
+      workoutId, cause, deviceToday: store.today, at: deviceTimestamp(),
+    });
+    setBusy(false);
+    if (!outcome.ok) return {ok: false, error: {code: outcome.error.code, params: outcome.error.params}};
+    store.replaceActiveState({appState: outcome.done.appState, engineState: outcome.done.engineState});
+    return {ok: true};
+  }, [repo, store]);
+
+  const handleMove = useCallback((workoutId: string, toDate: string): MoveSubmitOutcome => {
+    if (repo === null || store.appState === null || store.engineState === null) return {ok: false, error: {code: 'STORAGE_UNAVAILABLE'}};
+    setBusy(true);
+    const outcome = moveScheduledWorkout({
+      repo, appState: store.appState, engineState: store.engineState,
+      workoutId, toDate, deviceToday: store.today, at: deviceTimestamp(),
+    });
+    setBusy(false);
+    if (!outcome.ok) return {ok: false, error: {code: outcome.error.code, params: outcome.error.params}};
+    store.replaceActiveState({appState: outcome.done.appState, engineState: outcome.done.engineState});
+    // The session keeps its identity, so its details now show the new date.
+    navigate({name: 'WORKOUT', id: workoutId});
+    return {ok: true};
+  }, [repo, store]);
+
+  const handleCheckpoint = useCallback((performance: PerformanceSnapshot): CheckpointSubmitOutcome => {
+    if (repo === null || store.appState === null || store.engineState === null) return {ok: false, error: {code: 'STORAGE_UNAVAILABLE'}};
+    setBusy(true);
+    const outcome = submitCheckpoint({
+      repo, appState: store.appState, engineState: store.engineState,
+      performance, deviceToday: store.today, at: deviceTimestamp(),
+    });
+    setBusy(false);
+    if (!outcome.ok) return {ok: false, error: {code: outcome.error.code, params: outcome.error.params}};
+    store.replaceActiveState({appState: outcome.done.appState, engineState: outcome.done.engineState});
+    setCheckpointChanges(outcome.done.changes);
+    navigate({name: 'CHECKPOINT_OUTCOME'});
+    return {ok: true};
+  }, [repo, store]);
+
   const goTo = useCallback((next: Route) => {
     if (next.name !== 'QUESTIONNAIRE') setEngineError(null);
     navigate(next);
@@ -204,14 +261,24 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
         );
       case 'TODAY':
         return store.engineState === null ? null : (
-          <Today engineState={store.engineState} today={store.today} onNavigate={goTo} onRefreshPlan={handleRefreshPlan} refreshing={refreshing} />
+          <Today
+            engineState={store.engineState}
+            today={store.today}
+            onNavigate={goTo}
+            onRefreshPlan={handleRefreshPlan}
+            refreshing={refreshing}
+            busy={busy}
+            onSkipPending={(workoutId) => handleSkip(workoutId, 'PAST_DUE')}
+          />
         );
       case 'PLAN':
         return store.engineState === null ? null : (
           <Plan engineState={store.engineState} today={store.today} onNavigate={goTo} onRefreshPlan={handleRefreshPlan} refreshing={refreshing} />
         );
       case 'HISTORY':
-        return store.appState === null ? null : <History appState={store.appState} onNavigate={goTo} />;
+        return store.appState === null || store.engineState === null ? null : (
+          <History appState={store.appState} engineState={store.engineState} onNavigate={goTo} />
+        );
       case 'PROFILE':
         return store.appState === null || store.engineState === null ? null : <Profile appState={store.appState} engineState={store.engineState} />;
       case 'WORKOUT': {
@@ -222,9 +289,49 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
             today={store.today}
             onBack={() => goTo({name: 'TODAY'})}
             onEnterResult={() => goTo({name: 'WORKOUT_RESULT', id: effective.id})}
+            onMove={() => goTo({name: 'WORKOUT_MOVE', id: effective.id})}
+            skip={() => {
+              const result = handleSkip(effective.id, 'VOLUNTARY');
+              if (result.ok) goTo({name: 'TODAY'});
+              return result;
+            }}
           />
         );
       }
+      case 'WORKOUT_MOVE': {
+        const workout = store.engineState?.queue.find((entry) => entry.id === effective.id) ?? null;
+        if (workout === null || store.engineState === null) {
+          return <OutcomeMissing onOpenPlan={() => goTo({name: 'PLAN'})} />;
+        }
+        return (
+          <MoveWorkout
+            workout={workout}
+            engineState={store.engineState}
+            deviceToday={store.today}
+            submit={(toDate) => handleMove(workout.id, toDate)}
+            onCancel={() => goTo({name: 'WORKOUT', id: effective.id})}
+          />
+        );
+      }
+      case 'CHECKPOINT':
+        return store.engineState === null ? null : (
+          <CheckpointForm
+            deviceToday={store.today}
+            earliestDate={store.engineState.lastAssessmentDate}
+            submit={handleCheckpoint}
+            onCancel={() => goTo({name: 'TODAY'})}
+          />
+        );
+      case 'CHECKPOINT_OUTCOME':
+        return store.appState === null || store.engineState === null ? null : (
+          <CheckpointOutcome
+            appState={store.appState}
+            engineState={store.engineState}
+            changes={checkpointChanges}
+            onContinue={() => goTo({name: 'TODAY'})}
+            onOpenPlan={() => goTo({name: 'PLAN'})}
+          />
+        );
       case 'WORKOUT_RESULT': {
         const workout = store.engineState?.queue.find((entry) => entry.id === effective.id) ?? null;
         if (workout !== null && workout.scheduledDate > store.today) {

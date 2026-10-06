@@ -9,16 +9,13 @@
  * No event is appended: the completed workout already lives in the engine history, and duplicating it
  * would create a second source of truth (docs/pwa-architecture.md §5).
  */
-import {applyEngineState} from './cycle.ts';
 import type {AppStateV1} from './appState.ts';
 import {recordWorkoutResult as engineRecord} from './engineGateway.ts';
 import type {EngineState, Evaluation, WorkoutResult, YellowReason} from './engineGateway.ts';
-import {toUiErrorFromUnknown} from './errorContract.ts';
 import type {UiError} from './errorContract.ts';
 import {assertWorkoutResultAllowed} from './invariants.ts';
-import {diffPlan} from './planDiff.ts';
 import type {PlanChange} from './planDiff.ts';
-import {saveActiveCycle} from './storage.ts';
+import {applyEngineTransition} from './transition.ts';
 import type {CycleRepository} from './storage.ts';
 
 export interface RecordWorkoutRequest {
@@ -43,37 +40,29 @@ export interface RecordWorkoutDone {
 export type RecordWorkoutOutcome = {ok: true; done: RecordWorkoutDone} | {ok: false; error: UiError};
 
 export function submitWorkoutResult(request: RecordWorkoutRequest): RecordWorkoutOutcome {
-  // 1. A result describes a session that already happened, and INV-1 closes them oldest first.
-  try {
-    assertWorkoutResultAllowed(request.engineState, request.workoutId, request.deviceToday);
-  } catch (error) {
-    return {ok: false, error: toUiErrorFromUnknown(error)};
-  }
+  const outcome = applyEngineTransition({
+    repo: request.repo,
+    appState: request.appState,
+    engineState: request.engineState,
+    deviceToday: request.deviceToday,
+    // A result describes a session that already happened, and INV-1 closes them oldest first.
+    guard: () => assertWorkoutResultAllowed(request.engineState, request.workoutId, request.deviceToday),
+    transition: () => engineRecord(request.engineState, request.workoutId, request.result),
+  });
+  if (!outcome.ok) return outcome;
 
-  // 2. The engine alone decides the verdict and the new plan.
-  let next: EngineState;
-  try {
-    next = engineRecord(request.engineState, request.workoutId, request.result);
-  } catch (error) {
-    return {ok: false, error: toUiErrorFromUnknown(error)};
-  }
-
-  const entry = next.history.find((item) => item.workout.id === request.workoutId);
+  // The verdict is read from the history entry the engine just wrote, never derived here.
+  const entry = outcome.done.engineState.history.find((item) => item.workout.id === request.workoutId);
   if (entry === undefined) return {ok: false, error: {code: 'UNKNOWN', params: {}, retry: true, fromEngine: false}};
-
-  // 3. Only what actually differs between the two states.
-  const changes: PlanChange[] = [{kind: 'WORKOUT_RECORDED', workoutId: request.workoutId}, ...diffPlan(request.engineState, next, request.deviceToday)];
-
-  // 4. Persist before returning: the caller cannot show a result that is not stored (INV-4).
-  const appState = applyEngineState(request.appState, next);
-  try {
-    saveActiveCycle(request.repo, appState);
-  } catch (error) {
-    return {ok: false, error: toUiErrorFromUnknown(error)};
-  }
 
   return {
     ok: true,
-    done: {appState, engineState: next, evaluation: entry.classified.evaluation, yellowReason: entry.classified.yellowReason, changes},
+    done: {
+      appState: outcome.done.appState,
+      engineState: outcome.done.engineState,
+      evaluation: entry.classified.evaluation,
+      yellowReason: entry.classified.yellowReason,
+      changes: [{kind: 'WORKOUT_RECORDED', workoutId: request.workoutId}, ...outcome.done.changes],
+    },
   };
 }
