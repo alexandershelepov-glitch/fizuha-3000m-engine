@@ -3,12 +3,12 @@
  * adopts a newly created one. It owns no sport logic — it only moves the opaque engine state through
  * the official gateway.
  */
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useMemo, useState} from 'react';
+import {useDeviceDate} from './useDeviceDate.ts';
 import {discardActiveCycle, loadActiveCycle} from '../application/storage.ts';
 import type {CycleRepository, KeyValueStorage, LoadCycleResult, StorageProbe} from '../application/storage.ts';
 import type {AppStateV1} from '../application/appState.ts';
 import type {EngineState} from '../application/engineGateway.ts';
-import {deviceToday} from '../application/format.ts';
 
 /** What the shell can say about the stored cycle, including "this device cannot store one". */
 export type StoreLoad = LoadCycleResult | {kind: 'NO_STORAGE'};
@@ -21,33 +21,44 @@ export interface CycleStore {
   /** True only in the session that created the cycle. */
   readonly onboardingInProgress: boolean;
   reload(): void;
-  adopt(created: {appState: AppStateV1; engineState: EngineState}): void;
+  /** Take over a cycle that was just created: this is the only call that opens onboarding. */
+  adoptNewCycle(created: {appState: AppStateV1; engineState: EngineState}): void;
+  /** Take over a new state of the *existing* cycle. Onboarding is not touched. */
+  replaceActiveState(updated: {appState: AppStateV1; engineState: EngineState}): void;
   finishOnboarding(): void;
   /** Remove a damaged active cycle. Only ever called after the user confirmed it explicitly. */
   discardDamagedCycle(): void;
 }
 
 export function useCycleStore(repo: CycleRepository | null): CycleStore {
-  const [load, setLoad] = useState<StoreLoad>(() => (repo === null ? {kind: 'NO_STORAGE'} : safeLoad(repo)));
+  /**
+   * Reading the stored cycle is derived, not stored, so it follows the repository: when permanent
+   * storage becomes available after a retry, the store picks it up without an effect and without a
+   * state update during render. An explicit action can override the reading (`reload`, adopting a new
+   * cycle, discarding a damaged one).
+   */
+  const baseline: StoreLoad = useMemo(() => (repo === null ? {kind: 'NO_STORAGE'} : safeLoad(repo)), [repo]);
+  const [override, setOverride] = useState<StoreLoad | null>(null);
+  const load = override ?? baseline;
   const [adopted, setAdopted] = useState<{appState: AppStateV1; engineState: EngineState} | null>(null);
   const [onboardingInProgress, setOnboarding] = useState(false);
-  const today = useMemo(() => deviceToday(), []);
-
-  // Storage can become available after the user allowed it and asked to retry: the store must follow
-  // the repository rather than stay on the verdict of the very first render.
-  useEffect(() => {
-    setAdopted(null);
-    setLoad(repo === null ? {kind: 'NO_STORAGE'} : safeLoad(repo));
-  }, [repo]);
+  // Reactive: the app may stay open across midnight, so the date must not be frozen at mount.
+  const today = useDeviceDate();
 
   const reload = useCallback(() => {
     setAdopted(null);
-    setLoad(repo === null ? {kind: 'NO_STORAGE'} : safeLoad(repo));
+    setOverride(repo === null ? {kind: 'NO_STORAGE'} : safeLoad(repo));
   }, [repo]);
 
-  const adopt = useCallback((created: {appState: AppStateV1; engineState: EngineState}) => {
+  const adoptNewCycle = useCallback((created: {appState: AppStateV1; engineState: EngineState}) => {
     setAdopted(created);
     setOnboarding(true);
+  }, []);
+
+  // Updating the active cycle is not the same event as creating one. Callers that only refresh the
+  // plan, record a result or apply a checkpoint must use this and never reopen onboarding.
+  const replaceActiveState = useCallback((updated: {appState: AppStateV1; engineState: EngineState}) => {
+    setAdopted(updated);
   }, []);
 
   const finishOnboarding = useCallback(() => setOnboarding(false), []);
@@ -59,7 +70,7 @@ export function useCycleStore(repo: CycleRepository | null): CycleStore {
     discardActiveCycle(repo);
     setAdopted(null);
     setOnboarding(false);
-    setLoad({kind: 'EMPTY'});
+    setOverride({kind: 'EMPTY'});
   }, [repo, load.kind]);
 
   const ready = adopted !== null || load.kind === 'READY';
@@ -73,7 +84,8 @@ export function useCycleStore(repo: CycleRepository | null): CycleStore {
     today,
     onboardingInProgress,
     reload,
-    adopt,
+    adoptNewCycle,
+    replaceActiveState,
     finishOnboarding,
     discardDamagedCycle,
   };

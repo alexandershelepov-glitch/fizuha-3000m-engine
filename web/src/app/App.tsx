@@ -54,11 +54,13 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
   const effectivePath = routeToPath(effective);
 
   // Keep the URL in step with the screen the guard actually allows, so a reload lands correctly.
+  // `route` is part of the dependencies because a navigation to a protected URL may resolve to the
+  // same effective path as before; without it the address bar would keep a URL the user cannot reach.
   useEffect(() => {
     if (!guarded.redirected) return;
     const current = `${window.location.pathname}${window.location.search}`;
     if (current !== effectivePath) window.history.replaceState(null, '', effectivePath);
-  }, [guarded.redirected, effectivePath]);
+  }, [guarded.redirected, effectivePath, route]);
 
   const handleCreate = useCallback((draft: QuestionnaireDraft): CreateOutcome => {
     const built = buildProfile(draft);
@@ -85,7 +87,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     }
 
     clearDraft(storage);
-    store.adopt({appState: result.appState, engineState: result.engineState});
+    store.adoptNewCycle({appState: result.appState, engineState: result.engineState});
     return {kind: 'CREATED'};
   }, [repo, storage, store]);
 
@@ -95,7 +97,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     setPlanError(null);
     // INV-1 is enforced inside the operation, not here: the UI cannot bypass it by calling directly.
     const result = refreshPlan({repo, appState: store.appState, engineState: store.engineState, deviceToday: store.today});
-    if (result.ok) store.adopt({appState: result.appState, engineState: result.engineState});
+    if (result.ok) store.replaceActiveState({appState: result.appState, engineState: result.engineState});
     else setPlanError(result.error);
     setRefreshing(false);
   }, [repo, store]);

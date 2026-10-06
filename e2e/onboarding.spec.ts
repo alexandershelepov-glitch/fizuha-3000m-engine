@@ -227,3 +227,39 @@ test('a browser that denies storage is reported instead of silently using memory
   await expect(page.getByRole('button', {name: 'Начать подготовку'})).toHaveCount(0);
   expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBeNull();
 });
+
+test('the app crosses midnight without a reload', async ({page}) => {
+  await page.clock.install();
+  await fillQuestionnaire(page);
+  await page.getByRole('button', {name: 'Рассчитать план'}).click();
+  await page.getByRole('button', {name: 'Посмотреть план'}).click();
+  await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
+  const before = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
+  await expect(page.getByText('Этап:', {exact: false})).toBeVisible();
+
+  // The app stays open overnight and is resumed in the foreground: no reload happens.
+  await page.clock.setFixedTime(new Date(Date.now() + 86_400_000));
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+
+  await expect(page.getByText('Предыдущая тренировка ещё не закрыта')).toBeVisible();
+  // Showing the new date is not advancing the engine clock.
+  expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBe(before);
+});
+
+test('a plan refresh does not reopen onboarding', async ({page}) => {
+  await fillQuestionnaire(page);
+  await page.getByRole('button', {name: 'Рассчитать план'}).click();
+  await page.getByRole('button', {name: 'Посмотреть план'}).click();
+  await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
+
+  await page.getByRole('navigation', {name: 'Основные разделы'}).getByText('План').click();
+  await page.getByRole('button', {name: 'Обновить план'}).click();
+  await expect(page.getByText(/Показан фактический горизонт плана/)).toBeVisible();
+
+  // Onboarding screens stay unreachable for an active cycle, even as direct links.
+  for (const onboarding of ['/assessment', '/plan-ready', '/review', '/questionnaire?step=GOAL']) {
+    await page.goto(onboarding);
+    await expect(page).toHaveURL(/\/today$/);
+    await expect(page.getByRole('navigation', {name: 'Основные разделы'})).toBeVisible();
+  }
+});

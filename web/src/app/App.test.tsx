@@ -4,7 +4,7 @@
  * what the application is allowed to read.
  */
 import {afterEach, beforeEach, describe, expect, test, vi} from 'vitest';
-import {cleanup, fireEvent, render, screen} from '@testing-library/react';
+import {act, cleanup, fireEvent, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {App} from './App.tsx';
 import {ACTIVE_CYCLE_KEY, createRepository, loadActiveCycle} from '../application/storage.ts';
@@ -377,23 +377,28 @@ describe('navigation', () => {
   });
 });
 
-/** A stored cycle created two days ago, so it still holds unrecorded sessions (INV-1). */
-function seedStaleCycle(today: string): string {
-  const filled = {...defaultDraft(today), resultTime: '15:20', resultDate: addDays(today, -10), targetTime: '14:30', raceDate: addDays(today, 56)};
+/** A stored cycle, created on a chosen day. */
+function seedCycle(today: string, createdOn: string): string {
+  const filled = {...defaultDraft(today), resultTime: '15:20', resultDate: addDays(createdOn, -10), targetTime: '14:30', raceDate: addDays(today, 56)};
   const built = buildProfile(filled);
   if (!built.ok) throw new Error('fixture: the draft must build');
   const seed = memoryStorage();
   const created = createCycle(createRepository(seed), {
     profile: built.profile,
-    deviceToday: addDays(today, -2),
-    cycleId: 'cycle-stale',
-    createdAt: `${addDays(today, -2)}T09:00:00.000Z`,
+    deviceToday: createdOn,
+    cycleId: 'cycle-seeded',
+    createdAt: `${createdOn}T09:00:00.000Z`,
     locale: 'ru-RU',
   });
   if (!created.ok) throw new Error('fixture: the cycle must be created');
   const raw = seed.map.get(ACTIVE_CYCLE_KEY);
   if (raw === undefined) throw new Error('fixture: the cycle must be stored');
   return raw;
+}
+
+/** A stored cycle created two days ago, so it still holds unrecorded sessions (INV-1). */
+function seedStaleCycle(today: string): string {
+  return seedCycle(today, addDays(today, -2));
 }
 
 describe('INV-1: a pending result blocks every clock-advancing action', () => {
@@ -466,5 +471,78 @@ describe('a device without permanent storage', () => {
     // Once the device allows storage again, retrying leads to a working shell.
     await click(user, 'Повторить');
     expect(screen.getByRole('button', {name: 'Начать подготовку'})).toBeInTheDocument();
+  });
+});
+
+describe('the calendar day changes while the app stays open', () => {
+  test('crossing midnight moves Today to the pending state and advances no clock', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date(2026, 9, 5, 21, 0, 0));
+      const today = deviceToday();
+      expect(today).toBe('2026-10-05');
+
+      const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedCycle(today, today)});
+      render(<App storage={storage} />);
+      const raw = storage.map.get(ACTIVE_CYCLE_KEY);
+
+      // In the evening the screen shows today's session.
+      expect(screen.getByRole('button', {name: 'Открыть тренировку'})).toBeInTheDocument();
+
+      // The app is suspended overnight and resumed without a reload.
+      vi.setSystemTime(new Date(2026, 9, 6, 7, 30, 0));
+      act(() => void document.dispatchEvent(new Event('visibilitychange')));
+
+      expect(screen.getByText('Предыдущая тренировка ещё не закрыта')).toBeInTheDocument();
+      expect(screen.queryByRole('button', {name: 'Открыть тренировку'})).not.toBeInTheDocument();
+      // Showing a new date is not the same as advancing the engine clock.
+      expect(storage.map.get(ACTIVE_CYCLE_KEY)).toBe(raw);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test('focus refreshes the date as well', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date(2026, 9, 5, 21, 0, 0));
+      const today = deviceToday();
+      const storage = memoryStorage({[ACTIVE_CYCLE_KEY]: seedCycle(today, today)});
+      render(<App storage={storage} />);
+
+      vi.setSystemTime(new Date(2026, 9, 7, 8, 0, 0));
+      act(() => void window.dispatchEvent(new Event('focus')));
+
+      expect(screen.getByText('Предыдущая тренировка ещё не закрыта')).toBeInTheDocument();
+      // The pending list now covers two days, and still nothing was written off.
+      expect(storage.map.has(ACTIVE_CYCLE_KEY)).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe('updating the active cycle does not reopen onboarding', () => {
+  test('after a plan refresh, onboarding stays closed and its screens keep redirecting', async () => {
+    const user = userEvent.setup();
+    const storage = memoryStorage();
+    render(<App storage={storage} />);
+    await createCycleAndReachToday(user);
+
+    // Onboarding was finished by "Перейти к подготовке".
+    const nav = screen.getByRole('navigation', {name: 'Основные разделы'});
+    await clickIn(user, nav, 'План');
+    await click(user, 'Обновить план');
+    expect(path()).toBe('/plan');
+
+    // A later direct link to an onboarding screen must still land on Today.
+    for (const onboarding of ['/assessment', '/plan-ready', '/review', '/questionnaire?step=GOAL']) {
+      act(() => {
+        window.history.replaceState(null, '', onboarding);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+      expect(path()).toBe('/today');
+      expect(screen.getByRole('navigation', {name: 'Основные разделы'})).toBeInTheDocument();
+    }
   });
 });

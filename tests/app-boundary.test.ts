@@ -71,3 +71,24 @@ test('BOUNDARY-06 the engine clock is advanced only through the guarded operatio
     'the invariant must be checked before the engine is asked to rebuild the plan',
   );
 });
+
+test('BOUNDARY-07 only creating a cycle may open onboarding', () => {
+  const production = sources.filter((file) => !/\.test\.tsx?$/.test(file.path));
+
+  // Opening onboarding lives in one place: adopting a cycle that was just created.
+  const adopters = production.filter((file) => /\badoptNewCycle\s*\(/.test(file.text)).map((file) => file.path);
+  assert.deepEqual(adopters.sort(), ['web/src/app/App.tsx', 'web/src/app/useCycleStore.ts']);
+
+  // Engine-driven updates of the active cycle use the path that leaves onboarding alone.
+  const app = production.find((file) => file.path === 'web/src/app/App.tsx')!;
+  assert.ok(/\breplaceActiveState\s*\(/.test(app.text), 'the update path must be used');
+  assert.ok(
+    app.text.indexOf('adoptNewCycle(') < app.text.indexOf('replaceActiveState('),
+    'the creation path and the update path must stay distinguishable',
+  );
+
+  // No generic method remains that would mean both and reopen onboarding by accident.
+  for (const file of production) {
+    assert.equal(/\badopt\s*\(/.test(file.text), false, `${file.path} must not use a generic adopt`);
+  }
+});
