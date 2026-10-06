@@ -55,4 +55,10 @@ export interface EngineState {
   doses: Partial<Record<WorkoutType, Dose>>; confirmedDoses: Partial<Record<WorkoutType, Dose>>;
   successStreak: Partial<Record<WorkoutType, number>>; qualityRotation: number;
   reentry: { breakDays: number; easyRemaining: number; easyReductionPending: boolean; easyFactor: number; qualityFactor: number; diagnosticRequired: boolean } | null;
+  /**
+   * Terminal marker, not a training phase: the result of the final 3000 m race has been recorded
+   * and the cycle is closed. No plan exists after the event date, so this only unlocks loading a
+   * state whose clock has passed `raceDate`.
+   */
+  finalResultRecorded: boolean;
 }

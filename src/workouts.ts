@@ -68,9 +68,11 @@ export function generateQueue(s: EngineState, now: string): Workout[] {
   let controlScheduled = false;
   for (let delta = 0; delta < 7; delta++) {
     const date = addDays(now, delta);
-    // Approved decision 1: the active plan ends on the target race date. No session is ever
-    // queued after it, so every queued session stays recordable inside the active window.
-    if (day(date) > day(s.profile.raceDate)) continue;
+    // Approved decision C1: `raceDate` is the day of the final 3000 m race itself, which the UI
+    // shows as a separate event. The ordinary training queue therefore covers only dates strictly
+    // before it, so no EASY / LONG_EASY / STRIDES / INTRO_QUALITY / THRESHOLD / VO2 / SPECIFIC_3K /
+    // CONTROL is ever prescribed on the race day. No post-race phase exists.
+    if (day(date) >= day(s.profile.raceDate)) continue;
     const planning = {...s, decision: decide(s, date)};
     const offset = ((day(date) - day(s.cycleStartDate)) % 7 + 7) % 7;
     if (!offsets.includes(offset)) continue;
@@ -95,7 +97,7 @@ export function generateQueue(s: EngineState, now: string): Workout[] {
     if (s.reentry && s.reentry.easyRemaining > 0 && QUALITY.includes(type)) type = 'EASY';
     result.push(prescribe(planning, type, date, id, factor));
   }
-  const moved = s.movedWorkouts.filter(w => !completed.has(w.id) && day(w.scheduledDate) >= day(now) && day(w.scheduledDate) < day(now) + 7 && day(w.scheduledDate) <= day(s.profile.raceDate));
+  const moved = s.movedWorkouts.filter(w => !completed.has(w.id) && day(w.scheduledDate) >= day(now) && day(w.scheduledDate) < day(now) + 7 && day(w.scheduledDate) < day(s.profile.raceDate));
   const safeMoved = moved.map(original => {
     const planning = {...s, decision: decide(s, original.scheduledDate)};
     const d = planning.decision;

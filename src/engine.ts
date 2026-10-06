@@ -1,7 +1,7 @@
 import type { EngineState, PerformanceSnapshot, Profile, SafetyData, TrainingBreak, Workout, WorkoutResult, WorkoutType } from './models.ts';
 import { assessSafety, decide } from './assessment.ts';
 import { classify, yellowFamily } from './feedback.ts';
-import { day, validateProfile } from './validation.ts';
+import { day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
 import { generateQueue } from './workouts.ts';
 function copy(s: EngineState): EngineState { return structuredClone(s); }
 /**
@@ -51,7 +51,7 @@ export function createEngine(profile: Profile, now: string): EngineState {
     queue: [], history: [], skippedIds: [], skippedWorkouts: [], movedWorkouts: [], successfulQuality: 0, successfulIntro: 0, successfulSpecificPartial: 0,
     greenPlusIds: [], checkpointRequired: !profile.performance && profile.canRun3Km,
     lastAssessmentDate: profile.performance?.date ?? now, relatedYellow: false, reducedQualityUntilConfirmed: false, diagnosticHold: false, progressionBlocked: false,
-    doses: {}, confirmedDoses: {}, successStreak: {}, qualityRotation: 0, reentry: null,
+    doses: {}, confirmedDoses: {}, successStreak: {}, qualityRotation: 0, reentry: null, finalResultRecorded: false,
   } as unknown as EngineState;
   state.decision = decide(state, now);
   const latest = [...profile.breaks].sort((a, b) => day(b.endDate) - day(a.endDate))[0];
@@ -142,6 +142,33 @@ export function recordCheckpoint(state: EngineState, performance: PerformanceSna
   s.diagnosticHold = false; s.progressionBlocked = false; s.reentry = null;
   return replan(s, now);
 }
+/**
+ * Terminal transition for the final 3000 m race itself (approved decision C1).
+ *
+ * `raceDate` is the day of the target race, which the UI presents as a separate event. Its result
+ * is a fact of that event, so it may be recorded on the race day or later, and it is not gated by
+ * the training plan's state. The result becomes Current Performance and closes the checkpoint, but
+ * no plan is produced: v1.0 has no post-race phase and no post-race queue, and every ordinary
+ * operation (`replan`, `skipWorkout`, `createEngine`, ...) keeps raising EVENT_DATE_PASSED once the
+ * current date is past `raceDate`.
+ */
+export function recordFinalResult(state: EngineState, performance: PerformanceSnapshot, now: string): EngineState {
+  const s = copy(state);
+  if (!['TEST_3K', 'OFFICIAL_3K'].includes(performance.source)) throw new Error('Invalid performance source');
+  if (day(performance.date) !== day(s.profile.raceDate)) throw new Error('Final result must be dated on the event date');
+  if (day(now) < day(performance.date)) throw new Error('Final result cannot be recorded before the event date');
+  number(performance.timeSeconds, 1);
+  s.profile.performance = structuredClone(performance); s.profile.performanceMismatch = 'NONE';
+  s.profile.breaks = s.profile.breaks.filter(b => day(b.endDate) > day(performance.date));
+  s.lastAssessmentDate = performance.date; s.checkpointRequired = false; s.greenPlusIds = [];
+  s.successfulSpecificPartial = 0; s.successfulQuality = 0; s.successfulIntro = 0; s.successStreak = {};
+  s.diagnosticHold = false; s.progressionBlocked = false; s.relatedYellow = false; s.reentry = null;
+  s.asOf = now; s.finalResultRecorded = true;
+  // The cycle is closed: an empty queue is the only honest plan after the event date.
+  s.queue = [];
+  s.decision = decide(s, now);
+  return s;
+}
 /** Explicit assessment outcome. Never invoked automatically merely because a race approaches. */
 export function resolveDiagnostic(state: EngineState, safety: SafetyData, now: string): EngineState {
   const s = copy(state); s.profile.safety = structuredClone(safety);
@@ -176,14 +203,18 @@ export function deserialize(json: string): EngineState {
   // Restore the committed plan verbatim. Re-planning here would regenerate the queue and could
   // replay a session that was already skipped or missed (approved decision 2): a save/load cycle
   // must not resurrect a missed workout, so only the derived decision is recomputed.
-  validateProfile(s.profile, s.asOf);
+  validateProfileShape(s.profile, s.asOf);
+  // The event-date rule still applies to every active plan; only the terminal final-result state
+  // (produced by `recordFinalResult`) may carry a clock that has passed `raceDate`.
+  if (!s.finalResultRecorded) validateEventDate(s.profile, s.asOf);
   s.decision = decide(s, s.asOf);
   return s;
 }
 /** Moving preserves the dose and rejects density/weekly limit violations. */
 export function moveWorkout(state: EngineState, id: string, date: string): EngineState {
   const s = copy(state); const w = s.queue.find(w => w.id === id);
-  if (!w || !w.movable || day(date) < day(s.asOf) || day(date) >= day(s.asOf) + 7 || day(date) > day(s.profile.raceDate)) throw new Error('Move outside queue horizon');
+  // A workout can never be moved onto or past the race day, which is the event itself.
+  if (!w || !w.movable || day(date) < day(s.asOf) || day(date) >= day(s.asOf) + 7 || day(date) >= day(s.profile.raceDate)) throw new Error('Move outside queue horizon');
   if (s.queue.some(other => other.id !== id && other.scheduledDate === date) || s.history.some(h => h.result.date === date)) throw new Error('Occupied date');
   if (w.countsAsQuality) {
     const others = [...s.history.filter(h => h.workout.countsAsQuality).map(h => ({date: h.result.date, hours: h.workout.minimumRecoveryHoursBeforeQuality})), ...s.queue.filter(other => other.id !== id && other.countsAsQuality).map(other => ({date: other.scheduledDate, hours: other.minimumRecoveryHoursBeforeQuality}))];

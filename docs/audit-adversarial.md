@@ -6,7 +6,8 @@ Baseline: коммит `68070ea9c6a851da05a4ef66ffd365da6fe46280` (`feat: initia
 минимальный автоматический тест; дефект считался подтверждённым только после воспроизводимого FAIL.
 
 Итог первичного аудита: **201/201 тестов PASS** (128 исходных + 73 новых adversarial/regression).
-После утверждения решений A1–A3 добавлены AD01–AD11, после решений B1–B3 — EV01–EV12: **224/224 PASS**.
+После решений A1–A3 добавлены AD01–AD11, после решений B1–B3 — EV01–EV12, после решений C1–C2 — RD01–RD13:
+**237/237 PASS**.
 
 ## CONFIRMED BUG
 
@@ -96,9 +97,10 @@ RE_ENTRY; LONG_TERM от целевого темпа; рост нагрузки 
 
 ## POTENTIAL RISK (осознанно оставлены)
 
-Следующие пункты закрыты утверждёнными решениями B1–B3 и больше не являются рисками: `raceDate` в прошлом,
-немонотонность Goal Feasibility при 1–2 доступных тренировках, недоступность validation API в публичной точке
-входа.
+Следующие пункты закрыты утверждёнными решениями B1–B3 и C1–C2 и больше не являются рисками: `raceDate` в
+прошлом, немонотонность Goal Feasibility при 1–2 доступных тренировках, недоступность validation API в
+публичной точке входа, тренировка в день старта, невозможность сохранить результат итогового забега после
+старта.
 
 - Нет перекрёстной валидации `actualRunsPerWeek > availableRunsPerWeek` и
   `longestUsualRunKm > averageWeeklyKm4Weeks` (40 км длинная при 10 км/нед → LONG_EASY 40 км). Это **осознанное
@@ -119,33 +121,38 @@ RE_ENTRY; LONG_TERM от целевого темпа; рост нагрузки 
   зависит (проверено E09 после удаления комментариев).
 - `Workout.removable` всегда `true`.
 - `deserialize` на не-объектном JSON падает TypeError, а не контролируемой ошибкой.
+- В терминальном состоянии (`finalResultRecorded`) `decision.maximumQualityPerWeek` по-прежнему отражает
+  потенциальную ёмкость профиля, хотя очереди нет и `replan` запрещён. Величина ни на что не влияет; отдельная
+  ветка в `decide` ради её обнуления не добавлялась.
 
 ## Утверждённые решения и их реализация
 
-Шесть неоднозначностей рассмотрены владельцем продукта и утверждены; формулировки — в
-`docs/specification-decisions.md`, разделы «Утверждённые решения (5 октября 2026)» и «Утверждённые решения
-финальной стабилизации (5 октября 2026)».
+Восемь решений рассмотрены владельцем продукта и утверждены; формулировки — в
+`docs/specification-decisions.md`, разделы «Утверждённые решения (5 октября 2026)», «Утверждённые решения
+финальной стабилизации (5 октября 2026)» и «Утверждённые решения по дню старта (5 октября 2026)».
 
 | Решение | Реализация | Тесты |
 |---|---|---|
 | A1. FOUNDATION имеет приоритет над RE_ENTRY; перерыв действует как модификатор нагрузки | Порядок ветвлений в `decide` зафиксирован комментарием о нормативности | AD01–AD05 |
 | A2. Явный `skipWorkout` и автоматический past-due miss — одна операция | `registerMiss` + `rebuildQueue` используются обеими ветками; `deserialize` восстанавливает зафиксированный план | AD06–AD08, F09b, F05 |
 | A3. `can_run_3k_continuously = true` обязательна для T1/T2/T3 | Ранний возврат `T0` в `assessCapacity` | AD09–AD11, B08 |
-| B1. `EVENT_DATE_PASSED`: активный план только до `raceDate` включительно, post-race режима нет | `EventDatePassedError` + `validateEventDate` внутри `validateProfile`; очередь не выходит за `raceDate`; `moveWorkout` ограничен тем же окном | EV01–EV07 |
+| B1. `EVENT_DATE_PASSED`: активный план живёт до дня старта, post-race режима нет | `EventDatePassedError` + `validateEventDate` внутри `validateProfile` | EV01–EV07 |
 | B2. Штраф Goal Feasibility при `availableRunsPerWeek <= 2` | `Number(available <= 2)` в `assessFeasibility` | EV08–EV10, E08, B03 |
 | B3. Публичный validation API | Реэкспорт `validateProfile` / `validateResult` / `validateSafety` / `validateEventDate` / `day` / `addDays` / `EventDatePassedError` из `src/index.ts` без дублирования правил | EV11–EV12 |
+| C1. `raceDate` — день забега: очередь только для дат строго до старта | `day(date) >= day(raceDate)` в `generateQueue`; то же ограничение для перенесённых тренировок и в `moveWorkout` | RD01–RD04 |
+| C2. Финальный результат забега сохраняется и после старта, без новой фазы и без очереди | Терминальный переход `recordFinalResult` + маркер `finalResultRecorded`; `deserialize` пропускает проверку даты только для терминального состояния | RD05–RD13 |
 
 ## Финальная проверка (ветка `audit/deepseek`)
 
 | Проверка | Результат |
 |---|---|
-| `npm test` | 224/224 PASS, 0 fail |
-| `npm test` под TZ=UTC / Pacific/Kiritimati / America/Anchorage / Australia/Lord_Howe | 224/224 PASS во всех |
+| `npm test` | 237/237 PASS, 0 fail |
+| `npm test` под TZ=UTC / Pacific/Kiritimati / America/Anchorage / Australia/Lord_Howe | 237/237 PASS во всех |
 | `npm run typecheck` | PASS |
 | `npm run lint` | PASS |
 | `npm run build` | PASS |
 | `npm run demo` | PASS |
 
-Известных CONFIRMED BUG и нерассмотренных SPECIFICATION AMBIGUITY не остаётся: шесть прежних
-неоднозначностей закрыты утверждёнными решениями A1–A3 и B1–B3 и покрыты regression tests. Оставшиеся
+Известных CONFIRMED BUG и нерассмотренных SPECIFICATION AMBIGUITY не остаётся: восемь прежних
+неоднозначностей закрыты утверждёнными решениями A1–A3, B1–B3 и C1–C2 и покрыты regression tests. Оставшиеся
 POTENTIAL RISK перечислены выше и оставлены сознательно.

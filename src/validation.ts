@@ -27,9 +27,13 @@ export class EventDatePassedError extends Error {
 export function validateEventDate(p: Profile, now: string): void {
   if (day(now) > day(p.raceDate)) throw new EventDatePassedError();
 }
-export function validateProfile(p: Profile, now: string): void {
+/**
+ * Structural and numeric validation of a profile. Deliberately independent of the event date, so
+ * the terminal final-result state (whose clock is past `raceDate`) can still be loaded; every
+ * active-plan operation goes through `validateProfile`, which adds the event-date rule.
+ */
+export function validateProfileShape(p: Profile, now: string): void {
   day(now); day(p.raceDate);
-  validateEventDate(p, now);
   number(p.targetTimeSeconds, 1);
   for (const n of [p.regularRunningWeeks, p.actualRunsPerWeek, p.averageWeeklyKm4Weeks, p.longestUsualRunKm, p.qualitySessions8Weeks]) number(n, 0);
   number(p.actualRunsPerWeek, 0, 7); number(p.availableRunsPerWeek, 1, 7);
@@ -42,6 +46,10 @@ export function validateProfile(p: Profile, now: string): void {
   if (p.performance) { number(p.performance.timeSeconds, 1); if (day(p.performance.date) > day(now)) throw new Error('Future performance'); }
   for (const b of p.breaks) { if (!['WORK', 'OTHER_HEALTHY', 'ILLNESS', 'INJURY'].includes(b.reason)) throw new Error('Invalid break reason'); number(b.days, 1); if (!Number.isInteger(b.days) || day(b.endDate) > day(now)) throw new Error('Invalid break'); }
   validateSafety(p.safety);
+}
+export function validateProfile(p: Profile, now: string): void {
+  validateProfileShape(p, now);
+  validateEventDate(p, now);
 }
 export function validateResult(r: WorkoutResult): void {
   if (r.yellowReason && !['EXECUTION', 'RECOVERY', 'ENVIRONMENT', 'ILLNESS', 'PAIN', 'PACE_PRESCRIPTION', 'OTHER'].includes(r.yellowReason)) throw new Error('Invalid yellow reason');
