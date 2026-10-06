@@ -14,8 +14,11 @@
 
 ## Версионированный архив
 
+Хранилище архива — собственный versioned container `ArchiveStoreV1` (`archiveStorage.ts`); он не равен одному `AppStateV1`.
+
 ```ts
 // localStorage key: fizuha.archivedCycles
+// ArchiveStoreV1
 {
   formatVersion: 1,
   cycles: Array<{
