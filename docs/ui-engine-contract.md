@@ -11,7 +11,9 @@
 
 ## 1. Инвентарь публичного API (31 runtime-символ)
 
-Полный список экспортов `src/index.ts`:
+Полный список экспортов `src/index.ts` на момент анализа (commit `34cd5e8`). Разделы UI-GAP-06 и
+UI-GAP-08 ниже закрыты в ветке `pwa/api-contract`: добавлены `EngineError`, `ERROR_CODES` и runtime-каталоги
+значений (см. пометки «Закрыто» в соответствующих разделах).
 
 ```
 EventDatePassedError, addDays, applyBreak, assessCapacity, assessConfidence, assessFeasibility,
@@ -218,6 +220,14 @@ classified = { sessionLoad, inRangeFraction, speedDropFraction, evaluation, yell
 хрупко. Запрос: `code` у всех validation/lifecycle ошибок (по образцу `EventDatePassedError`) либо
 документированная таблица message → текст.
 
+> **Закрыто (ветка `pwa/api-contract`).** Добавлен базовый класс `EngineError` с полем `code` и
+> структурированным `details`; коды присвоены всем **30** сообщениям (31 код вместе с `EVENT_DATE_PASSED`),
+> а `EventDatePassedError` теперь наследует `EngineError`, сохраняя класс, код, имя и текст. Тексты сообщений
+> не изменялись: они выводятся из одной таблицы «код → сообщение». Динамическое сообщение
+> `Number outside 1..7` осталось прежним, а параметры `{min, max, value}` передаются в `details`.
+> Контракт зафиксирован тестами `tests/api-contract.test.ts` (по одному тесту на каждый код).
+> Разбор строки для определения типа ошибки больше не требуется.
+
 ### UI-GAP-07 — нет источника пропуска и нет «списка невнесённых результатов» · **MEDIUM** (§18, §17)
 
 Добровольный пропуск и автоматический past-due дают идентичную бухгалтерию (прогон: `skippedIds` и
@@ -235,6 +245,15 @@ classified = { sessionLoad, inRangeFraction, speedDropFraction, evaluation, yell
 их нет, поэтому статический mapping UI нельзя проверить на полноту, и он молча разъедется при добавлении значения.
 Прогон: в моих сценариях встретилось 11 из 19 reason codes; про остальные 8 UI узнает только из типа.
 Запрос: экспортированные константные массивы (с гарантией стабильности).
+
+> **Закрыто (ветка `pwa/api-contract`).** Экспортированы 20 замороженных runtime-каталогов
+> (`CONFIDENCES`, `CAPACITIES`, `QUALITY_LEVELS`, `PHASES`, `SAFETY_STATUSES`, `FEASIBILITIES`, `GATES`,
+> `WORKOUT_TYPES`, `WORKOUT_GOALS`, `MAIN_MODES`, `DOSE_UNITS`, `EFFORT_CUES`, `ANCHORS`, `FEEDBACK_FIELDS`,
+> `EVALUATIONS`, `YELLOW_REASONS`, `REASON_CODES`, `PERFORMANCE_SOURCES`, `BREAK_REASONS`,
+> `PERFORMANCE_MISMATCH_LEVELS`) вместе с `ERROR_CODES`. Единый источник истины — массив: TypeScript-union
+> выводится из него (`typeof CATALOG[number]`), поэтому runtime-список и тип не могут разойтись, а
+> исчерпывающий mapping UI (`satisfies Record<Phase, string>`) перестаёт компилироваться при добавлении
+> значения. Каталоги проверены тестами на полноту, уникальность и неизменяемость.
 
 ### UI-GAP-09 — нет политики версионирования состояния · **MEDIUM** (§26, offline PWA)
 
@@ -296,7 +315,7 @@ classified = { sessionLoad, inRangeFraction, speedDropFraction, evaluation, yell
 |---|---|---|---|
 | 1 | Полное представление плана для UI | **GAP** | UI-GAP-01: только 7-дневный горизонт |
 | 2 | «Следующее действие» для экрана «Сегодня» | **Выводимо** | из `decision` + `queue` + дат + `finalResultRecorded`; отдельного поля нет |
-| 3 | Человекочитаемая причина / reason codes | **Частично** | коды есть (`reasons`, `yellowReason`), текста нет (по §2 это правильно), runtime-списка кодов нет — UI-GAP-08 |
+| 3 | Человекочитаемая причина / reason codes | **Закрыто** | коды есть (`reasons`, `yellowReason`), текста нет (по §2 это правильно); runtime-наборы значений и каталог `REASON_CODES` добавлены в `pwa/api-contract` (UI-GAP-08) |
 | 4 | Что изменилось после адаптации | **GAP** | UI-GAP-04: полей-diff нет |
 | 5 | Контракт формы результата по типам | **GAP** | UI-GAP-05: `requiredFeedback` константен |
 | 6 | Отдельная поддержка переноса | **Есть** | `moveWorkout`, перенос переживает replan и сериализацию |

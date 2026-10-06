@@ -1,6 +1,7 @@
 import type { Dose, EngineState, Workout, WorkoutType } from './models.ts';
 import { decide } from './assessment.ts';
 import { addDays, day } from './validation.ts';
+import { EngineError } from './errors.ts';
 const QUALITY: WorkoutType[] = ['INTRO_QUALITY', 'THRESHOLD', 'VO2', 'SPECIFIC_3K', 'CONTROL'];
 export function initialDose(s: EngineState, type: WorkoutType): Dose {
   const q = s.decision.quality;
@@ -22,7 +23,7 @@ export function initialDose(s: EngineState, type: WorkoutType): Dose {
 }
 export function prescribe(s: EngineState, type: WorkoutType, date: string, id: string, factor = 1): Workout {
   const d = s.decision;
-  if ((QUALITY.includes(type) && d.maximumQualityPerWeek === 0) || (d.phase === 'FOUNDATION' && ['VO2', 'SPECIFIC_3K'].includes(type))) throw new Error('Workout blocked by phase or safety');
+  if ((QUALITY.includes(type) && d.maximumQualityPerWeek === 0) || (d.phase === 'FOUNDATION' && ['VO2', 'SPECIFIC_3K'].includes(type))) throw new EngineError('WORKOUT_BLOCKED_BY_PHASE_OR_SAFETY');
   const dose = {...((s.reentry && QUALITY.includes(type) ? s.confirmedDoses[type] : s.doses[type]) ?? initialDose(s, type))}; dose.value *= factor;
   let range: [number, number] | null = null;
   let anchor: Workout['anchor'] = 'EFFORT';

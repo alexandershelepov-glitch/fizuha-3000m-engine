@@ -1,37 +1,108 @@
-export type Confidence = 'HIGH' | 'MEDIUM' | 'LOW' | 'UNKNOWN';
-export type Capacity = 'T0' | 'T1' | 'T2' | 'T3';
-export type QualityExperience = 'Q0' | 'Q1' | 'Q2';
-export type Phase = 'FOUNDATION' | 'DEVELOPMENT' | 'SPECIFIC' | 'RE_ENTRY' | 'HOLD_DIAGNOSTIC' | 'TAPER';
-export type SafetyStatus = 'OK' | 'HOLD' | 'STOP';
-export type Feasibility = 'PLAUSIBLE' | 'AMBITIOUS' | 'LOW_PROBABILITY' | 'LONG_TERM';
-export type Gate = 'CLOSED' | 'PARTIAL' | 'OPEN';
-export type WorkoutType = 'EASY' | 'LONG_EASY' | 'STRIDES' | 'INTRO_QUALITY' | 'THRESHOLD' | 'VO2' | 'SPECIFIC_3K' | 'CONTROL' | 'REST';
-export type Evaluation = 'GREEN_PLUS' | 'GREEN' | 'YELLOW' | 'RED';
-export type YellowReason = 'EXECUTION' | 'RECOVERY' | 'ENVIRONMENT' | 'ILLNESS' | 'PAIN' | 'PACE_PRESCRIPTION' | 'OTHER';
-export type ReasonCode = 'GOAL_GAP_TOO_LARGE' | 'TARGET_GATE_CLOSED' | 'LOW_QUALITY_EXPERIENCE' | 'REENTRY_AFTER_BREAK' | 'SECOND_QUALITY_NOT_ALLOWED' | 'TWO_RELATED_YELLOW' | 'CHECKPOINT_AFTER_GREEN_PLUS' | 'SAFETY_STOP' | 'SAFETY_HOLD' | 'TAPER_STARTED' | 'PERFORMANCE_CONFIDENCE_LOW' | 'FOUNDATION_NO_3K_RESULT' | 'CHECKPOINT_DUE' | 'CHECKPOINT_AFTER_REENTRY' | 'CONTRADICTORY_PERFORMANCE' | 'PROGRESSION_ALLOWED' | 'PROGRESSION_BLOCKED' | 'HEALTH_REVIEW_REQUIRED' | 'FOUNDATION_LONG_TERM_CONFLICT';
+/**
+ * Public value contract for the PWA.
+ *
+ * Every finite set of values that an external client must translate or handle exhaustively is
+ * declared here as a frozen runtime catalog, and the corresponding TypeScript union is *derived*
+ * from that catalog. A runtime list and a type therefore cannot drift apart: adding a value to a
+ * catalog widens the union automatically, which makes an exhaustive UI mapping such as
+ * `const labels = {...} satisfies Record<Phase, string>` fail to compile until the new value is
+ * handled. That is the guarantee the UI contract relies on (UI-GAP-08).
+ *
+ * The catalogs are frozen so a consumer cannot mutate the shared contract, and the engine never
+ * reads them for sport decisions: they describe values, they do not decide anything.
+ */
+
+// ---------------------------------------------------------------- assessment values
+export const CONFIDENCES = Object.freeze(['HIGH', 'MEDIUM', 'LOW', 'UNKNOWN'] as const);
+export type Confidence = (typeof CONFIDENCES)[number];
+
+export const CAPACITIES = Object.freeze(['T0', 'T1', 'T2', 'T3'] as const);
+export type Capacity = (typeof CAPACITIES)[number];
+
+export const QUALITY_LEVELS = Object.freeze(['Q0', 'Q1', 'Q2'] as const);
+export type QualityExperience = (typeof QUALITY_LEVELS)[number];
+
+export const PHASES = Object.freeze(['FOUNDATION', 'DEVELOPMENT', 'SPECIFIC', 'RE_ENTRY', 'HOLD_DIAGNOSTIC', 'TAPER'] as const);
+export type Phase = (typeof PHASES)[number];
+
+export const SAFETY_STATUSES = Object.freeze(['OK', 'HOLD', 'STOP'] as const);
+export type SafetyStatus = (typeof SAFETY_STATUSES)[number];
+
+export const FEASIBILITIES = Object.freeze(['PLAUSIBLE', 'AMBITIOUS', 'LOW_PROBABILITY', 'LONG_TERM'] as const);
+export type Feasibility = (typeof FEASIBILITIES)[number];
+
+export const GATES = Object.freeze(['CLOSED', 'PARTIAL', 'OPEN'] as const);
+export type Gate = (typeof GATES)[number];
+
+// ---------------------------------------------------------------- workout values
+export const WORKOUT_TYPES = Object.freeze(['EASY', 'LONG_EASY', 'STRIDES', 'INTRO_QUALITY', 'THRESHOLD', 'VO2', 'SPECIFIC_3K', 'CONTROL', 'REST'] as const);
+export type WorkoutType = (typeof WORKOUT_TYPES)[number];
+
+/** Purpose code attached to a prescribed workout by the engine. */
+export const WORKOUT_GOALS = Object.freeze(['AEROBIC_BASE', 'QUALITY_ADAPTATION', 'ASSESS_CURRENT_PERFORMANCE', 'RECOVERY'] as const);
+export type WorkoutGoal = (typeof WORKOUT_GOALS)[number];
+
+export const MAIN_MODES = Object.freeze(['CONTINUOUS', 'INTERVALS', 'RUN_WALK', 'REST'] as const);
+export type WorkoutMainMode = (typeof MAIN_MODES)[number];
+
+export const DOSE_UNITS = Object.freeze(['MINUTES', 'METERS'] as const);
+export type DoseUnit = (typeof DOSE_UNITS)[number];
+
+export const EFFORT_CUES = Object.freeze(['FULL_SENTENCES', 'CONTROLLED_BREATHING'] as const);
+export type EffortCue = (typeof EFFORT_CUES)[number];
+
+export const ANCHORS = Object.freeze(['CURRENT', 'EFFECTIVE', 'EFFORT', 'NONE'] as const);
+export type Anchor = (typeof ANCHORS)[number];
+
+/** Fields the engine expects back after a workout; the MVP result form is built from exactly these. */
+export const FEEDBACK_FIELDS = Object.freeze(['completionFraction', 'sessionRpe', 'safety', 'durationMinutes', 'distanceMeters', 'repeats', 'restSeconds', 'conditions', 'unexpectedFatigue'] as const);
+export type FeedbackField = (typeof FEEDBACK_FIELDS)[number];
+
+// ---------------------------------------------------------------- result values
+export const EVALUATIONS = Object.freeze(['GREEN_PLUS', 'GREEN', 'YELLOW', 'RED'] as const);
+export type Evaluation = (typeof EVALUATIONS)[number];
+
+export const YELLOW_REASONS = Object.freeze(['EXECUTION', 'RECOVERY', 'ENVIRONMENT', 'ILLNESS', 'PAIN', 'PACE_PRESCRIPTION', 'OTHER'] as const);
+export type YellowReason = (typeof YELLOW_REASONS)[number];
+
+/** Machine-readable explanations attached to a decision; the UI translates them statically. */
+export const REASON_CODES = Object.freeze(['GOAL_GAP_TOO_LARGE', 'TARGET_GATE_CLOSED', 'LOW_QUALITY_EXPERIENCE', 'REENTRY_AFTER_BREAK', 'SECOND_QUALITY_NOT_ALLOWED', 'TWO_RELATED_YELLOW', 'CHECKPOINT_AFTER_GREEN_PLUS', 'SAFETY_STOP', 'SAFETY_HOLD', 'TAPER_STARTED', 'PERFORMANCE_CONFIDENCE_LOW', 'FOUNDATION_NO_3K_RESULT', 'CHECKPOINT_DUE', 'CHECKPOINT_AFTER_REENTRY', 'CONTRADICTORY_PERFORMANCE', 'PROGRESSION_ALLOWED', 'PROGRESSION_BLOCKED', 'HEALTH_REVIEW_REQUIRED', 'FOUNDATION_LONG_TERM_CONFLICT'] as const);
+export type ReasonCode = (typeof REASON_CODES)[number];
+
+// ---------------------------------------------------------------- profile input values
+export const PERFORMANCE_SOURCES = Object.freeze(['TEST_3K', 'OFFICIAL_3K'] as const);
+export type PerformanceSource = (typeof PERFORMANCE_SOURCES)[number];
+
+export const BREAK_REASONS = Object.freeze(['WORK', 'OTHER_HEALTHY', 'ILLNESS', 'INJURY'] as const);
+export type BreakReason = (typeof BREAK_REASONS)[number];
+
+export const PERFORMANCE_MISMATCH_LEVELS = Object.freeze(['NONE', 'MODERATE', 'CLEAR'] as const);
+export type PerformanceMismatch = (typeof PERFORMANCE_MISMATCH_LEVELS)[number];
+
+// ---------------------------------------------------------------- shapes
 export interface SafetyData {
   pain: number; painIncreasing: boolean; alteredMovement: boolean; painWalkingOrRest: boolean;
   swelling: boolean; acuteIllness: boolean; otherStop: boolean; needsAssessment: boolean;
 }
-export interface PerformanceSnapshot { timeSeconds: number; date: string; source: 'TEST_3K' | 'OFFICIAL_3K' }
-export interface TrainingBreak { days: number; endDate: string; reason: 'WORK' | 'OTHER_HEALTHY' | 'ILLNESS' | 'INJURY' }
+export interface PerformanceSnapshot { timeSeconds: number; date: string; source: PerformanceSource }
+export interface TrainingBreak { days: number; endDate: string; reason: BreakReason }
 export interface Profile {
   performance: PerformanceSnapshot | null; targetTimeSeconds: number; raceDate: string;
   regularRunningWeeks: number; actualRunsPerWeek: number; availableRunsPerWeek: number;
   averageWeeklyKm4Weeks: number; longestUsualRunKm: number; canRun3Km: boolean;
   qualitySessions8Weeks: number; qualityWeeks8Weeks: number; qualityMostlyTolerated: boolean;
   experience: { threshold: boolean; vo2: boolean; specific3k: boolean };
-  breaks: TrainingBreak[]; safety: SafetyData; performanceMismatch: 'NONE' | 'MODERATE' | 'CLEAR';
+  breaks: TrainingBreak[]; safety: SafetyData; performanceMismatch: PerformanceMismatch;
 }
-export interface Dose { unit: 'MINUTES' | 'METERS'; value: number }
+export interface Dose { unit: DoseUnit; value: number }
 export interface Workout {
-  id: string; scheduledDate: string; type: WorkoutType; goal: string; priority: number;
+  id: string; scheduledDate: string; type: WorkoutType; goal: WorkoutGoal; priority: number;
   countsAsQuality: boolean; warmupMinutes: number; cooldownMinutes: number;
-  main: { mode: 'CONTINUOUS' | 'INTERVALS' | 'RUN_WALK' | 'REST'; dose: Dose; repeats: number; repeatMeters: number | null; finalRepeatMeters: number | null };
-  targetRpe: [number, number]; effortCues: string[]; speedRangeMps: [number, number] | null; paceRangeSecondsPerKm: [number, number] | null;
-  anchor: 'CURRENT' | 'EFFECTIVE' | 'EFFORT' | 'NONE'; gateAtPrescription: Gate;
+  main: { mode: WorkoutMainMode; dose: Dose; repeats: number; repeatMeters: number | null; finalRepeatMeters: number | null };
+  targetRpe: [number, number]; effortCues: EffortCue[]; speedRangeMps: [number, number] | null; paceRangeSecondsPerKm: [number, number] | null;
+  anchor: Anchor; gateAtPrescription: Gate;
   restSeconds: number; minimumRecoveryHoursBeforeQuality: number;
-  requiredFeedback: string[]; removable: boolean; movable: boolean; volumeFactor: number;
+  requiredFeedback: FeedbackField[]; removable: boolean; movable: boolean; volumeFactor: number;
 }
 export interface WorkoutResult {
   date: string; completionFraction: number; sessionRpe: number; safety: SafetyData;

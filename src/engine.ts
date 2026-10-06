@@ -1,7 +1,9 @@
 import type { EngineState, PerformanceSnapshot, Profile, SafetyData, TrainingBreak, Workout, WorkoutResult, WorkoutType } from './models.ts';
+import { PERFORMANCE_SOURCES } from './models.ts';
 import { assessSafety, decide } from './assessment.ts';
 import { classify, yellowFamily } from './feedback.ts';
 import { day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
+import { EngineError } from './errors.ts';
 import { generateQueue } from './workouts.ts';
 function copy(s: EngineState): EngineState { return structuredClone(s); }
 /**
@@ -20,7 +22,7 @@ function pastDue(s: EngineState, now: string): Workout[] {
   return s.queue.filter(w => day(w.scheduledDate) < day(now) && !s.history.some(h => h.workout.id === w.id) && !s.skippedIds.includes(w.id));
 }
 function advanceTo(s: EngineState, now: string): void {
-  if (day(now) < day(s.asOf)) throw new Error('Clock cannot move backwards');
+  if (day(now) < day(s.asOf)) throw new EngineError('CLOCK_BACKWARDS');
   validateProfile(s.profile, now); s.asOf = now;
 }
 /**
@@ -81,8 +83,8 @@ function progress(s: EngineState, type: WorkoutType): void {
 }
 export function recordResult(state: EngineState, workoutId: string, result: WorkoutResult): EngineState {
   const s = copy(state); const w = s.queue.find(w => w.id === workoutId);
-  if (!w || s.history.some(h => h.workout.id === workoutId)) throw new Error('Unknown or completed workout');
-  if (result.date !== w.scheduledDate || day(result.date) < day(s.asOf)) throw new Error('Result precedes prescription or state');
+  if (!w || s.history.some(h => h.workout.id === workoutId)) throw new EngineError('UNKNOWN_OR_COMPLETED_WORKOUT');
+  if (result.date !== w.scheduledDate || day(result.date) < day(s.asOf)) throw new EngineError('RESULT_PRECEDES_STATE');
   // Safety is classified before any administrative limit: a RED report must never be refused,
   // because Safety has absolute priority over the quality budget (spec 4, spec 18).
   const c = classify(w, result);
@@ -91,7 +93,7 @@ export function recordResult(state: EngineState, workoutId: string, result: Work
     // so acceptance must use the same decision rather than the possibly older state assessment.
     const maxQuality = decide(s, result.date).maximumQualityPerWeek;
     const recent = s.history.filter(h => h.workout.countsAsQuality && day(result.date) - day(h.result.date) < 7);
-    if (recent.length >= maxQuality || recent.some(h => (day(result.date) - day(h.result.date)) * 24 < h.workout.minimumRecoveryHoursBeforeQuality)) throw new Error('Recovery or quality limit violated');
+    if (recent.length >= maxQuality || recent.some(h => (day(result.date) - day(h.result.date)) * 24 < h.workout.minimumRecoveryHoursBeforeQuality)) throw new EngineError('RECOVERY_OR_QUALITY_LIMIT');
   }
   const previous = s.history.filter(h => h.classified.evaluation === 'YELLOW').at(-1);
   s.history.push({workout: structuredClone(w), result: structuredClone(result), classified: c});
@@ -132,8 +134,8 @@ export function recordResult(state: EngineState, workoutId: string, result: Work
 }
 export function recordCheckpoint(state: EngineState, performance: PerformanceSnapshot, now: string): EngineState {
   const s = copy(state);
-  if (!['TEST_3K', 'OFFICIAL_3K'].includes(performance.source) || !s.profile.canRun3Km || assessSafety(s.profile.safety) !== 'OK' || s.relatedYellow || (s.reentry && s.reentry.easyRemaining > 0)) throw new Error('Checkpoint not permitted');
-  if (day(performance.date) > day(now) || day(performance.date) < day(s.lastAssessmentDate)) throw new Error('Invalid checkpoint date');
+  if (!PERFORMANCE_SOURCES.includes(performance.source) || !s.profile.canRun3Km || assessSafety(s.profile.safety) !== 'OK' || s.relatedYellow || (s.reentry && s.reentry.easyRemaining > 0)) throw new EngineError('CHECKPOINT_NOT_PERMITTED');
+  if (day(performance.date) > day(now) || day(performance.date) < day(s.lastAssessmentDate)) throw new EngineError('INVALID_CHECKPOINT_DATE');
   s.profile.performance = structuredClone(performance); s.profile.performanceMismatch = 'NONE';
   // Breaks ending on the test date have already been evaluated by the valid post-break test.
   s.profile.breaks = s.profile.breaks.filter(b => day(b.endDate) > day(performance.date));
@@ -154,9 +156,9 @@ export function recordCheckpoint(state: EngineState, performance: PerformanceSna
  */
 export function recordFinalResult(state: EngineState, performance: PerformanceSnapshot, now: string): EngineState {
   const s = copy(state);
-  if (!['TEST_3K', 'OFFICIAL_3K'].includes(performance.source)) throw new Error('Invalid performance source');
-  if (day(performance.date) !== day(s.profile.raceDate)) throw new Error('Final result must be dated on the event date');
-  if (day(now) < day(performance.date)) throw new Error('Final result cannot be recorded before the event date');
+  if (!PERFORMANCE_SOURCES.includes(performance.source)) throw new EngineError('INVALID_PERFORMANCE_SOURCE');
+  if (day(performance.date) !== day(s.profile.raceDate)) throw new EngineError('FINAL_RESULT_NOT_ON_EVENT_DATE');
+  if (day(now) < day(performance.date)) throw new EngineError('FINAL_RESULT_BEFORE_EVENT');
   number(performance.timeSeconds, 1);
   s.profile.performance = structuredClone(performance); s.profile.performanceMismatch = 'NONE';
   s.profile.breaks = s.profile.breaks.filter(b => day(b.endDate) > day(performance.date));
@@ -180,7 +182,7 @@ export function resolveDiagnostic(state: EngineState, safety: SafetyData, now: s
 export function updateTrainingData(state: EngineState, data: Partial<Omit<Profile, 'performance' | 'breaks' | 'safety'>>, now: string): EngineState {
   const s = copy(state); const before = s.profile.canRun3Km;
   // Runtime callers cannot bypass the dedicated performance/safety/break transitions.
-  for (const key of Object.keys(data)) if (['performance', 'breaks', 'safety'].includes(key)) throw new Error('Protected field');
+  for (const key of Object.keys(data)) if (['performance', 'breaks', 'safety'].includes(key)) throw new EngineError('PROTECTED_FIELD');
   s.profile = {...s.profile, ...structuredClone(data)};
   if (!before && s.profile.canRun3Km && !s.profile.performance) s.checkpointRequired = true;
   return replan(s, now);
@@ -190,7 +192,7 @@ export function skipWorkout(state: EngineState, id: string, now = state.asOf): E
   // Only the triggering event differs — an explicit request versus the clock moving past the date.
   const s = copy(state);
   const omitted = s.queue.find(w => w.id === id);
-  if (!omitted) throw new Error('Unknown workout');
+  if (!omitted) throw new EngineError('UNKNOWN_WORKOUT');
   const before = s.queue;
   advanceTo(s, now);
   registerMiss(s, omitted);
@@ -199,7 +201,7 @@ export function skipWorkout(state: EngineState, id: string, now = state.asOf): E
 }
 export function serialize(state: EngineState): string { return JSON.stringify(state); }
 export function deserialize(json: string): EngineState {
-  const s = JSON.parse(json) as EngineState; if (s.version !== 1) throw new Error('Unsupported state version');
+  const s = JSON.parse(json) as EngineState; if (s.version !== 1) throw new EngineError('UNSUPPORTED_STATE_VERSION');
   // Restore the committed plan verbatim. Re-planning here would regenerate the queue and could
   // replay a session that was already skipped or missed (approved decision 2): a save/load cycle
   // must not resurrect a missed workout, so only the derived decision is recomputed.
@@ -214,13 +216,13 @@ export function deserialize(json: string): EngineState {
 export function moveWorkout(state: EngineState, id: string, date: string): EngineState {
   const s = copy(state); const w = s.queue.find(w => w.id === id);
   // A workout can never be moved onto or past the race day, which is the event itself.
-  if (!w || !w.movable || day(date) < day(s.asOf) || day(date) >= day(s.asOf) + 7 || day(date) >= day(s.profile.raceDate)) throw new Error('Move outside queue horizon');
-  if (s.queue.some(other => other.id !== id && other.scheduledDate === date) || s.history.some(h => h.result.date === date)) throw new Error('Occupied date');
+  if (!w || !w.movable || day(date) < day(s.asOf) || day(date) >= day(s.asOf) + 7 || day(date) >= day(s.profile.raceDate)) throw new EngineError('MOVE_OUTSIDE_HORIZON');
+  if (s.queue.some(other => other.id !== id && other.scheduledDate === date) || s.history.some(h => h.result.date === date)) throw new EngineError('MOVE_OCCUPIED_DATE');
   if (w.countsAsQuality) {
     const others = [...s.history.filter(h => h.workout.countsAsQuality).map(h => ({date: h.result.date, hours: h.workout.minimumRecoveryHoursBeforeQuality})), ...s.queue.filter(other => other.id !== id && other.countsAsQuality).map(other => ({date: other.scheduledDate, hours: other.minimumRecoveryHoursBeforeQuality}))];
-    if (others.some(other => Math.abs(day(date) - day(other.date)) * 24 < other.hours)) throw new Error('Move violates recovery');
+    if (others.some(other => Math.abs(day(date) - day(other.date)) * 24 < other.hours)) throw new EngineError('MOVE_RECOVERY_VIOLATION');
     const dates = [...others.map(other => day(other.date)), day(date)];
-    if (dates.some(end => dates.filter(d => d <= end && d > end - 7).length > s.decision.maximumQualityPerWeek)) throw new Error('Move violates weekly quality limit');
+    if (dates.some(end => dates.filter(d => d <= end && d > end - 7).length > s.decision.maximumQualityPerWeek)) throw new EngineError('MOVE_QUALITY_LIMIT_VIOLATION');
   }
   w.scheduledDate = date;
   s.movedWorkouts = [...s.movedWorkouts.filter(other => other.id !== id), structuredClone(w)];
