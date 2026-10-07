@@ -3,9 +3,10 @@
  * Purely presentational — no threshold, range or verdict is computed here.
  */
 import {formatDateShort, formatTime} from '../application/format.ts';
-import type {DoseUnit, SafetyData, Workout, WorkoutType} from '../application/engineGateway.ts';
+import type {DoseUnit, SafetyData, Workout, WorkoutMainMode, WorkoutType} from '../application/engineGateway.ts';
 import {doseUnitText, mainModeText, workoutGoalText, workoutTypeText} from './copy/values.ts';
 import {today as todayText} from './copy/text.ts';
+import {repeatStructure, workoutRepeats} from './workoutInstructions.ts';
 
 export function workoutTitle(workout: Workout): string {
   return workoutTypeText[workout.type].label;
@@ -19,14 +20,16 @@ export function workoutMode(workout: Workout): string {
   return mainModeText[workout.main.mode];
 }
 
-/** Volume as the engine expressed it: minutes or metres, plus the number of repeats. */
+/**
+ * Volume as the engine expressed it: minutes or metres, and for intervals the repeat structure read
+ * from the one helper that understands it (repeats is the total, the last repeat may be shorter).
+ */
 export function workoutVolume(workout: Workout): string {
-  const dose = `${workout.main.dose.value} ${doseUnitText[workout.main.dose.unit]}`;
-  if (workout.main.mode !== 'INTERVALS' || workout.main.repeats <= 1) return dose;
-  const meters = workout.main.repeatMeters ?? workout.main.finalRepeatMeters;
-  return meters === null || meters === undefined
-    ? `${workout.main.repeats} × ${dose}`
-    : `${workout.main.repeats} × ${Math.round(meters)} м`;
+  const dose = `${Math.round(workout.main.dose.value)} ${doseUnitText[workout.main.dose.unit]}`;
+  if (workout.main.mode !== 'INTERVALS') return dose;
+  const structure = workoutRepeats(workout);
+  if (structure !== null) return structure.label;
+  return workout.main.repeats > 1 ? `${workout.main.repeats} × ${dose}` : dose;
 }
 
 /** Pace range exactly as the engine ordered it; falls back to converting the speed range. */
@@ -67,10 +70,12 @@ export function restSummaryText(hasNext: boolean): string {
 }
 
 /** A compact, human line for a prescription: type, volume and date. */
-export function workoutSummaryText(summary: {type: WorkoutType; date: string; doseValue: number; doseUnit: DoseUnit; repeats: number; repeatMeters: number | null}): string {
-  const volume = summary.repeats > 1 && summary.repeatMeters !== null
-    ? `${summary.repeats} × ${Math.round(summary.repeatMeters)} м`
-    : `${summary.doseValue} ${doseUnitText[summary.doseUnit]}`;
+export function workoutSummaryText(summary: {type: WorkoutType; date: string; mode: WorkoutMainMode; doseValue: number; doseUnit: DoseUnit; repeats: number; repeatMeters: number | null; finalRepeatMeters: number | null}): string {
+  // The same structure the instruction and the technical block use; never a second interpretation.
+  const structure = repeatStructure({repeats: summary.repeats, repeatMeters: summary.repeatMeters, finalRepeatMeters: summary.finalRepeatMeters});
+  const volume = structure !== null && summary.mode === 'INTERVALS'
+    ? structure.label
+    : `${Math.round(summary.doseValue)} ${doseUnitText[summary.doseUnit]}`;
   return `${workoutTypeText[summary.type].label} · ${volume} · ${formatDateShort(summary.date)}`;
 }
 

@@ -10,7 +10,10 @@ import assert from 'node:assert/strict';
 import {prescribe} from '../src/index.ts';
 import type {Workout, WorkoutType} from '../src/index.ts';
 import {appCycle} from './helpers-app.ts';
-import {effortFor, prescribedPace, splitSeconds, workoutInstruction} from '../web/src/ui/workoutInstructions.ts';
+import {effortFor, prescribedPace, repeatStructure, splitSeconds, workoutInstruction, workoutRepeats} from '../web/src/ui/workoutInstructions.ts';
+import {workoutSummaryText, workoutVolume} from '../web/src/ui/display.ts';
+import {formatDateShort} from '../web/src/application/format.ts';
+import {workoutTypeText} from '../web/src/ui/copy/values.ts';
 
 const volumeCycle = () => appCycle({availableRunsPerWeek: 5, regularRunningWeeks: 60, actualRunsPerWeek: 5, averageWeeklyKm4Weeks: 40, longestUsualRunKm: 12});
 const qualityCycle = () => appCycle({availableRunsPerWeek: 4, regularRunningWeeks: 80, actualRunsPerWeek: 5, averageWeeklyKm4Weeks: 45, longestUsualRunKm: 14, qualitySessions8Weeks: 8, qualityWeeks8Weeks: 6, qualityMostlyTolerated: true, experience: {threshold: true, vo2: true, specific3k: true}});
@@ -73,11 +76,11 @@ test('INSTR-05 intervals of 400 m show the time of one repeat', () => {
   const workout: Workout = {...base, main: {...base.main, repeats: 6, repeatMeters: 400, finalRepeatMeters: 400}, paceRangeSecondsPerKm: [240, 250], speedRangeMps: [1000 / 250, 1000 / 240]};
   const plan = workoutInstruction(workout);
 
-  assert.equal(plan.headline, 'Сегодня: 6 × 400 метров');
+  assert.equal(plan.headline, 'Сегодня: 6 × 400 м');
   assert.deepEqual(plan.splits.map((split) => split.text), ['400 метров примерно за 1:36–1:40']);
   assert.ok(plan.steps.some((step) => step.includes('Каждый отрезок старайся пробежать за 1:36–1:40')), plan.steps.join(' | '));
   assert.ok(plan.steps.some((step) => step.includes('После каждого отрезка отдыхай 90 секунд')));
-  assert.ok(plan.steps.some((step) => step.includes('Во время отдыха можно идти или очень медленно бежать')));
+  assert.ok(plan.steps.some((step) => step === 'Конкретный способ отдыха план не задаёт.'));
   assert.ok(plan.paceText!.endsWith('/км'), 'the pace stays available below');
 });
 
@@ -87,21 +90,25 @@ test('INSTR-06 a 1000 m repeat is converted with the same rule', () => {
   const workout: Workout = {...base, main: {...base.main, repeats: 3, repeatMeters: 1000, finalRepeatMeters: 1000}, paceRangeSecondsPerKm: [240, 250], speedRangeMps: null};
   const plan = workoutInstruction(workout);
 
-  assert.equal(plan.headline, 'Сегодня: 3 × 1000 метров');
+  assert.equal(plan.headline, 'Сегодня: 3 × 1000 м');
   assert.deepEqual(plan.splits.map((split) => split.text), ['1000 метров примерно за 4:00–4:10']);
   assert.ok(plan.steps.some((step) => step.includes('4:00–4:10')));
 });
 
-test('INSTR-07 a different final repeat is shown separately with its own time', () => {
+test('INSTR-07 a shorter final repeat is the last of them, not an extra one', () => {
   const fixture = volumeCycle();
   const base = prescribe(fixture.engineState, 'SPECIFIC_3K', fixture.engineState.asOf, 'test-mixed');
+  // repeats = 6 means six repeats in total: five of 400 m and one final of 200 m = 2200 m.
   const workout: Workout = {...base, main: {...base.main, repeats: 6, repeatMeters: 400, finalRepeatMeters: 200}, paceRangeSecondsPerKm: [240, 250], speedRangeMps: null};
   const plan = workoutInstruction(workout);
 
-  assert.equal(plan.headline, 'Сегодня: 6 × 400 метров + 1 × 200 метров');
+  assert.equal(plan.headline, 'Сегодня: 5 × 400 м + 1 × 200 м');
+  assert.equal(repeatStructure({repeats: 6, repeatMeters: 400, finalRepeatMeters: 200})!.volumeMeters, 2200);
   assert.deepEqual(plan.splits.map((split) => split.text), ['400 метров примерно за 1:36–1:40', '200 метров примерно за 0:48–0:50']);
+  assert.ok(plan.steps.some((step) => step === 'Выполни 6 отрезков: первые 5 — по 400 метров, последний — 200 метров.'), plan.steps.join(' | '));
   assert.ok(plan.steps.some((step) => step === '400 метров — за 1:36–1:40.'));
   assert.ok(plan.steps.some((step) => step === 'Последний 200 метров — за 0:48–0:50.'));
+  assert.equal(plan.steps.join(' ').includes('7 отрезков'), false);
 });
 
 test('INSTR-08 a special 3000 m session keeps the engine pace and its own repeat length', () => {
@@ -112,7 +119,7 @@ test('INSTR-08 a special 3000 m session keeps the engine pace and its own repeat
   assert.equal(workout.main.repeatMeters, 600);
   assert.equal(plan.splits.length, 1);
   assert.deepEqual(plan.splits[0]!.seconds, splitSeconds(pace, 600));
-  assert.ok(plan.headline.includes('600 метров'), plan.headline);
+  assert.ok(plan.headline.includes('600 м'), plan.headline);
 });
 
 test('INSTR-09 the control run names the real distance and states that no pace is set', () => {
@@ -122,8 +129,12 @@ test('INSTR-09 the control run names the real distance and states that no pace i
   assert.equal(workout.paceRangeSecondsPerKm, null);
   assert.equal(plan.headline, 'Сегодня: контрольный забег 3000 метров');
   assert.ok(plan.steps.some((step) => step === 'Пробеги 3000 метров на результат.'));
-  assert.ok(plan.steps.some((step) => step.includes('Темп не задан')));
+  assert.ok(plan.steps.some((step) => step === 'Конкретный темп не задан.'));
+  assert.ok(plan.steps.some((step) => step === 'Ориентир по усилию указан ниже.'));
   assert.equal(plan.paceText, null);
+  // The control run is never turned into an all-out effort: the engine prescribed 8–9 of 10.
+  assert.deepEqual(workout.targetRpe, [8, 9]);
+  assert.equal(/в полную силу|максимальн/i.test(plan.steps.join(' ')), false);
 });
 
 test('INSTR-10 run and walk is explained in words, without inventing a pattern', () => {
@@ -133,10 +144,14 @@ test('INSTR-10 run and walk is explained in words, without inventing a pattern',
   const plan = workoutInstruction(workout);
 
   assert.ok(plan.headline.startsWith('Сегодня: спокойный бег'));
-  assert.ok(plan.steps[0]!.startsWith('Чередуй бег и ходьбу'));
-  assert.ok(plan.steps.some((step) => step.startsWith('Всего за тренировку')));
-  // No number of run/walk cycles may appear: the workout does not carry one.
-  assert.equal(/\d+\s*(раз|цикл)/.test(plan.steps.join(' ')), false, plan.steps.join(' | '));
+  assert.equal(plan.steps[0], 'Эта тренировка выполняется с чередованием бега и ходьбы.');
+  assert.ok(plan.steps.some((step) => step.startsWith('Общий объём — ')));
+  assert.ok(plan.steps.some((step) => step === 'Точная длительность беговых и шаговых отрезков в плане не задана.'));
+  // Nothing about the pattern may be invented: no switching rule, no walking or running minutes.
+  const text = plan.steps.join(' ');
+  assert.equal(/\d+\s*(раз|цикл)/.test(text), false, text);
+  assert.equal(/пока дыхание|восстановления дыхания|пульс/i.test(text), false, text);
+  assert.equal(/минут[уы]?\s+бега|минут[уы]?\s+ходьбы/i.test(text), false, text);
 });
 
 test('INSTR-11 strides are described by technique, not by a target time', () => {
@@ -162,8 +177,11 @@ test('INSTR-13 a prescribed warm-up and cool-down are part of the sequence', () 
   const workout = ordered('VO2');
   const plan = workoutInstruction(workout);
   assert.ok(workout.warmupMinutes > 0 && workout.cooldownMinutes > 0, 'a quality session carries both');
-  assert.equal(plan.steps[0], `Разминка — ${workout.warmupMinutes} минут лёгкого бега.`);
-  assert.ok(plan.steps.at(-1)!.includes(`${workout.cooldownMinutes} минут лёгкого бега или ходьбы`));
+  assert.equal(plan.steps[0], `Разминка — ${workout.warmupMinutes} минут в лёгком режиме.`);
+  assert.equal(plan.steps.at(-1), `После последнего отрезка — ${workout.cooldownMinutes} минут в лёгком режиме.`);
+
+  const continuous = workoutInstruction(ordered('THRESHOLD'));
+  assert.equal(continuous.steps.at(-1), `Заминка — ${ordered('THRESHOLD').cooldownMinutes} минут в лёгком режиме.`);
 });
 
 test('INSTR-14 intervals with a pace but no distance state the pace instead of inventing a split', () => {
@@ -223,4 +241,111 @@ test('INSTR-18 the instruction is derived every time and never stored', () => {
   const changed: Workout = {...workout, main: {...workout.main, dose: {...workout.main.dose, value: workout.main.dose.value + 5}}};
   assert.notEqual(workoutInstruction(changed).headline, first.headline);
   assert.equal(Object.prototype.hasOwnProperty.call(workout, 'instruction'), false);
+});
+
+// ---------------------------------------------------------------- the repeat structure itself
+// The engine writes repeats as the total count and finalRepeatMeters as the length of the last one,
+// so these shapes mean exactly what the engine means by them.
+test('INSTR-19 a shortened final repeat is rendered as the last of the prescribed repeats', () => {
+  assert.deepEqual(repeatStructure({repeats: 4, repeatMeters: 600, finalRepeatMeters: 400}), {
+    totalRepeats: 4, standardMeters: 600, finalMeters: 400, uniform: false, label: '3 × 600 м + 1 × 400 м', volumeMeters: 2200,
+  });
+});
+
+test('INSTR-20 an equal final repeat is just a uniform block', () => {
+  assert.deepEqual(repeatStructure({repeats: 4, repeatMeters: 600, finalRepeatMeters: 600}), {
+    totalRepeats: 4, standardMeters: 600, finalMeters: 600, uniform: true, label: '4 × 600 м', volumeMeters: 2400,
+  });
+  // A missing final length means every repeat has the standard one.
+  assert.equal(repeatStructure({repeats: 4, repeatMeters: 600, finalRepeatMeters: null})!.label, '4 × 600 м');
+});
+
+test('INSTR-21 a single repeat carries only its own actual length', () => {
+  const structure = repeatStructure({repeats: 1, repeatMeters: 600, finalRepeatMeters: 480})!;
+  assert.equal(structure.label, '1 × 480 м');
+  assert.equal(structure.volumeMeters, 480);
+  assert.equal(/\+/.test(structure.label), false, 'a single repeat is never written as a sum');
+
+  const workout = ordered('SPECIFIC_3K');
+  const single: Workout = {...workout, main: {...workout.main, repeats: 1, repeatMeters: 600, finalRepeatMeters: 480}};
+  const plan = workoutInstruction(single);
+  assert.equal(plan.headline, 'Сегодня: 1 × 480 м');
+  assert.ok(plan.steps.some((step) => step === 'Пробеги 480 метров.'), plan.steps.join(' | '));
+  assert.equal(/600/.test(plan.steps.join(' ')), false, 'the standard length is not prescribed alongside it');
+});
+
+test('INSTR-22 a real engine prescription that is not a multiple of the repeat length', () => {
+  // Progression multiplies the dose, so the last repeat really can end up shorter than the others.
+  const fixture = qualityCycle();
+  const workout = prescribe(fixture.engineState, 'SPECIFIC_3K', fixture.engineState.asOf, 'test-progressed', 1.05);
+  const {repeats, repeatMeters, finalRepeatMeters, dose} = workout.main;
+  assert.equal(repeatMeters, 600);
+  assert.equal(repeats, 6, 'the total count comes from the engine');
+  assert.equal(finalRepeatMeters, 150);
+  assert.equal(dose.value, 3150);
+
+  const structure = workoutRepeats(workout)!;
+  assert.equal(structure.label, '5 × 600 м + 1 × 150 м');
+  assert.equal(structure.volumeMeters, dose.value, 'the structure adds up to the prescribed dose');
+  assert.equal(structure.totalRepeats, repeats);
+
+  const plan = workoutInstruction(workout);
+  assert.equal(plan.headline, 'Сегодня: 5 × 600 м + 1 × 150 м');
+  assert.ok(plan.steps.some((step) => step === 'Выполни 6 отрезков: первые 5 — по 600 метров, последний — 150 метров.'));
+  assert.equal(plan.splits.length, 2);
+});
+
+test('INSTR-23 the instruction and the technical block read one and the same structure', () => {
+  const fixture = volumeCycle();
+  for (const shape of [
+    {repeats: 4, repeatMeters: 600, finalRepeatMeters: 400},
+    {repeats: 4, repeatMeters: 600, finalRepeatMeters: 600},
+    {repeats: 1, repeatMeters: 600, finalRepeatMeters: 480},
+    {repeats: 6, repeatMeters: 400, finalRepeatMeters: 200},
+  ]) {
+    const base = prescribe(fixture.engineState, 'SPECIFIC_3K', fixture.engineState.asOf, 'test-shape');
+    const workout: Workout = {...base, main: {...base.main, ...shape}};
+    const structure = workoutRepeats(workout)!;
+    // The headline, the volume shown on the cards and the plan summary all show the same label.
+    assert.equal(workoutInstruction(workout).headline, `Сегодня: ${structure.label}`);
+    assert.equal(workoutVolume(workout), structure.label);
+    assert.equal(workoutSummaryText({
+      type: workout.type, date: workout.scheduledDate, mode: workout.main.mode,
+      doseValue: workout.main.dose.value, doseUnit: workout.main.dose.unit,
+      repeats: shape.repeats, repeatMeters: shape.repeatMeters, finalRepeatMeters: shape.finalRepeatMeters,
+    }), `${workoutTypeText[workout.type].label} · ${structure.label} · ${formatDateShort(workout.scheduledDate)}`);
+  }
+});
+
+// ---------------------------------------------------------------- nothing beyond the prescription
+test('INSTR-24 the rest is a duration, and the way of resting stays the plan own business', () => {
+  const workout = ordered('VO2');
+  assert.ok(workout.restSeconds > 0, 'the fixture must prescribe a rest');
+  const plan = workoutInstruction(workout);
+
+  assert.ok(plan.steps.some((step) => step === `После каждого отрезка отдыхай ${workout.restSeconds} секунд.`));
+  assert.ok(plan.steps.some((step) => step === 'Конкретный способ отдыха план не задаёт.'));
+  // The engine does not say how to rest, so the card must not say it either.
+  const text = plan.steps.join(' ');
+  assert.equal(/можно идти|очень медленно бежать|переходи на шаг|ходьба между/i.test(text), false, text);
+});
+
+test('INSTR-25 a continuous run is never turned into run and walk', () => {
+  const workout = ordered('EASY');
+  assert.equal(workout.main.mode, 'CONTINUOUS');
+  const plan = workoutInstruction(workout);
+
+  const text = plan.steps.join(' ');
+  assert.equal(/перейти на шаг|переходи на шаг|ходьб/i.test(text), false, text);
+  assert.ok(plan.steps.some((step) => step.includes('Если становится тяжело поддерживать такой режим — замедлись.')));
+  assert.deepEqual(plan.guidance, ['Можно говорить полными фразами', 'Дыхание контролируемое']);
+});
+
+test('INSTR-26 words that would change the prescription never appear', () => {
+  const banned = [/в полную силу/i, /максимальн/i, /изо всех сил/i];
+  for (const type of ['EASY', 'LONG_EASY', 'THRESHOLD', 'VO2', 'SPECIFIC_3K', 'CONTROL', 'STRIDES'] as const) {
+    const plan = workoutInstruction(ordered(type));
+    const text = [plan.headline, plan.effort, plan.effortScale, plan.note ?? '', ...plan.steps, ...plan.guidance].join(' ');
+    for (const word of banned) assert.equal(word.test(text), false, `${type}: ${word}`);
+  }
 });

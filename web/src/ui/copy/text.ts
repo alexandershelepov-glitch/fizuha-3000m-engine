@@ -500,14 +500,15 @@ export const resultForm = {
 export const instruction = {
   cardTitle: 'Как выполнить тренировку',
   today: (what: string): string => `Сегодня: ${what}`,
-  warmup: (minutes: number): string => `Разминка — ${counts.minutes(minutes)} лёгкого бега.`,
-  cooldown: (minutes: number): string => `Заминка — ${counts.minutes(minutes)} лёгкого бега или ходьбы.`,
-  cooldownAfterRepeats: (minutes: number): string => `После последнего отрезка — ${counts.minutes(minutes)} лёгкого бега или ходьбы.`,
+  warmup: (minutes: number): string => `Разминка — ${counts.minutes(minutes)} в лёгком режиме.`,
+  cooldown: (minutes: number): string => `Заминка — ${counts.minutes(minutes)} в лёгком режиме.`,
+  cooldownAfterRepeats: (minutes: number): string => `После последнего отрезка — ${counts.minutes(minutes)} в лёгком режиме.`,
   rest: 'Сегодня отдых: тренировка не назначается.',
   // intervals
   repeatsOfDistance: (repeats: number, meters: string): string => `Выполни ${counts.repeats(repeats)} по ${meters}.`,
-  repeatsOfDistanceWithFinal: (repeats: number, meters: string, finalMeters: string): string =>
-    `Выполни ${counts.repeats(repeats)} по ${meters}, последний — ${finalMeters}.`,
+  repeatsOfDistanceWithFinal: (repeats: number, standardMeters: string, finalMeters: string): string =>
+    `Выполни ${counts.repeats(repeats)}: первые ${repeats - 1} — по ${standardMeters}, последний — ${finalMeters}.`,
+  singleDistance: (meters: string): string => `Пробеги ${meters}.`,
   repeatsOfDuration: (repeats: number, duration: string): string => `Выполни ${counts.repeats(repeats)} по ${duration}.`,
   intervalTargetOne: (range: string): string => `Каждый отрезок старайся пробежать за ${range}.`,
   intervalTargetPace: (pace: string): string => `Каждый отрезок — в темпе ${pace}.`,
@@ -516,7 +517,7 @@ export const instruction = {
   repeatsTotal: (repeats: number, what: string): string => `Выполни ${counts.repeats(repeats)}. Всего — ${what}.`,
   continuousByEffort: (what: string): string => `Беги ${what} быстрее спокойного бега — ровно и под контролем.`,
   restAfterRepeat: (seconds: number): string => `После каждого отрезка отдыхай ${counts.seconds(seconds)}.`,
-  restHow: 'Во время отдыха можно идти или очень медленно бежать.',
+  restHow: 'Конкретный способ отдыха план не задаёт.',
   stridesNote: 'Ускорения не должны быть тяжёлыми: это работа над техникой, а не на результат.',
   // continuous
   continuousMinutes: (minutes: number, pace: string): string => `Беги ${counts.minutes(minutes)} в темпе ${pace}.`,
@@ -526,14 +527,16 @@ export const instruction = {
   easyNoNeed: 'Специально ускоряться не нужно.',
   easyFeel: 'Ориентир:',
   easySlowDown: 'Если становится тяжело поддерживать такой режим — замедлись.',
-  easyWalk: 'При необходимости можно ненадолго перейти на шаг.',
+  easyStop: 'Если нужно остановиться — остановись: это лучше, чем бежать через силу.',
   easyGenericCue: 'Ориентируйтесь на спокойное контролируемое усилие.',
-  runWalk: 'Чередуй бег и ходьбу: беги, пока дыхание остаётся спокойным, затем переходи на шаг до восстановления дыхания.',
-  runWalkTotal: (distance: string): string => `Всего за тренировку — ${distance}.`,
+  runWalk: 'Эта тренировка выполняется с чередованием бега и ходьбы.',
+  runWalkTotal: (distance: string): string => `Общий объём — ${distance}.`,
+  runWalkPattern: 'Точная длительность беговых и шаговых отрезков в плане не задана.',
   control: (distance: string): string => `Пробеги ${distance} на результат.`,
   controlDistance: (workout: {readonly main: {readonly dose: {readonly unit: string; readonly value: number}}}): string =>
     workout.main.dose.unit === 'METERS' ? counts.meters(Math.round(workout.main.dose.value)) : counts.minutes(Math.round(workout.main.dose.value)),
-  controlNoPace: 'Темп не задан: беги в полную силу, ориентируясь на самочувствие.',
+  controlNoPace: 'Конкретный темп не задан.',
+  controlEffort: 'Ориентир по усилию указан ниже.',
   // shared
   feeling: 'Как должно ощущаться:',
   effortScale: (range: string): string => `Усилие: ${range} из 10`,

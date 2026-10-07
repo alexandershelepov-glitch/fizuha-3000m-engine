@@ -16,6 +16,88 @@ import type {Workout} from '../application/engineGateway.ts';
 import {counts, distanceText, instruction as copy} from './copy/text.ts';
 import {effortCueText, scaleLabels, workoutTypeText} from './copy/values.ts';
 
+/** The repeat data of a prescription, from a Workout or from a plan-change summary. */
+export interface RepeatParts {
+  readonly repeats: number;
+  readonly repeatMeters: number | null;
+  readonly finalRepeatMeters: number | null;
+}
+
+/**
+ * The repeat structure of a prescription, read the way the engine writes it:
+ *
+ *   repeats           — the TOTAL number of repeats;
+ *   repeatMeters      — the standard length, used by every repeat but the last;
+ *   finalRepeatMeters — the length of the LAST repeat.
+ *
+ * So `4 × 600 m, final 400 m` means three 600 m repeats and one 400 m repeat, never five repeats.
+ * This is the only place the structure is interpreted: the instruction, the technical block and the
+ * list rows all read it from here.
+ */
+export interface RepeatStructure {
+  readonly totalRepeats: number;
+  readonly standardMeters: number;
+  readonly finalMeters: number;
+  readonly uniform: boolean;
+  /** "4 × 600 м", "3 × 600 м + 1 × 400 м", "1 × 480 м" */
+  readonly label: string;
+  readonly volumeMeters: number;
+}
+
+/** Repeat lengths in a compact row: "600 м". Sentences spell the words out instead. */
+function shortMeters(meters: number): string {
+  return `${Math.round(meters)} м`;
+}
+
+export function repeatStructure(parts: RepeatParts): RepeatStructure | null {
+  const standard = parts.repeatMeters;
+  if (standard === null || standard <= 0) return null;
+
+  const total = Math.max(1, Math.round(parts.repeats));
+  const final = parts.finalRepeatMeters === null || parts.finalRepeatMeters <= 0 ? standard : parts.finalRepeatMeters;
+
+  // One repeat: only its own actual length is prescribed.
+  if (total === 1) {
+    return {
+      totalRepeats: 1,
+      standardMeters: final,
+      finalMeters: final,
+      uniform: true,
+      label: `1 × ${shortMeters(final)}`,
+      volumeMeters: final,
+    };
+  }
+
+  if (Math.round(final) === Math.round(standard)) {
+    return {
+      totalRepeats: total,
+      standardMeters: standard,
+      finalMeters: standard,
+      uniform: true,
+      label: `${total} × ${shortMeters(standard)}`,
+      volumeMeters: total * standard,
+    };
+  }
+
+  return {
+    totalRepeats: total,
+    standardMeters: standard,
+    finalMeters: final,
+    uniform: false,
+    label: `${total - 1} × ${shortMeters(standard)} + 1 × ${shortMeters(final)}`,
+    volumeMeters: (total - 1) * standard + final,
+  };
+}
+
+/** The same structure, read from a full workout. */
+export function workoutRepeats(workout: Workout): RepeatStructure | null {
+  return repeatStructure({
+    repeats: workout.main.repeats,
+    repeatMeters: workout.main.repeatMeters,
+    finalRepeatMeters: workout.main.finalRepeatMeters,
+  });
+}
+
 export interface InstructionSplit {
   readonly distanceMeters: number;
   readonly seconds: readonly [number, number];
@@ -73,17 +155,18 @@ export function effortRangeText(workout: Workout): string {
 
 function splitsFor(workout: Workout): InstructionSplit[] {
   const pace = prescribedPace(workout);
-  const meters = workout.main.repeatMeters;
-  if (pace === null || meters === null) return [];
-  const distances = new Set<number>([Math.round(meters)]);
-  const final = workout.main.finalRepeatMeters;
-  if (final !== null && final > 0) distances.add(Math.round(final));
-  return [...distances].map((distance) => {
+  const structure = workoutRepeats(workout);
+  if (pace === null || structure === null) return [];
+  // The standard length and, when the last repeat is shorter, that one too — nothing else.
+  const distances = structure.uniform
+    ? [structure.standardMeters]
+    : [structure.standardMeters, structure.finalMeters];
+  return distances.map((distance) => {
     const seconds = splitSeconds(pace, distance);
     return {
-      distanceMeters: distance,
+      distanceMeters: Math.round(distance),
       seconds,
-      text: copy.splitLine(counts.meters(distance), `${shortTime(seconds[0])}–${shortTime(seconds[1])}`),
+      text: copy.splitLine(counts.meters(Math.round(distance)), `${shortTime(seconds[0])}–${shortTime(seconds[1])}`),
     };
   });
 }
@@ -103,13 +186,12 @@ function headlineFor(workout: Workout): string {
 
   if (mode === 'INTERVALS' || mode === 'RUN_WALK') {
     if (mode === 'RUN_WALK') return `${workoutTypeText[workout.type].label.toLowerCase()} · ${distanceText(dose.value)}`;
-    if (repeatMeters !== null) {
-      const main = `${repeats} × ${counts.meters(Math.round(repeatMeters))}`;
-      if (finalRepeatMeters !== null && finalRepeatMeters > 0 && Math.round(finalRepeatMeters) !== Math.round(repeatMeters)) {
-        return `${main} + 1 × ${counts.meters(Math.round(finalRepeatMeters))}`;
-      }
-      return main;
-    }
+    // The repeat structure is written exactly as the engine defines it: repeats is the total count
+    // and finalRepeatMeters is the length of the last repeat, never an extra one.
+    const structure = workoutRepeats(workout);
+    if (structure !== null) return structure.label;
+    void repeatMeters;
+    void finalRepeatMeters;
     const perRepeat = perRepeatSeconds(workout);
     return perRepeat === null
       ? counts.repeats(repeats)
@@ -132,14 +214,19 @@ function perRepeatSeconds(workout: Workout): number | null {
 
 function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): string[] {
   const steps: string[] = [];
-  const {dose, repeats, repeatMeters, finalRepeatMeters} = workout.main;
-  const final = finalRepeatMeters === null || finalRepeatMeters <= 0 ? null : Math.round(finalRepeatMeters);
-
-  if (repeatMeters !== null) {
-    const meters = counts.meters(Math.round(repeatMeters));
-    steps.push(final !== null && final !== Math.round(repeatMeters)
-      ? copy.repeatsOfDistanceWithFinal(repeats, meters, counts.meters(final))
-      : copy.repeatsOfDistance(repeats, meters));
+  const {dose, repeats} = workout.main;
+  const structure = workoutRepeats(workout);
+  if (structure !== null) {
+    // One repeat carries only its own length; the engine does not prescribe a standard one as well.
+    if (structure.totalRepeats === 1) steps.push(copy.singleDistance(counts.meters(Math.round(structure.finalMeters))));
+    else if (structure.uniform) steps.push(copy.repeatsOfDistance(structure.totalRepeats, counts.meters(Math.round(structure.standardMeters))));
+    else {
+      steps.push(copy.repeatsOfDistanceWithFinal(
+        structure.totalRepeats,
+        counts.meters(Math.round(structure.standardMeters)),
+        counts.meters(Math.round(structure.finalMeters)),
+      ));
+    }
   } else {
     const perRepeat = perRepeatSeconds(workout);
     steps.push(perRepeat === null
@@ -153,9 +240,9 @@ function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): s
     steps.push(copy.intervalTargetOne(`${shortTime(splits[0]!.seconds[0])}–${shortTime(splits[0]!.seconds[1])}`));
   } else if (splits.length > 1) {
     const first = splits[0]!;
-    const other = splits[1]!;
+    const last = splits[1]!;
     steps.push(copy.intervalTargetSplit(counts.meters(first.distanceMeters), `${shortTime(first.seconds[0])}–${shortTime(first.seconds[1])}`));
-    steps.push(copy.intervalTargetFinal(counts.meters(other.distanceMeters), `${shortTime(other.seconds[0])}–${shortTime(other.seconds[1])}`));
+    steps.push(copy.intervalTargetFinal(counts.meters(last.distanceMeters), `${shortTime(last.seconds[0])}–${shortTime(last.seconds[1])}`));
   } else if (workout.paceRangeSecondsPerKm !== null || workout.speedRangeMps !== null) {
     const paceText = paceRangeText(prescribedPace(workout));
     if (paceText !== null) steps.push(copy.intervalTargetPace(paceText));
@@ -175,12 +262,15 @@ function continuousSteps(workout: Workout, paceText: string | null): string[] {
   if (workout.type === 'CONTROL') {
     steps.push(copy.control(copy.controlDistance(workout)));
     steps.push(copy.controlNoPace);
+    steps.push(copy.controlEffort);
     return steps;
   }
 
   if (mode === 'RUN_WALK') {
+    // The workout carries the mode and the total volume, but no run/walk pattern: none is described.
     steps.push(copy.runWalk);
     steps.push(copy.runWalkTotal(distanceText(dose.value)));
+    steps.push(copy.runWalkPattern);
     return steps;
   }
 
@@ -190,7 +280,7 @@ function continuousSteps(workout: Workout, paceText: string | null): string[] {
       steps.push(copy.easyContinuous(distanceText(dose.value)));
       steps.push(copy.easyNoNeed);
       steps.push(copy.easySlowDown);
-      steps.push(copy.easyWalk);
+      steps.push(copy.easyStop);
     } else {
       // The engine ordered a quality session but no pace to hold: say so instead of inventing one.
       steps.push(copy.continuousByEffort(what));
