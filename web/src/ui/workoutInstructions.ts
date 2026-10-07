@@ -12,7 +12,7 @@
  * (docs/pwa-architecture.md §9, docs/ui-copy.md §10).
  */
 import {shortTime} from '../application/format.ts';
-import type {Workout} from '../application/engineGateway.ts';
+import type {DoseUnit, Workout, WorkoutMainMode} from '../application/engineGateway.ts';
 import {counts, distanceText, instruction as copy} from './copy/text.ts';
 import {effortCueText, scaleLabels, workoutTypeText} from './copy/values.ts';
 
@@ -89,9 +89,62 @@ export function repeatStructure(parts: RepeatParts): RepeatStructure | null {
   };
 }
 
-/** The same structure, read from a full workout. */
+/**
+ * The interval structure of a prescription, whichever way the engine expressed it.
+ *
+ * Distance intervals carry `repeatMeters`; time intervals carry only a total main-work time and a
+ * count, so the length of one repeat is `dose.value × 60 / repeats` — the engine's own total split by
+ * the engine's own count, never a new prescription.
+ */
+export interface IntervalStructure {
+  readonly kind: 'DISTANCE' | 'TIME';
+  readonly totalRepeats: number;
+  /** "3 × 600 м + 1 × 400 м" or "4 × 2:00" */
+  readonly label: string;
+  readonly volumeMeters: number | null;
+  readonly perRepeatSeconds: number | null;
+}
+
+export interface IntervalParts extends RepeatParts {
+  readonly mode: WorkoutMainMode;
+  readonly doseValue: number;
+  readonly doseUnit: DoseUnit;
+}
+
+export function intervalStructure(parts: IntervalParts): IntervalStructure | null {
+  if (parts.mode !== 'INTERVALS') return null;
+
+  const distance = repeatStructure(parts);
+  if (distance !== null) {
+    return {kind: 'DISTANCE', totalRepeats: distance.totalRepeats, label: distance.label, volumeMeters: distance.volumeMeters, perRepeatSeconds: null};
+  }
+
+  // A time interval: split the total main work by the number of repeats the engine prescribed.
+  if (parts.doseUnit !== 'MINUTES' || parts.repeats <= 1) return null;
+  const perRepeatSeconds = Math.round((parts.doseValue * 60) / parts.repeats);
+  return {
+    kind: 'TIME',
+    totalRepeats: Math.round(parts.repeats),
+    label: `${Math.round(parts.repeats)} × ${shortTime(perRepeatSeconds)}`,
+    volumeMeters: null,
+    perRepeatSeconds,
+  };
+}
+
+/** The same structures, read from a full workout. */
 export function workoutRepeats(workout: Workout): RepeatStructure | null {
   return repeatStructure({
+    repeats: workout.main.repeats,
+    repeatMeters: workout.main.repeatMeters,
+    finalRepeatMeters: workout.main.finalRepeatMeters,
+  });
+}
+
+export function workoutIntervals(workout: Workout): IntervalStructure | null {
+  return intervalStructure({
+    mode: workout.main.mode,
+    doseValue: workout.main.dose.value,
+    doseUnit: workout.main.dose.unit,
     repeats: workout.main.repeats,
     repeatMeters: workout.main.repeatMeters,
     finalRepeatMeters: workout.main.finalRepeatMeters,
@@ -186,16 +239,12 @@ function headlineFor(workout: Workout): string {
 
   if (mode === 'INTERVALS' || mode === 'RUN_WALK') {
     if (mode === 'RUN_WALK') return `${workoutTypeText[workout.type].label.toLowerCase()} · ${distanceText(dose.value)}`;
-    // The repeat structure is written exactly as the engine defines it: repeats is the total count
-    // and finalRepeatMeters is the length of the last repeat, never an extra one.
-    const structure = workoutRepeats(workout);
-    if (structure !== null) return structure.label;
+    // One structure helper for both kinds of intervals: distance repeats and time repeats.
+    const intervals = workoutIntervals(workout);
+    if (intervals !== null) return intervals.label;
     void repeatMeters;
     void finalRepeatMeters;
-    const perRepeat = perRepeatSeconds(workout);
-    return perRepeat === null
-      ? counts.repeats(repeats)
-      : `${repeats} × ${shortTime(perRepeat)}`;
+    return counts.repeats(repeats);
   }
 
   const label = workoutTypeText[workout.type].label.toLowerCase();
@@ -203,13 +252,6 @@ function headlineFor(workout: Workout): string {
   if (workout.type === 'CONTROL') return `${label} ${copy.controlDistance(workout)}`;
   if (dose.unit === 'MINUTES') return `${label} ${counts.minutes(Math.round(dose.value))}`;
   return `${label} ${distanceText(dose.value)}`;
-}
-
-/** Total main work divided by the engine's own repeat count. */
-function perRepeatSeconds(workout: Workout): number | null {
-  const {dose, repeats} = workout.main;
-  if (dose.unit !== 'MINUTES' || repeats <= 1) return null;
-  return Math.round((dose.value * 60) / repeats);
 }
 
 function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): string[] {
@@ -228,10 +270,10 @@ function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): s
       ));
     }
   } else {
-    const perRepeat = perRepeatSeconds(workout);
-    steps.push(perRepeat === null
+    const intervals = workoutIntervals(workout);
+    steps.push(intervals?.perRepeatSeconds === null || intervals === null
       ? copy.repeatsTotal(repeats, dose.unit === 'MINUTES' ? counts.minutes(Math.round(dose.value)) : distanceText(dose.value))
-      : copy.repeatsOfDuration(repeats, shortTime(perRepeat)));
+      : copy.repeatsOfDuration(repeats, shortTime(intervals.perRepeatSeconds)));
   }
 
   // The time of one repeat is the main reference for someone on a track. When the engine prescribed

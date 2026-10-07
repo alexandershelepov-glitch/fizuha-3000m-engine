@@ -8,7 +8,7 @@ import type {KeyValueStorage} from '../../application/storage.ts';
 import type {Workout, WorkoutResult} from '../../application/engineGateway.ts';
 import {copyForError} from '../copy/errors.ts';
 import {resultForm as copy} from '../copy/text.ts';
-import {workoutPaceRange, workoutRpe, workoutTitle} from '../display.ts';
+import {workoutIntervalsText, workoutPaceRange, workoutRpe, workoutTitle} from '../display.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, Notice} from '../components/Layout.tsx';
 import {Choice, Field, TextInput, Toggle} from '../components/Field.tsx';
@@ -149,7 +149,7 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
         {expanded ? (
           <>
             {hasRows && workout.main.repeats > 0 ? (
-              <p className="hint">{copy.repeats.planned(workout.main.repeats, workout.main.repeatMeters)}</p>
+              <p className="hint">{copy.repeats.planned(workoutIntervalsText(workout), workout.main.repeats)}</p>
             ) : null}
             {pace === null ? null : <p className="hint">{`Темп по плану: ${pace}`}</p>}
             {!hasRows ? <p className="hint">{copy.repeats.empty}</p> : null}

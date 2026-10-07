@@ -10,14 +10,36 @@ import assert from 'node:assert/strict';
 import {prescribe} from '../src/index.ts';
 import type {Workout, WorkoutType} from '../src/index.ts';
 import {appCycle} from './helpers-app.ts';
-import {effortFor, prescribedPace, repeatStructure, splitSeconds, workoutInstruction, workoutRepeats} from '../web/src/ui/workoutInstructions.ts';
-import {workoutSummaryText, workoutVolume} from '../web/src/ui/display.ts';
+import {effortFor, intervalStructure, prescribedPace, repeatStructure, splitSeconds, workoutInstruction, workoutIntervals, workoutRepeats} from '../web/src/ui/workoutInstructions.ts';
+import {workoutIntervalsText, workoutSummaryText, workoutVolume} from '../web/src/ui/display.ts';
 import {formatDateShort} from '../web/src/application/format.ts';
 import {workoutTypeText} from '../web/src/ui/copy/values.ts';
 
 const volumeCycle = () => appCycle({availableRunsPerWeek: 5, regularRunningWeeks: 60, actualRunsPerWeek: 5, averageWeeklyKm4Weeks: 40, longestUsualRunKm: 12});
 const qualityCycle = () => appCycle({availableRunsPerWeek: 4, regularRunningWeeks: 80, actualRunsPerWeek: 5, averageWeeklyKm4Weeks: 45, longestUsualRunKm: 14, qualitySessions8Weeks: 8, qualityWeeks8Weeks: 6, qualityMostlyTolerated: true, experience: {threshold: true, vo2: true, specific3k: true}});
 const walkCycle = () => appCycle({canRun3Km: false, availableRunsPerWeek: 3, actualRunsPerWeek: 0, averageWeeklyKm4Weeks: 0, regularRunningWeeks: 0});
+
+/** A real workout from the engine, with its interval structure replaced by the given shape. */
+function prescribedInterval(shape: {repeats: number; repeatMeters: number | null; finalRepeatMeters: number | null; dose: {unit: 'METERS' | 'MINUTES'; value: number}}): Workout {
+  const fixture = qualityCycle();
+  const base = prescribe(fixture.engineState, 'SPECIFIC_3K', fixture.engineState.asOf, 'test-interval');
+  return {...base, main: {...base.main, ...shape}};
+}
+
+/** The volume a plan-change line prints for this workout. */
+function planSummaryVolume(workout: Workout): string {
+  const line = workoutSummaryText({
+    type: workout.type, date: workout.scheduledDate, mode: workout.main.mode,
+    doseValue: workout.main.dose.value, doseUnit: workout.main.dose.unit,
+    repeats: workout.main.repeats, repeatMeters: workout.main.repeatMeters, finalRepeatMeters: workout.main.finalRepeatMeters,
+  });
+  return line.split(' · ')[1]!;
+}
+
+function shortTimeOf(seconds: number): string {
+  const rounded = Math.round(seconds);
+  return `${Math.floor(rounded / 60)}:${String(rounded % 60).padStart(2, '0')}`;
+}
 
 function ordered(type: WorkoutType): Workout {
   const fixture = type === 'EASY' || type === 'LONG_EASY' || type === 'STRIDES' || type === 'REST' ? volumeCycle() : qualityCycle();
@@ -348,4 +370,56 @@ test('INSTR-26 words that would change the prescription never appear', () => {
     const text = [plan.headline, plan.effort, plan.effortScale, plan.note ?? '', ...plan.steps, ...plan.guidance].join(' ');
     for (const word of banned) assert.equal(word.test(text), false, `${type}: ${word}`);
   }
+});
+
+// ---------------------------------------------------------------- one format in every place
+test('INSTR-27 a distance interval reads the same in the instruction, the rows and the plans', () => {
+  const workout = prescribedInterval({repeats: 4, repeatMeters: 600, finalRepeatMeters: 400, dose: {unit: 'METERS', value: 2200}});
+  const structure = workoutRepeats(workout)!;
+
+  assert.equal(structure.label, '3 × 600 м + 1 × 400 м');
+  assert.equal(structure.volumeMeters, 2200);
+  assert.equal(workoutInstruction(workout).headline, 'Сегодня: 3 × 600 м + 1 × 400 м');
+  // Today, the move screen and the plan-change lines all read the same helper.
+  assert.equal(workoutVolume(workout), structure.label);
+  assert.equal(workoutIntervalsText(workout), structure.label);
+  assert.equal(planSummaryVolume(workout), structure.label);
+});
+
+test('INSTR-28 a time interval is split by its own repeat count, never multiplied', () => {
+  // 8 minutes of main work in four repeats is four repeats of two minutes, not 4 × 8 minutes.
+  const eight = prescribedInterval({repeats: 4, repeatMeters: null, finalRepeatMeters: null, dose: {unit: 'MINUTES', value: 8}});
+  assert.equal(workoutInstruction(eight).headline, 'Сегодня: 4 × 2:00');
+  assert.equal(workoutVolume(eight), '4 × 2:00');
+  assert.equal(workoutIntervalsText(eight), '4 × 2:00');
+  assert.equal(planSummaryVolume(eight), '4 × 2:00');
+  assert.equal(workoutIntervals(eight)!.perRepeatSeconds, 120);
+
+  // The total work is never multiplied by the number of repeats anywhere.
+  for (const text of [workoutInstruction(eight).headline, workoutVolume(eight), workoutIntervalsText(eight)!, planSummaryVolume(eight)]) {
+    assert.equal(/8\s*мин|4 × 8/.test(text), false, text);
+  }
+  assert.ok(workoutInstruction(eight).steps.some((step) => step === 'Выполни 4 отрезка по 2:00.'));
+});
+
+test('INSTR-29 a fractional per-repeat time keeps whole seconds', () => {
+  const eighteen = prescribedInterval({repeats: 4, repeatMeters: null, finalRepeatMeters: null, dose: {unit: 'MINUTES', value: 18}});
+  assert.equal(intervalStructure({mode: 'INTERVALS', doseValue: 18, doseUnit: 'MINUTES', repeats: 4, repeatMeters: null, finalRepeatMeters: null})!.label, '4 × 4:30');
+  assert.equal(workoutInstruction(eighteen).headline, 'Сегодня: 4 × 4:30');
+  assert.equal(workoutVolume(eighteen), '4 × 4:30');
+
+  // A real prescription has the same shape: the engine orders 18 minutes of VO2 work in four repeats.
+  const fixture = qualityCycle();
+  const vo2 = prescribe(fixture.engineState, 'VO2', fixture.engineState.asOf, 'test-vo2');
+  assert.equal(vo2.main.dose.unit, 'MINUTES');
+  assert.equal(vo2.main.repeats, 4);
+  assert.equal(vo2.main.repeatMeters, null);
+  assert.equal(workoutIntervals(vo2)!.label, `4 × ${shortTimeOf(vo2.main.dose.value * 60 / 4)}`);
+});
+
+test('INSTR-30 a workout that is not made of intervals keeps the plain dose', () => {
+  const easy = ordered('EASY');
+  assert.equal(workoutIntervalsText(easy), null);
+  assert.equal(workoutVolume(easy), `${Math.round(easy.main.dose.value)} м`);
+  assert.equal(workoutInstruction(easy).headline.startsWith('Сегодня: спокойный бег'), true);
 });

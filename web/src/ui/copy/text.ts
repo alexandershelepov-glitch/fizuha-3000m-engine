@@ -436,7 +436,8 @@ export const resultForm = {
   repeats: {
     label: 'Результаты отрезков',
     hint: 'Время каждого отрезка — по нему оценивается темп',
-    planned: (count: number, meters: number | null): string => (meters === null ? `По плану: ${count} отрезков` : `По плану: ${count} отрезков по ${meters} м`),
+    /** The structure comes from the one presentation helper; a non-interval workout keeps the count. */
+    planned: (structure: string | null, count: number): string => (structure === null ? `По плану: ${count} отрезков` : `По плану: ${structure}`),
     item: (index: number): string => `Отрезок ${index + 1}`,
     seconds: 'Время',
     meters: 'Дистанция, м',

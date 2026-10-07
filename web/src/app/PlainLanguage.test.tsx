@@ -4,10 +4,12 @@
  * session is, and an explanation under every term the question still uses.
  */
 import {afterEach, beforeEach, describe, expect, test} from 'vitest';
-import {cleanup, render, screen} from '@testing-library/react';
+import {cleanup, render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {App} from './App.tsx';
 import type {KeyValueStorage} from '../application/storage.ts';
+import {WorkoutDetails} from '../ui/screens/WorkoutDetails.tsx';
+import type {Workout} from '../application/engineGateway.ts';
 
 type User = ReturnType<typeof userEvent.setup>;
 
@@ -126,5 +128,53 @@ describe('the availability step', () => {
     expect(screen.queryByText(/Насколько тренировки согласуются с последним результатом/)).not.toBeInTheDocument();
     expect(screen.queryByText(/умеренное расхождение/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/явное расхождение/i)).not.toBeInTheDocument();
+  });
+});
+
+/** The value row a technical label belongs to. */
+function rowOf(label: string): HTMLElement {
+  const row = screen.getByText(label).closest('.kv');
+  if (row === null) throw new Error(`no value row for ${label}`);
+  return row as HTMLElement;
+}
+
+describe('the workout card and the technical block', () => {
+  /** A real prescription shape: four repeats of 600 m with a shortened last one. */
+  const shortenedFinal: Workout = {
+    id: 'slot-test', scheduledDate: '2026-10-08', type: 'SPECIFIC_3K', goal: 'QUALITY_ADAPTATION', priority: 1,
+    countsAsQuality: true, warmupMinutes: 10, cooldownMinutes: 10,
+    main: {mode: 'INTERVALS', dose: {unit: 'METERS', value: 2200}, repeats: 4, repeatMeters: 600, finalRepeatMeters: 400},
+    targetRpe: [8, 9], effortCues: [], speedRangeMps: null, paceRangeSecondsPerKm: [240, 250],
+    anchor: 'CURRENT', gateAtPrescription: 'OPEN', restSeconds: 90, minimumRecoveryHoursBeforeQuality: 48,
+    requiredFeedback: ['completionFraction', 'sessionRpe', 'safety', 'durationMinutes', 'distanceMeters', 'repeats', 'restSeconds', 'conditions', 'unexpectedFatigue'],
+    removable: true, movable: true, volumeFactor: 1,
+  };
+
+  test('show one and the same repeat structure', () => {
+    render(
+      <WorkoutDetails
+        workout={shortenedFinal}
+        resultAvailability="AVAILABLE"
+        moveAvailability="AVAILABLE"
+        onBack={() => undefined}
+        onEnterResult={() => undefined}
+        onMove={() => undefined}
+        skip={() => ({ok: true})}
+      />,
+    );
+
+    // The main block and the technical row read the structure the same way: three 600 m and one 400 m.
+    const headline = screen.getByText(/^Сегодня: /).textContent!;
+    const rowValue = within(rowOf('Отрезки')).getByText(/×/).textContent!;
+
+    expect(headline).toBe('Сегодня: 3 × 600 м + 1 × 400 м');
+    // Byte for byte the same structure in both places — the point of the shared helper.
+    expect(headline).toBe(`Сегодня: ${rowValue}`);
+    expect(rowValue).toBe('3 × 600 м + 1 × 400 м');
+    expect(within(rowOf('Объём')).getByText('2200 м')).toBeInTheDocument();
+
+    // The wrong reading of the structure must not appear anywhere.
+    expect(screen.queryByText('4 × 600 м')).not.toBeInTheDocument();
+    expect(screen.queryByText(/4 × 600 м \+ 1 × 400 м/)).not.toBeInTheDocument();
   });
 });

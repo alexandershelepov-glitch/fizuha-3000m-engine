@@ -5,7 +5,7 @@ import type {ActionAvailability} from '../../application/invariants.ts';
 import type {Workout} from '../../application/engineGateway.ts';
 import {anchorText, doseUnitText, effortCueText, mainModeText, workoutGoalText, workoutTypeText} from '../copy/values.ts';
 import {common, instruction as instructionText, today as todayText} from '../copy/text.ts';
-import {workoutPaceRange, workoutRest} from '../display.ts';
+import {workoutIntervalsText, workoutPaceRange, workoutRest} from '../display.ts';
 import {workoutInstruction} from '../workoutInstructions.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, EmptyState, KeyValue, Notice} from '../components/Layout.tsx';
@@ -116,7 +116,8 @@ export function WorkoutDetails({workout, resultAvailability, moveAvailability, o
         <KeyValue label={todayText.workout.task} value={workoutGoalText[workout.goal]} />
         <KeyValue label={todayText.workout.volume} value={`${Math.round(workout.main.dose.value)} ${doseUnitText[workout.main.dose.unit]}`} />
         <KeyValue label={todayText.workout.mode} value={mainModeText[workout.main.mode]} />
-        {workout.main.repeats > 1 ? <KeyValue label={todayText.workout.intervals} value={`${workout.main.repeats}${workout.main.repeatMeters === null ? '' : ` × ${Math.round(workout.main.repeatMeters)} м`}`} /> : null}
+        {/* The same structure the instruction above uses: never a second reading of the workout. */}
+        {workoutIntervalsText(workout) === null ? null : <KeyValue label={todayText.workout.intervals} value={workoutIntervalsText(workout)!} />}
         {rest ? <KeyValue label={todayText.workout.rest} value={rest.replace('отдых ', '')} /> : null}
         {pace ? <KeyValue label={todayText.workout.pace} value={pace} /> : null}
         {plan.effortScale === '' ? null : <KeyValue label={todayText.workout.rpe} value={plan.effortScale.replace('Усилие: ', '')} />}
