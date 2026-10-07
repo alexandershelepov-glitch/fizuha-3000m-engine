@@ -159,3 +159,33 @@ test('a future session cannot be closed in advance', async ({page}) => {
   const state = await readEngineState(page);
   expect(state.history.length).toBe(1);
 });
+
+test('the workout card reads as a sequence of actions', async ({page}) => {
+  await fillQuestionnaire(page);
+  await createCycleAndReachToday(page);
+
+  await page.getByRole('button', {name: 'Открыть тренировку'}).click();
+  await expect(page).toHaveURL(/\/workout\/[^/]+$/);
+
+  // The main block is the instruction, not a list of parameters.
+  await expect(page.getByRole('heading', {name: 'Как выполнить тренировку'})).toBeVisible();
+  await expect(page.getByText(/^Сегодня: /)).toBeVisible();
+  // Readiness is stated in words; the number is available next to them.
+  await expect(page.getByText('Как должно ощущаться:')).toBeVisible();
+
+  // Every step is a sentence, and each one is numbered in the list.
+  const steps = page.locator('.steps__item');
+  expect(await steps.count()).toBeGreaterThan(0);
+  const first = (await steps.first().innerText()).trim();
+  expect(first.length).toBeGreaterThan(10);
+  expect(first.endsWith('.')).toBe(true);
+
+  // The technical parameters and the theory are below, and the theory is closed by default.
+  await expect(page.getByRole('heading', {name: 'Технические характеристики'})).toBeVisible();
+  // The number is still there, explained by the words above it.
+  await expect(page.getByText('Усилие', {exact: true})).toBeVisible();
+  const why = page.getByRole('button', {name: 'Почему такая тренировка?'});
+  await expect(why).toHaveAttribute('aria-expanded', 'false');
+  await why.click();
+  await expect(why).toHaveAttribute('aria-expanded', 'true');
+});

@@ -2,7 +2,7 @@ import {useState} from 'react';
 import type {ReactNode} from 'react';
 import {QUESTIONNAIRE_STEPS, STEP_INDEX} from '../../application/questionnaire.ts';
 import type {BreakEntryDraft, FieldKey, QuestionnaireDraft, QuestionnaireStep} from '../../application/questionnaire.ts';
-import {breakReasonText, mismatchText, performanceSourceText} from '../copy/values.ts';
+import {breakReasonText, performanceSourceText} from '../copy/values.ts';
 import {common, questionnaire} from '../copy/text.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, Progress} from '../components/Layout.tsx';
@@ -132,16 +132,16 @@ function VolumeStep({draft, update, error}: StepProps): ReactNode {
       <Field id="canRun3Km" label={questionnaire.fields.canRun3Km.label} error={error('canRun3Km')}>
         <Toggle id="canRun3Km" value={draft.canRun3Km} onChange={(next) => update({canRun3Km: next})} yes={questionnaire.yes} no={questionnaire.no} />
       </Field>
-      <Field id="regularRunningWeeks" label={questionnaire.fields.regularRunningWeeks.label} error={error('regularRunningWeeks')}>
+      <Field id="regularRunningWeeks" label={questionnaire.fields.regularRunningWeeks.label} hint={questionnaire.fields.regularRunningWeeks.hint} error={error('regularRunningWeeks')}>
         <TextInput id="regularRunningWeeks" value={draft.regularRunningWeeks} onChange={(value) => update({regularRunningWeeks: value})} inputMode="numeric" />
       </Field>
-      <Field id="actualRunsPerWeek" label={questionnaire.fields.actualRunsPerWeek.label} error={error('actualRunsPerWeek')}>
+      <Field id="actualRunsPerWeek" label={questionnaire.fields.actualRunsPerWeek.label} hint={questionnaire.fields.actualRunsPerWeek.hint} error={error('actualRunsPerWeek')}>
         <TextInput id="actualRunsPerWeek" value={draft.actualRunsPerWeek} onChange={(value) => update({actualRunsPerWeek: value})} inputMode="numeric" />
       </Field>
-      <Field id="averageWeeklyKm4Weeks" label={questionnaire.fields.averageWeeklyKm4Weeks.label} error={error('averageWeeklyKm4Weeks')}>
+      <Field id="averageWeeklyKm4Weeks" label={questionnaire.fields.averageWeeklyKm4Weeks.label} hint={questionnaire.fields.averageWeeklyKm4Weeks.hint} error={error('averageWeeklyKm4Weeks')}>
         <TextInput id="averageWeeklyKm4Weeks" value={draft.averageWeeklyKm4Weeks} onChange={(value) => update({averageWeeklyKm4Weeks: value})} inputMode="decimal" />
       </Field>
-      <Field id="longestUsualRunKm" label={questionnaire.fields.longestUsualRunKm.label} error={error('longestUsualRunKm')}>
+      <Field id="longestUsualRunKm" label={questionnaire.fields.longestUsualRunKm.label} hint={questionnaire.fields.longestUsualRunKm.hint} error={error('longestUsualRunKm')}>
         <TextInput id="longestUsualRunKm" value={draft.longestUsualRunKm} onChange={(value) => update({longestUsualRunKm: value})} inputMode="decimal" />
       </Field>
     </>
@@ -151,19 +151,29 @@ function VolumeStep({draft, update, error}: StepProps): ReactNode {
 function QualityStep({draft, update, error}: StepProps): ReactNode {
   return (
     <>
-      <Field id="qualitySessions8Weeks" label={questionnaire.fields.qualitySessions8Weeks.label} error={error('qualitySessions8Weeks')}>
+      {/* Nobody should have to guess what counts as a fast session. */}
+      <Notice tone="info" title={questionnaire.fastTraining.title}>
+        <p>{questionnaire.fastTraining.text}</p>
+        <ul className="list">
+          {questionnaire.fastTraining.items.map((item) => (
+            <li key={item} className="list__item">{item}</li>
+          ))}
+        </ul>
+        <p className="hint">{questionnaire.fastTraining.footnote}</p>
+      </Notice>
+      <Field id="qualitySessions8Weeks" label={questionnaire.fields.qualitySessions8Weeks.label} hint={questionnaire.fields.qualitySessions8Weeks.hint} error={error('qualitySessions8Weeks')}>
         <TextInput id="qualitySessions8Weeks" value={draft.qualitySessions8Weeks} onChange={(value) => update({qualitySessions8Weeks: value})} inputMode="numeric" />
       </Field>
-      <Field id="qualityWeeks8Weeks" label={questionnaire.fields.qualityWeeks8Weeks.label} error={error('qualityWeeks8Weeks')}>
+      <Field id="qualityWeeks8Weeks" label={questionnaire.fields.qualityWeeks8Weeks.label} hint={questionnaire.fields.qualityWeeks8Weeks.hint} error={error('qualityWeeks8Weeks')}>
         <TextInput id="qualityWeeks8Weeks" value={draft.qualityWeeks8Weeks} onChange={(value) => update({qualityWeeks8Weeks: value})} inputMode="numeric" />
       </Field>
-      <Field id="qualityMostlyTolerated" label={questionnaire.fields.qualityMostlyTolerated.label}>
+      <Field id="qualityMostlyTolerated" label={questionnaire.fields.qualityMostlyTolerated.label} hint={questionnaire.fields.qualityMostlyTolerated.hint}>
         <Toggle id="qualityMostlyTolerated" value={draft.qualityMostlyTolerated} onChange={(next) => update({qualityMostlyTolerated: next})} yes={questionnaire.yes} no={questionnaire.no} />
       </Field>
       <Field id="experience" label={questionnaire.fields.experience.label}>
-        <Checkbox id="experience-threshold" checked={draft.experience.threshold} onChange={(next) => update({experience: {...draft.experience, threshold: next}})} label={questionnaire.fields.experienceThreshold.label} />
-        <Checkbox id="experience-vo2" checked={draft.experience.vo2} onChange={(next) => update({experience: {...draft.experience, vo2: next}})} label={questionnaire.fields.experienceVo2.label} />
-        <Checkbox id="experience-specific" checked={draft.experience.specific3k} onChange={(next) => update({experience: {...draft.experience, specific3k: next}})} label={questionnaire.fields.experienceSpecific.label} />
+        <Checkbox id="experience-threshold" checked={draft.experience.threshold} onChange={(next) => update({experience: {...draft.experience, threshold: next}})} label={questionnaire.fields.experienceThreshold.label} hint={questionnaire.fields.experienceThreshold.hint} />
+        <Checkbox id="experience-vo2" checked={draft.experience.vo2} onChange={(next) => update({experience: {...draft.experience, vo2: next}})} label={questionnaire.fields.experienceVo2.label} hint={questionnaire.fields.experienceVo2.hint} />
+        <Checkbox id="experience-specific" checked={draft.experience.specific3k} onChange={(next) => update({experience: {...draft.experience, specific3k: next}})} label={questionnaire.fields.experienceSpecific.label} hint={questionnaire.fields.experienceSpecific.hint} />
       </Field>
     </>
   );
@@ -230,9 +240,9 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
           value={draft.performanceMismatch}
           onChange={(value) => update({performanceMismatch: value})}
           options={[
-            {value: 'NONE', label: mismatchText.NONE},
-            {value: 'MODERATE', label: mismatchText.MODERATE},
-            {value: 'CLEAR', label: mismatchText.CLEAR},
+            {value: 'NONE', label: questionnaire.mismatchOptions.NONE.label, hint: questionnaire.mismatchOptions.NONE.hint},
+            {value: 'MODERATE', label: questionnaire.mismatchOptions.MODERATE.label, hint: questionnaire.mismatchOptions.MODERATE.hint},
+            {value: 'CLEAR', label: questionnaire.mismatchOptions.CLEAR.label, hint: questionnaire.mismatchOptions.CLEAR.hint},
           ]}
         />
       </Field>

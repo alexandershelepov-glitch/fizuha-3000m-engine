@@ -46,7 +46,10 @@ test('happy path: first run, questionnaire, review, assessment, ready plan, Toda
 
   // The assessment explains the engine's verdict in words.
   await expect(page.getByText('Ваша подготовка')).toBeVisible();
-  await expect(page.getByText('Текущий уровень: 15:20 на 3000 м')).toBeVisible();
+  await expect(page.getByText('Ваш текущий результат')).toBeVisible();
+  await expect(page.getByText('15:20 на 3000 м')).toBeVisible();
+  // The engine's own explanation is one tap away, not in front of the person.
+  await page.getByRole('button', {name: 'Почему такой план?'}).click();
   await expect(page.getByText(/Целевой результат показывает, к чему мы идём/)).toBeVisible();
 
   await page.getByRole('button', {name: 'Посмотреть план'}).click();

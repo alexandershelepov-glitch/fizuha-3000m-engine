@@ -6,6 +6,15 @@
 const pad = (value: number): string => String(value).padStart(2, '0');
 
 /** Seconds → `ММ:СС` (or `Ч:ММ:СС` beyond an hour). */
+/** Minutes and seconds without a padded minute field: "1:36", "5:26". */
+export function shortTime(totalSeconds: number): string {
+  const seconds = Math.round(totalSeconds);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const rest = seconds % 60;
+  return hours > 0 ? `${hours}:${pad(minutes)}:${pad(rest)}` : `${minutes}:${pad(rest)}`;
+}
+
 export function formatTime(totalSeconds: number): string {
   const seconds = Math.round(totalSeconds);
   const hours = Math.floor(seconds / 3600);

@@ -114,11 +114,14 @@ export function Choice<T extends string>({id, value, options, onChange, labelled
   );
 }
 
-export function Checkbox({id, checked, onChange, label}: {id: string; checked: boolean; onChange: (next: boolean) => void; label: string}): ReactNode {
+export function Checkbox({id, checked, onChange, label, hint}: {id: string; checked: boolean; onChange: (next: boolean) => void; label: string; hint?: string}): ReactNode {
   return (
     <label className="checkbox" htmlFor={id}>
       <input id={id} type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
-      <span>{label}</span>
+      <span>
+        {label}
+        {hint === undefined ? null : <span className="checkbox__hint">{hint}</span>}
+      </span>
     </label>
   );
 }

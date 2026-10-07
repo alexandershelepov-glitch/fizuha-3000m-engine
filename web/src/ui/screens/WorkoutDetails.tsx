@@ -4,8 +4,9 @@ import {formatDateLong} from '../../application/format.ts';
 import type {ActionAvailability} from '../../application/invariants.ts';
 import type {Workout} from '../../application/engineGateway.ts';
 import {anchorText, doseUnitText, effortCueText, mainModeText, workoutGoalText, workoutTypeText} from '../copy/values.ts';
-import {common, today as todayText} from '../copy/text.ts';
-import {workoutPaceRange, workoutRest, workoutRpe} from '../display.ts';
+import {common, instruction as instructionText, today as todayText} from '../copy/text.ts';
+import {workoutPaceRange, workoutRest} from '../display.ts';
+import {workoutInstruction} from '../workoutInstructions.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, EmptyState, KeyValue, Notice} from '../components/Layout.tsx';
 import {copyForError} from '../copy/errors.ts';
@@ -32,6 +33,7 @@ export function WorkoutDetails({workout, resultAvailability, moveAvailability, o
   const [askSkip, setAskSkip] = useState(false);
   const [skipError, setSkipError] = useState<{code: string; params?: {min?: number; max?: number; value?: number}} | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showWhy, setShowWhy] = useState(false);
   const inFlight = useRef(false);
 
   const handleSkip = (): void => {
@@ -59,6 +61,7 @@ export function WorkoutDetails({workout, resultAvailability, moveAvailability, o
 
   const pace = workoutPaceRange(workout);
   const rest = workoutRest(workout);
+  const plan = workoutInstruction(workout);
 
   return (
     <div className="screen">
@@ -70,34 +73,69 @@ export function WorkoutDetails({workout, resultAvailability, moveAvailability, o
         </div>
       </header>
 
-      <Card>
-        <p className="paragraph">{workoutTypeText[workout.type].description}</p>
+      {/* The main card answers one question: what do I actually do today? */}
+      <Card title={instructionText.cardTitle}>
+        <p className="instruction__headline">{plan.headline}</p>
+        <ol className="steps">
+          {plan.steps.map((step) => (
+            <li key={step} className="steps__item">{step}</li>
+          ))}
+        </ol>
+
+        {/* Two different repeat lengths are easier to read as their own lines. */}
+        {plan.splits.length > 1 ? (
+          <div className="instruction__splits">
+            <p className="instruction__label">{instructionText.splitsTitle}</p>
+            <ul className="list">
+              {plan.splits.map((split) => (
+                <li key={split.distanceMeters} className="list__item">{split.text}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {plan.guidance.length > 0 ? (
+          <div className="instruction__guidance">
+            <p className="instruction__label">{instructionText.easyFeel}</p>
+            <ul className="list">
+              {plan.guidance.map((line) => (
+                <li key={line} className="list__item">{line}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        <p className="instruction__effort">
+          {instructionText.feeling} <strong>{plan.effort}</strong>
+        </p>
+        {plan.note === null ? null : <p className="hint">{plan.note}</p>}
       </Card>
 
-      <Card>
+      {/* Everything the engine prescribed, exactly as it was ordered. */}
+      <Card title={instructionText.technicalTitle}>
         <KeyValue label={todayText.workout.task} value={workoutGoalText[workout.goal]} />
-        <KeyValue label={todayText.workout.volume} value={`${workout.main.dose.value} ${doseUnitText[workout.main.dose.unit]}`} />
+        <KeyValue label={todayText.workout.volume} value={`${Math.round(workout.main.dose.value)} ${doseUnitText[workout.main.dose.unit]}`} />
         <KeyValue label={todayText.workout.mode} value={mainModeText[workout.main.mode]} />
         {workout.main.repeats > 1 ? <KeyValue label={todayText.workout.intervals} value={`${workout.main.repeats}${workout.main.repeatMeters === null ? '' : ` × ${Math.round(workout.main.repeatMeters)} м`}`} /> : null}
         {rest ? <KeyValue label={todayText.workout.rest} value={rest.replace('отдых ', '')} /> : null}
         {pace ? <KeyValue label={todayText.workout.pace} value={pace} /> : null}
-        <KeyValue label={todayText.workout.rpe} value={workoutRpe(workout).replace('План: ', '')} />
+        {plan.effortScale === '' ? null : <KeyValue label={todayText.workout.rpe} value={plan.effortScale.replace('Усилие: ', '')} />}
         {workout.warmupMinutes > 0 ? <KeyValue label={todayText.workout.warmup} value={`${workout.warmupMinutes} мин`} /> : null}
         {workout.cooldownMinutes > 0 ? <KeyValue label={todayText.workout.cooldown} value={`${workout.cooldownMinutes} мин`} /> : null}
+        {workout.effortCues.length > 0 ? <KeyValue label={todayText.workout.cues} value={workout.effortCues.map((cue) => effortCueText[cue]).join(' · ')} /> : null}
       </Card>
 
-      {workout.effortCues.length > 0 ? (
-        <Card title={todayText.workout.cues}>
-          <ul className="list">
-            {workout.effortCues.map((cue) => (
-              <li key={cue} className="list__item">{effortCueText[cue]}</li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
-
-      <Card title={todayText.workout.anchor}>
-        <p className="paragraph">{anchorText[workout.anchor]}</p>
+      {/* Theory is available, but nobody has to read it to train. */}
+      <Card>
+        <button type="button" className="card__toggle" aria-expanded={showWhy} onClick={() => setShowWhy((open) => !open)}>
+          {instructionText.whyTitle}
+        </button>
+        {showWhy ? (
+          <>
+            <p className="paragraph">{anchorText[workout.anchor]}</p>
+            <p className="hint">{workoutTypeText[workout.type].description}</p>
+          </>
+        ) : null}
       </Card>
 
       {skipError === null ? null : (

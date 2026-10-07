@@ -33,10 +33,11 @@ export async function fillQuestionnaireExperienced(page: Page): Promise<void> {
   await page.goto('/questionnaire?step=RESULT');
   await page.getByLabel('Ваш результат').fill('15:20');
   await page.goto('/questionnaire?step=QUALITY');
-  await page.getByLabel('Качественных тренировок за 8 недель').fill('8');
-  await page.getByLabel('В скольких разных неделях').fill('6');
-  await page.getByLabel('Темповые тренировки').check();
-  await page.getByLabel('Интервальные тренировки').check();
+  // The labels now carry their own explanation, so they are matched by their leading words.
+  await page.getByLabel(/Сколько таких быстрых тренировок/).fill('8');
+  await page.getByLabel(/В скольких из последних 8 недель/).fill('6');
+  await page.getByLabel(/Темповый бег/).check();
+  await page.getByLabel(/^Интервалы/).check();
   await page.getByRole('button', {name: 'Продолжить'}).click();   // SAFETY
   await page.getByRole('button', {name: 'Продолжить'}).click();   // BREAKS
   await page.getByRole('button', {name: 'Продолжить'}).click();   // AVAILABILITY

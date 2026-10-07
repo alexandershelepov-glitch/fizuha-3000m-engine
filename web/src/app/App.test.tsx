@@ -215,16 +215,23 @@ describe('assessment and plan', () => {
     await click(user, 'Рассчитать план');
 
     expect(screen.getByText('Ваша подготовка')).toBeInTheDocument();
-    expect(screen.getByText('Текущий уровень: 15:20 на 3000 м')).toBeInTheDocument();
-    expect(screen.getByText('Цель: 14:30')).toBeInTheDocument();
-    expect(screen.getByRole('heading', {name: 'Можно ли уже использовать целевой темп'})).toBeInTheDocument();
-    expect(screen.getByText(/Целевой результат показывает, к чему мы идём/)).toBeInTheDocument();
+    // The main screen answers in plain words: current result, goal, where training starts, what next.
+    expect(screen.getByText('Ваш текущий результат')).toBeInTheDocument();
+    expect(screen.getByText('15:20 на 3000 м')).toBeInTheDocument();
+    expect(screen.getByText('Ваша цель')).toBeInTheDocument();
+    expect(screen.getByText('14:30 на 3000 м')).toBeInTheDocument();
+    expect(screen.getByText('С чего начнётся подготовка')).toBeInTheDocument();
+    expect(screen.getByText('Что дальше')).toBeInTheDocument();
     for (const code of ['T0', 'T1', 'T2', 'T3', 'Q0', 'Q1', 'Q2', 'CLOSED', 'PARTIAL', 'OPEN', 'FOUNDATION', 'DEVELOPMENT', 'SPECIFIC', 'TAPER', 'RE_ENTRY', 'HOLD_DIAGNOSTIC']) {
       expect(screen.queryByText(new RegExp(`\\b${code}\\b`))).not.toBeInTheDocument();
     }
+    // The engine's own vocabulary stays behind the explanation, not in front of the person.
+    expect(screen.queryByText(/Целевой результат показывает, к чему мы идём/)).not.toBeInTheDocument();
 
     await click(user, 'Почему такой план?');
     expect(screen.getByText('Данные, на которых построен план')).toBeInTheDocument();
+    expect(screen.getByRole('heading', {name: 'Будете ли вы тренироваться в целевом темпе'})).toBeInTheDocument();
+    expect(screen.getByText(/Целевой результат показывает, к чему мы идём/)).toBeInTheDocument();
 
     await click(user, 'Посмотреть план');
     expect(path()).toBe('/plan-ready');

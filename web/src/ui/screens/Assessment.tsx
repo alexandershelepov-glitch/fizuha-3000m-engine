@@ -26,6 +26,9 @@ export function Assessment({decision, profile, onContinue}: Props): ReactNode {
         </div>
       </header>
 
+      {/* What a person actually needs: where they are, where they are going, what happens next. */}
+      <p className="lede">{assessment.intro}</p>
+
       <Card>
         <KeyValue label={assessment.whereAmI} value={currentTime === null ? assessment.noPerformance : assessment.performance(currentTime)} />
         <KeyValue label={assessment.goal} value={assessment.goalValue(formatTime(profile.targetTimeSeconds))} />
@@ -39,15 +42,24 @@ export function Assessment({decision, profile, onContinue}: Props): ReactNode {
         </Card>
       )}
 
-      <Card title={assessment.gate}>
-        <p className="paragraph">{gateText[decision.gate].label}</p>
-        <p className="hint">{gateText[decision.gate].description}</p>
-        <Notice tone="info">{GATE_PRINCIPLE}</Notice>
+      <Card title={assessment.whatNext}>
+        <p className="paragraph">{assessment.whatNextText}</p>
       </Card>
 
-      <Card title={phaseText[decision.phase].label}>
-        <p className="paragraph">{phaseWhy[decision.phase]}</p>
-      </Card>
+      {/* Theory and the engine's own vocabulary are available, but never required to start. */}
+      {showDetails ? (
+        <Card title={phaseText[decision.phase].label}>
+          <p className="paragraph">{phaseWhy[decision.phase]}</p>
+        </Card>
+      ) : null}
+
+      {showDetails ? (
+        <Card title={assessment.gate}>
+          <p className="paragraph">{gateText[decision.gate].label}</p>
+          <p className="hint">{gateText[decision.gate].description}</p>
+          <Notice tone="info">{GATE_PRINCIPLE}</Notice>
+        </Card>
+      ) : null}
 
       {showDetails ? (
         <Card title={assessment.detailsTitle}>

@@ -34,7 +34,7 @@ export const errorCopy = {
   NUMBER_OUT_OF_RANGE: {title: 'Значение вне допустимого диапазона', text: rangeText, cta: 'Исправить', retry: true, showTechnicalDetails: false},
   INVALID_SAFETY_FLAG: fixed('Обновите экран и ответьте на вопросы ещё раз.', {title: 'Не удалось прочитать ответ о состоянии', cta: 'Повторить', retry: true, showTechnicalDetails: false}),
   INVALID_PROFILE_FLAG: fixed('Проверьте ответы об опыте и подготовке.', {title: 'Не удалось прочитать один из ответов', cta: 'Проверить данные', retry: true, showTechnicalDetails: false}),
-  INVALID_QUALITY_WEEKS: fixed('Число недель с качественными тренировками не может быть больше их общего количества.', {title: 'Проверьте данные о качественных тренировках', cta: 'Исправить', retry: true, showTechnicalDetails: false}),
+  INVALID_QUALITY_WEEKS: fixed('Число недель с быстрыми тренировками не может быть больше их общего количества.', {title: 'Проверьте ответы о быстрых тренировках', cta: 'Исправить', retry: true, showTechnicalDetails: false}),
   INVALID_MISMATCH: fixed('Обновите экран и попробуйте снова.', {title: 'Не удалось прочитать оценку расхождения', cta: 'Обновить', retry: true, showTechnicalDetails: false}),
   INVALID_PERFORMANCE_SOURCE: fixed('Укажите, откуда результат: контрольный забег или официальный старт.', {title: 'Не удалось определить тип результата', cta: 'Выбрать тип', retry: true, showTechnicalDetails: false}),
   INVALID_BREAK_REASON: fixed('Выберите один из предложенных вариантов.', {title: 'Укажите причину перерыва', cta: 'Выбрать причину', retry: true, showTechnicalDetails: false}),
@@ -50,7 +50,7 @@ export const errorCopy = {
   UNKNOWN_WORKOUT: fixed('Возможно, план уже обновлён. Откройте раздел «План» заново.', {title: 'Тренировка не найдена', cta: 'Обновить план', retry: true, showTechnicalDetails: false}),
   UNKNOWN_OR_COMPLETED_WORKOUT: fixed('Обновите план и проверьте актуальную тренировку.', {title: 'Результат уже внесён или тренировка изменилась', cta: 'Обновить план', retry: false, showTechnicalDetails: false}),
   RESULT_PRECEDES_STATE: fixed('Внести результат можно за тренировку текущего или более позднего дня плана.', {title: 'Результат за более ранний день', cta: 'Обновить план', retry: false, showTechnicalDetails: false}),
-  RECOVERY_OR_QUALITY_LIMIT: fixed('Отчёт относится к тренировке, которая нарушает восстановление или недельный лимит качественных работ.', {title: 'Слишком близко к предыдущей тренировке', cta: 'Обновить план', retry: false, showTechnicalDetails: false}),
+  RECOVERY_OR_QUALITY_LIMIT: fixed('Отчёт относится к тренировке, которая нарушает восстановление или недельный лимит быстрых работ.', {title: 'Слишком близко к предыдущей тренировке', cta: 'Обновить план', retry: false, showTechnicalDetails: false}),
   PROTECTED_FIELD: fixed('Изменение доступно только через отдельное действие приложения.', {title: 'Эти данные нельзя изменить здесь', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
   CHECKPOINT_NOT_PERMITTED: fixed('Результат контрольного забега можно внести, когда нет ограничений: завершены облегчённые тренировки после перерыва и состояние позволяет нагрузку.', {title: 'Контрольный забег сейчас недоступен', cta: 'Понятно', retry: false, showTechnicalDetails: false}),
   INVALID_CHECKPOINT_DATE: fixed('Дата не может быть в будущем или раньше предыдущего результата.', {title: 'Проверьте дату контрольного забега', cta: 'Изменить дату', retry: true, showTechnicalDetails: false}),
@@ -58,8 +58,8 @@ export const errorCopy = {
   FINAL_RESULT_BEFORE_EVENT: fixed('Результат итогового забега можно внести не раньше дня старта.', {title: 'Забег ещё не состоялся', cta: 'Внести позже', retry: false, showTechnicalDetails: false}),
   MOVE_OUTSIDE_HORIZON: fixed('Новая дата должна быть в пределах ближайших дней плана и не позже дня забега.', {title: 'Перенести можно только внутри плана', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
   MOVE_OCCUPIED_DATE: fixed('Выберите свободный день.', {title: 'На эту дату уже есть тренировка', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
-  MOVE_RECOVERY_VIOLATION: fixed('Между качественными тренировками нужен интервал не меньше двух дней.', {title: 'Слишком близко к другой тренировке', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
-  MOVE_QUALITY_LIMIT_VIOLATION: fixed('Перенос нарушит недельный лимит. Выберите дату в другой неделе.', {title: 'В этой неделе уже достаточно качественных тренировок', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
+  MOVE_RECOVERY_VIOLATION: fixed('Между быстрыми тренировками нужен интервал не меньше двух дней.', {title: 'Слишком близко к другой тренировке', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
+  MOVE_QUALITY_LIMIT_VIOLATION: fixed('Перенос нарушит недельный лимит. Выберите дату в другой неделе.', {title: 'В этой неделе уже достаточно быстрых тренировок', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
 } satisfies Record<EngineErrorCode, ErrorCopy>;
 
 /**

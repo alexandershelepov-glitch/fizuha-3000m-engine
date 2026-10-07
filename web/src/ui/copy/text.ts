@@ -51,6 +51,46 @@ export const firstRun = {
   },
 } as const;
 
+/**
+ * Russian counting. Only presentation: the app spells out the numbers the engine prescribed, it never
+ * rounds them into different ones.
+ */
+function pluralForm(value: number, one: string, few: string, many: string): string {
+  const mod100 = Math.abs(value) % 100;
+  const mod10 = mod100 % 10;
+  if (mod100 >= 11 && mod100 <= 14) return many;
+  if (mod10 === 1) return one;
+  if (mod10 >= 2 && mod10 <= 4) return few;
+  return many;
+}
+
+export const counts = {
+  minutes: (value: number): string => `${value} ${pluralForm(value, 'минуту', 'минуты', 'минут')}`,
+  seconds: (value: number): string => `${value} ${pluralForm(value, 'секунду', 'секунды', 'секунд')}`,
+  meters: (value: number): string => `${value} ${pluralForm(value, 'метр', 'метра', 'метров')}`,
+  repeats: (value: number): string => `${value} ${pluralForm(value, 'отрезок', 'отрезка', 'отрезков')}`,
+  runs: (value: number): string => `${value} ${pluralForm(value, 'тренировку', 'тренировки', 'тренировок')}`,
+  weeks: (value: number): string => `${value} ${pluralForm(value, 'неделю', 'недели', 'недель')}`,
+} as const;
+
+/** Duration in words: whole minutes when they are whole, otherwise minutes and seconds. */
+export function durationText(totalSeconds: number): string {
+  const seconds = Math.round(totalSeconds);
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  if (minutes === 0) return counts.seconds(rest);
+  if (rest === 0) return counts.minutes(minutes);
+  return `${counts.minutes(minutes)} ${counts.seconds(rest)}`;
+}
+
+/** Distance in words: kilometres with one decimal from a kilometre up, metres below it. */
+export function distanceText(meters: number): string {
+  const rounded = Math.round(meters);
+  if (rounded < 1000) return counts.meters(rounded);
+  if (rounded % 1000 === 0) return `${rounded / 1000} км`;
+  return `${(rounded / 1000).toFixed(1).replace('.', ',')} км`;
+}
+
 export const questionnaire = {
   title: 'Анкета',
   progress: (step: number, total: number): string => `Шаг ${step} из ${total}`,
@@ -68,12 +108,12 @@ export const questionnaire = {
       description: 'Результат используется как подтверждённая текущая форма — от него строится нагрузка.',
     },
     VOLUME: {
-      title: 'Подготовка',
-      description: 'Фактический объём важнее планов: он определяет, с чего начинать.',
+      title: 'Сколько вы бегаете сейчас',
+      description: 'Важно то, как вы бегаете обычно, а не в лучшую неделю. По этим ответам подготовка начнётся с посильной нагрузки.',
     },
     QUALITY: {
-      title: 'Опыт качественных тренировок',
-      description: 'Сколько быстрой работы вы выполняли за последние восемь недель.',
+      title: 'Быстрые тренировки',
+      description: 'Нам важно понять, выполняли ли вы специальные быстрые тренировки, а не просто обычные пробежки.',
     },
     SAFETY: {
       title: 'Состояние',
@@ -100,20 +140,50 @@ export const questionnaire = {
     resultTime: {label: 'Ваш результат', hint: 'Формат ММ:СС, например 14:30'},
     resultDate: {label: 'Дата результата'},
     resultSource: {label: 'Откуда результат'},
-    canRun3Km: {label: 'Способны ли вы непрерывно пробежать 3 км?'},
-    regularRunningWeeks: {label: 'Сколько недель вы регулярно бегаете'},
-    actualRunsPerWeek: {label: 'Сколько пробежек в неделю обычно'},
-    averageWeeklyKm4Weeks: {label: 'Средний недельный объём, км'},
-    longestUsualRunKm: {label: 'Самая длинная обычная пробежка, км'},
-    qualitySessions8Weeks: {label: 'Качественных тренировок за 8 недель'},
-    qualityWeeks8Weeks: {label: 'В скольких разных неделях'},
-    qualityMostlyTolerated: {label: 'Переносились ли они нормально'},
-    experience: {label: 'Какой опыт уже есть'},
-    experienceThreshold: {label: 'Темповые тренировки'},
-    experienceVo2: {label: 'Интервальные тренировки'},
-    experienceSpecific: {label: 'Отрезки в соревновательном темпе'},
+    canRun3Km: {label: 'Можете ли вы непрерывно пробежать 3 км без остановки?'},
+    regularRunningWeeks: {
+      label: 'Как давно вы бегаете регулярно без длительного перерыва?',
+      hint: 'Считайте с момента, когда начали или снова начали бегать хотя бы 1 раз в неделю.',
+    },
+    actualRunsPerWeek: {
+      label: 'Сколько раз в неделю вы обычно бегаете сейчас?',
+      hint: 'Укажите обычную неделю за последний месяц, а не максимальное количество тренировок.',
+    },
+    averageWeeklyKm4Weeks: {
+      label: 'Примерно сколько километров вы пробегаете за неделю?',
+      hint: 'Возьмите обычную неделю за последний месяц. Точная цифра не обязательна.',
+    },
+    longestUsualRunKm: {
+      label: 'Сколько километров обычно составляет ваша самая длинная пробежка?',
+      hint: 'Обычная длинная пробежка, а не самая длинная за всю жизнь.',
+    },
+    qualitySessions8Weeks: {
+      label: 'Сколько таких быстрых тренировок вы сделали за последние 8 недель?',
+      hint: 'Если специально быстрых тренировок не было — укажите 0.',
+    },
+    qualityWeeks8Weeks: {
+      label: 'В скольких из последних 8 недель была хотя бы одна такая тренировка?',
+      hint: 'Например, если вы сделали 4 быстрые тренировки, но все они были в двух неделях — укажите 2.',
+    },
+    qualityMostlyTolerated: {
+      label: 'Обычно вам удавалось выполнить такие тренировки полностью?',
+      hint: 'Ответьте «Да», если в большинстве случаев удавалось закончить запланированную работу без сильного падения темпа или досрочной остановки.',
+    },
+    experience: {label: 'Что из этого вы выполняли раньше?'},
+    experienceThreshold: {
+      label: 'Темповый бег',
+      hint: 'Несколько минут подряд заметно быстрее обычной пробежки.',
+    },
+    experienceVo2: {
+      label: 'Интервалы',
+      hint: 'Несколько быстрых отрезков с отдыхом между ними.',
+    },
+    experienceSpecific: {
+      label: 'Отрезки в темпе 3000 м',
+      hint: 'Повторные отрезки примерно в темпе вашего забега на 3 км.',
+    },
     availableRunsPerWeek: {label: 'Сколько тренировок в неделю вы можете выполнять'},
-    performanceMismatch: {label: 'Насколько тренировки согласуются с последним результатом'},
+    performanceMismatch: {label: 'Последний результат на 3000 м примерно соответствует тому, как вы бегаете сейчас?'},
     targetTime: {label: 'Желаемый результат на 3000 м', hint: 'Формат ММ:СС, например 14:00'},
     raceDate: {label: 'Дата итогового забега'},
   },
@@ -133,6 +203,22 @@ export const questionnaire = {
     reason: 'Причина',
     days: 'Сколько дней',
     endDate: 'Дата окончания',
+  },
+  fastTraining: {
+    title: 'Что считать быстрой тренировкой?',
+    text: 'Это тренировка, где вы специально бежали быстрее своего обычного спокойного бега:',
+    items: [
+      'быстрые отрезки с отдыхом;',
+      'интервалы;',
+      'непрерывный быстрый бег;',
+      'отрезки примерно в темпе забега на 3000 м.',
+    ],
+    footnote: 'Обычная пробежка сюда не относится, даже если она далась тяжело.',
+  },
+  mismatchOptions: {
+    NONE: {label: 'Да, примерно соответствует', hint: 'Последний результат отражает то, как вы бегаете сейчас.'},
+    MODERATE: {label: 'Сейчас я, скорее всего, немного быстрее или медленнее', hint: 'Разница небольшая, но результат стоит уточнить.'},
+    CLEAR: {label: 'Сейчас моя форма заметно отличается', hint: 'Результат уже не отражает текущую форму — понадобится контрольный забег.'},
   },
   yes: 'Да',
   no: 'Нет',
@@ -162,12 +248,12 @@ export const review = {
     daysToRace: (days: number): string => `До старта: ${days} дней`,
     availability: 'Доступно тренировок в неделю',
     volume: 'Недельный объём',
-    quality: 'Качественные тренировки за 8 недель',
+    quality: 'Быстрые тренировки за 8 недель',
     breaks: 'Перерывы',
     noBreaks: 'нет',
     safety: 'Ограничения по состоянию',
     noRestrictions: 'нет',
-    mismatch: 'Согласованность с результатом',
+    mismatch: 'Соответствие последнему результату',
   },
   primaryCta: 'Рассчитать план',
   secondaryCta: common.changeData,
@@ -175,21 +261,24 @@ export const review = {
 
 export const assessment = {
   title: 'Ваша подготовка',
-  whereAmI: 'Где я сейчас',
+  intro: 'Коротко: что у вас сейчас, к чему вы идёте и с чего начнётся подготовка.',
+  whereAmI: 'Ваш текущий результат',
   noPerformance: 'Результата пока нет',
-  performance: (time: string): string => `Текущий уровень: ${time} на 3000 м`,
-  goal: 'К чему идём',
-  goalValue: (time: string): string => `Цель: ${time}`,
-  feasibility: 'Насколько реалистично',
-  startPhase: 'С чего начинаем',
-  gate: 'Можно ли уже использовать целевой темп',
+  performance: (time: string): string => `${time} на 3000 м`,
+  goal: 'Ваша цель',
+  goalValue: (time: string): string => `${time} на 3000 м`,
+  feasibility: 'Насколько цель реалистична',
+  startPhase: 'С чего начнётся подготовка',
+  gate: 'Будете ли вы тренироваться в целевом темпе',
+  whatNext: 'Что дальше',
+  whatNextText: 'Дальше — план на ближайшие дни. Каждая тренировка будет объяснена простыми словами: что делать и как это должно ощущаться.',
   primaryCta: 'Посмотреть план',
   whyTitle: 'Почему такой план?',
   detailsTitle: 'Данные, на которых построен план',
   details: {
     confidence: 'Насколько свежий результат',
     capacity: 'Текущий уровень нагрузки',
-    quality: 'Опыт качественных тренировок',
+    quality: 'Опыт быстрых тренировок',
     reasons: 'Что повлияло на план',
   },
 } as const;
@@ -401,6 +490,60 @@ export const resultForm = {
     text: 'Возможно, план уже обновлён. Откройте раздел «План» заново.',
     cta: 'Обновить план',
   },
+} as const;
+
+/**
+ * The workout card is written for someone who has never put a training session together. Every line
+ * is a phrase the engine's own prescription can be read as; nothing here adds a number the engine did
+ * not order.
+ */
+export const instruction = {
+  cardTitle: 'Как выполнить тренировку',
+  today: (what: string): string => `Сегодня: ${what}`,
+  warmup: (minutes: number): string => `Разминка — ${counts.minutes(minutes)} лёгкого бега.`,
+  cooldown: (minutes: number): string => `Заминка — ${counts.minutes(minutes)} лёгкого бега или ходьбы.`,
+  cooldownAfterRepeats: (minutes: number): string => `После последнего отрезка — ${counts.minutes(minutes)} лёгкого бега или ходьбы.`,
+  rest: 'Сегодня отдых: тренировка не назначается.',
+  // intervals
+  repeatsOfDistance: (repeats: number, meters: string): string => `Выполни ${counts.repeats(repeats)} по ${meters}.`,
+  repeatsOfDistanceWithFinal: (repeats: number, meters: string, finalMeters: string): string =>
+    `Выполни ${counts.repeats(repeats)} по ${meters}, последний — ${finalMeters}.`,
+  repeatsOfDuration: (repeats: number, duration: string): string => `Выполни ${counts.repeats(repeats)} по ${duration}.`,
+  intervalTargetOne: (range: string): string => `Каждый отрезок старайся пробежать за ${range}.`,
+  intervalTargetPace: (pace: string): string => `Каждый отрезок — в темпе ${pace}.`,
+  intervalTargetSplit: (meters: string, range: string): string => `${meters} — за ${range}.`,
+  intervalTargetFinal: (finalMeters: string, range: string): string => `Последний ${finalMeters} — за ${range}.`,
+  repeatsTotal: (repeats: number, what: string): string => `Выполни ${counts.repeats(repeats)}. Всего — ${what}.`,
+  continuousByEffort: (what: string): string => `Беги ${what} быстрее спокойного бега — ровно и под контролем.`,
+  restAfterRepeat: (seconds: number): string => `После каждого отрезка отдыхай ${counts.seconds(seconds)}.`,
+  restHow: 'Во время отдыха можно идти или очень медленно бежать.',
+  stridesNote: 'Ускорения не должны быть тяжёлыми: это работа над техникой, а не на результат.',
+  // continuous
+  continuousMinutes: (minutes: number, pace: string): string => `Беги ${counts.minutes(minutes)} в темпе ${pace}.`,
+  continuousDistance: (distance: string, pace: string): string => `Пробеги ${distance} в темпе ${pace}.`,
+  continuousHoldPace: 'Старайся держать скорость ровно. Не начинай быстрее заданного темпа.',
+  easyContinuous: (distance: string): string => `Беги ${distance} в удобном спокойном темпе.`,
+  easyNoNeed: 'Специально ускоряться не нужно.',
+  easyFeel: 'Ориентир:',
+  easySlowDown: 'Если становится тяжело поддерживать такой режим — замедлись.',
+  easyWalk: 'При необходимости можно ненадолго перейти на шаг.',
+  easyGenericCue: 'Ориентируйтесь на спокойное контролируемое усилие.',
+  runWalk: 'Чередуй бег и ходьбу: беги, пока дыхание остаётся спокойным, затем переходи на шаг до восстановления дыхания.',
+  runWalkTotal: (distance: string): string => `Всего за тренировку — ${distance}.`,
+  control: (distance: string): string => `Пробеги ${distance} на результат.`,
+  controlDistance: (workout: {readonly main: {readonly dose: {readonly unit: string; readonly value: number}}}): string =>
+    workout.main.dose.unit === 'METERS' ? counts.meters(Math.round(workout.main.dose.value)) : counts.minutes(Math.round(workout.main.dose.value)),
+  controlNoPace: 'Темп не задан: беги в полную силу, ориентируясь на самочувствие.',
+  // shared
+  feeling: 'Как должно ощущаться:',
+  effortScale: (range: string): string => `Усилие: ${range} из 10`,
+  noteIntervalsFast: 'Первый отрезок не начинай слишком быстро: ровный темп даётся легче, чем быстрый старт.',
+  noteIntervalsHard: 'Если на последних отрезках темп падает, дальше можно не ускоряться — доделай работу спокойнее.',
+  noteNoPace: 'Темп в этой тренировке не задан: ориентируйся на самочувствие.',
+  technicalTitle: 'Технические характеристики',
+  whyTitle: 'Почему такая тренировка?',
+  splitLine: (meters: string, range: string): string => `${meters} примерно за ${range}`,
+  splitsTitle: 'Время отрезков',
 } as const;
 
 export const skip = {
