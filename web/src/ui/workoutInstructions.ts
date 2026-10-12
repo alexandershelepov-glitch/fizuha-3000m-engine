@@ -13,7 +13,7 @@
  */
 import {shortTime} from '../application/format.ts';
 import type {DoseUnit, Workout, WorkoutMainMode} from '../application/engineGateway.ts';
-import {counts, distanceText, instruction as copy} from './copy/text.ts';
+import {counts, distanceText, durationText, instruction as copy} from './copy/text.ts';
 import {effortCueText, scaleLabels, workoutTypeText} from './copy/values.ts';
 
 /** The repeat data of a prescription, from a Workout or from a plan-change summary. */
@@ -103,6 +103,17 @@ export interface IntervalStructure {
   readonly label: string;
   readonly volumeMeters: number | null;
   readonly perRepeatSeconds: number | null;
+  readonly exactSecondsPerRepeat: boolean;
+  readonly totalWorkSeconds: number | null;
+}
+
+/** Display units make a time repeat unambiguous (51 с, 2 мин, 4 мин 30 с). */
+export function compactDuration(valueSeconds: number): string {
+  const seconds = Math.round(valueSeconds);
+  if (seconds < 60) return `${seconds} с`;
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return rest === 0 ? `${minutes} мин` : `${minutes} мин ${rest} с`;
 }
 
 export interface IntervalParts extends RepeatParts {
@@ -116,18 +127,24 @@ export function intervalStructure(parts: IntervalParts): IntervalStructure | nul
 
   const distance = repeatStructure(parts);
   if (distance !== null) {
-    return {kind: 'DISTANCE', totalRepeats: distance.totalRepeats, label: distance.label, volumeMeters: distance.volumeMeters, perRepeatSeconds: null};
+    return {kind: 'DISTANCE', totalRepeats: distance.totalRepeats, label: distance.label, volumeMeters: distance.volumeMeters, perRepeatSeconds: null, exactSecondsPerRepeat: true, totalWorkSeconds: null};
   }
 
   // A time interval: split the total main work by the number of repeats the engine prescribed.
   if (parts.doseUnit !== 'MINUTES' || parts.repeats <= 1) return null;
-  const perRepeatSeconds = Math.round((parts.doseValue * 60) / parts.repeats);
+  const totalWorkSeconds = Math.round(parts.doseValue * 60);
+  const perRepeatSeconds = Math.round(totalWorkSeconds / parts.repeats);
+  // Fractional seconds per interval are only an approximation on a stopwatch. Keep the actual
+  // total separately and explicitly mark rounded repeat lengths as approximate.
+  const exactSecondsPerRepeat = totalWorkSeconds === perRepeatSeconds * parts.repeats;
   return {
     kind: 'TIME',
     totalRepeats: Math.round(parts.repeats),
-    label: `${Math.round(parts.repeats)} × ${shortTime(perRepeatSeconds)}`,
+    label: `${Math.round(parts.repeats)} × ${exactSecondsPerRepeat ? '' : '≈'}${compactDuration(perRepeatSeconds)}`,
     volumeMeters: null,
     perRepeatSeconds,
+    exactSecondsPerRepeat,
+    totalWorkSeconds,
   };
 }
 
@@ -171,6 +188,8 @@ export interface WorkoutInstruction {
   readonly splits: readonly InstructionSplit[];
   /** The prescribed pace, kept for the technical block. */
   readonly paceText: string | null;
+  readonly speedText: string | null;
+  readonly estimatedDistanceText: string | null;
   readonly note: string | null;
 }
 
@@ -188,7 +207,29 @@ export function prescribedPace(workout: Workout): [number, number] | null {
 
 /** Seconds as a pace per kilometre: "4:54–5:03 /км". */
 export function paceRangeText(pace: readonly [number, number] | null): string | null {
-  return pace === null ? null : `${shortTime(pace[0])}–${shortTime(pace[1])} /км`;
+  return pace === null ? null : `${shortTime(pace[0])}–${shortTime(pace[1])} мин/км`;
+}
+
+/** Convert the engine-prescribed pace range to an equivalent treadmill speed (no new target). */
+export function treadmillSpeedText(workout: Workout): string | null {
+  const pace = prescribedPace(workout);
+  if (pace === null) return null;
+  const speedLow = (3600 / pace[1]).toFixed(1).replace('.', ',');
+  const speedHigh = (3600 / pace[0]).toFixed(1).replace('.', ',');
+  return speedLow === speedHigh ? `${speedLow} км/ч` : `${speedLow}–${speedHigh} км/ч`;
+}
+
+/**
+ * Optional approximate distance from an existing pace and a TIME-based repeat.
+ * Not a required distance: the engine ordered seconds, not metres. Round OUTWARDS to 10 m.
+ */
+export function estimatedTimeRepeatDistance(workout: Workout): string | null {
+  const intervals = workoutIntervals(workout);
+  const pace = prescribedPace(workout);
+  if (intervals?.kind !== 'TIME' || intervals.perRepeatSeconds === null || pace === null) return null;
+  const lower = Math.floor((1000 * intervals.perRepeatSeconds / pace[1]) / 10) * 10;
+  const upper = Math.ceil((1000 * intervals.perRepeatSeconds / pace[0]) / 10) * 10;
+  return lower === upper ? `около ${lower} м` : `примерно ${lower}–${upper} м`;
 }
 
 /** The nearest word the existing effort scale already has for this range. Ties pick the harder one. */
@@ -273,7 +314,7 @@ function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): s
     const intervals = workoutIntervals(workout);
     steps.push(intervals?.perRepeatSeconds === null || intervals === null
       ? copy.repeatsTotal(repeats, dose.unit === 'MINUTES' ? counts.minutes(Math.round(dose.value)) : distanceText(dose.value))
-      : copy.repeatsOfDuration(repeats, shortTime(intervals.perRepeatSeconds)));
+      : copy.repeatsOfDuration(repeats, durationText(intervals.perRepeatSeconds), intervals.exactSecondsPerRepeat));
   }
 
   // The time of one repeat is the main reference for someone on a track. When the engine prescribed
@@ -290,9 +331,21 @@ function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): s
     if (paceText !== null) steps.push(copy.intervalTargetPace(paceText));
   }
 
-  if (workout.restSeconds > 0) {
-    steps.push(copy.restAfterRepeat(workout.restSeconds));
-    steps.push(copy.restHow);
+  const speed = treadmillSpeedText(workout);
+  const pace = paceRangeText(prescribedPace(workout));
+  if (pace !== null) {
+    steps.push(copy.targetPace(pace));
+    if (speed !== null) steps.push(copy.treadmillSpeed(speed));
+  } else {
+    steps.push(copy.unpacedIntervals);
+  }
+
+  if (workoutIntervals(workout)?.kind === 'TIME') {
+    const estimate = estimatedTimeRepeatDistance(workout);
+    steps.push(estimate === null ? copy.timeIntervalsNoDistance : copy.timeIntervalsEstimatedDistance(estimate));
+  }
+  if (workout.restSeconds > 0 && repeats > 1) {
+    steps.push(copy.restBetweenRepeats(durationText(workout.restSeconds)));
   }
   return steps;
 }
@@ -334,6 +387,8 @@ function continuousSteps(workout: Workout, paceText: string | null): string[] {
   steps.push(dose.unit === 'MINUTES'
     ? copy.continuousMinutes(Math.round(dose.value), paceText)
     : copy.continuousDistance(distanceText(dose.value), paceText));
+  const speed = treadmillSpeedText(workout);
+  if (speed !== null) steps.push(copy.treadmillSpeed(speed));
   steps.push(copy.continuousHoldPace);
   return steps;
 }
@@ -354,6 +409,8 @@ export function workoutInstruction(workout: Workout): WorkoutInstruction {
       guidance: [],
       splits: [],
       paceText: null,
+      speedText: null,
+      estimatedDistanceText: null,
       note: null,
     };
   }
@@ -376,6 +433,8 @@ export function workoutInstruction(workout: Workout): WorkoutInstruction {
     guidance: workout.main.mode === 'INTERVALS' ? [] : guidanceFor(workout),
     splits,
     paceText,
+    speedText: treadmillSpeedText(workout),
+    estimatedDistanceText: estimatedTimeRepeatDistance(workout),
     note: noteFor(workout, paceText),
   };
 }
