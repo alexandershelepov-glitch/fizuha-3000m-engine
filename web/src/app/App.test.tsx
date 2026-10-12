@@ -40,7 +40,9 @@ const clickIn = (user: User, container: HTMLElement | Document, label: string): 
 async function walkToGoal(user: User): Promise<void> {
   await click(user, 'Начать подготовку');
   await user.type(screen.getByLabelText('Ваш результат'), '15:20');
-  for (let step = 0; step < 6; step += 1) await click(user, 'Продолжить');
+  await click(user, 'Продолжить'); // VOLUME
+  await user.type(screen.getByLabelText(/Сколько недель подряд/), '8');
+  for (let step = 1; step < 6; step += 1) await click(user, 'Продолжить');
 }
 
 /** Walk the whole questionnaire to the review screen. */
