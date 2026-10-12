@@ -326,9 +326,6 @@ function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): s
     const last = splits[1]!;
     steps.push(copy.intervalTargetSplit(counts.meters(first.distanceMeters), `${shortTime(first.seconds[0])}–${shortTime(first.seconds[1])}`));
     steps.push(copy.intervalTargetFinal(counts.meters(last.distanceMeters), `${shortTime(last.seconds[0])}–${shortTime(last.seconds[1])}`));
-  } else if (workout.paceRangeSecondsPerKm !== null || workout.speedRangeMps !== null) {
-    const paceText = paceRangeText(prescribedPace(workout));
-    if (paceText !== null) steps.push(copy.intervalTargetPace(paceText));
   }
 
   const speed = treadmillSpeedText(workout);
