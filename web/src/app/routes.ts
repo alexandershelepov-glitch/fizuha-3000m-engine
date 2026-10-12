@@ -15,6 +15,7 @@ export type Route =
   | {name: 'PLAN'}
   | {name: 'HISTORY'}
   | {name: 'PROFILE'}
+  | {name: 'SAFETY_RECHECK'}
   | {name: 'PARAMETERS'}
   | {name: 'PARAMETERS_OUTCOME'}
   | {name: 'FINAL_RESULT'}
@@ -60,6 +61,7 @@ export function parseRoute(pathname: string, search = ''): Route {
   if (path === PATH.history) return {name: 'HISTORY'};
   if (path === PATH.profile) return {name: 'PROFILE'};
 
+  if (path === '/profile/safety') return {name: 'SAFETY_RECHECK'};
   if (path === '/profile/parameters') return {name: 'PARAMETERS'};
   if (path === '/profile/parameters/outcome') return {name: 'PARAMETERS_OUTCOME'};
   if (path === '/final-result') return {name: 'FINAL_RESULT'};
@@ -95,6 +97,7 @@ export function routeToPath(route: Route): string {
     case 'PLAN': return PATH.plan;
     case 'HISTORY': return PATH.history;
     case 'PROFILE': return PATH.profile;
+    case 'SAFETY_RECHECK': return '/profile/safety';
     case 'PARAMETERS': return '/profile/parameters';
     case 'PARAMETERS_OUTCOME': return '/profile/parameters/outcome';
     case 'FINAL_RESULT': return '/final-result';
