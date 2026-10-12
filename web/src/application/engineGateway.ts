@@ -19,6 +19,7 @@ import {
   updateTrainingData as engineUpdateTrainingData,
   recordResult as engineRecordResult,
   replan,
+  resolveDiagnostic as engineResolveDiagnostic,
   serialize,
   skipWorkout as engineSkipWorkout,
   taperDays,
@@ -165,4 +166,13 @@ export function updateTrainingData(state: EngineState, data: {targetTimeSeconds?
 }
 export function recordFinalResult(state: EngineState, performance: PerformanceSnapshot, now: string): EngineState {
   return engineRecordFinalResult(state, performance, now);
+}
+
+/** Only the engine decides when diagnostic restrictions can be lifted. */
+export function resolveCurrentSafety(state: EngineState, safety: SafetyData, now: string): EngineState {
+  return engineResolveDiagnostic(state, safety, now);
+}
+/** Non-persisted preview of the real engine verdict. */
+export function previewGoalDecision(profile: Profile, today: string): Decision {
+  return createEngineState(profile, today).decision;
 }
