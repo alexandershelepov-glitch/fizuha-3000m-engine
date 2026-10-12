@@ -8,7 +8,7 @@ import {classify, createEngine, recordResult, replan} from '../src/index.ts';
 import type {Workout, WorkoutType} from '../src/index.ts';
 import {
   COMPLETION_PRESETS, buildWorkoutResult, defaultResultDraft, draftHasNoRepeats, draftHasPartialRepeats,
-  repeatsAffectEvaluation, repeatsBlockExpandedFor,
+  hasSafetyConcerns, repeatsAffectEvaluation, repeatsBlockExpandedFor,
 } from '../web/src/application/resultForm.ts';
 import {submitWorkoutResult} from '../web/src/application/workoutResult.ts';
 import {createCycle} from '../web/src/application/cycle.ts';
@@ -243,4 +243,33 @@ test('FORM-08 the warning path leads to the engine verdict the engine chose', ()
   });
   assert.equal(filled.ok, true);
   if (filled.ok) assert.equal(classify(workout, filled.result).evaluation, 'GREEN');
+});
+
+
+test('FORM-SAFETY-01 every engine flag is recognised; no choice is pre-confirmed', () => {
+  const workout = workoutOf('EASY');
+  const draft = defaultResultDraft(workout);
+  assert.equal(draft.safetyResponse, 'UNANSWERED');
+  assert.equal(hasSafetyConcerns(draft.safety), false);
+  for (const flag of ['painIncreasing', 'alteredMovement', 'painWalkingOrRest', 'swelling', 'acuteIllness', 'otherStop', 'needsAssessment'] as const) {
+    assert.equal(hasSafetyConcerns({...draft.safety, [flag]: true}), true, flag);
+  }
+  assert.equal(hasSafetyConcerns({...draft.safety, pain: 1}), true);
+});
+
+test('FORM-SAFETY-02 reported symptoms and unusual fatigue remain separate in engine feedback', () => {
+  const workout = workoutOf('EASY');
+  const base = defaultResultDraft(workout);
+  const withSymptoms = buildWorkoutResult(workout, {
+    ...base, safetyResponse: 'SYMPTOMS',
+    safety: {...base.safety, alteredMovement: true, swelling: true},
+    unexpectedFatigue: true,
+  });
+  assert.equal(withSymptoms.ok, true);
+  if (withSymptoms.ok) {
+    assert.equal(withSymptoms.result.safety.alteredMovement, true);
+    assert.equal(withSymptoms.result.safety.swelling, true);
+    assert.equal(withSymptoms.result.unexpectedFatigue, true);
+    assert.equal(classify(workout, withSymptoms.result).evaluation, 'RED');
+  }
 });
