@@ -10,8 +10,8 @@ import assert from 'node:assert/strict';
 import {prescribe} from '../src/index.ts';
 import type {Workout, WorkoutType} from '../src/index.ts';
 import {appCycle} from './helpers-app.ts';
-import {effortFor, intervalStructure, prescribedPace, repeatStructure, splitSeconds, workoutInstruction, workoutIntervals, workoutRepeats} from '../web/src/ui/workoutInstructions.ts';
-import {workoutIntervalsText, workoutSummaryText, workoutVolume} from '../web/src/ui/display.ts';
+import {compactDuration, effortFor, estimatedTimeRepeatDistance, intervalStructure, prescribedPace, repeatStructure, splitSeconds, treadmillSpeedText, workoutInstruction, workoutIntervals, workoutRepeats} from '../web/src/ui/workoutInstructions.ts';
+import {workoutIntervalsText, workoutMainDose, workoutSummaryText, workoutVolume} from '../web/src/ui/display.ts';
 import {formatDateShort} from '../web/src/application/format.ts';
 import {workoutTypeText} from '../web/src/ui/copy/values.ts';
 
@@ -84,7 +84,7 @@ test('INSTR-04 continuous work with a pace states the pace as the engine ordered
   const pace = prescribedPace(workout)!;
 
   assert.ok(workout.paceRangeSecondsPerKm !== null, 'a threshold session must carry a pace');
-  assert.equal(plan.paceText, `${Math.floor(pace[0] / 60)}:${String(Math.round(pace[0]) % 60).padStart(2, '0')}–${Math.floor(pace[1] / 60)}:${String(Math.round(pace[1]) % 60).padStart(2, '0')} /км`);
+  assert.equal(plan.paceText, `${Math.floor(pace[0] / 60)}:${String(Math.round(pace[0]) % 60).padStart(2, '0')}–${Math.floor(pace[1] / 60)}:${String(Math.round(pace[1]) % 60).padStart(2, '0')} мин/км`);
   assert.ok(plan.steps.some((step) => step.includes('в темпе')), plan.steps.join(' | '));
   assert.ok(plan.steps.some((step) => step.includes('Не начинай быстрее заданного темпа')));
   assert.ok(plan.steps[0]!.startsWith('Разминка'), 'the warm-up is part of the instruction');
@@ -101,8 +101,8 @@ test('INSTR-05 intervals of 400 m show the time of one repeat', () => {
   assert.equal(plan.headline, 'Сегодня: 6 × 400 м');
   assert.deepEqual(plan.splits.map((split) => split.text), ['400 метров примерно за 1:36–1:40']);
   assert.ok(plan.steps.some((step) => step.includes('Каждый отрезок старайся пробежать за 1:36–1:40')), plan.steps.join(' | '));
-  assert.ok(plan.steps.some((step) => step.includes('После каждого отрезка отдыхай 90 секунд')));
-  assert.ok(plan.steps.some((step) => step === 'Конкретный способ отдыха план не задаёт.'));
+  assert.ok(plan.steps.some((step) => step.includes('Отдых между отрезками — 1 минута 30 секунд')));
+  assert.ok(plan.steps.some((step) => step.includes('После последнего отрезка отдых не нужен.')));
   assert.ok(plan.paceText!.endsWith('/км'), 'the pace stays available below');
 });
 
@@ -184,7 +184,7 @@ test('INSTR-11 strides are described by technique, not by a target time', () => 
   assert.equal(workout.paceRangeSecondsPerKm, null);
   assert.equal(plan.splits.length, 0, 'no pace means no split time');
   assert.equal(plan.note, 'Ускорения не должны быть тяжёлыми: это работа над техникой, а не на результат.');
-  assert.ok(plan.steps.some((step) => step.includes('После каждого отрезка отдыхай')));
+  assert.ok(plan.steps.some((step) => step.includes('Отдых между отрезками')));
 });
 
 test('INSTR-12 no warm-up and no cool-down mean no such steps', () => {
@@ -213,8 +213,8 @@ test('INSTR-14 intervals with a pace but no distance state the pace instead of i
   const plan = workoutInstruction(workout);
 
   assert.equal(plan.splits.length, 0, 'a distance the engine did not give is never invented');
-  assert.ok(plan.steps.some((step) => step.startsWith('Каждый отрезок — в темпе')), plan.steps.join(' | '));
-  assert.match(plan.headline, /^Сегодня: \d+ × \d+:\d\d$/);
+  assert.ok(plan.steps.some((step) => step.startsWith('Целевой темп:')), plan.steps.join(' | '));
+  assert.match(plan.headline, /^Сегодня: \d+ × \d+ (с|мин)/);
 });
 
 test('INSTR-15 intervals without a pace state only what the engine ordered', () => {
@@ -225,8 +225,8 @@ test('INSTR-15 intervals without a pace state only what the engine ordered', () 
 
   assert.equal(plan.splits.length, 0);
   assert.equal(plan.paceText, null);
-  assert.ok(plan.steps.some((step) => step.startsWith('Выполни 4 отрезка по')));
-  assert.ok(plan.steps.some((step) => step.includes('отдыхай')));
+  assert.ok(plan.steps.some((step) => step.startsWith('Выполни 4 отрезка. Каждый отрезок длится')));
+  assert.ok(plan.steps.some((step) => step.includes('Отдых между отрезками')));
 });
 
 test('INSTR-16 a rest day is not dressed up as training', () => {
@@ -345,8 +345,8 @@ test('INSTR-24 the rest is a duration, and the way of resting stays the plan own
   assert.ok(workout.restSeconds > 0, 'the fixture must prescribe a rest');
   const plan = workoutInstruction(workout);
 
-  assert.ok(plan.steps.some((step) => step === `После каждого отрезка отдыхай ${workout.restSeconds} секунд.`));
-  assert.ok(plan.steps.some((step) => step === 'Конкретный способ отдыха план не задаёт.'));
+  assert.ok(plan.steps.some((step) => step === 'Отдых между отрезками — 1 минута 30 секунд. После последнего отрезка отдых не нужен.'));
+  assert.ok(plan.steps.some((step) => step.includes('После последнего отрезка отдых не нужен.')));
   // The engine does not say how to rest, so the card must not say it either.
   const text = plan.steps.join(' ');
   assert.equal(/можно идти|очень медленно бежать|переходи на шаг|ходьба между/i.test(text), false, text);
@@ -389,24 +389,24 @@ test('INSTR-27 a distance interval reads the same in the instruction, the rows a
 test('INSTR-28 a time interval is split by its own repeat count, never multiplied', () => {
   // 8 minutes of main work in four repeats is four repeats of two minutes, not 4 × 8 minutes.
   const eight = prescribedInterval({repeats: 4, repeatMeters: null, finalRepeatMeters: null, dose: {unit: 'MINUTES', value: 8}});
-  assert.equal(workoutInstruction(eight).headline, 'Сегодня: 4 × 2:00');
-  assert.equal(workoutVolume(eight), '4 × 2:00');
-  assert.equal(workoutIntervalsText(eight), '4 × 2:00');
-  assert.equal(planSummaryVolume(eight), '4 × 2:00');
+  assert.equal(workoutInstruction(eight).headline, 'Сегодня: 4 × 2 мин');
+  assert.equal(workoutVolume(eight), '4 × 2 мин');
+  assert.equal(workoutIntervalsText(eight), '4 × 2 мин');
+  assert.equal(planSummaryVolume(eight), '4 × 2 мин');
   assert.equal(workoutIntervals(eight)!.perRepeatSeconds, 120);
 
   // The total work is never multiplied by the number of repeats anywhere.
   for (const text of [workoutInstruction(eight).headline, workoutVolume(eight), workoutIntervalsText(eight)!, planSummaryVolume(eight)]) {
     assert.equal(/8\s*мин|4 × 8/.test(text), false, text);
   }
-  assert.ok(workoutInstruction(eight).steps.some((step) => step === 'Выполни 4 отрезка по 2:00.'));
+  assert.ok(workoutInstruction(eight).steps.some((step) => step === 'Выполни 4 отрезка. Каждый отрезок длится 2 минуты.'));
 });
 
 test('INSTR-29 a fractional per-repeat time keeps whole seconds', () => {
   const eighteen = prescribedInterval({repeats: 4, repeatMeters: null, finalRepeatMeters: null, dose: {unit: 'MINUTES', value: 18}});
-  assert.equal(intervalStructure({mode: 'INTERVALS', doseValue: 18, doseUnit: 'MINUTES', repeats: 4, repeatMeters: null, finalRepeatMeters: null})!.label, '4 × 4:30');
-  assert.equal(workoutInstruction(eighteen).headline, 'Сегодня: 4 × 4:30');
-  assert.equal(workoutVolume(eighteen), '4 × 4:30');
+  assert.equal(intervalStructure({mode: 'INTERVALS', doseValue: 18, doseUnit: 'MINUTES', repeats: 4, repeatMeters: null, finalRepeatMeters: null})!.label, '4 × 4 мин 30 с');
+  assert.equal(workoutInstruction(eighteen).headline, 'Сегодня: 4 × 4 мин 30 с');
+  assert.equal(workoutVolume(eighteen), '4 × 4 мин 30 с');
 
   // A real prescription has the same shape: the engine orders 18 minutes of VO2 work in four repeats.
   const fixture = qualityCycle();
@@ -414,7 +414,7 @@ test('INSTR-29 a fractional per-repeat time keeps whole seconds', () => {
   assert.equal(vo2.main.dose.unit, 'MINUTES');
   assert.equal(vo2.main.repeats, 4);
   assert.equal(vo2.main.repeatMeters, null);
-  assert.equal(workoutIntervals(vo2)!.label, `4 × ${shortTimeOf(vo2.main.dose.value * 60 / 4)}`);
+  assert.equal(workoutIntervals(vo2)!.label, `4 × ${compactDuration(vo2.main.dose.value * 60 / 4)}`);
 });
 
 test('INSTR-30 a workout that is not made of intervals keeps the plain dose', () => {
@@ -422,4 +422,69 @@ test('INSTR-30 a workout that is not made of intervals keeps the plain dose', ()
   assert.equal(workoutIntervalsText(easy), null);
   assert.equal(workoutVolume(easy), `${Math.round(easy.main.dose.value)} м`);
   assert.equal(workoutInstruction(easy).headline.startsWith('Сегодня: спокойный бег'), true);
+});
+
+test('INSTR-31 fractional total minutes show exact main work (not rounded away)', () => {
+  // The reported UI showed "3 мин" and "4 × 0:51". Engine actually meant 3.4 min = 204 s.
+  const base = prescribedInterval({repeats: 4, repeatMeters: null, finalRepeatMeters: null, dose: {unit: 'MINUTES', value: 3.4}});
+  const intro: Workout = {...base, type: 'INTRO_QUALITY', paceRangeSecondsPerKm: null, speedRangeMps: null};
+  const plan = workoutInstruction(intro);
+  const structure = workoutIntervals(intro)!;
+  assert.equal(structure.totalWorkSeconds, 204);
+  assert.equal(structure.perRepeatSeconds, 51);
+  assert.equal(structure.exactSecondsPerRepeat, true);
+  assert.equal(plan.headline, 'Сегодня: 4 × 51 с');
+  assert.equal(workoutMainDose(intro), '3 минуты 24 секунды');
+  assert.ok(plan.steps.some(line => line.includes('Каждый отрезок длится 51 секунду')));
+  assert.ok(plan.steps.some(line => line.includes('Отдых между отрезками — 1 минута 30 секунд')));
+  assert.ok(plan.steps.some(line => line.includes('Числовой темп не назначен')));
+  assert.ok(plan.steps.some(line => line.includes('Дистанция не назначена')));
+  assert.equal(plan.speedText, null);
+  assert.equal(plan.estimatedDistanceText, null);
+});
+
+test('INSTR-32 a prescribed pace gives both min/km and equivalent treadmill km/h', () => {
+  const base = prescribedInterval({repeats: 4, repeatMeters: null, finalRepeatMeters: null, dose: {unit: 'MINUTES', value: 3.4}});
+  const paced: Workout = {...base, paceRangeSecondsPerKm: [300, 320], speedRangeMps: null};
+  const plan = workoutInstruction(paced);
+  assert.equal(plan.paceText, '5:00–5:20 мин/км');
+  assert.equal(plan.speedText, '11,3–12,0 км/ч');
+  assert.equal(treadmillSpeedText(paced), plan.speedText);
+  assert.ok(plan.steps.some(step => step === 'Целевой темп: 5:00–5:20 мин/км.'));
+  assert.ok(plan.steps.some(step => step.includes('На беговой дорожке: 11,3–12,0 км/ч')));
+  assert.equal(estimatedTimeRepeatDistance(paced), 'примерно 150–170 м');
+  assert.ok(plan.steps.some(step => step.includes('Это не обязательная дистанция')));
+  assert.equal(paced.main.repeatMeters, null, 'metres were not promoted to mandatory repeats');
+});
+
+test('INSTR-33 when total seconds are not divisible by repeats, rounded split is explicitly approximate', () => {
+  const base = prescribedInterval({repeats: 4, repeatMeters: null, finalRepeatMeters: null, dose: {unit: 'MINUTES', value: 3.5}});
+  const blocks = workoutIntervals(base)!;
+  assert.equal(blocks.totalWorkSeconds, 210);
+  assert.equal(blocks.perRepeatSeconds, 53);
+  assert.equal(blocks.exactSecondsPerRepeat, false);
+  assert.equal(blocks.label, '4 × ≈53 с');
+  assert.equal(workoutMainDose(base), '3 минуты 30 секунд');
+  assert.ok(workoutInstruction(base).steps.some(x => x.includes('примерно 53 секунды')));
+});
+
+test('INSTR-34 prescribed distance stays mandatory and its time uses the engine pace', () => {
+  const base = prescribedInterval({repeats: 4, repeatMeters: 600, finalRepeatMeters: 400, dose: {unit: 'METERS', value: 2200}});
+  const paced: Workout = {...base, paceRangeSecondsPerKm: [240, 250], speedRangeMps: null};
+  const plan = workoutInstruction(paced);
+  assert.equal(plan.headline, 'Сегодня: 3 × 600 м + 1 × 400 м');
+  assert.equal(workoutMainDose(paced), '2200 м');
+  assert.ok(plan.steps.some(line => line.includes('Целевой темп: 4:00–4:10 мин/км')));
+  assert.ok(plan.steps.some(line => line.includes('600 метров — за 2:24–2:30')));
+  assert.ok(plan.steps.some(line => line.includes('Последний 400 метров — за 1:36–1:40')));
+  assert.equal(plan.estimatedDistanceText, null);
+});
+
+test('INSTR-35 unpaced acceleration cannot invent pace, speed or a distance estimate', () => {
+  const stride = ordered('STRIDES');
+  const plan = workoutInstruction(stride);
+  assert.equal(plan.paceText, null);
+  assert.equal(plan.speedText, null);
+  assert.equal(plan.estimatedDistanceText, null);
+  assert.ok(plan.steps.some(x => x.includes('Числовой темп не назначен')));
 });
