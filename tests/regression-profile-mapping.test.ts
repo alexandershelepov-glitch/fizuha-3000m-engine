@@ -21,6 +21,7 @@ const ANSWERS: QuestionnaireDraft = {
   actualRunsPerWeek: '4',
   averageWeeklyKm4Weeks: '32,5',
   longestUsualRunKm: '11',
+  qualityRecall: 'EXACT',
   qualitySessions8Weeks: '9',
   qualityWeeks8Weeks: '6',
   qualityMostlyTolerated: true,
@@ -68,7 +69,7 @@ test('PROFILE-02 the answers are the only input: no label, hint or option text i
   assert.deepEqual(keys, [
     'actualRunsPerWeek', 'availableRunsPerWeek', 'averageWeeklyKm4Weeks', 'breaks', 'canRun3Km',
     'experience', 'hasBreaks', 'hasResult', 'longestUsualRunKm', 'performanceMismatch',
-    'qualityMostlyTolerated', 'qualitySessions8Weeks', 'qualityWeeks8Weeks', 'raceDate',
+    'qualityMostlyTolerated', 'qualityRecall', 'qualitySessions8Weeks', 'qualityWeeks8Weeks', 'raceDate',
     'regularRunningWeeks', 'resultDate', 'resultSource', 'resultTime', 'safety', 'targetTime',
   ]);
   for (const value of Object.values(ANSWERS)) {
@@ -90,4 +91,26 @@ test('PROFILE-03 every numeric answer is parsed from its own field', () => {
   assert.equal(fewerWeeks.profile.actualRunsPerWeek, 4);
   assert.equal(otherMismatch.profile.performanceMismatch, 'CLEAR');
   assert.equal(otherMismatch.profile.qualityWeeks8Weeks, 6);
+});
+
+test('PROFILE-04 recollection without records does not invent confirmed sessions', () => {
+  for (const recall of ['NONE', 'SOMETIMES', 'REGULAR', 'UNKNOWN'] as const) {
+    const draft = {...ANSWERS, qualityRecall: recall, qualitySessions8Weeks: '999', qualityWeeks8Weeks: '8'};
+    const result = buildProfile(draft);
+    assert.equal(result.ok, true);
+    if (!result.ok) continue;
+    assert.equal(result.profile.qualitySessions8Weeks, 0);
+    assert.equal(result.profile.qualityWeeks8Weeks, 0);
+    assert.equal(result.profile.qualityMostlyTolerated, false);
+  }
+});
+
+test('PROFILE-05 old drafts without a recall selector keep their numeric answers', () => {
+  const {qualityRecall: _previous, ...oldAnswers} = ANSWERS;
+  const result = buildProfile(oldAnswers);
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.profile.qualitySessions8Weeks, 9);
+    assert.equal(result.profile.qualityWeeks8Weeks, 6);
+  }
 });
