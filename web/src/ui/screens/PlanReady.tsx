@@ -4,19 +4,20 @@ import {taperDaysFor} from '../../application/engineGateway.ts';
 import type {EngineState} from '../../application/engineGateway.ts';
 import {workoutLine} from '../display.ts';
 import {phaseText, phaseWhy} from '../copy/values.ts';
-import {planReady} from '../copy/text.ts';
+import {planReady, questionnaire} from '../copy/text.ts';
 import {Button} from '../components/Button.tsx';
-import {Card, KeyValue} from '../components/Layout.tsx';
+import {Card, KeyValue, Notice} from '../components/Layout.tsx';
 
-export function PlanReady({engineState, onContinue}: {engineState: EngineState; onContinue: () => void}): ReactNode {
+export function PlanReady({engineState, onContinue, onRecheck}: {engineState: EngineState; onContinue: () => void; onRecheck: () => void}): ReactNode {
   const {profile, decision, queue} = engineState;
   const taperStart = addDays(profile.raceDate, -taperDaysFor(decision.capacity, decision.quality));
+  const hold = decision.safety !== 'OK' || decision.phase === 'HOLD_DIAGNOSTIC' || engineState.diagnosticHold || engineState.relatedYellow;
 
   return (
     <div className="screen">
       <header className="appbar">
         <div>
-          <h1 className="appbar__title">{planReady.title}</h1>
+          <h1 className="appbar__title">{hold ? questionnaire.hold.title : planReady.title}</h1>
         </div>
       </header>
 
@@ -26,11 +27,13 @@ export function PlanReady({engineState, onContinue}: {engineState: EngineState; 
         <KeyValue label={planReady.phase} value={phaseText[decision.phase].label} />
       </Card>
 
+      {hold ? <Notice tone="warn" title={questionnaire.hold.title}><p>{questionnaire.hold.explanation}</p><p>{questionnaire.hold.next}</p><Button onClick={onRecheck}>{questionnaire.hold.recheck}</Button></Notice> : null}
+
       <Card title={phaseText[decision.phase].label}>
         <p className="paragraph">{phaseWhy[decision.phase]}</p>
       </Card>
 
-      <Card title={planReady.horizon}>
+      {!hold ? <Card title={planReady.horizon}>
         {queue.length === 0 ? (
           <p className="hint">{planReady.horizonNote}</p>
         ) : (
@@ -41,7 +44,7 @@ export function PlanReady({engineState, onContinue}: {engineState: EngineState; 
           </ul>
         )}
         <p className="hint">{planReady.horizonNote}</p>
-      </Card>
+      </Card> : null}
 
       <Card title={planReady.taper}>
         <p className="paragraph">{`${phaseText.TAPER.label} — около ${formatDateLong(taperStart)}`}</p>
