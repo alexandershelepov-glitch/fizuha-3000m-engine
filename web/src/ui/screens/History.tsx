@@ -93,6 +93,8 @@ function describeEvent(event: CycleEvent): string {
       return `${historyItems.CHECKPOINT_RECORDED} · ${historyItems.performance(event.previousPerformance === null ? null : formatTime(event.previousPerformance), formatTime(event.result.timeSeconds))}`;
     case 'TRAINING_PARAMETERS_CHANGED':
       return historyItems.TRAINING_PARAMETERS_CHANGED;
+    case 'SAFETY_REASSESSED':
+      return historyItems.SAFETY_REASSESSED;
     case 'FINAL_RESULT_RECORDED':
       return `${historyItems.FINAL_RESULT_RECORDED} · ${formatTime(event.result.timeSeconds)}`;
   }
