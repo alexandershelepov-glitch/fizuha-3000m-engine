@@ -36,6 +36,7 @@ export type CycleEvent =
   | {type: 'WORKOUT_MOVED'; at: string; workoutId: string; fromDate: string; toDate: string}
   | {type: 'CHECKPOINT_RECORDED'; at: string; result: {timeSeconds: number; date: string; source: string}; previousPerformance: number | null; decisionAfter: AssessmentSnapshot}
   | {type: 'TRAINING_PARAMETERS_CHANGED'; at: string; from: Record<string, unknown>; to: Record<string, unknown>}
+  | {type: 'SAFETY_REASSESSED'; at: string; safety: import('./engineGateway.ts').SafetyData; decisionAfter: AssessmentSnapshot}
   | {type: 'FINAL_RESULT_RECORDED'; at: string; result: {timeSeconds: number; date: string; source: string}};
 
 export interface AppStateV1 {
