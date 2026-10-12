@@ -1,6 +1,10 @@
 import {useState} from 'react';
 import type {ReactNode} from 'react';
-import {QUESTIONNAIRE_STEPS, STEP_INDEX} from '../../application/questionnaire.ts';
+import {QUESTIONNAIRE_STEPS, STEP_INDEX, healthySafety, buildProfile} from '../../application/questionnaire.ts';
+import type {QualityRecall} from '../../application/questionnaire.ts';
+import {previewGoalDecision} from '../../application/engineGateway.ts';
+import {deviceToday, parseTime} from '../../application/format.ts';
+import {feasibilityText} from '../copy/values.ts';
 import type {BreakEntryDraft, FieldKey, QuestionnaireDraft, QuestionnaireStep} from '../../application/questionnaire.ts';
 import {breakReasonText, performanceSourceText} from '../copy/values.ts';
 import {common, questionnaire} from '../copy/text.ts';
@@ -72,11 +76,14 @@ export function Questionnaire({step, store, onNavigate, engineError = null, onDi
         {step === 'RESULT' ? <ResultStep draft={draft} update={update} error={error} /> : null}
         {step === 'VOLUME' ? <VolumeStep draft={draft} update={update} error={error} /> : null}
         {step === 'QUALITY' ? <QualityStep draft={draft} update={update} error={error} /> : null}
-        {step === 'SAFETY' ? <SafetyStep draft={draft} update={update} error={error} /> : null}
+        {step === 'SAFETY' ? <SafetyStep draft={draft} update={update} error={error} onHealthy={() => {
+          update({safety: healthySafety()});
+          onNavigate({name: 'QUESTIONNAIRE', step: 'BREAKS'});
+        }} /> : null}
         {step === 'BREAKS' ? <BreaksStep draft={draft} update={update} error={error} /> : null}
         {step === 'AVAILABILITY' ? <AvailabilityStep draft={draft} update={update} error={error} /> : null}
-        {step === 'GOAL' ? <GoalStep draft={draft} update={update} error={error} /> : null}
-        {step === 'RACE_DATE' ? <RaceDateStep draft={draft} update={update} error={error} /> : null}
+        {step === 'GOAL' ? <><GoalStep draft={draft} update={update} error={error} /><GoalPreview draft={draft} today={deviceToday()} /></> : null}
+        {step === 'RACE_DATE' ? <><RaceDateStep draft={draft} update={update} error={error} /><GoalPreview draft={draft} today={deviceToday()} /></> : null}
       </Card>
 
       <div className="actions">
@@ -149,6 +156,7 @@ function VolumeStep({draft, update, error}: StepProps): ReactNode {
 }
 
 function QualityStep({draft, update, error}: StepProps): ReactNode {
+  const recall: QualityRecall = draft.qualityRecall ?? 'EXACT';
   return (
     <>
       {/* Nobody should have to guess what counts as a fast session. */}
@@ -161,6 +169,13 @@ function QualityStep({draft, update, error}: StepProps): ReactNode {
         </ul>
         <p className="hint">{questionnaire.fastTraining.footnote}</p>
       </Notice>
+      <Field id="qualityRecall" label={questionnaire.qualityRecall.question}>
+        <Choice id="qualityRecall" value={recall}
+          onChange={(value) => update({qualityRecall: value})}
+          options={(Object.entries(questionnaire.qualityRecall.options) as [QualityRecall, string][]).map(([value, label]) => ({value, label}))} />
+      </Field>
+      {recall !== 'EXACT' ? <p className="hint">{questionnaire.qualityRecall.caution}</p> : null}
+      {recall === 'EXACT' ? <>
       <Field id="qualitySessions8Weeks" label={questionnaire.fields.qualitySessions8Weeks.label} hint={questionnaire.fields.qualitySessions8Weeks.hint} error={error('qualitySessions8Weeks')}>
         <TextInput id="qualitySessions8Weeks" value={draft.qualitySessions8Weeks} onChange={(value) => update({qualitySessions8Weeks: value})} inputMode="numeric" />
       </Field>
@@ -170,6 +185,7 @@ function QualityStep({draft, update, error}: StepProps): ReactNode {
       <Field id="qualityMostlyTolerated" label={questionnaire.fields.qualityMostlyTolerated.label} hint={questionnaire.fields.qualityMostlyTolerated.hint}>
         <Toggle id="qualityMostlyTolerated" value={draft.qualityMostlyTolerated} onChange={(next) => update({qualityMostlyTolerated: next})} yes={questionnaire.yes} no={questionnaire.no} />
       </Field>
+      </> : null}
       <Field id="experience" label={questionnaire.fields.experience.label}>
         <Checkbox id="experience-threshold" checked={draft.experience.threshold} onChange={(next) => update({experience: {...draft.experience, threshold: next}})} label={questionnaire.fields.experienceThreshold.label} hint={questionnaire.fields.experienceThreshold.hint} />
         <Checkbox id="experience-vo2" checked={draft.experience.vo2} onChange={(next) => update({experience: {...draft.experience, vo2: next}})} label={questionnaire.fields.experienceVo2.label} hint={questionnaire.fields.experienceVo2.hint} />
@@ -179,14 +195,20 @@ function QualityStep({draft, update, error}: StepProps): ReactNode {
   );
 }
 
-function SafetyStep({draft, update, error}: StepProps): ReactNode {
+function SafetyStep({draft, update, error, onHealthy}: StepProps & {onHealthy: () => void}): ReactNode {
+  const [expanded, setExpanded] = useState(false);
   return (
-    <SafetyFields
+    <>
+      <p className="hint">{questionnaire.safetyQuick.explanation}</p>
+      <Button variant="secondary" onClick={onHealthy}>{questionnaire.safetyQuick.action}</Button>
+      <Button variant="ghost" onClick={() => setExpanded(open => !open)}>{questionnaire.safetyQuick.details}</Button>
+      {expanded ? <SafetyFields
       idPrefix="safety"
       safety={draft.safety}
       onChange={(next) => update({safety: next})}
       error={error('safety')}
-    />
+      /> : null}
+    </>
   );
 }
 
@@ -264,4 +286,24 @@ function RaceDateStep({draft, update, error}: StepProps): ReactNode {
       <TextInput id="raceDate" type="date" value={draft.raceDate} onChange={(value) => update({raceDate: value})} />
     </Field>
   );
+}
+
+function GoalPreview({draft, today}: {draft: QuestionnaireDraft; today: string}): ReactNode {
+  if (!parseTime(draft.targetTime).ok) return null;
+  const built = buildProfile(draft);
+  if (!built.ok) return null;
+  try {
+    const feasibility = previewGoalDecision(built.profile, today).feasibility;
+    if (feasibility === null) return null;
+    return (
+      <Notice tone="info" title={questionnaire.goalPreview.title}>
+        <p>{feasibilityText[feasibility].label}</p>
+        <p className="hint">{feasibilityText[feasibility].description}</p>
+        <p className="hint">{questionnaire.goalPreview.note}</p>
+      </Notice>
+    );
+  } catch {
+    // Incomplete/invalid combinations will be explained at Review by the official engine validator.
+    return null;
+  }
 }
