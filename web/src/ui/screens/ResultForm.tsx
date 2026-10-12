@@ -1,7 +1,8 @@
 import {useCallback, useRef, useState} from 'react';
 import type {ReactNode} from 'react';
-import {COMPLETION_PRESETS, buildWorkoutResult, defaultResultDraft, draftHasNoRepeats, draftHasPartialRepeats, repeatsAffectEvaluation, repeatsBlockExpandedFor} from '../../application/resultForm.ts';
-import type {CompletionPreset, ResultDraft, ResultProblem} from '../../application/resultForm.ts';
+import {COMPLETION_PRESETS, buildWorkoutResult, defaultResultDraft, draftHasNoRepeats, draftHasPartialRepeats, hasSafetyConcerns, repeatsAffectEvaluation, repeatsBlockExpandedFor} from '../../application/resultForm.ts';
+import type {CompletionPreset, ResultDraft, ResultProblem, SafetyResponse} from '../../application/resultForm.ts';
+import {healthySafety} from '../../application/questionnaire.ts';
 import {loadResultDraft, saveResultDraft} from '../../application/draft.ts';
 import {formatDateLong} from '../../application/format.ts';
 import type {KeyValueStorage} from '../../application/storage.ts';
@@ -37,6 +38,19 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
   // A second click can arrive before React re-renders with `saving`, so the guard is a ref.
   const inFlight = useRef(false);
   const [showConditions, setShowConditions] = useState(false);
+  const [confirmClearSymptoms, setConfirmClearSymptoms] = useState(false);
+  const [safetyError, setSafetyError] = useState<string | null>(null);
+
+  const chooseSafety = (response: 'NO_SYMPTOMS' | 'SYMPTOMS'): void => {
+    if (response === 'NO_SYMPTOMS' && hasSafetyConcerns(draft.safety)) {
+      setConfirmClearSymptoms(true);
+      return;
+    }
+    update(response === 'NO_SYMPTOMS'
+      ? {safetyResponse: response, safety: healthySafety()}
+      : {safetyResponse: response});
+    setSafetyError(null);
+  };
 
   const update = useCallback((patch: Partial<ResultDraft>) => {
     setDraft((previous) => {
@@ -62,6 +76,19 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
 
   const handleSubmit = (): void => {
     if (inFlight.current) return;
+    if (!draft.safetyResponse || draft.safetyResponse === 'UNANSWERED') {
+      setSafetyError(copy.resultSafety.required);
+      return;
+    }
+    if (draft.safetyResponse === 'NO_SYMPTOMS' && hasSafetyConcerns(draft.safety)) {
+      setSafetyError(copy.resultSafety.required);
+      return;
+    }
+    if (draft.safetyResponse === 'SYMPTOMS' && !hasSafetyConcerns(draft.safety) && !draft.unexpectedFatigue) {
+      setSafetyError(copy.resultSafety.specify);
+      return;
+    }
+    setSafetyError(null);
     const built = buildWorkoutResult(workout, draft);
     if (!built.ok) {
       setProblems(built.problems);
@@ -255,14 +282,52 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
         </Field>
       </Card>
 
-      <Card title="Состояние">
-        <SafetyFields idPrefix="result-safety" safety={draft.safety} onChange={(next) => update({safety: next})} />
+      <Card title={copy.resultSafety.title}>
+        <Field id="resultSafetyChoice" label={copy.resultSafety.question} hint={copy.resultSafety.explanation}>
+          <Choice<SafetyResponse>
+            id="resultSafetyChoice"
+            value={draft.safetyResponse ?? 'UNANSWERED'}
+            onChange={(response) => {
+              if (response !== 'UNANSWERED') chooseSafety(response);
+            }}
+            options={[
+              {value: 'NO_SYMPTOMS', label: copy.resultSafety.no},
+              {value: 'SYMPTOMS', label: copy.resultSafety.yes},
+            ]}
+          />
+        </Field>
+        {draft.safetyResponse === 'SYMPTOMS' || hasSafetyConcerns(draft.safety) ? (
+          <>
+            <p className="hint">{copy.resultSafety.details}</p>
+            <SafetyFields
+              idPrefix="result-safety" safety={draft.safety}
+              onChange={(next) => {update({safety: next, safetyResponse: 'SYMPTOMS'}); setSafetyError(null);}}
+            />
+          </>
+        ) : null}
+        {safetyError ? <p className="field__error" role="alert">{safetyError}</p> : null}
       </Card>
 
       <div className="actions">
         <Button onClick={handleSubmit} disabled={saving}>{saving ? copy.saving : copy.submit}</Button>
         <Button variant="ghost" onClick={onCancel}>{copy.cancel}</Button>
       </div>
+
+      {confirmClearSymptoms ? (
+        <div className="modal" role="dialog" aria-modal="true" aria-label={copy.resultSafety.confirmTitle}>
+          <Notice tone="warn" title={copy.resultSafety.confirmTitle}>
+            <p>{copy.resultSafety.confirmText}</p>
+            <div className="actions">
+              <Button onClick={() => {
+                update({safety: healthySafety(), safetyResponse: 'NO_SYMPTOMS'});
+                setSafetyError(null);
+                setConfirmClearSymptoms(false);
+              }}>{copy.resultSafety.confirmYes}</Button>
+              <Button variant="ghost" onClick={() => setConfirmClearSymptoms(false)}>{copy.resultSafety.confirmCancel}</Button>
+            </div>
+          </Notice>
+        </div>
+      ) : null}
 
       {warnOpen && pending !== null ? (
         <div className="modal" role="dialog" aria-modal="true" aria-label={copy.warning.title}>
