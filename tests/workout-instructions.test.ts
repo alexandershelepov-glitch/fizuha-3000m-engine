@@ -36,11 +36,6 @@ function planSummaryVolume(workout: Workout): string {
   return line.split(' · ')[1]!;
 }
 
-function shortTimeOf(seconds: number): string {
-  const rounded = Math.round(seconds);
-  return `${Math.floor(rounded / 60)}:${String(rounded % 60).padStart(2, '0')}`;
-}
-
 function ordered(type: WorkoutType): Workout {
   const fixture = type === 'EASY' || type === 'LONG_EASY' || type === 'STRIDES' || type === 'REST' ? volumeCycle() : qualityCycle();
   return prescribe(fixture.engineState, type, fixture.engineState.asOf, `test-${type}`);
