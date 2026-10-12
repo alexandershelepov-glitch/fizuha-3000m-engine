@@ -30,12 +30,23 @@ export interface ResultConditionsDraft {
   readonly notes: string;
 }
 
+/** A required, consciously chosen response in the UI. Older saved drafts have no response. */
+export type SafetyResponse = 'UNANSWERED' | 'NO_SYMPTOMS' | 'SYMPTOMS';
+
+/** Every engine safety flag must be considered, not just the pain scale. */
+export function hasSafetyConcerns(safety: SafetyData): boolean {
+  return safety.pain > 0 || safety.painIncreasing || safety.alteredMovement ||
+    safety.painWalkingOrRest || safety.swelling || safety.acuteIllness ||
+    safety.otherStop || safety.needsAssessment;
+}
+
 export interface ResultDraft {
   readonly completion: CompletionPreset;
   /** Percent, used only with the exact option. */
   readonly completionPercent: string;
   readonly sessionRpe: number;
   readonly safety: SafetyData;
+  readonly safetyResponse?: SafetyResponse;
   readonly durationMinutes: string;
   readonly distanceMeters: string;
   readonly repeats: readonly RepeatDraft[];
@@ -85,6 +96,7 @@ export function defaultResultDraft(workout: Workout): ResultDraft {
     completionPercent: '',
     sessionRpe: Math.round((workout.targetRpe[0] + workout.targetRpe[1]) / 2),
     safety: {pain: 0, painIncreasing: false, alteredMovement: false, painWalkingOrRest: false, swelling: false, acuteIllness: false, otherStop: false, needsAssessment: false},
+    safetyResponse: 'UNANSWERED',
     durationMinutes: String(plannedDuration(workout)),
     distanceMeters: '0',
     repeats: defaultRepeats(workout),
