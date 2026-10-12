@@ -20,7 +20,9 @@ async function reset(page: Page): Promise<void> {
 async function walkToGoal(page: Page): Promise<void> {
   await page.getByRole('button', {name: 'Начать подготовку'}).click();
   await page.getByLabel('Ваш результат').fill('15:20');
-  for (let step = 0; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить'}).click(); // VOLUME
+  await page.getByLabel(/Сколько недель подряд/).fill('8');
+  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить'}).click();
   await expect(page.getByText('Шаг 7 из 8')).toBeVisible();
 }
 
