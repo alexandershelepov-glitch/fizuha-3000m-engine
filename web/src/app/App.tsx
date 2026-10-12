@@ -30,6 +30,9 @@ import {deviceTimestamp} from '../application/format.ts';
 import {clearDraft} from '../application/draft.ts';
 import {createRepository} from '../application/storage.ts';
 import {resetActiveCycle} from '../application/resetCycle.ts';
+import {recheckSafety} from '../application/safetyRecheck.ts';
+import {SafetyRecheck} from '../ui/screens/SafetyRecheck.tsx';
+import type {SafetyData} from '../application/engineGateway.ts';
 import {isEngineErrorCode} from '../application/errorContract.ts';
 import type {UiError} from '../application/errorContract.ts';
 import type {KeyValueStorage} from '../application/storage.ts';
@@ -245,6 +248,20 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     return result;
   };
 
+  const handleSafetyRecheck = (safety: SafetyData, confirmed: boolean) => {
+    if (!repo || !store.appState || !store.engineState) {
+      return {ok: false as const, error: {code: 'STORAGE_UNAVAILABLE' as const, params: {}, retry: true, fromEngine: false}};
+    }
+    const outcome = recheckSafety({
+      repo, appState: store.appState, engineState: store.engineState,
+      safety, medicalReviewConfirmed: confirmed, deviceToday: store.today, at: deviceTimestamp(),
+    });
+    if (outcome.ok) store.replaceActiveState(outcome.done);
+    return outcome.ok
+      ? {ok: true as const, stillHold: outcome.done.engineState.decision.safety !== 'OK' || outcome.done.engineState.decision.phase === 'HOLD_DIAGNOSTIC'}
+      : {ok: false as const, error: outcome.error};
+  };
+
   const handleResetCycle = () => {
     if (!repo || !storage || !store.appState || !store.engineState) {
       return {ok: false as const, error: {code: 'STORAGE_UNAVAILABLE' as const, params: {}, retry: true, fromEngine: false}};
@@ -331,6 +348,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
       case 'PLAN_READY':
         return store.engineState === null ? null : (
           <PlanReady
+            onRecheck={() => {store.finishOnboarding(); goTo({name: 'SAFETY_RECHECK'});}}
             engineState={store.engineState}
             onContinue={() => {
               store.finishOnboarding();
@@ -355,6 +373,15 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
         return store.engineState === null ? null : (
           <Plan engineState={store.engineState} today={store.today} onNavigate={goTo} onRefreshPlan={handleRefreshPlan} refreshing={refreshing} />
         );
+      case 'SAFETY_RECHECK':
+        if (!store.engineState) return null;
+        if (store.engineState.finalResultRecorded) return renderSummary(store.appState!.cycle.cycleId);
+        return <SafetyRecheck
+          key={store.appState!.cycle.cycleId}
+          initial={store.engineState.profile.safety}
+          submit={handleSafetyRecheck}
+          onCancel={() => goTo({name: 'TODAY'})}
+        />;
       case 'PARAMETERS':
         if (!store.engineState) return null;
         if (store.engineState.finalResultRecorded) return renderSummary(store.appState!.cycle.cycleId);
@@ -372,7 +399,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
           <History appState={store.appState} engineState={store.engineState} onNavigate={goTo} archiveContent={renderArchives()} />
         );
       case 'PROFILE':
-        return store.appState === null || store.engineState === null ? null : <Profile appState={store.appState} engineState={store.engineState} onEdit={() => goTo({name: 'PARAMETERS'})} onReset={handleResetCycle} />;
+        return store.appState === null || store.engineState === null ? null : <Profile appState={store.appState} engineState={store.engineState} onEdit={() => goTo({name: 'PARAMETERS'})} onRecheck={() => goTo({name: 'SAFETY_RECHECK'})} onReset={handleResetCycle} />;
       case 'WORKOUT': {
         const workout = store.engineState?.queue.find((entry) => entry.id === effective.id) ?? null;
         // The application rule decides what the screen may offer; the screen only mirrors it.
