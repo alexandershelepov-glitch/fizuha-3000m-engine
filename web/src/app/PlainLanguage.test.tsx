@@ -33,7 +33,7 @@ async function reachStep(user: User, step: 'VOLUME' | 'QUALITY' | 'AVAILABILITY'
   await user.type(screen.getByLabelText(/Сколько километров обычно составляет ваша самая длинная пробежка/), '10');
   await click(user, 'Продолжить');                   // → QUALITY
   if (step === 'QUALITY') return;
-  await click(user, 'Знаю точное количество');
+  await user.click(screen.getByRole('radio', {name: 'Знаю точное количество'}));
   await user.type(screen.getByLabelText(/Сколько таких быстрых тренировок/), '4');
   await user.type(screen.getByLabelText(/В скольких из последних 8 недель/), '2');
   await click(user, 'Продолжить');                   // → SAFETY
@@ -69,7 +69,8 @@ describe('the volume step', () => {
 
 describe('the fast-training step', () => {
   test('defines what counts as a fast session before asking about it', async () => {
-    await reachStep(userEvent.setup(), 'QUALITY');
+    const user = userEvent.setup();
+    await reachStep(user, 'QUALITY');
 
     expect(screen.getByText('Быстрые тренировки')).toBeInTheDocument();
     expect(screen.getByText('Нам важно понять, выполняли ли вы специальные быстрые тренировки, а не просто обычные пробежки.')).toBeInTheDocument();
