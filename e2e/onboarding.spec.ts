@@ -225,7 +225,7 @@ test('a browser that denies storage is reported instead of silently using memory
   });
   await page.goto('/');
 
-  await expect(page.getByText('Цикл нельзя надёжно сохранить')).toBeVisible();
+  await expect(page.getByText('Не удалось получить доступ к данным')).toBeVisible();
   // No working screen is offered, so a cycle that would not survive a reload cannot be started.
   await expect(page.getByRole('button', {name: 'Начать подготовку'})).toHaveCount(0);
   expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBeNull();
