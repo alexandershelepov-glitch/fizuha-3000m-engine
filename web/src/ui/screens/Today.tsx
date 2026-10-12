@@ -40,6 +40,7 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
           <p>{safetyStatusText[decision.safety]}</p>
           <p>{todayText.hold.text}</p>
           <p className="hint">{todayText.hold.note}</p>
+          <Button onClick={() => onNavigate({name: 'SAFETY_RECHECK'})}>{todayText.hold.recheck}</Button>
         </Notice>
       ) : null}
 
