@@ -2,7 +2,7 @@ name: PWA regression checks
 
 on:
   push:
-    branches: [main, pwa/reset-storage-safety]
+    branches: [main]
   pull_request:
 
 jobs:
