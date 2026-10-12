@@ -1,0 +1,95 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  SCENARIOS, SIM_START, healthySafety, makeProfile, makeResult, simulateAll, simulateScenario,
+} from '../audit/trainingSimulator.ts';
+import {createEngine, recordResult, serialize} from '../src/index.ts';
+
+test('SIM-01 nine fixed scenarios with four fitness levels run 8–12 weeks to the final race', () => {
+  assert.equal(SCENARIOS.length, 9);
+  assert.equal(new Set(SCENARIOS.map(x=>x.athlete)).size, 4);
+  for(const spec of SCENARIOS){
+    assert.ok(spec.weeks>=8&&spec.weeks<=12);
+    const run=simulateScenario(spec);
+    assert.equal(run.lastState.finalResultRecorded, true, spec.id);
+    assert.deepEqual(run.lastState.queue, [], spec.id);
+    assert.equal(run.weeks.length, spec.weeks);
+    assert.equal(run.finalRaceSeconds, run.baselineSeconds, spec.id);
+    assert.ok(run.events.some(x=>x.action==='EXTERNAL_FINAL_RACE_UNCHANGED'),spec.id);
+    assert.equal(run.lastState.profile.targetTimeSeconds,run.targetSeconds,spec.id);
+  }
+});
+test('SIM-02 determinism: matching input reproduces the entire trace byte for byte', ()=>{
+  const s=SCENARIOS[1]!;
+  const a=simulateScenario(s),b=simulateScenario(s);
+  assert.deepEqual(a.events,b.events);
+  assert.deepEqual(a.findings,b.findings);
+  assert.equal(serialize(a.lastState),serialize(b.lastState));
+});
+test('SIM-03 audit cannot mutate the athlete profile or prior state', ()=>{
+  const s=SCENARIOS[0]!;
+  const profile=makeProfile(s);
+  const original=JSON.stringify(profile);
+  const state=createEngine(profile,SIM_START);
+  const snap=serialize(state);
+  simulateScenario(s);
+  assert.equal(JSON.stringify(profile),original);
+  assert.equal(serialize(state),snap);
+});
+test('SIM-04 no hypothetical faster checkpoint or final result is silently inferred', ()=>{
+  const runs=simulateAll();
+  for(const r of runs){
+    const values=r.events.filter(x=>x.action.includes('CHECKPOINT'));
+    for(const e of values)assert.match(e.comment,/unchanged|baseline|equal/i);
+    assert.equal(r.lastState.profile.performance?.timeSeconds,r.baselineSeconds);
+    assert.equal(r.finalRaceSeconds,r.baselineSeconds);
+  }
+});
+test('SIM-05 direct engine grades are recorded; future training is decided by engine', ()=>{
+  const s=SCENARIOS[1]!;
+  const p=makeProfile(s);
+  let engine=createEngine(p,SIM_START);
+  const first=engine.queue[0]!;
+  assert.ok(first);
+  const measured=makeResult(first,'GREEN');
+  const before=serialize(engine);
+  engine=recordResult(engine,first.id,measured);
+  assert.equal(engine.history.at(-1)?.classified.evaluation,'GREEN');
+  assert.equal(serialize(createEngine(p,SIM_START)),before);
+  assert.equal(measured.safety.pain,0);
+});
+test('SIM-06 absent employee gets a declared break, not fabricated successful runs', ()=>{
+  const r=simulateScenario(SCENARIOS.find(x=>x.behaviour==='WORK_BREAK')!);
+  const absent=r.events.filter(x=>x.action==='ABSENT_WORK_BREAK');
+  assert.equal(absent.length,14);
+  const breakReport=r.events.find(x=>x.action==='EXTERNAL_WORK_BREAK');
+  assert.ok(breakReport);
+  for(const entry of absent)assert.equal(entry.evaluation,null);
+  assert.equal(r.lastState.profile.breaks.length,1);
+});
+test('SIM-07 RED and later external clearance are distinguishable events', ()=>{
+  const r=simulateScenario(SCENARIOS.find(x=>x.behaviour==='RED_AND_REVIEW')!);
+  const red=r.events.find(x=>x.evaluation==='RED');
+  const clearance=r.events.find(x=>x.action==='EXTERNAL_MEDICAL_REVIEW');
+  assert.ok(red,'scenario must inject an actual RED feedback');
+  assert.ok(clearance,'clearance must be explicit, never automatic');
+  assert.ok(clearance.day>red.day);
+  assert.ok(r.events.some(x=>x.action==='REST_DAY' && x.day>red.day && x.day<clearance.day));
+});
+test('SIM-08 acceptance of 0 total metres with nonzero repeats is recorded as a data-quality risk', ()=>{
+  const r=simulateScenario(SCENARIOS.find(x=>x.behaviour==='CONTRADICTORY_REPORT')!);
+  assert.ok(r.findings.some(f=>f.code==='INCONSISTENT_REPORT_ACCEPTED'), 'audit should expose incoherent inputs');
+  assert.ok(r.events.some(e=>e.action==='WORKOUT_RESULT' && e.reportedMeters===0));
+});
+test('SIM-09 healthy safety payload is explicit and complete', ()=>{
+  const h=healthySafety();
+  assert.equal(Object.keys(h).length,8);
+  assert.ok(Object.values(h).every(value=>value===false||value===0));
+});
+test('SIM-10 skipped workouts are not counted as completed history', ()=>{
+  const r=simulateScenario(SCENARIOS.find(x=>x.behaviour==='SKIP_EVERY_THIRD')!);
+  const skipped=r.events.filter(x=>x.action==='SKIPPED');
+  assert.ok(skipped.length>0);
+  for(const x of skipped)assert.ok(r.lastState.skippedIds.includes(x.workoutId!));
+  for(const x of skipped)assert.ok(!r.lastState.history.some(y=>y.workout.id===x.workoutId));
+});
