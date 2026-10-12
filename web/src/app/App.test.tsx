@@ -149,9 +149,9 @@ describe('questionnaire', () => {
     render(<App storage={memoryStorage()} />);
 
     expect(screen.getByText('Состояние')).toBeInTheDocument();
-    expect(screen.getByText(/Оно учитывает то, что вы сообщили/)).toBeInTheDocument();
-    expect(screen.getByLabelText('Есть признаки острого заболевания (температура, сильное недомогание)')).toBeInTheDocument();
-    expect(screen.getByLabelText('Насколько сильна боль')).toBeInTheDocument();
+    expect(screen.getByText(/Ответы влияют на то, какие тренировки можно назначать/)).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: /Есть жалобы или сомнения/})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: /Жалоб и ограничений нет/})).toBeInTheDocument();
   });
 });
 
@@ -238,7 +238,7 @@ describe('assessment and plan', () => {
     await click(user, 'Посмотреть план');
     expect(path()).toBe('/plan-ready');
     expect(screen.getByText('Ваш план готов')).toBeInTheDocument();
-    expect(screen.getByText(/Показаны тренировки, которые уже построены/)).toBeInTheDocument();
+    expect(screen.getByText(/Это ближайшие назначения/)).toBeInTheDocument();
   });
 
   test('the ready plan leads to Today, which shows the real engine queue', async () => {
@@ -399,7 +399,7 @@ const EXPERIENCED: Partial<QuestionnaireDraft> = {
 };
 
 function seedCycle(today: string, createdOn: string, overrides: Partial<QuestionnaireDraft> = {}): string {
-  const filled = {...defaultDraft(today), resultTime: '15:20', resultDate: addDays(createdOn, -10), targetTime: '14:30', raceDate: addDays(today, 56), ...overrides};
+  const filled = {...defaultDraft(today), regularRunningWeeks: '8', resultTime: '15:20', resultDate: addDays(createdOn, -10), targetTime: '14:30', raceDate: addDays(today, 56), ...overrides};
   const built = buildProfile(filled);
   if (!built.ok) throw new Error('fixture: the draft must build');
   const seed = memoryStorage();
