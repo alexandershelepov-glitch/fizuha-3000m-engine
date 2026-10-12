@@ -6,7 +6,7 @@ import {formatDateShort} from '../application/format.ts';
 import type {DoseUnit, SafetyData, Workout, WorkoutMainMode, WorkoutType} from '../application/engineGateway.ts';
 import {doseUnitText, mainModeText, workoutGoalText, workoutTypeText} from './copy/values.ts';
 import {durationText, today as todayText} from './copy/text.ts';
-import {intervalStructure, workoutIntervals, paceRangeText as formatPrescribedPace, prescribedPace, treadmillSpeedText} from './workoutInstructions.ts';
+import {compactDuration, intervalStructure, workoutIntervals, paceRangeText as formatPrescribedPace, prescribedPace, treadmillSpeedText} from './workoutInstructions.ts';
 
 export function workoutTitle(workout: Workout): string {
   return workoutTypeText[workout.type].label;
@@ -60,7 +60,7 @@ export function workoutRpe(workout: Workout): string {
 
 export function workoutRest(workout: Workout): string | null {
   if (workout.main.mode !== 'INTERVALS' || workout.restSeconds <= 0) return null;
-  return `отдых ${durationText(workout.restSeconds)} между отрезками`;
+  return `отдых ${compactDuration(workout.restSeconds)} между отрезками`;
 }
 
 export function workoutDate(workout: Workout): string {
