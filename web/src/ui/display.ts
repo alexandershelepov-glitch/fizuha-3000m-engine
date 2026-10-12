@@ -59,7 +59,7 @@ export function workoutRpe(workout: Workout): string {
 }
 
 export function workoutRest(workout: Workout): string | null {
-  if (workout.main.mode !== 'INTERVALS' || workout.restSeconds <= 0) return null;
+  if (workout.main.mode !== 'INTERVALS' || workout.main.repeats <= 1 || workout.restSeconds <= 0) return null;
   return `отдых ${compactDuration(workout.restSeconds)} между отрезками`;
 }
 
