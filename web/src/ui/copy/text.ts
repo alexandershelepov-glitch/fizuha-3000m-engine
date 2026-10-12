@@ -550,15 +550,22 @@ export const instruction = {
   repeatsOfDistanceWithFinal: (repeats: number, standardMeters: string, finalMeters: string): string =>
     `Выполни ${counts.repeats(repeats)}: первые ${repeats - 1} — по ${standardMeters}, последний — ${finalMeters}.`,
   singleDistance: (meters: string): string => `Пробеги ${meters}.`,
-  repeatsOfDuration: (repeats: number, duration: string): string => `Выполни ${counts.repeats(repeats)} по ${duration}.`,
+  repeatsOfDuration: (repeats: number, duration: string, exact: boolean): string =>
+    `Выполни ${counts.repeats(repeats)}. Каждый отрезок длится ${exact ? '' : 'примерно '}${duration}.`,
   intervalTargetOne: (range: string): string => `Каждый отрезок старайся пробежать за ${range}.`,
   intervalTargetPace: (pace: string): string => `Каждый отрезок — в темпе ${pace}.`,
   intervalTargetSplit: (meters: string, range: string): string => `${meters} — за ${range}.`,
   intervalTargetFinal: (finalMeters: string, range: string): string => `Последний ${finalMeters} — за ${range}.`,
   repeatsTotal: (repeats: number, what: string): string => `Выполни ${counts.repeats(repeats)}. Всего — ${what}.`,
   continuousByEffort: (what: string): string => `Беги ${what} быстрее спокойного бега — ровно и под контролем.`,
-  restAfterRepeat: (seconds: number): string => `После каждого отрезка отдыхай ${counts.seconds(seconds)}.`,
-  restHow: 'Конкретный способ отдыха план не задаёт.',
+  restAfterRepeat: (seconds: number): string => `Отдых между отрезками — ${durationText(seconds)}.`,
+  restBetweenRepeats: (duration: string): string => `Отдых между отрезками — ${duration}. После последнего отрезка отдых не нужен.`,
+  targetPace: (pace: string): string => `Целевой темп: ${pace}.`,
+  treadmillSpeed: (speed: string): string => `На беговой дорожке: ${speed}.`,
+  unpacedIntervals: 'Числовой темп не назначен: ориентируйся на усилие, указанное ниже.',
+  timeIntervalsNoDistance: 'Дистанция не назначена: эти отрезки выполняются по времени.',
+  timeIntervalsEstimatedDistance: (distance: string): string =>
+    `Расчётный ориентир одного отрезка: ${distance}. Это не обязательная дистанция — следуй времени и темпу.`,
   stridesNote: 'Ускорения не должны быть тяжёлыми: это работа над техникой, а не на результат.',
   // continuous
   continuousMinutes: (minutes: number, pace: string): string => `Беги ${counts.minutes(minutes)} в темпе ${pace}.`,
