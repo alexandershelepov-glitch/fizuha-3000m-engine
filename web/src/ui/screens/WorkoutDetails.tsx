@@ -3,9 +3,9 @@ import type {ReactNode} from 'react';
 import {formatDateLong} from '../../application/format.ts';
 import type {ActionAvailability} from '../../application/invariants.ts';
 import type {Workout} from '../../application/engineGateway.ts';
-import {anchorText, doseUnitText, effortCueText, mainModeText, workoutGoalText, workoutTypeText} from '../copy/values.ts';
+import {anchorText, effortCueText, mainModeText, workoutGoalText, workoutTypeText} from '../copy/values.ts';
 import {common, instruction as instructionText, today as todayText} from '../copy/text.ts';
-import {workoutIntervalsText, workoutPaceRange, workoutRest} from '../display.ts';
+import {workoutIntervalsText, workoutMainDose, workoutPaceRange, workoutRest, workoutSpeedRange} from '../display.ts';
 import {workoutInstruction} from '../workoutInstructions.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, EmptyState, KeyValue, Notice} from '../components/Layout.tsx';
@@ -60,6 +60,7 @@ export function WorkoutDetails({workout, resultAvailability, moveAvailability, o
   }
 
   const pace = workoutPaceRange(workout);
+  const speed = workoutSpeedRange(workout);
   const rest = workoutRest(workout);
   const plan = workoutInstruction(workout);
 
@@ -114,12 +115,18 @@ export function WorkoutDetails({workout, resultAvailability, moveAvailability, o
       {/* Everything the engine prescribed, exactly as it was ordered. */}
       <Card title={instructionText.technicalTitle}>
         <KeyValue label={todayText.workout.task} value={workoutGoalText[workout.goal]} />
-        <KeyValue label={todayText.workout.volume} value={`${Math.round(workout.main.dose.value)} ${doseUnitText[workout.main.dose.unit]}`} />
+        <KeyValue label={todayText.workout.volume} value={workoutMainDose(workout)} />
         <KeyValue label={todayText.workout.mode} value={mainModeText[workout.main.mode]} />
         {/* The same structure the instruction above uses: never a second reading of the workout. */}
         {workoutIntervalsText(workout) === null ? null : <KeyValue label={todayText.workout.intervals} value={workoutIntervalsText(workout)!} />}
         {rest ? <KeyValue label={todayText.workout.rest} value={rest.replace('отдых ', '')} /> : null}
         {pace ? <KeyValue label={todayText.workout.pace} value={pace} /> : null}
+        {speed ? <KeyValue label={instructionText.treadmillSpeedLabel} value={speed} /> : null}
+        {workout.main.mode === 'INTERVALS' && workout.main.dose.unit === 'MINUTES' ? (
+          <KeyValue label={instructionText.distanceLabel} value={plan.estimatedDistanceText === null
+            ? instructionText.distanceNotAssigned
+            : `${plan.estimatedDistanceText} (${instructionText.distanceEstimateDisclaimer})`} />
+        ) : null}
         {plan.effortScale === '' ? null : <KeyValue label={todayText.workout.rpe} value={plan.effortScale.replace('Усилие: ', '')} />}
         {workout.warmupMinutes > 0 ? <KeyValue label={todayText.workout.warmup} value={`${workout.warmupMinutes} мин`} /> : null}
         {workout.cooldownMinutes > 0 ? <KeyValue label={todayText.workout.cooldown} value={`${workout.cooldownMinutes} мин`} /> : null}
