@@ -392,6 +392,7 @@ describe('navigation', () => {
 /** A stored cycle, created on a chosen day. */
 /** The questionnaire answers that make the engine start with a paced session. */
 const EXPERIENCED: Partial<QuestionnaireDraft> = {
+  qualityRecall: 'EXACT',
   qualitySessions8Weeks: '8',
   qualityWeeks8Weeks: '6',
   experience: {threshold: true, vo2: true, specific3k: true},
