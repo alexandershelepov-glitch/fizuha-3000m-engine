@@ -662,6 +662,7 @@ export const historyItems = {
   WORKOUT_MOVED: 'Тренировка перенесена',
   CHECKPOINT_RECORDED: 'Контрольный результат',
   TRAINING_PARAMETERS_CHANGED: 'Параметры подготовки изменены',
+  SAFETY_REASSESSED: 'Состояние повторно проверено',
   FINAL_RESULT_RECORDED: 'Итоговый результат',
   moved: (from: string, to: string): string => `${from} → ${to}`,
   performance: (from: string | null, to: string): string => (from === null ? to : `${from} → ${to}`),
