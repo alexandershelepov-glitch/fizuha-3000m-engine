@@ -12,10 +12,11 @@ import type {UiError} from '../../application/errorContract.ts';
 
 type ResetOutcome = {ok: true} | {ok: false; error: UiError};
 
-export function Profile({appState, engineState, onEdit, onReset}: {
+export function Profile({appState, engineState, onEdit, onRecheck, onReset}: {
   appState: AppStateV1;
   engineState: EngineState;
   onEdit?: () => void;
+  onRecheck?: () => void;
   onReset?: () => ResetOutcome;
 }): ReactNode {
   const [confirmReset, setConfirmReset] = useState(false);
@@ -49,6 +50,7 @@ export function Profile({appState, engineState, onEdit, onReset}: {
       </Card>
 
       {!engineState.finalResultRecorded && onEdit ? <Button onClick={onEdit}>{lifecycle.edit}</Button> : null}
+      {!engineState.finalResultRecorded && onRecheck ? <Button variant="secondary" onClick={onRecheck}>{lifecycle.recheckSafety}</Button> : null}
 
       <Card title={profileText.cycle}>
         <KeyValue label={profileText.cycleStart} value={formatDateLong(appState.cycle.createdAt.slice(0, 10))} />
