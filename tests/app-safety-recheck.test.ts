@@ -4,7 +4,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {recheckSafety} from '../web/src/application/safetyRecheck.ts';
-import {previewGoalDecision} from '../web/src/application/engineGateway.ts';
+import {previewGoalDecision, createEngineState} from '../web/src/application/engineGateway.ts';
 import {loadActiveCycle} from '../web/src/application/storage.ts';
 import {buildProfile, healthySafety, defaultDraft} from '../web/src/application/questionnaire.ts';
 import {appCycle} from './helpers-app.ts';
@@ -61,7 +61,6 @@ test('RECOVERY-05 goal preview is exactly the engine verdict, never a second for
   const built = buildProfile(draft);
   assert.equal(built.ok, true);
   if (!built.ok) return;
-  const c = appCycle();
   const preview = previewGoalDecision(built.profile, NOW);
-  assert.equal(preview.feasibility, c.engineState.decision.feasibility);
+  assert.equal(preview.feasibility, createEngineState(built.profile, NOW).decision.feasibility);
 });
