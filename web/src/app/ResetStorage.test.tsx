@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import {App} from './App.tsx';
 import {useCycleStore} from './useCycleStore.ts';
 import {renderHook} from '@testing-library/react';
-import {createRepository, ACTIVE_CYCLE_KEY} from '../application/storage.ts';
+import {createRepository, ACTIVE_CYCLE_KEY, QUESTIONNAIRE_DRAFT_KEY} from '../application/storage.ts';
 import type {KeyValueStorage} from '../application/storage.ts';
 import {ARCHIVED_CYCLES_KEY} from '../application/archiveStorage.ts';
 import {appCycle} from '../../../tests/helpers-app.ts';
@@ -18,6 +18,7 @@ describe('restart from Profile', () => {
     const fixture = appCycle();
     const archive = JSON.stringify({formatVersion: 1, cycles: []});
     fixture.storage.setItem(ARCHIVED_CYCLES_KEY, archive);
+    fixture.storage.setItem(QUESTIONNAIRE_DRAFT_KEY, JSON.stringify({resultTime: '18:20'}));
     window.history.replaceState(null, '', '/profile');
     render(<App storage={fixture.storage} />);
 
@@ -33,6 +34,8 @@ describe('restart from Profile', () => {
     expect(fixture.storage.getItem(ARCHIVED_CYCLES_KEY)).toBe(archive);
     expect(window.location.pathname).toBe('/');
     expect(screen.getByRole('button', {name: 'Начать подготовку'})).toBeInTheDocument();
+    await user.click(screen.getByRole('button', {name: 'Начать подготовку'}));
+    expect(screen.getByLabelText('Ваш результат')).toHaveValue('');
   });
 
   test('a stale tab gets an error and never deletes a changed plan', async () => {
