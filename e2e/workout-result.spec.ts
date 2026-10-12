@@ -31,7 +31,7 @@ test('a full session is closed, reported and persisted', async ({page}) => {
   expect(after.queue.length).toBeGreaterThan(0);
 
   // Back to Today: the closed session is gone, and the plan screen shows the new queue.
-  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await expect(page).toHaveURL(/\/today$/);
   await expect(page.getByRole('button', {name: 'Внести результат'})).toHaveCount(0);
 
@@ -76,7 +76,7 @@ test('a safety flag stops the usual load and the screen differs', async ({page})
   await expect(page).toHaveURL(/\/outcome$/);
   await expect(page.getByText('Текущую нагрузку нужно снизить')).toBeVisible();
 
-  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await expect(page.getByText('Обычные тренировки приостановлены')).toBeVisible();
 });
 
@@ -118,7 +118,7 @@ test('the same flow closes an overdue session from the pending state', async ({p
   if (await send.isVisible().catch(() => false)) await send.click();
 
   await expect(page).toHaveURL(/\/outcome$/);
-  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await expect(page).toHaveURL(/\/today$/);
 
   const state = await readEngineState(page);
