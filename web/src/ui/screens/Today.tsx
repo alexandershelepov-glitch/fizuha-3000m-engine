@@ -4,7 +4,7 @@ import type {EngineState, Workout} from '../../application/engineGateway.ts';
 import {deriveToday} from '../../application/uiState.ts';
 import {phaseText, safetyStatusText} from '../copy/values.ts';
 import {common, skip as skipText, today as todayText, lifecycle} from '../copy/text.ts';
-import {workoutPaceRange, workoutTitle, workoutVolume} from '../display.ts';
+import {workoutPaceRange, workoutSpeedRange, workoutTitle, workoutVolume} from '../display.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, KeyValue, Notice} from '../components/Layout.tsx';
 import type {Route} from '../../app/routes.ts';
@@ -134,10 +134,12 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
 
 function WorkoutCard({workout, onOpen, onEnterResult}: {workout: Workout; onOpen: () => void; onEnterResult: () => void}): ReactNode {
   const pace = workoutPaceRange(workout);
+  const speed = workoutSpeedRange(workout);
   return (
     <Card title={workoutTitle(workout)}>
       <KeyValue label={todayText.workout.volume} value={workoutVolume(workout)} />
       {pace ? <KeyValue label={todayText.workout.pace} value={pace} /> : null}
+      {speed ? <KeyValue label={todayText.workout.treadmillSpeed} value={speed} /> : null}
       <Button onClick={onOpen}>{todayText.workout.open}</Button>
       <Button variant="secondary" onClick={onEnterResult}>{todayText.workout.enterResult}</Button>
     </Card>
