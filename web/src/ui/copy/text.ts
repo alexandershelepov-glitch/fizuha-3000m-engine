@@ -560,7 +560,7 @@ export const instruction = {
   repeatsTotal: (repeats: number, what: string): string => `Выполни ${counts.repeats(repeats)}. Всего — ${what}.`,
   continuousByEffort: (what: string): string => `Беги ${what} быстрее спокойного бега — ровно и под контролем.`,
   restAfterRepeat: (seconds: number): string => `Отдых между отрезками — ${durationText(seconds)}.`,
-  restBetweenRepeats: (duration: string): string => `Отдых между отрезками — ${duration}. После последнего отрезка отдых не нужен.`,
+  restBetweenRepeats: (duration: string): string => `Между отрезками отдыхай ${duration}. После последнего отрезка отдых не нужен.`,
   targetPace: (pace: string): string => `Целевой темп: ${pace}.`,
   treadmillSpeed: (speed: string): string => `На беговой дорожке: ${speed}.`,
   unpacedIntervals: 'Числовой темп не назначен: ориентируйся на усилие, указанное ниже.',
