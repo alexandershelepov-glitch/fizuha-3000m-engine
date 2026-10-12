@@ -20,7 +20,7 @@ function memoryStorage(): KeyValueStorage & {map: Map<string, string>} {
 }
 
 function createdCycle(storage: KeyValueStorage, today: string) {
-  const filled = {...defaultDraft(today), resultTime: '15:20', targetTime: '14:30', raceDate: addDays(today, 56)};
+  const filled = {...defaultDraft(today), regularRunningWeeks: '8', resultTime: '15:20', targetTime: '14:30', raceDate: addDays(today, 56)};
   const built = buildProfile(filled);
   if (!built.ok) throw new Error('fixture: the draft must build');
   const created = createCycle(createRepository(storage), {
