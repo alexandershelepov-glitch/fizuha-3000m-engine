@@ -598,6 +598,7 @@ describe('closing a workout', () => {
     await openResultForm(user);
 
     expect(screen.getByText('Результат тренировки')).toBeInTheDocument();
+    await user.click(screen.getByRole('radio', {name: 'Нет, всё нормально'}));
     await click(user, 'Сохранить результат');
 
     // The outcome comes from the engine's own evaluation.
@@ -622,6 +623,7 @@ describe('closing a workout', () => {
     const before = storage.map.get(ACTIVE_CYCLE_KEY);
 
     await user.clear(screen.getByLabelText('Длительность, мин'));
+    await user.click(screen.getByRole('radio', {name: 'Нет, всё нормально'}));
     await click(user, 'Сохранить результат');
 
     expect(screen.getByRole('alert')).toHaveTextContent('Заполните это поле');
@@ -641,6 +643,7 @@ describe('closing a workout', () => {
     expect(screen.getAllByLabelText('Время').length).toBeGreaterThan(0);
     expect(screen.getAllByLabelText('Дистанция, м').length).toBeGreaterThan(0);
 
+    await user.click(screen.getByRole('radio', {name: 'Нет, всё нормально'}));
     await click(user, 'Сохранить результат');
     expect(screen.getByText('Результаты отрезков не заполнены')).toBeInTheDocument();
     expect(screen.getByText(/менее точной/)).toBeInTheDocument();
@@ -650,6 +653,7 @@ describe('closing a workout', () => {
     // Going back keeps the form; sending as is reaches the engine.
     await click(user, 'Вернуться и заполнить');
     expect(path()).toMatch(/\/result$/);
+    await user.click(screen.getByRole('radio', {name: 'Нет, всё нормально'}));
     await click(user, 'Сохранить результат');
     await click(user, 'Отправить как есть');
     expect(path()).toMatch(/\/outcome$/);
@@ -662,6 +666,7 @@ describe('closing a workout', () => {
     render(<App storage={storage} />);
     await openResultForm(user);
 
+    await user.click(screen.getByRole('radio', {name: 'Да, появились'}));
     const group = screen.getByRole('group', {name: 'Из-за боли меняется техника движения'});
     await user.click(within(group).getByRole('button', {name: 'Да'}));
     await click(user, 'Сохранить результат');
@@ -684,6 +689,7 @@ describe('closing a workout', () => {
     await click(user, 'Внести результат');
     expect(path()).toMatch(/\/result$/);
 
+    await user.click(screen.getByRole('radio', {name: 'Нет, всё нормально'}));
     await click(user, 'Сохранить результат');
     expect(path()).toMatch(/\/outcome$/);
     await click(user, 'Продолжить');
@@ -705,6 +711,7 @@ describe('closing a workout', () => {
     render(<App storage={storage} />);
     await openResultForm(user);
 
+    await user.click(screen.getByRole('radio', {name: 'Нет, всё нормально'}));
     const button = screen.getByRole('button', {name: 'Сохранить результат'});
     act(() => {
       fireEvent.click(button);
@@ -729,6 +736,7 @@ describe('closing a workout', () => {
     if (stored.kind !== 'READY') throw new Error('fixture');
     const workoutId = stored.engineState.queue.find((workout) => workout.scheduledDate === deviceToday())!.id;
 
+    await user.click(screen.getByRole('radio', {name: 'Нет, всё нормально'}));
     await click(user, 'Сохранить результат');
     await click(user, 'Продолжить');
     first.unmount();
@@ -747,6 +755,7 @@ describe('closing a workout', () => {
     if (stored.kind !== 'READY') throw new Error('fixture');
     const workoutId = stored.engineState.queue.find((workout) => workout.scheduledDate === deviceToday())!.id;
 
+    await user.click(screen.getByRole('radio', {name: 'Нет, всё нормально'}));
     await click(user, 'Сохранить результат');
     first.unmount();
 
@@ -770,6 +779,7 @@ describe('closing a workout', () => {
     if (before.kind !== 'READY') throw new Error('fixture');
     const beforeQueue = before.engineState.queue.map((workout) => workout.id);
 
+    await user.click(screen.getByRole('radio', {name: 'Нет, всё нормально'}));
     await click(user, 'Сохранить результат');
     await click(user, 'Посмотреть план');
 
