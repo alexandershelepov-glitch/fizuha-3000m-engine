@@ -15,7 +15,9 @@ export async function reset(page: Page): Promise<void> {
 export async function walkToGoal(page: Page): Promise<void> {
   await page.getByRole('button', {name: 'Начать подготовку'}).click();
   await page.getByLabel('Ваш результат').fill('15:20');
-  for (let step = 0; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить'}).click(); // VOLUME
+  await page.getByLabel(/Сколько недель подряд/).fill('8');
+  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить'}).click();
   await expect(page.getByText('Шаг 7 из 8')).toBeVisible();
 }
 
@@ -32,7 +34,10 @@ export async function fillQuestionnaireExperienced(page: Page): Promise<void> {
   // The result step first: the draft is persisted, so it survives moving between steps by URL.
   await page.goto('/questionnaire?step=RESULT');
   await page.getByLabel('Ваш результат').fill('15:20');
+  await page.goto('/questionnaire?step=VOLUME');
+  await page.getByLabel(/Сколько недель подряд/).fill('20');
   await page.goto('/questionnaire?step=QUALITY');
+  await page.getByRole('radio', {name: 'Знаю точное количество'}).click();
   // The labels now carry their own explanation, so they are matched by their leading words.
   await page.getByLabel(/Сколько таких быстрых тренировок/).fill('8');
   await page.getByLabel(/В скольких из последних 8 недель/).fill('6');
@@ -80,7 +85,9 @@ export async function readEngineState(page: Page): Promise<{history: unknown[]; 
 export async function fillQuestionnaireWithoutResult(page: Page): Promise<void> {
   await page.goto('/questionnaire?step=RESULT');
   await page.getByRole('button', {name: 'Нет результата'}).click();
-  for (let step = 0; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить'}).click(); // VOLUME
+  await page.getByLabel(/Сколько недель подряд/).fill('8');
+  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить'}).click();
   await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
   await page.getByRole('button', {name: 'Продолжить'}).click();
   await page.getByRole('button', {name: 'Продолжить'}).click();
