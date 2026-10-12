@@ -15,17 +15,17 @@ export async function reset(page: Page): Promise<void> {
 export async function walkToGoal(page: Page): Promise<void> {
   await page.getByRole('button', {name: 'Начать подготовку'}).click();
   await page.getByLabel('Ваш результат').fill('15:20');
-  await page.getByRole('button', {name: 'Продолжить'}).click(); // VOLUME
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // VOLUME
   await page.getByLabel(/Сколько недель подряд/).fill('8');
-  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить'}).click();
+  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await expect(page.getByText('Шаг 7 из 8')).toBeVisible();
 }
 
 export async function fillQuestionnaire(page: Page): Promise<void> {
   await walkToGoal(page);
   await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
-  await page.getByRole('button', {name: 'Продолжить'}).click();
-  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await expect(page.getByText('Проверьте данные')).toBeVisible();
 }
 
@@ -43,14 +43,14 @@ export async function fillQuestionnaireExperienced(page: Page): Promise<void> {
   await page.getByLabel(/В скольких из последних 8 недель/).fill('6');
   await page.getByLabel(/Темповый бег/).check();
   await page.getByLabel(/^Интервалы/).check();
-  await page.getByRole('button', {name: 'Продолжить'}).click();   // SAFETY
-  await page.getByRole('button', {name: 'Продолжить'}).click();   // BREAKS
-  await page.getByRole('button', {name: 'Продолжить'}).click();   // AVAILABILITY
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();   // SAFETY
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();   // BREAKS
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();   // AVAILABILITY
   await page.getByLabel('Сколько тренировок в неделю вы можете выполнять').fill('4');
-  await page.getByRole('button', {name: 'Продолжить'}).click();   // GOAL
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();   // GOAL
   await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
-  await page.getByRole('button', {name: 'Продолжить'}).click();   // RACE_DATE
-  await page.getByRole('button', {name: 'Продолжить'}).click();   // REVIEW
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();   // RACE_DATE
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();   // REVIEW
   await expect(page.getByText('Проверьте данные')).toBeVisible();
 }
 
@@ -85,11 +85,11 @@ export async function readEngineState(page: Page): Promise<{history: unknown[]; 
 export async function fillQuestionnaireWithoutResult(page: Page): Promise<void> {
   await page.goto('/questionnaire?step=RESULT');
   await page.getByRole('button', {name: 'Нет результата'}).click();
-  await page.getByRole('button', {name: 'Продолжить'}).click(); // VOLUME
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // VOLUME
   await page.getByLabel(/Сколько недель подряд/).fill('8');
-  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить'}).click();
+  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
-  await page.getByRole('button', {name: 'Продолжить'}).click();
-  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await expect(page.getByText('Проверьте данные')).toBeVisible();
 }
