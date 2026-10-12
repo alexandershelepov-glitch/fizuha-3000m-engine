@@ -21,6 +21,8 @@ export interface BreakEntryDraft {
   readonly endDate: string;
 }
 
+export type QualityRecall = 'NONE' | 'SOMETIMES' | 'REGULAR' | 'UNKNOWN' | 'EXACT';
+
 export interface QuestionnaireDraft {
   readonly hasResult: boolean;
   readonly resultTime: string;
@@ -31,6 +33,7 @@ export interface QuestionnaireDraft {
   readonly actualRunsPerWeek: string;
   readonly averageWeeklyKm4Weeks: string;
   readonly longestUsualRunKm: string;
+  readonly qualityRecall?: QualityRecall;
   readonly qualitySessions8Weeks: string;
   readonly qualityWeeks8Weeks: string;
   readonly qualityMostlyTolerated: boolean;
@@ -55,10 +58,11 @@ export function defaultDraft(today: string): QuestionnaireDraft {
     resultDate: today,
     resultSource: 'TEST_3K',
     canRun3Km: true,
-    regularRunningWeeks: '8',
+    regularRunningWeeks: '',
     actualRunsPerWeek: '3',
     averageWeeklyKm4Weeks: '15',
     longestUsualRunKm: '5',
+    qualityRecall: 'UNKNOWN',
     qualitySessions8Weeks: '0',
     qualityWeeks8Weeks: '0',
     qualityMostlyTolerated: true,
@@ -142,6 +146,8 @@ export function buildProfile(draft: QuestionnaireDraft): BuildProfileResult {
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.raceDate)) problems.push({field: 'raceDate', kind: draft.raceDate.trim().length === 0 ? 'EMPTY' : 'FORMAT'});
 
+  // Inexact recollections are never treated as confirmed fast-training counts.
+  const exactQuality = draft.qualityRecall === 'EXACT' || draft.qualityRecall === undefined;
   const profile: Profile = {
     performance,
     targetTimeSeconds: target.ok ? target.seconds : 0,
@@ -152,9 +158,9 @@ export function buildProfile(draft: QuestionnaireDraft): BuildProfileResult {
     averageWeeklyKm4Weeks: numberField(draft.averageWeeklyKm4Weeks, 'averageWeeklyKm4Weeks', problems),
     longestUsualRunKm: numberField(draft.longestUsualRunKm, 'longestUsualRunKm', problems),
     canRun3Km: draft.canRun3Km,
-    qualitySessions8Weeks: numberField(draft.qualitySessions8Weeks, 'qualitySessions8Weeks', problems),
-    qualityWeeks8Weeks: numberField(draft.qualityWeeks8Weeks, 'qualityWeeks8Weeks', problems),
-    qualityMostlyTolerated: draft.qualityMostlyTolerated,
+    qualitySessions8Weeks: exactQuality ? numberField(draft.qualitySessions8Weeks, 'qualitySessions8Weeks', problems) : 0,
+    qualityWeeks8Weeks: exactQuality ? numberField(draft.qualityWeeks8Weeks, 'qualityWeeks8Weeks', problems) : 0,
+    qualityMostlyTolerated: exactQuality ? draft.qualityMostlyTolerated : false,
     experience: {...draft.experience},
     breaks,
     safety: {...draft.safety},
