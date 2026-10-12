@@ -73,3 +73,6 @@ desktop.ini
 *.bak
 *.orig
 *~
+
+# Deterministic simulator run outputs (available as CI artifacts)
+audit/reports/
