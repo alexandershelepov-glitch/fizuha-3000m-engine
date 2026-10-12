@@ -38,6 +38,12 @@ export function Plan({engineState, today, onNavigate, onRefreshPlan, refreshing}
       <Card>
         <p className="paragraph">{phaseWhy[decision.phase]}</p>
       </Card>
+      {(decision.safety !== 'OK' || decision.phase === 'HOLD_DIAGNOSTIC' || engineState.diagnosticHold || engineState.relatedYellow) ? (
+        <Notice tone="warn" title={todayText.hold.title}>
+          <p>{todayText.hold.text}</p>
+          <Button onClick={() => onNavigate({name: 'SAFETY_RECHECK'})}>{todayText.hold.recheck}</Button>
+        </Notice>
+      ) : null}
 
       {todayWorkout ? (
         <div className="actions">
