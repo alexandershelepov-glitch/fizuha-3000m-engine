@@ -479,7 +479,7 @@ describe('a device without permanent storage', () => {
 
     try {
       render(<App />);
-      expect(screen.getByText('Цикл нельзя надёжно сохранить')).toBeInTheDocument();
+      expect(screen.getByText('Не удалось получить доступ к данным')).toBeInTheDocument();
       expect(screen.queryByRole('button', {name: 'Начать подготовку'})).not.toBeInTheDocument();
       expect(window.localStorage.getItem(ACTIVE_CYCLE_KEY)).toBeNull();
     } finally {
