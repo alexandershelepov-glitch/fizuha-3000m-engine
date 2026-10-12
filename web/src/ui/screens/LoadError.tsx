@@ -11,7 +11,8 @@ import {Notice} from '../components/Layout.tsx';
  */
 export function LoadError({result, onDiscard}: {result: LoadCycleResult; onDiscard: () => void}): ReactNode {
   const [confirming, setConfirming] = useState(false);
-  if (result.kind === 'READY' || result.kind === 'EMPTY') return null;
+  // Transient read failure has its own non-destructive retry screen in App.
+  if (result.kind === 'READY' || result.kind === 'EMPTY' || result.kind === 'STORAGE_UNAVAILABLE') return null;
 
   const content = {
     DAMAGED: {title: load.damagedTitle, text: load.damagedText, cta: load.damagedCta},
