@@ -141,7 +141,7 @@ test('a required checkpoint is recorded and the new form is kept', async ({page}
   // The immutable baseline still holds the assessment the cycle started with.
   expect(afterCycle.cycle.baseline.performance).toEqual(baseline.cycle.baseline.performance);
 
-  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await expect(page).toHaveURL(/\/today$/);
   await expect(page.getByText('Нужен контрольный результат')).toHaveCount(0);
 
