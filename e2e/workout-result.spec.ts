@@ -195,3 +195,32 @@ test('the workout card reads as a sequence of actions', async ({page}) => {
   await why.click();
   await expect(why).toHaveAttribute('aria-expanded', 'true');
 });
+
+
+test('a normal athlete answers one health question; symptoms reopen full questions without clearing past answers', async ({page}) => {
+  await fillQuestionnaire(page);
+  await createCycleAndReachToday(page);
+  await page.getByRole('button', {name: 'Внести результат'}).click();
+  const original = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
+
+  await expect(page.getByText('Во время или после тренировки появились боль, отёк или другие необычные симптомы?')).toBeVisible();
+  await expect(page.getByText('Насколько сильна боль')).toHaveCount(0);
+  await page.getByRole('button', {name: 'Сохранить результат'}).click();
+  await expect(page.getByText(/Ответьте на вопрос о самочувствии/)).toBeVisible();
+  expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBe(original);
+
+  await page.getByRole('radio', {name: 'Да, появились'}).click();
+  const group = page.getByRole('group', {name: 'Из-за боли меняется техника движения'});
+  await group.getByRole('button', {name: 'Да'}).click();
+  await page.reload();
+  await expect(page.getByText('Насколько сильна боль')).toBeVisible();
+  await expect(page.getByRole('group', {name: 'Из-за боли меняется техника движения'}).getByRole('button', {name: 'Да'})).toHaveAttribute('aria-pressed', 'true');
+
+  await page.getByRole('radio', {name: 'Нет, всё нормально'}).click();
+  await expect(page.getByRole('dialog', {name: 'Удалить ранее указанные жалобы?'})).toBeVisible();
+  await page.getByRole('button', {name: 'Оставить указанные жалобы'}).click();
+  await expect(page.getByRole('group', {name: 'Из-за боли меняется техника движения'}).getByRole('button', {name: 'Да'})).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', {name: 'Сохранить результат'}).click();
+  await expect(page).toHaveURL(/\/outcome$/);
+  await expect(page.getByText('Текущую нагрузку нужно снизить')).toBeVisible();
+});
