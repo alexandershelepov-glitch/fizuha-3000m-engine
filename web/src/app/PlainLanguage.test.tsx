@@ -180,4 +180,57 @@ describe('the workout card and the technical block', () => {
     expect(screen.queryByText('4 × 600 м')).not.toBeInTheDocument();
     expect(screen.queryByText(/4 × 600 м \+ 1 × 400 м/)).not.toBeInTheDocument();
   });
+  test('time-based intervals show exact total, seconds per repeat and no invented pace', () => {
+    const unpaced: Workout = {
+      ...shortenedFinal,
+      type: 'INTRO_QUALITY',
+      main: {mode: 'INTERVALS', dose: {unit: 'MINUTES', value: 3.4}, repeats: 4, repeatMeters: null, finalRepeatMeters: null},
+      paceRangeSecondsPerKm: null,
+      speedRangeMps: null,
+      targetRpe: [5, 6],
+    };
+    render(
+      <WorkoutDetails
+        workout={unpaced}
+        resultAvailability="AVAILABLE" moveAvailability="AVAILABLE"
+        onBack={() => undefined} onEnterResult={() => undefined}
+        onMove={() => undefined} skip={() => ({ok: true})}
+      />,
+    );
+
+    expect(screen.getByText('Сегодня: 4 × 51 с')).toBeInTheDocument();
+    expect(screen.getByText('Выполни 4 отрезка. Каждый отрезок длится 51 секунду.')).toBeInTheDocument();
+    expect(within(rowOf('Объём')).getByText('3 минуты 24 секунды')).toBeInTheDocument();
+    expect(within(rowOf('Отрезки')).getByText('4 × 51 с')).toBeInTheDocument();
+    expect(within(rowOf('Дистанция одного отрезка')).getByText('Не задана (отрезки по времени)')).toBeInTheDocument();
+    expect(screen.getByText(/Числовой темп не назначен/)).toBeInTheDocument();
+    expect(screen.queryByText('Целевой темп')).not.toBeInTheDocument();
+    expect(screen.queryByText('Скорость на дорожке')).not.toBeInTheDocument();
+    expect(screen.queryByText('4 × 0:51')).not.toBeInTheDocument();
+  });
+
+  test('paced time intervals show km pace, treadmill speed and calculated, non-mandatory metres', () => {
+    const paced: Workout = {
+      ...shortenedFinal,
+      type: 'VO2',
+      main: {mode: 'INTERVALS', dose: {unit: 'MINUTES', value: 3.4}, repeats: 4, repeatMeters: null, finalRepeatMeters: null},
+      paceRangeSecondsPerKm: [300, 320],
+      speedRangeMps: null,
+    };
+    render(
+      <WorkoutDetails
+        workout={paced}
+        resultAvailability="AVAILABLE" moveAvailability="AVAILABLE"
+        onBack={() => undefined} onEnterResult={() => undefined}
+        onMove={() => undefined} skip={() => ({ok: true})}
+      />,
+    );
+
+    expect(within(rowOf('Целевой темп')).getByText('5:00–5:20 мин/км')).toBeInTheDocument();
+    expect(within(rowOf('Скорость на дорожке')).getByText('11,3–12,0 км/ч')).toBeInTheDocument();
+    expect(within(rowOf('Дистанция одного отрезка')).getByText(/примерно 150–170 м/)).toBeInTheDocument();
+    expect(screen.getByText(/Это не обязательная дистанция/)).toBeInTheDocument();
+    expect(within(rowOf('Объём')).getByText('3 минуты 24 секунды')).toBeInTheDocument();
+  });
+
 });
