@@ -184,7 +184,7 @@ test('INSTR-11 strides are described by technique, not by a target time', () => 
   assert.equal(workout.paceRangeSecondsPerKm, null);
   assert.equal(plan.splits.length, 0, 'no pace means no split time');
   assert.equal(plan.note, 'Ускорения не должны быть тяжёлыми: это работа над техникой, а не на результат.');
-  assert.ok(plan.steps.some((step) => step.includes('Отдых между отрезками')));
+  assert.ok(plan.steps.some((step) => step.includes('Между отрезками отдыхай')));
 });
 
 test('INSTR-12 no warm-up and no cool-down mean no such steps', () => {
@@ -226,7 +226,7 @@ test('INSTR-15 intervals without a pace state only what the engine ordered', () 
   assert.equal(plan.splits.length, 0);
   assert.equal(plan.paceText, null);
   assert.ok(plan.steps.some((step) => step.startsWith('Выполни 4 отрезка. Каждый отрезок длится')));
-  assert.ok(plan.steps.some((step) => step.includes('Отдых между отрезками')));
+  assert.ok(plan.steps.some((step) => step.includes('Между отрезками отдыхай')));
 });
 
 test('INSTR-16 a rest day is not dressed up as training', () => {
