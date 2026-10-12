@@ -27,12 +27,13 @@ async function reachStep(user: User, step: 'VOLUME' | 'QUALITY' | 'AVAILABILITY'
   await user.type(screen.getByLabelText('Ваш результат'), '15:20');
   await click(user, 'Продолжить');                   // → VOLUME
   if (step === 'VOLUME') return;
-  await user.type(screen.getByLabelText(/Как давно вы бегаете регулярно/), '52');
+  await user.type(screen.getByLabelText(/Сколько недель подряд/), '52');
   await user.type(screen.getByLabelText(/Сколько раз в неделю вы обычно бегаете сейчас/), '4');
   await user.type(screen.getByLabelText(/Примерно сколько километров вы пробегаете за неделю/), '30');
   await user.type(screen.getByLabelText(/Сколько километров обычно составляет ваша самая длинная пробежка/), '10');
   await click(user, 'Продолжить');                   // → QUALITY
   if (step === 'QUALITY') return;
+  await click(user, 'Знаю точное количество');
   await user.type(screen.getByLabelText(/Сколько таких быстрых тренировок/), '4');
   await user.type(screen.getByLabelText(/В скольких из последних 8 недель/), '2');
   await click(user, 'Продолжить');                   // → SAFETY
@@ -51,8 +52,8 @@ describe('the volume step', () => {
     await reachStep(userEvent.setup(), 'VOLUME');
 
     expect(screen.getByText('Сколько вы бегаете сейчас')).toBeInTheDocument();
-    expect(screen.getByText('Как давно вы бегаете регулярно без длительного перерыва?')).toBeInTheDocument();
-    expect(screen.getByText('Считайте с момента, когда начали или снова начали бегать хотя бы 1 раз в неделю.')).toBeInTheDocument();
+    expect(screen.getByText('Сколько недель подряд вы бегаете хотя бы один раз в неделю?')).toBeInTheDocument();
+    expect(screen.getByText(/Ответ в неделях/)).toBeInTheDocument();
     expect(screen.getByText('Сколько раз в неделю вы обычно бегаете сейчас?')).toBeInTheDocument();
     expect(screen.getByText('Укажите обычную неделю за последний месяц, а не максимальное количество тренировок.')).toBeInTheDocument();
     expect(screen.getByText('Примерно сколько километров вы пробегаете за неделю?')).toBeInTheDocument();
@@ -82,7 +83,8 @@ describe('the fast-training step', () => {
     expect(screen.getByText('Обычная пробежка сюда не относится, даже если она далась тяжело.')).toBeInTheDocument();
 
     // And the questions themselves are written in the same words.
-    expect(screen.getByText('Сколько таких быстрых тренировок вы сделали за последние 8 недель?')).toBeInTheDocument();
+    expect(screen.getByText('За последние два месяца вы специально тренировались бегать быстрее обычного?')).toBeInTheDocument();
+    await user.click(screen.getByRole('radio', {name: 'Знаю точное количество'}));
     expect(screen.getByText('Если специально быстрых тренировок не было — укажите 0.')).toBeInTheDocument();
     expect(screen.getByText('В скольких из последних 8 недель была хотя бы одна такая тренировка?')).toBeInTheDocument();
     expect(screen.getByText('Например, если вы сделали 4 быстрые тренировки, но все они были в двух неделях — укажите 2.')).toBeInTheDocument();
