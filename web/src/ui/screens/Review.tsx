@@ -63,7 +63,11 @@ export function Review({draft, today, onCreate, onNavigate}: Props): ReactNode {
         <KeyValue label={review.rows.raceDate} value={`${formatDateLong(draft.raceDate)} · ${review.rows.daysToRace(daysBetween(today, draft.raceDate))}`} />
         <KeyValue label={review.rows.availability} value={draft.availableRunsPerWeek} />
         <KeyValue label={review.rows.volume} value={`${draft.averageWeeklyKm4Weeks} км`} />
-        <KeyValue label={review.rows.quality} value={`${draft.qualitySessions8Weeks} (недель: ${draft.qualityWeeks8Weeks})`} />
+        <KeyValue label={review.rows.quality} value={draft.qualityRecall === 'EXACT' || draft.qualityRecall === undefined
+          ? `${draft.qualitySessions8Weeks} (недель: ${draft.qualityWeeks8Weeks})`
+          : draft.qualityRecall === 'NONE' ? 'Не было'
+          : draft.qualityRecall === 'REGULAR' ? 'Регулярно, без точных записей'
+          : draft.qualityRecall === 'SOMETIMES' ? 'Несколько раз, без точных записей' : 'Нет точных данных'} />
         <KeyValue label={review.rows.breaks} value={draft.hasBreaks && draft.breaks.length > 0 ? draft.breaks.map((entry) => `${breakReasonText[entry.reason]}, ${entry.days} дн.`).join('; ') : review.rows.noBreaks} />
         <KeyValue label={review.rows.safety} value={safetyHasFlags(draft.safety) ? 'отмечено' : review.rows.noRestrictions} />
         <KeyValue label={review.rows.mismatch} value={mismatchText[draft.performanceMismatch]} />
