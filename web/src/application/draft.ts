@@ -14,7 +14,8 @@ import type {KeyValueStorage} from './storage.ts';
 export function loadDraft(storage: KeyValueStorage | null, today: string): QuestionnaireDraft {
   const fallback = defaultDraft(today);
   if (storage === null) return fallback;
-  const raw = storage.getItem(QUESTIONNAIRE_DRAFT_KEY);
+  let raw: string | null;
+  try { raw = storage.getItem(QUESTIONNAIRE_DRAFT_KEY); } catch { return fallback; }
   if (raw === null) return fallback;
   try {
     const parsed: unknown = JSON.parse(raw);
@@ -62,7 +63,8 @@ interface StoredResultDraft {
  */
 export function loadResultDraft(storage: KeyValueStorage | null, workoutId: string): ResultDraft | null {
   if (storage === null) return null;
-  const raw = storage.getItem(RESULT_DRAFT_KEY);
+  let raw: string | null;
+  try { raw = storage.getItem(RESULT_DRAFT_KEY); } catch { return null; }
   if (raw === null) return null;
   try {
     const parsed = JSON.parse(raw) as Partial<StoredResultDraft>;
