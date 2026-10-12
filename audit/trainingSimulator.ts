@@ -247,7 +247,7 @@ export function simulateScenario(scenario: Scenario): RunReport {
   const days = scenario.weeks * 7;
   let scheduledCount = 0;
   let qualityCount = 0;
-  let reportingCount = 0;
+  let inconsistentCandidateCount = 0;
   let triggeredRed = false;
   let reviewDay: number | null = null;
   let finalRaceSeconds: number | null = null;
@@ -317,7 +317,11 @@ export function simulateScenario(scenario: Scenario): RunReport {
 
     if (workout.countsAsQuality) qualityCount++;
     const kind = grade(workout, scenario.behaviour, qualityCount, triggeredRed);
-    const contradiction = scenario.behaviour === 'CONTRADICTORY_REPORT' && ++reportingCount % 3 === 0;
+    // Contradiction must involve *actual* measured repeats; otherwise a zero total on
+    // unpaced EASY with no splits is only an unspecified total and cannot prove inconsistency.
+    const hasMeasuredRepetitions = workout.main.mode === 'INTERVALS' || workout.speedRangeMps !== null;
+    const contradiction = scenario.behaviour === 'CONTRADICTORY_REPORT' && hasMeasuredRepetitions
+      && ++inconsistentCandidateCount % 2 === 1;
     const measured = makeResult(workout, kind, contradiction);
     const before = state;
     state = recordResult(state, workout.id, measured);
