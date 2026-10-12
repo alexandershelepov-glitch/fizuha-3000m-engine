@@ -245,7 +245,9 @@ export function simulateScenario(scenario: Scenario): RunReport {
   const events: Event[] = [];
   const findings: Finding[] = [];
   const days = scenario.weeks * 7;
-  let attempts = 0;
+  let scheduledCount = 0;
+  let qualityCount = 0;
+  let reportingCount = 0;
   let triggeredRed = false;
   let reviewDay: number | null = null;
   let finalRaceSeconds: number | null = null;
@@ -296,7 +298,8 @@ export function simulateScenario(scenario: Scenario): RunReport {
     const workout = state.queue.find(w => w.scheduledDate === today);
     if (!workout) continue;
 
-    if (scenario.behaviour === 'SKIP_EVERY_THIRD' && ++attempts % 3 === 0) {
+    const scheduledNumber = ++scheduledCount;
+    if (scenario.behaviour === 'SKIP_EVERY_THIRD' && scheduledNumber % 3 === 0) {
       state = skipWorkout(state, workout.id, today);
       appendEvent(events, state, offset, 'SKIPPED', workout, null, null, 'Explicit miss; no compensatory workload.');
       evaluateQueue(state, today, findings);
@@ -312,9 +315,9 @@ export function simulateScenario(scenario: Scenario): RunReport {
       continue;
     }
 
-    if (workout.countsAsQuality) attempts++;
-    const kind = grade(workout, scenario.behaviour, attempts, triggeredRed);
-    const contradiction = scenario.behaviour === 'CONTRADICTORY_REPORT' && attempts % 3 === 0;
+    if (workout.countsAsQuality) qualityCount++;
+    const kind = grade(workout, scenario.behaviour, qualityCount, triggeredRed);
+    const contradiction = scenario.behaviour === 'CONTRADICTORY_REPORT' && ++reportingCount % 3 === 0;
     const measured = makeResult(workout, kind, contradiction);
     const before = state;
     state = recordResult(state, workout.id, measured);
@@ -325,13 +328,27 @@ export function simulateScenario(scenario: Scenario): RunReport {
         'WARNING');
     }
 
-    if (before.decision.effectiveSpeedMps !== state.decision.effectiveSpeedMps && workout.countsAsQuality
-      && (state.doses[workout.type]?.value ?? 0) > (before.doses[workout.type]?.value ?? 0)) {
-      issue(findings, 'SIMULTANEOUS_SPEED_AND_VOLUME_CHANGE', today,
-        `Effective speed ${before.decision.effectiveSpeedMps} -> ${state.decision.effectiveSpeedMps}; ${workout.type} dose ${before.doses[workout.type]?.value} -> ${state.doses[workout.type]?.value}`, 'WARNING');
+    // A change in effectiveSpeedMps (CLOSED -> PARTIAL target gate) is NOT necessarily
+    // a new prescribed pace. INTRO_QUALITY has no speed target and previously gave false alerts.
+    // Compare the SAME upcoming authorised slot before and after the transition instead.
+    const oldScheduled = before.queue.find(next => next.id !== workout.id &&
+      next.type === workout.type && next.speedRangeMps !== null);
+    const newScheduled = oldScheduled === undefined ? undefined : state.queue.find(next =>
+      next.id === oldScheduled.id && next.type === oldScheduled.type && next.speedRangeMps !== null);
+    if (oldScheduled && newScheduled && oldScheduled.speedRangeMps && newScheduled.speedRangeMps &&
+      newScheduled.main.dose.value > oldScheduled.main.dose.value + 1e-9 &&
+      newScheduled.speedRangeMps[1] > oldScheduled.speedRangeMps[1] + 1e-9) {
+      issue(findings, 'SIMULTANEOUS_PRESCRIBED_SPEED_AND_VOLUME', today,
+        `Same planned ${workout.type} slot ${oldScheduled.id}: dose ${oldScheduled.main.dose.value} → ${newScheduled.main.dose.value}; target speed ${oldScheduled.speedRangeMps[1]} → ${newScheduled.speedRangeMps[1]} m/s.`, 'WARNING');
     }
+    const increasedDose = state.doses[workout.type]?.value;
+    const previousDose = before.doses[workout.type]?.value;
+    const doseSummary = increasedDose !== undefined && previousDose !== undefined &&
+      increasedDose > previousDose ? `; ${workout.type} future dose ${previousDose} → ${increasedDose} ${workout.main.dose.unit}` : '';
+    const gateSummary = before.decision.gate !== state.decision.gate ?
+      `; target gate ${before.decision.gate} → ${state.decision.gate} (not itself a new pace prescription)` : '';
     appendEvent(events, state, offset, 'WORKOUT_RESULT', workout, measured, classified.evaluation,
-      `Injected ${kind}; observed classification ${classified.evaluation}${classified.yellowReason ? ' / '+classified.yellowReason : ''}`);
+      `Injected ${kind}; observed classification ${classified.evaluation}${classified.yellowReason ? ' / '+classified.yellowReason : ''}${doseSummary}${gateSummary}`);
     if (kind === 'RED') {
       triggeredRed = true;
       reviewDay = offset + 9;
