@@ -295,3 +295,37 @@ test('a plan refresh does not reopen onboarding', async ({page}) => {
     await expect(page.getByRole('navigation', {name: 'Основные разделы'})).toBeVisible();
   }
 });
+
+
+test('a paused plan explains why it contains only rest and can recover without a reset', async ({page}) => {
+  await fillQuestionnaire(page);
+  // Return to the safety answer before creating a cycle.
+  await page.goto('/questionnaire?step=SAFETY');
+  await page.getByRole('button', {name: 'Есть жалобы или сомнения — заполнить подробно'}).click();
+  await page.getByRole('button', {name: 'Насколько сильна боль: 3'}).click();
+  await page.goto('/review');
+  await page.getByRole('button', {name: 'Рассчитать план'}).click();
+  await page.getByRole('button', {name: 'Посмотреть план'}).click();
+  await expect(page.getByRole('heading', {name: 'Подготовка временно приостановлена'})).toBeVisible();
+  await expect(page.getByText(/вместо беговых тренировок назначен отдых/)).toBeVisible();
+  const rawBefore = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
+  expect(rawBefore).not.toBeNull();
+
+  await page.getByRole('button', {name: 'Повторно проверить состояние'}).click();
+  await expect(page).toHaveURL(/\/profile\/safety$/);
+  await page.getByRole('button', {name: 'Жалоб и ограничений нет'}).click();
+  await page.getByLabel(/Если медицинская оценка требовалась/).check();
+  await page.getByRole('button', {name: 'Сохранить состояние'}).click();
+  await expect(page.getByText(/Ответы сохранены, дальнейший план обновлён/)).toBeVisible();
+  await page.getByRole('button', {name: 'Понятно'}).click();
+  await expect(page).toHaveURL(/\/today$/);
+  await expect(page.getByText('Обычные тренировки приостановлены')).toHaveCount(0);
+
+  const after = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
+  expect(after).not.toBeNull();
+  const beforeCycle = JSON.parse(rawBefore!) as {cycle: {cycleId: string; baseline: unknown}};
+  const afterCycle = JSON.parse(after!) as {cycle: {cycleId: string; baseline: unknown}; events: {type: string}[]};
+  expect(afterCycle.cycle.cycleId).toBe(beforeCycle.cycle.cycleId);
+  expect(afterCycle.cycle.baseline).toEqual(beforeCycle.cycle.baseline);
+  expect(afterCycle.events.at(-1)?.type).toBe('SAFETY_REASSESSED');
+});
