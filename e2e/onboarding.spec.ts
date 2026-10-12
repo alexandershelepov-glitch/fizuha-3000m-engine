@@ -217,6 +217,33 @@ test('a damaged record can be discarded, but only after a confirmation', async (
   await expect(page).toHaveURL(/step=RESULT$/);
 });
 
+
+test('a user can safely restart onboarding from Profile without losing archived cycles', async ({page}) => {
+  await fillQuestionnaire(page);
+  await page.getByRole('button', {name: 'Рассчитать план'}).click();
+  await page.getByRole('button', {name: 'Посмотреть план'}).click();
+  await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
+
+  const archive = JSON.stringify({formatVersion: 1, cycles: []});
+  await page.evaluate((raw) => window.localStorage.setItem('fizuha.archivedCycles', raw), archive);
+  const before = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
+  await page.getByRole('navigation', {name: 'Основные разделы'}).getByText('Профиль').click();
+
+  await page.getByRole('button', {name: 'Сбросить текущий план'}).click();
+  await expect(page.getByText('Удалить текущую подготовку?')).toBeVisible();
+  await page.getByRole('button', {name: 'Оставить план'}).click();
+  expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBe(before);
+
+  await page.getByRole('button', {name: 'Сбросить текущий план'}).click();
+  await page.getByRole('button', {name: 'Да, удалить текущий план'}).click();
+  await expect(page.getByRole('button', {name: 'Начать подготовку'})).toBeVisible();
+  expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBeNull();
+  expect(await page.evaluate(() => window.localStorage.getItem('fizuha.archivedCycles'))).toBe(archive);
+
+  await page.getByRole('button', {name: 'Начать подготовку'}).click();
+  await expect(page.getByLabel('Ваш результат')).toHaveValue('');
+});
+
 test('a browser that denies storage is reported instead of silently using memory', async ({page}) => {
   await page.addInitScript(() => {
     Storage.prototype.setItem = function setItem(): void {
