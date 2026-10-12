@@ -251,6 +251,8 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     }
     const result = resetActiveCycle({repo, storage, appState: store.appState, engineState: store.engineState});
     if (result.ok) {
+      // The questionnaire draft also lives in React state: forget it immediately, not just on disk.
+      draftStore.reset(store.today);
       setOutcome(null);
       setCheckpointChanges(null);
       setParameterChanges(null);
