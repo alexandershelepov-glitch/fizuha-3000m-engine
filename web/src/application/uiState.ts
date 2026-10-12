@@ -56,7 +56,7 @@ function selectState(engineState: EngineState, today: string, workout: Workout |
   if (today > engineState.profile.raceDate) return 'AWAITING_FINAL_RESULT';
   if (today === engineState.profile.raceDate) return 'RACE_DAY';
   if (pending.length > 0) return 'PENDING_RESULT';
-  if (engineState.decision.safety !== 'OK') return 'TRAINING_HOLD';
+  if (engineState.decision.safety !== 'OK' || engineState.decision.phase === 'HOLD_DIAGNOSTIC' || engineState.diagnosticHold || engineState.relatedYellow) return 'TRAINING_HOLD';
   if (engineState.decision.phase === 'TAPER') return 'TAPER';
   if (engineState.checkpointRequired) return 'CHECKPOINT_REQUIRED';
   if (workout !== null) return 'WORKOUT_TODAY';
