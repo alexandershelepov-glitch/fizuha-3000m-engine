@@ -2,11 +2,11 @@
  * Display helpers: they turn engine values into human strings using the copy layer.
  * Purely presentational — no threshold, range or verdict is computed here.
  */
-import {formatDateShort, formatTime} from '../application/format.ts';
+import {formatDateShort} from '../application/format.ts';
 import type {DoseUnit, SafetyData, Workout, WorkoutMainMode, WorkoutType} from '../application/engineGateway.ts';
 import {doseUnitText, mainModeText, workoutGoalText, workoutTypeText} from './copy/values.ts';
-import {today as todayText} from './copy/text.ts';
-import {intervalStructure, workoutIntervals} from './workoutInstructions.ts';
+import {durationText, today as todayText} from './copy/text.ts';
+import {intervalStructure, workoutIntervals, paceRangeText, prescribedPace, treadmillSpeedText} from './workoutInstructions.ts';
 
 export function workoutTitle(workout: Workout): string {
   return workoutTypeText[workout.type].label;
@@ -31,6 +31,13 @@ export function workoutVolume(workout: Workout): string {
   return intervals === null ? dose : intervals.label;
 }
 
+/** Preserve the engine's exact total work in seconds, even when dose.value is fractional minutes. */
+export function workoutMainDose(workout: Workout): string {
+  return workout.main.dose.unit === 'MINUTES'
+    ? durationText(workout.main.dose.value * 60)
+    : `${Math.round(workout.main.dose.value)} м`;
+}
+
 /** The interval structure as a compact row, or null when the workout is not made of intervals. */
 export function workoutIntervalsText(workout: Workout): string | null {
   return workoutIntervals(workout)?.label ?? null;
@@ -38,11 +45,12 @@ export function workoutIntervalsText(workout: Workout): string | null {
 
 /** Pace range exactly as the engine ordered it; falls back to converting the speed range. */
 export function workoutPaceRange(workout: Workout): string | null {
-  const pace = workout.paceRangeSecondsPerKm;
-  if (pace !== null) return `${formatTime(pace[0])}–${formatTime(pace[1])} /км`;
-  const speed = workout.speedRangeMps;
-  if (speed === null) return null;
-  return `${formatTime(1000 / speed[1])}–${formatTime(1000 / speed[0])} /км`;
+  return paceRangeText(prescribedPace(workout));
+}
+
+/** Equivalent km/h read from the same pace target; never a separate prescription. */
+export function workoutSpeedRange(workout: Workout): string | null {
+  return treadmillSpeedText(workout);
 }
 
 export function workoutRpe(workout: Workout): string {
@@ -52,7 +60,7 @@ export function workoutRpe(workout: Workout): string {
 
 export function workoutRest(workout: Workout): string | null {
   if (workout.main.mode !== 'INTERVALS' || workout.restSeconds <= 0) return null;
-  return `отдых ${workout.restSeconds} секунд`;
+  return `отдых ${durationText(workout.restSeconds)} между отрезками`;
 }
 
 export function workoutDate(workout: Workout): string {
