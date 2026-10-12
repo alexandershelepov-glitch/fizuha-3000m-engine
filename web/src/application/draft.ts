@@ -21,7 +21,11 @@ export function loadDraft(storage: KeyValueStorage | null, today: string): Quest
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== 'object' || parsed === null) return fallback;
     // Merge over the defaults so a draft written by an older build cannot leave fields undefined.
-    return {...fallback, ...(parsed as Partial<QuestionnaireDraft>)};
+    const previous = parsed as Partial<QuestionnaireDraft>;
+    // Old questionnaires had exact numeric answers but no recall mode.
+    const legacyExact = previous.qualityRecall === undefined &&
+      (Number(previous.qualitySessions8Weeks ?? '0') > 0 || Number(previous.qualityWeeks8Weeks ?? '0') > 0);
+    return {...fallback, ...previous, qualityRecall: previous.qualityRecall ?? (legacyExact ? 'EXACT' : 'UNKNOWN')};
   } catch {
     return fallback;
   }
