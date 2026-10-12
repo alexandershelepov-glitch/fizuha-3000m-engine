@@ -6,7 +6,7 @@ import {formatDateShort} from '../application/format.ts';
 import type {DoseUnit, SafetyData, Workout, WorkoutMainMode, WorkoutType} from '../application/engineGateway.ts';
 import {doseUnitText, mainModeText, workoutGoalText, workoutTypeText} from './copy/values.ts';
 import {durationText, today as todayText} from './copy/text.ts';
-import {intervalStructure, workoutIntervals, paceRangeText, prescribedPace, treadmillSpeedText} from './workoutInstructions.ts';
+import {intervalStructure, workoutIntervals, paceRangeText as formatPrescribedPace, prescribedPace, treadmillSpeedText} from './workoutInstructions.ts';
 
 export function workoutTitle(workout: Workout): string {
   return workoutTypeText[workout.type].label;
@@ -45,7 +45,7 @@ export function workoutIntervalsText(workout: Workout): string | null {
 
 /** Pace range exactly as the engine ordered it; falls back to converting the speed range. */
 export function workoutPaceRange(workout: Workout): string | null {
-  return paceRangeText(prescribedPace(workout));
+  return formatPrescribedPace(prescribedPace(workout));
 }
 
 /** Equivalent km/h read from the same pace target; never a separate prescription. */
@@ -92,11 +92,11 @@ export function workoutSummaryText(summary: {type: WorkoutType; date: string; mo
     repeatMeters: summary.repeatMeters,
     finalRepeatMeters: summary.finalRepeatMeters,
   });
-  const volume = intervals === null ? `${Math.round(summary.doseValue)} ${doseUnitText[summary.doseUnit]}` : intervals.label;
+  const volume = intervals === null ? (summary.doseUnit === 'MINUTES' ? durationText(summary.doseValue * 60) : `${Math.round(summary.doseValue)} ${doseUnitText[summary.doseUnit]}`) : intervals.label;
   return `${workoutTypeText[summary.type].label} · ${volume} · ${formatDateShort(summary.date)}`;
 }
 
 /** Pace range as the engine ordered it. */
 export function paceRangeText(pace: readonly [number, number] | null): string | null {
-  return pace === null ? null : `${formatTime(pace[0])}–${formatTime(pace[1])} /км`;
+  return formatPrescribedPace(pace);
 }
