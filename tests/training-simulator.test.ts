@@ -94,3 +94,25 @@ test('SIM-10 skipped workouts are not counted as completed history', ()=>{
   for(const x of skipped)assert.ok(r.lastState.skippedIds.includes(x.workoutId!));
   for(const x of skipped)assert.ok(!r.lastState.history.some(y=>y.workout.id===x.workoutId));
 });
+
+
+test('SIM-11 gate changes without prescribed speed do not trigger a false pace warning', () => {
+  const regular = simulateScenario(SCENARIOS.find(x => x.id === '02-regular-normal-8w')!);
+  assert.ok(regular.events.some(e => e.comment.includes('target gate CLOSED → PARTIAL')));
+  assert.equal(regular.findings.some(f => f.code === 'SIMULTANEOUS_PRESCRIBED_SPEED_AND_VOLUME'), false,
+    'INTRO_QUALITY has no numeric speed prescription; gate speed alone cannot count');
+});
+test('SIM-12 every-third skips use scheduled workout count, not quality counter', () => {
+  const r = simulateScenario(SCENARIOS.find(x => x.behaviour === 'SKIP_EVERY_THIRD')!);
+  const sessions = r.events.filter(e => ['WORKOUT_RESULT','SKIPPED','REST_DAY'].includes(e.action));
+  for(let i = 0; i < sessions.length; i++){
+    assert.equal(sessions[i]!.action === 'SKIPPED', (i+1)%3 === 0,
+      `Expected exactly each third scheduled session to be skipped: #${i+1}`);
+  }
+});
+test('SIM-13 no detected hard safety or calendar violations in the fixed nine scenarios', () => {
+  for(const r of simulateAll()){
+    const errors = r.findings.filter(f => f.severity === 'ERROR');
+    assert.deepEqual(errors, [], `${r.scenario.id}: ${JSON.stringify(errors)}`);
+  }
+});
