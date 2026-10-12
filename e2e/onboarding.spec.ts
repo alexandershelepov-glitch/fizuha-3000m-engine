@@ -20,17 +20,17 @@ async function reset(page: Page): Promise<void> {
 async function walkToGoal(page: Page): Promise<void> {
   await page.getByRole('button', {name: 'Начать подготовку'}).click();
   await page.getByLabel('Ваш результат').fill('15:20');
-  await page.getByRole('button', {name: 'Продолжить'}).click(); // VOLUME
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // VOLUME
   await page.getByLabel(/Сколько недель подряд/).fill('8');
-  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить'}).click();
+  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await expect(page.getByText('Шаг 7 из 8')).toBeVisible();
 }
 
 async function fillQuestionnaire(page: Page): Promise<void> {
   await walkToGoal(page);
   await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
-  await page.getByRole('button', {name: 'Продолжить'}).click();
-  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await expect(page.getByText('Проверьте данные')).toBeVisible();
 }
 
@@ -93,13 +93,13 @@ test('the active cycle survives a reload', async ({page}) => {
 test('an invalid time is refused locally and never reaches the engine', async ({page}) => {
   await page.getByRole('button', {name: 'Начать подготовку'}).click();
   await page.getByLabel('Ваш результат').fill('15.20');
-  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
 
   await expect(page.getByRole('alert')).toContainText('Введите время в формате ММ:СС');
   await expect(page).toHaveURL(/step=RESULT$/);
 
   await page.getByLabel('Ваш результат').fill('15:75');
-  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await expect(page.getByRole('alert')).toContainText('Такого времени не существует');
   expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBeNull();
 });
@@ -107,9 +107,9 @@ test('an invalid time is refused locally and never reaches the engine', async ({
 test('an engine rejection is reported by code, not by its English message', async ({page}) => {
   await walkToGoal(page);
   await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
-  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await page.getByLabel('Дата итогового забега').fill('2020-01-01');
-  await page.getByRole('button', {name: 'Продолжить'}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
 
   await expect(page.getByText('Дата старта уже прошла')).toBeVisible();
