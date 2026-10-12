@@ -101,7 +101,7 @@ test('INSTR-05 intervals of 400 m show the time of one repeat', () => {
   assert.equal(plan.headline, 'Сегодня: 6 × 400 м');
   assert.deepEqual(plan.splits.map((split) => split.text), ['400 метров примерно за 1:36–1:40']);
   assert.ok(plan.steps.some((step) => step.includes('Каждый отрезок старайся пробежать за 1:36–1:40')), plan.steps.join(' | '));
-  assert.ok(plan.steps.some((step) => step.includes('Отдых между отрезками — 1 минута 30 секунд')));
+  assert.ok(plan.steps.some((step) => step.includes('Между отрезками отдыхай 1 минуту 30 секунд')));
   assert.ok(plan.steps.some((step) => step.includes('После последнего отрезка отдых не нужен.')));
   assert.ok(plan.paceText!.endsWith('/км'), 'the pace stays available below');
 });
@@ -345,7 +345,7 @@ test('INSTR-24 the rest is a duration, and the way of resting stays the plan own
   assert.ok(workout.restSeconds > 0, 'the fixture must prescribe a rest');
   const plan = workoutInstruction(workout);
 
-  assert.ok(plan.steps.some((step) => step === 'Отдых между отрезками — 1 минута 30 секунд. После последнего отрезка отдых не нужен.'));
+  assert.ok(plan.steps.some((step) => step === 'Между отрезками отдыхай 1 минуту 30 секунд. После последнего отрезка отдых не нужен.'));
   assert.ok(plan.steps.some((step) => step.includes('После последнего отрезка отдых не нужен.')));
   // The engine does not say how to rest, so the card must not say it either.
   const text = plan.steps.join(' ');
@@ -436,7 +436,7 @@ test('INSTR-31 fractional total minutes show exact main work (not rounded away)'
   assert.equal(plan.headline, 'Сегодня: 4 × 51 с');
   assert.equal(workoutMainDose(intro), '3 минуты 24 секунды');
   assert.ok(plan.steps.some(line => line.includes('Каждый отрезок длится 51 секунду')));
-  assert.ok(plan.steps.some(line => line.includes('Отдых между отрезками — 1 минута 30 секунд')));
+  assert.ok(plan.steps.some(line => line.includes('Между отрезками отдыхай 1 минуту 30 секунд')));
   assert.ok(plan.steps.some(line => line.includes('Числовой темп не назначен')));
   assert.ok(plan.steps.some(line => line.includes('Дистанция не назначена')));
   assert.equal(plan.speedText, null);
