@@ -21,6 +21,7 @@ test('a full session is closed, reported and persisted', async ({page}) => {
   await expect(page.getByText('Результат тренировки')).toBeVisible();
 
   // The defaults describe a fully completed session; submitting sends the real engine contract.
+  await page.getByRole('radio', {name: 'Нет, всё нормально'}).click();
   await page.getByRole('button', {name: 'Сохранить результат'}).click();
   await expect(page).toHaveURL(/\/outcome$/);
   await expect(page.getByText('Тренировка выполнена')).toBeVisible();
@@ -54,6 +55,7 @@ test('an incomplete session is reported as a corrected plan, not as a failure', 
   await page.getByRole('button', {name: 'Внести результат'}).click();
   // Completion options are a radio group, so they are addressed by their role.
   await page.getByRole('radio', {name: 'Меньше половины'}).click();
+  await page.getByRole('radio', {name: 'Нет, всё нормально'}).click();
   await page.getByRole('button', {name: 'Сохранить результат'}).click();
 
   await expect(page).toHaveURL(/\/outcome$/);
@@ -69,6 +71,7 @@ test('a safety flag stops the usual load and the screen differs', async ({page})
   await createCycleAndReachToday(page);
 
   await page.getByRole('button', {name: 'Внести результат'}).click();
+  await page.getByRole('radio', {name: 'Да, появились'}).click();
   const group = page.getByRole('group', {name: 'Из-за боли меняется техника движения'});
   await group.getByRole('button', {name: 'Да'}).click();
   await page.getByRole('button', {name: 'Сохранить результат'}).click();
@@ -88,6 +91,7 @@ test('an incomplete repeats block warns, then the engine decides', async ({page}
   // A paced session: the block is open and prominent.
   await expect(page.getByText('Результаты отрезков')).toBeVisible();
 
+  await page.getByRole('radio', {name: 'Нет, всё нормально'}).click();
   await page.getByRole('button', {name: 'Сохранить результат'}).click();
   await expect(page.getByText('Результаты отрезков не заполнены')).toBeVisible();
   await expect(page.getByText(/менее точной/)).toBeVisible();
@@ -112,6 +116,7 @@ test('the same flow closes an overdue session from the pending state', async ({p
   await expect(page.getByText('Предыдущая тренировка ещё не закрыта')).toBeVisible();
 
   await page.getByRole('button', {name: 'Внести результат'}).click();
+  await page.getByRole('radio', {name: 'Нет, всё нормально'}).click();
   await page.getByRole('button', {name: 'Сохранить результат'}).click();
   // The warning is not part of this session type; if it appears, it still must not block.
   const send = page.getByRole('button', {name: 'Отправить как есть'});
@@ -154,6 +159,7 @@ test('a future session cannot be closed in advance', async ({page}) => {
   // Today's session is still recordable.
   await page.goto('/today');
   await page.getByRole('button', {name: 'Внести результат'}).click();
+  await page.getByRole('radio', {name: 'Нет, всё нормально'}).click();
   await page.getByRole('button', {name: 'Сохранить результат'}).click();
   await expect(page).toHaveURL(/\/outcome$/);
   const state = await readEngineState(page);
