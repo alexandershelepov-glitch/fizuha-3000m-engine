@@ -107,6 +107,7 @@ test('PROFILE-04 recollection without records does not invent confirmed sessions
 
 test('PROFILE-05 old drafts without a recall selector keep their numeric answers', () => {
   const {qualityRecall: _previous, ...oldAnswers} = ANSWERS;
+  assert.equal(_previous, 'EXACT');
   const result = buildProfile(oldAnswers);
   assert.equal(result.ok, true);
   if (result.ok) {
