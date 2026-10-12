@@ -96,7 +96,8 @@ function safeLoad(repo: CycleRepository): LoadCycleResult {
   try {
     return loadActiveCycle(repo);
   } catch {
-    return {kind: 'DAMAGED', detail: 'STORAGE'};
+    // A failed read is not evidence of corrupted data: never offer deletion here.
+    return {kind: 'STORAGE_UNAVAILABLE'};
   }
 }
 

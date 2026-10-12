@@ -1,3 +1,4 @@
+import {useState} from 'react';
 import type {ReactNode} from 'react';
 import {formatDateLong, formatTime} from '../../application/format.ts';
 import type {AppStateV1} from '../../application/appState.ts';
@@ -6,9 +7,32 @@ import {phaseText} from '../copy/values.ts';
 import {Button} from '../components/Button.tsx';
 import {lifecycle, profile as profileText} from '../copy/text.ts';
 import {Card, KeyValue, Notice} from '../components/Layout.tsx';
+import {copyForError} from '../copy/errors.ts';
+import type {UiError} from '../../application/errorContract.ts';
 
-export function Profile({appState, engineState, onEdit}: {appState: AppStateV1; engineState: EngineState; onEdit?: () => void}): ReactNode {
+type ResetOutcome = {ok: true} | {ok: false; error: UiError};
+
+export function Profile({appState, engineState, onEdit, onReset}: {
+  appState: AppStateV1;
+  engineState: EngineState;
+  onEdit?: () => void;
+  onReset?: () => ResetOutcome;
+}): ReactNode {
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [resetError, setResetError] = useState<UiError | null>(null);
+  const [busy, setBusy] = useState(false);
   const {profile, decision} = engineState;
+
+  const reset = (): void => {
+    if (busy || !onReset) return;
+    setBusy(true);
+    const outcome = onReset();
+    if (!outcome.ok) {
+      setResetError(outcome.error);
+      setConfirmReset(false);
+      setBusy(false);
+    }
+  };
   const baseline = appState.cycle.baseline;
 
   return (
@@ -39,6 +63,28 @@ export function Profile({appState, engineState, onEdit}: {appState: AppStateV1; 
         <KeyValue label="Цель на старте цикла" value={formatTime(baseline.targetTimeSeconds)} />
         <KeyValue label="Дата старта на начало цикла" value={formatDateLong(baseline.raceDate)} />
       </Card>
+
+      {!engineState.finalResultRecorded && onReset ? (
+        <Card title={profileText.reset.title}>
+          <p className="paragraph">{profileText.reset.hint}</p>
+          {resetError ? (
+            <Notice tone="danger" title={copyForError(resetError).title}>
+              <p>{copyForError(resetError).text(resetError.params)}</p>
+            </Notice>
+          ) : null}
+          {!confirmReset ? (
+            <Button variant="secondary" onClick={() => {setResetError(null); setConfirmReset(true);}}>{profileText.reset.action}</Button>
+          ) : (
+            <Notice tone="warn" title={profileText.reset.confirmTitle}>
+              <p>{profileText.reset.confirmText}</p>
+              <div className="actions">
+                <Button onClick={reset} disabled={busy}>{profileText.reset.confirmAction}</Button>
+                <Button variant="ghost" onClick={() => setConfirmReset(false)} disabled={busy}>{profileText.reset.cancel}</Button>
+              </div>
+            </Notice>
+          )}
+        </Card>
+      ) : null}
 
       <Card title={profileText.about}>
         <p className="paragraph">{profileText.aboutText}</p>

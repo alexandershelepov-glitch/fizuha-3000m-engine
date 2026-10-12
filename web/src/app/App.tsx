@@ -29,6 +29,7 @@ import {newCycleId} from '../application/draft.ts';
 import {deviceTimestamp} from '../application/format.ts';
 import {clearDraft} from '../application/draft.ts';
 import {createRepository} from '../application/storage.ts';
+import {resetActiveCycle} from '../application/resetCycle.ts';
 import {isEngineErrorCode} from '../application/errorContract.ts';
 import type {UiError} from '../application/errorContract.ts';
 import type {KeyValueStorage} from '../application/storage.ts';
@@ -244,6 +245,23 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     return result;
   };
 
+  const handleResetCycle = () => {
+    if (!repo || !storage || !store.appState || !store.engineState) {
+      return {ok: false as const, error: {code: 'STORAGE_UNAVAILABLE' as const, params: {}, retry: true, fromEngine: false}};
+    }
+    const result = resetActiveCycle({repo, storage, appState: store.appState, engineState: store.engineState});
+    if (result.ok) {
+      setOutcome(null);
+      setCheckpointChanges(null);
+      setParameterChanges(null);
+      setPlanError(null);
+      setArchiveError(null);
+      store.reload();
+      navigate({name: 'FIRST_RUN'});
+    }
+    return result;
+  };
+
   const goTo = useCallback((next: Route) => {
     if (next.name !== 'QUESTIONNAIRE') setEngineError(null);
     if (next.name === 'CYCLE_SUMMARY' && next.id === '' && store.appState) navigate({...next, id: store.appState.cycle.cycleId});
@@ -251,6 +269,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
   }, [store.appState]);
 
   if (store.load.kind === 'NO_STORAGE') return <StorageUnavailable onRetry={retryStorage} />;
+  if (store.load.kind === 'STORAGE_UNAVAILABLE') return <StorageUnavailable onRetry={store.reload} />;
 
   if (store.load.kind === 'DAMAGED' || store.load.kind === 'UNSUPPORTED_FORMAT' || store.load.kind === 'UNSUPPORTED_ENGINE_STATE' || store.load.kind === 'IMPOSSIBLE_STATE') {
     // The damaged record is removed only after the confirmation inside LoadError.
@@ -351,7 +370,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
           <History appState={store.appState} engineState={store.engineState} onNavigate={goTo} archiveContent={renderArchives()} />
         );
       case 'PROFILE':
-        return store.appState === null || store.engineState === null ? null : <Profile appState={store.appState} engineState={store.engineState} onEdit={() => goTo({name: 'PARAMETERS'})} />;
+        return store.appState === null || store.engineState === null ? null : <Profile appState={store.appState} engineState={store.engineState} onEdit={() => goTo({name: 'PARAMETERS'})} onReset={handleResetCycle} />;
       case 'WORKOUT': {
         const workout = store.engineState?.queue.find((entry) => entry.id === effective.id) ?? null;
         // The application rule decides what the screen may offer; the screen only mirrors it.

@@ -48,6 +48,7 @@ export type LoadCycleResult =
   | {kind: 'EMPTY'}
   | {kind: 'READY'; appState: AppStateV1; engineState: EngineState}
   | {kind: 'DAMAGED'; detail: string}
+  | {kind: 'STORAGE_UNAVAILABLE'}
   | {kind: 'UNSUPPORTED_FORMAT'; formatVersion: number}
   | {kind: 'UNSUPPORTED_ENGINE_STATE'}
   | {kind: 'IMPOSSIBLE_STATE'};
