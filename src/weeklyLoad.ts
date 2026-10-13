@@ -46,10 +46,12 @@ export function reservedMetres(s: EngineState, w: Workout): number | null {
 }
 
 /** Compare all seven-day windows affected by the candidate's scheduled date. */
-export function withinRollingWeekBudget(s: EngineState, workouts: readonly Workout[]): boolean {
+export function withinRollingWeekBudget(s: EngineState, workouts: readonly Workout[], changedDate?: string): boolean {
   const candidates = workouts.filter(w=>w.type!=='REST');
   const limits = approvedWeekMeters(s);
-  for(const end of candidates.map(w=>day(w.scheduledDate))){
+  const movedDay = changedDate === undefined ? null : day(changedDate);
+  for(const end of candidates.map(w=>day(w.scheduledDate)).filter(end =>
+    movedDay === null || (end>=movedDay && end<movedDay+7))){
     let total=0;
     for(const w of candidates){
       const d=day(w.scheduledDate);
