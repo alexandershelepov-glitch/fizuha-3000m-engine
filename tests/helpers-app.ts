@@ -66,6 +66,7 @@ export const TODAY_LABELS: Record<string, string> = {
   AWAITING_FINAL_RESULT: 'Итоговый результат ещё не внесён',
   RACE_DAY: 'Сегодня итоговый забег',
   TRAINING_HOLD: 'Обычные тренировки приостановлены',
+  PERFORMANCE_REVIEW: 'Нужно обновить результат на 3000 м',
   TAPER: 'Снижение нагрузки перед забегом',
   CHECKPOINT_REQUIRED: 'Нужен контрольный результат',
   WORKOUT_TODAY: 'Сегодня есть тренировка',
