@@ -30,25 +30,28 @@ function runDays(initial:EngineState, start:number, end:number, confirmed=true):
 function totalMeters(s:EngineState) {
   return s.queue.filter(w=>w.main.dose.unit==='METERS').reduce((n,w)=>n+w.main.dose.value,0);
 }
-test('STEP-01 confirmed two weeks at 10km create exactly a 500m easy budget increment',()=>{
+test('STEP-01 a verified 10km run-walk beginner first progresses bouts, not weekly distance',()=>{
   let s=createEngine(amateur(),NOW);
   assert.equal(s.easyProgression?.approvedMetersPer7Days,10000);
   s=runDays(s,0,14,true);
-  assert.equal(s.easyProgression?.approvedMetersPer7Days,10500);
-  assert.equal(s.easyProgression?.lastIncreaseDate,dateAfter(14));
+  assert.equal(s.easyProgression?.approvedMetersPer7Days,10000);
+  assert.equal(s.easyProgression?.lastIncreaseDate,null);
+  assert.equal(s.runWalkProgression?.stage,1);
   assert.equal(s.profile.averageWeeklyKm4Weeks,10,'historic self-report is not falsified');
   assert.equal(s.profile.canRun3Km,false,'GREEN is not an automatic 3000m capability result');
-  assert.ok(totalMeters(s)<=10500);
-  assert.ok(s.queue.every(w=>w.main.dose.unit!=='METERS'||w.main.dose.value<=5250));
+  assert.ok(totalMeters(s)<=10000);
+  assert.ok(s.queue.every(w=>w.main.dose.unit!=='METERS'||w.main.dose.value<=5000));
   const twice=replan(s,dateAfter(14));
-  assert.equal(twice.easyProgression?.approvedMetersPer7Days,10500,'replan is idempotent');
+  assert.equal(twice.easyProgression?.approvedMetersPer7Days,10000,'replan is idempotent');
+  assert.equal(twice.runWalkProgression?.stage,1);
 });
-test('STEP-02 two further confirmed weeks produce only one further 500m step',()=>{
+test('STEP-02 alternate full 14-day blocks allow 500m only after the bout step',()=>{
   const once=runDays(createEngine(amateur(),NOW),0,14,true);
   const twice=runDays(once,15,28,true);
-  assert.equal(twice.easyProgression?.approvedMetersPer7Days,11000);
+  assert.equal(twice.easyProgression?.approvedMetersPer7Days,10500);
   assert.equal(twice.easyProgression?.lastIncreaseDate,dateAfter(28));
-  assert.ok(totalMeters(twice)<=11000);
+  assert.ok(totalMeters(twice)<=10500);
+  assert.equal(twice.runWalkProgression?.stage,1);
 });
 test('STEP-03 defaulted/legacy GREENs may save but never authorize progression',()=>{
   let state=createEngine(amateur(),NOW);
@@ -150,7 +153,7 @@ test('STEP-12 explicit T0 capability update stays separate from measured 3000m p
   assert.deepEqual(initial.profile.safety,healthy());
 });
 
-test('STEP-13 twelve-week T0 replay raises EASY budget only once per verified 14-day block',()=>{
+test('STEP-13 twelve-week T0 replay alternates bout and meter increases without inventing 3km ability',()=>{
   let state=createEngine(amateur({raceDate:dateAfter(105)}),NOW);
   let lastApproved=10000, steps=0;
   for(let offset=0;offset<=84;offset++){
@@ -170,16 +173,17 @@ test('STEP-13 twelve-week T0 replay raises EASY budget only once per verified 14
     assert.equal(state.profile.performance,null,'feedback cannot invent a 3km race time');
     assert.equal(state.profile.canRun3Km,false,'run/walk alone does not certify continuous 3km');
   }
-  assert.equal(steps,6,'six completed blocks in 12 weeks');
-  assert.equal(state.easyProgression?.approvedMetersPer7Days,13000);
+  assert.equal(steps,3,'only three distance reviews across six verified blocks');
+  assert.equal(state.easyProgression?.approvedMetersPer7Days,11500);
+  assert.equal(state.runWalkProgression?.stage,3);
 });
 test('STEP-14 a missed second week cannot lead to two catch-up increases on a later reopen',()=>{
   let state=createEngine(amateur(),NOW);
   state=runDays(state,0,28,true);
-  assert.equal(state.easyProgression?.approvedMetersPer7Days,11000);
+  assert.equal(state.easyProgression?.approvedMetersPer7Days,10500);
   // A 28-day pause without reports must not produce any further credits.
   state=replan(state,dateAfter(56));
-  assert.equal(state.easyProgression?.approvedMetersPer7Days,11000);
+  assert.equal(state.easyProgression?.approvedMetersPer7Days,10500);
 });
 
 test('STEP-15 eight weeks with a miss every third session do not create catch-up load',()=>{
