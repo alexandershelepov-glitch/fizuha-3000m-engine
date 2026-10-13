@@ -53,6 +53,7 @@ export const ERROR_CODES = Object.freeze([
   'MOVE_OCCUPIED_DATE',
   'MOVE_RECOVERY_VIOLATION',
   'MOVE_QUALITY_LIMIT_VIOLATION',
+  'MOVE_WEEKLY_LOAD_LIMIT',
 ] as const);
 export type EngineErrorCode = (typeof ERROR_CODES)[number];
 
@@ -93,6 +94,7 @@ const MESSAGES = {
   MOVE_OCCUPIED_DATE: 'Occupied date',
   MOVE_RECOVERY_VIOLATION: 'Move violates recovery',
   MOVE_QUALITY_LIMIT_VIOLATION: 'Move violates weekly quality limit',
+  MOVE_WEEKLY_LOAD_LIMIT: 'Move exceeds the approved rolling weekly load',
 } as const satisfies Record<EngineErrorCode, string>;
 
 /**

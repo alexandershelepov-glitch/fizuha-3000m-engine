@@ -62,6 +62,7 @@ export const errorCopy = {
   MOVE_OUTSIDE_HORIZON: fixed('Новая дата должна быть в пределах ближайших дней плана и не позже дня забега.', {title: 'Перенести можно только внутри плана', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
   MOVE_OCCUPIED_DATE: fixed('Выберите свободный день.', {title: 'На эту дату уже есть тренировка', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
   MOVE_RECOVERY_VIOLATION: fixed('Между быстрыми тренировками нужен интервал не меньше двух дней.', {title: 'Слишком близко к другой тренировке', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
+  MOVE_WEEKLY_LOAD_LIMIT: fixed('Перенос превысит разрешённую нагрузку за семь дней с учётом быстрых тренировок, разминки и заминки. Выберите другую дату.', {title: 'Слишком большая нагрузка за неделю', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
   MOVE_QUALITY_LIMIT_VIOLATION: fixed('Перенос нарушит недельный лимит. Выберите дату в другой неделе.', {title: 'В этой неделе уже достаточно быстрых тренировок', cta: 'Выбрать другую дату', retry: true, showTechnicalDetails: false}),
 } satisfies Record<EngineErrorCode, ErrorCopy>;
 

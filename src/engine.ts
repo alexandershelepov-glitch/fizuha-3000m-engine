@@ -4,7 +4,8 @@ import { assessSafety, decide, taperDays } from './assessment.ts';
 import { classify, yellowFamily } from './feedback.ts';
 import { day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
 import { EngineError } from './errors.ts';
-import { generateQueue } from './workouts.ts';
+import { generateQueue, guardWeeklyLoad } from './workouts.ts';
+import {withinRollingWeekBudget} from './weeklyLoad.ts';
 import {LAST_RUN_WALK_STAGE} from './runWalk.ts';
 function copy(s: EngineState): EngineState { return structuredClone(s); }
 /**
@@ -112,7 +113,9 @@ function rebuildQueue(s: EngineState, now: string, preserve: Workout[] | null): 
   reviewEasyProgression(s, now);
   s.decision = decide(s, now);
   const generated = generateQueue(s, now);
-  s.queue = preserve ? generated.map(w => preserve.find(old => old.id === w.id) ?? w) : generated;
+  // Already-committed sessions stay at their original/lower dose if possible, but legacy plans
+  // must not bypass today's newly introduced weekly safety reservation.
+  s.queue = preserve ? guardWeeklyLoad(s, generated.map(w => preserve.find(old => old.id === w.id) ?? w)) : generated;
   return s;
 }
 export function replan(state: EngineState, now = state.asOf): EngineState {
@@ -338,6 +341,8 @@ export function moveWorkout(state: EngineState, id: string, date: string): Engin
     if (dates.some(end => dates.filter(d => d <= end && d > end - 7).length > s.decision.maximumQualityPerWeek)) throw new EngineError('MOVE_QUALITY_LIMIT_VIOLATION');
   }
   w.scheduledDate = date;
+  if (!withinRollingWeekBudget(s,[...s.history.map(h=>h.workout),...s.queue],date))
+    throw new EngineError('MOVE_WEEKLY_LOAD_LIMIT');
   s.movedWorkouts = [...s.movedWorkouts.filter(other => other.id !== id), structuredClone(w)];
   // Reserve both slots; a later replan cannot refill the moved workout's original slot.
   for (const slot of [id, `slot-${date}`]) if (!s.skippedIds.includes(slot)) s.skippedIds.push(slot);

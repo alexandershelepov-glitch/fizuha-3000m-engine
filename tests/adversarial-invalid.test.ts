@@ -126,8 +126,10 @@ test('E06 contradictory profile data are accepted, but LONG_EASY load is now con
     averageWeeklyKm4Weeks: 10, longestUsualRunKm: 40, actualRunsPerWeek: 3, availableRunsPerWeek: 3, raceDate: dateAfter(60),
   }), NOW);
   const long = withLong.queue.find(w => w.type === 'LONG_EASY');
-  assert.ok(long, 'the planned long session remains reachable');
-  assert.ok(long.main.dose.value <= 10000, 'never prescribe a 40 km long run inside a 10 km baseline week');
+  // There is NO obligation to keep a "long" session when doing so would exceed the
+  // week's reserved load (quality, warm-up and cool-down now take part of that budget).
+  if (long) assert.ok(long.main.dose.value <= 10000, 'never prescribe 40 km inside a 10 km training week');
+  assert.ok(withLong.queue.every(w => w.main.dose.unit !== 'METERS' || w.main.dose.value <= 10000));
   assert.ok(withLong.queue.filter(w=>w.main.dose.unit==='METERS').reduce((n,w)=>n+w.main.dose.value,0)<=10000);
   // Profile-level contradictions are still not rejected: input quality is a separate issue.
   assert.doesNotThrow(() => createEngine(baseProfile({averageWeeklyKm4Weeks: 5, longestUsualRunKm: 50}), NOW));
