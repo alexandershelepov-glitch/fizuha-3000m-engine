@@ -89,9 +89,7 @@ function guardEasyLoad(s: EngineState, proposed: Workout[]): Workout[] {
       // One existing EASY receives the modest newly approved distance. No frequency or
       // quality-dose increase is smuggled into this change.
       if (w.type === 'EASY' && baselineMeters > originalBaseline &&
-          !accepted.some(a => a.type === 'EASY' || a.type === 'LONG_EASY') &&
-          !alreadyDone.some(a => day(a.scheduledDate) >= date - 6 && day(a.scheduledDate) <= date
-            && (a.type === 'EASY' || a.type === 'LONG_EASY'))) {
+          !accepted.some(a => a.type === 'EASY' || a.type === 'LONG_EASY')) {
         w.main.dose.value += baselineMeters - originalBaseline;
       }
       const counted = recent
