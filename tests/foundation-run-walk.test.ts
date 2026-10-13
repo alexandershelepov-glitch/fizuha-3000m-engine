@@ -85,14 +85,14 @@ test('FOUNDATION-06 default/unverified success cannot grant a new stage or more 
   assert.equal(s.easyProgression?.approvedMetersPer7Days,1000);
 });
 test('FOUNDATION-07 a skipped running day blocks the entire 14-day stage review',()=>{
-  let s=createEngine(starter(1,1));
+  let s=createEngine(starter(1,1),NOW);
   s=skipWorkout(s,s.queue[0]!.id,NOW);
   s=play(s,1,14);
   assert.equal(s.runWalkProgression?.stage,0);
   assert.equal(s.easyProgression?.approvedMetersPer7Days,1000);
 });
 test('FOUNDATION-08 tired/incomplete feedback cannot grant stage advancement',()=>{
-  let s=createEngine(starter(1,1));
+  let s=createEngine(starter(1,1),NOW);
   const first=s.queue[0]!;
   s=recordResult(s,first.id,feedback(first,'YELLOW',{
     feedbackConfirmed:true,completionFraction:.6,sessionRpe:7,
@@ -103,7 +103,7 @@ test('FOUNDATION-08 tired/incomplete feedback cannot grant stage advancement',()
   assert.equal(s.easyProgression?.approvedMetersPer7Days,1000);
 });
 test('FOUNDATION-09 RED safety/medical stop blocks stage changes and future running',()=>{
-  let s=createEngine(starter(1,1));
+  let s=createEngine(starter(1,1),NOW);
   const w=s.queue[0]!;
   s=recordResult(s,w.id,feedback(w,'RED',{feedbackConfirmed:true}));
   s=replan(s,dateAfter(14));
@@ -125,12 +125,11 @@ test('FOUNDATION-11 legacy cycles load without retroactive stage credit or chang
   const copy=deserialize(JSON.stringify(raw));
   assert.equal(copy.runWalkProgression?.stage,0);
   assert.deepEqual(copy.queue,raw.queue);
-  copy.runWalkProgression!.stage=1;
   const again=replan(copy,dateAfter(14));
-  assert.equal(again.runWalkProgression?.stage,1,'replan never awards a second step at the same boundary');
+  assert.equal(again.runWalkProgression?.stage,0,'legacy GREENs cannot retroactively earn a new stage');
 });
 test('FOUNDATION-12 invalid stored ladder stages fail closed',()=>{
-  const s=createEngine(starter(1,1));
+  const s=createEngine(starter(1,1),NOW);
   for(const stage of [-1,0.2,LAST_RUN_WALK_STAGE+1,Infinity]){
     const raw=JSON.parse(serialize(s)) as EngineState;
     raw.runWalkProgression={stage};
