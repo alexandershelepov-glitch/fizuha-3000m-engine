@@ -18,7 +18,9 @@ export function initialDose(s: EngineState, type: WorkoutType): Dose {
   // documented no-history minimum (1 km RUN_WALK) instead of dividing by a guard of 1, which
   // prescribed a single run equal to the athlete's entire weekly volume.
   const runsPerWeek = s.profile.actualRunsPerWeek;
-  const ordinary = runsPerWeek > 0 ? s.profile.averageWeeklyKm4Weeks / runsPerWeek * 1000 : 0;
+  const approvedMeters = s.easyProgression?.approvedMetersPer7Days ??
+    (s.profile.averageWeeklyKm4Weeks * 1000);
+  const ordinary = runsPerWeek > 0 ? approvedMeters / runsPerWeek : 0;
   return {unit: 'METERS', value: type === 'LONG_EASY' ? s.profile.longestUsualRunKm * 1000 : ordinary > 0 ? ordinary : 1000};
 }
 export function prescribe(s: EngineState, type: WorkoutType, date: string, id: string, factor = 1): Workout {
@@ -66,9 +68,9 @@ function qualityType(s: EngineState, index: number): WorkoutType {
  * These are defensive scheduling rules, not a physiological adaptation model.
  */
 function guardEasyLoad(s: EngineState, proposed: Workout[]): Workout[] {
-  const baselineMeters = s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
-    ? s.profile.averageWeeklyKm4Weeks * 1000
-    : 1000; // Existing no-running-history introductory RUN_WALK minimum.
+  const baselineMeters = s.easyProgression?.approvedMetersPer7Days ??
+    (s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
+      ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000);
   const alreadyDone = s.history.map(h => h.workout);
   const accepted: Workout[] = [];
   for (const offered of proposed) {
