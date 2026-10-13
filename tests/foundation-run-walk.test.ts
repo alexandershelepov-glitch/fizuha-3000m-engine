@@ -119,7 +119,7 @@ test('FOUNDATION-10 break forces new verified weeks; never a catch-up leap',()=>
   assert.equal(s.runWalkProgression?.stage,0);
 });
 test('FOUNDATION-11 legacy cycles load without retroactive stage credit or changed saved queue',()=>{
-  let s=play(createEngine(starter(1,1),NOW),0,13);
+  const s=play(createEngine(starter(1,1),NOW),0,13);
   const raw=JSON.parse(serialize(s)) as EngineState;
   delete raw.runWalkProgression;
   const copy=deserialize(JSON.stringify(raw));
