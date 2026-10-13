@@ -53,7 +53,7 @@ test('FOUNDATION-02 verified first fortnight changes only running bouts, not wee
   const s=play(createEngine(starter(),NOW),0,14);
   assert.equal(s.runWalkProgression?.stage,1);
   assert.equal(s.easyProgression?.approvedMetersPer7Days,1000);
-  assert.equal(s.queue[0]?.main.runWalk?.runSeconds,45);
+  assert.equal(replan(s,dateAfter(15)).queue[0]?.main.runWalk?.runSeconds,45);
   assert.equal(s.profile.canRun3Km,false);
   assert.equal(s.profile.performance,null);
 });
@@ -69,7 +69,7 @@ test('FOUNDATION-04 someone accustomed to 4km gets +200m, alternating with runni
   assert.equal(s.runWalkProgression?.stage,1);
   assert.equal(s.easyProgression?.approvedMetersPer7Days,4200);
   assert.ok(meters(s)<=4200);
-  assert.equal(s.queue.filter(w=>w.type!=='REST').length,1);
+  assert.equal(replan(s,dateAfter(29)).queue.filter(w=>w.type!=='REST').length,1);
 });
 test('FOUNDATION-05 a confirmed 10km non-continuous runner does not raise bout difficulty and metres simultaneously',()=>{
   let s=play(createEngine(starter(10,2),NOW),0,14);
@@ -147,7 +147,7 @@ test('FOUNDATION-13 12-week successful novice simulation never claims ability to
   assert.ok(s.queue.every(w=>w.main.mode==='RUN_WALK'||w.type==='REST'));
 });
 test('FOUNDATION-14 old saved RUN_WALK without pattern does not invent intervals on display',()=>{
-  const w=createEngine(starter()).queue[0]!;
+  const w=createEngine(starter(),NOW).queue[0]!;
   delete w.main.runWalk;
   const steps=workoutInstruction(w).steps;
   assert.ok(steps.some(t=>t.includes('старой сохранённой')));
