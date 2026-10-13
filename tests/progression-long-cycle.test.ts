@@ -5,7 +5,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createEngine,replan,recordResult,skipWorkout} from '../src/index.ts';
-import type {EngineState, Profile, Workout} from '../src/index.ts';
+import type {EngineState, Profile} from '../src/index.ts';
 import {NOW,dateAfter,profile,feedback,healthy,experienced} from './helpers.ts';
 
 interface Scenario {id:string;weeks:number;cfg:Partial<Profile>;kind:'SUCCESS'|'UNVERIFIED'|'MISSED'|'OVERLOAD'}
