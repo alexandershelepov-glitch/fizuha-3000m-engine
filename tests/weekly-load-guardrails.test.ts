@@ -4,7 +4,7 @@
  */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {createEngine, recordResult, replan, skipWorkout, moveWorkout, applyBreak} from '../src/index.ts';
+import {createEngine, recordResult, replan, skipWorkout, applyBreak} from '../src/index.ts';
 import type {Workout, EngineState} from '../src/index.ts';
 import {NOW, dateAfter, feedback, profile, experienced} from './helpers.ts';
 
