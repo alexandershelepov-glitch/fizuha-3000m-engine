@@ -146,3 +146,35 @@ test('STEP-12 explicit T0 capability update stays separate from measured 3000m p
   assert.equal(advanced.checkpointRequired,true);
   assert.deepEqual(initial.profile.safety,healthy());
 });
+
+test('STEP-13 twelve-week T0 replay raises EASY budget only once per verified 14-day block',()=>{
+  let state=createEngine(amateur({raceDate:dateAfter(105)}),NOW);
+  let lastApproved=10000, steps=0;
+  for(let offset=0;offset<=84;offset++){
+    const today=dateAfter(offset);
+    state=replan(state,today);
+    const approved=state.easyProgression!.approvedMetersPer7Days;
+    assert.ok(approved>=lastApproved && approved-lastApproved<=500,`unexpected jump on ${today}`);
+    if(approved!==lastApproved) {
+      assert.equal(offset%14,0,'only two-week boundary can raise the budget');
+      steps++;
+    }
+    lastApproved=approved;
+    const w=state.queue.find(x=>x.scheduledDate===today);
+    if(w&&w.type!=='REST')state=recordResult(state,w.id,measured(w));
+    const longs=state.queue.filter(x=>x.type==='LONG_EASY');
+    assert.ok(longs.length<=1,`${today}: more than one LONG_EASY in queue`);
+    assert.equal(state.profile.performance,null,'feedback cannot invent a 3km race time');
+    assert.equal(state.profile.canRun3Km,false,'run/walk alone does not certify continuous 3km');
+  }
+  assert.equal(steps,6,'six completed blocks in 12 weeks');
+  assert.equal(state.easyProgression?.approvedMetersPer7Days,13000);
+});
+test('STEP-14 a missed second week cannot lead to two catch-up increases on a later reopen',()=>{
+  let state=createEngine(amateur(),NOW);
+  state=runDays(state,0,28,true);
+  assert.equal(state.easyProgression?.approvedMetersPer7Days,11000);
+  // A 28-day pause without reports must not produce any further credits.
+  state=replan(state,dateAfter(56));
+  assert.equal(state.easyProgression?.approvedMetersPer7Days,11000);
+});
