@@ -34,7 +34,7 @@ test('TOTAL-01 every type of prescribed quality reserves warmup, cooldown and ti
 test('TOTAL-02 known time is booked from current measured speed with a 10% protective buffer, never written as actual metres',()=>{
   const s=createEngine(trained({performance:{date:NOW,source:'TEST_3K',timeSeconds:900}}),NOW);
   const w=prescribe(s,'INTRO_QUALITY',NOW,'intro');
-  const expected=(w.warmupMinutes+w.cooldownMinutes+w.main.dose.value+(w.main.repeats-1)*w.restSeconds/60)*60*(3000/900)*1.1;
+  const expected=(w.main.dose.value+(.65*(w.warmupMinutes+w.cooldownMinutes))+(.5*(w.main.repeats-1)*w.restSeconds/60))*60*(3000/900)*1.1;
   assert.ok(Math.abs(reservedMetres(s,w)!-expected)<1e-6);
   assert.equal(w.main.dose.unit,'MINUTES','prescription stays in its original units');
   assert.equal(w.paceRangeSecondsPerKm,null,'no invented intervals pace');
