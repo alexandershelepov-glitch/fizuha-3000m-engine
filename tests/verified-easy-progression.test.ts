@@ -54,7 +54,7 @@ test('EASY-PROG-03 one missed workout or yellow blocks first 14-day increase',()
   assert.equal(withYellow.easyProgression?.approvedMetersPer7Days,10000);
 });
 test('EASY-PROG-04 repeated two-week blocks never cause multiple increases per day',()=>{
-  let s=simulate(createEngine(novice(),NOW),14);
+  const s=simulate(createEngine(novice(),NOW),14);
   assert.equal(s.easyProgression?.approvedMetersPer7Days,10500);
   for(let i=0;i<20;i++)s=replan(s,dateAfter(14));
   assert.equal(s.easyProgression?.approvedMetersPer7Days,10500);
