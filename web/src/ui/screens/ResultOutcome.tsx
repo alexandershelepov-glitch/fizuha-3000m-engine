@@ -62,7 +62,10 @@ export function ResultOutcome({entry, engineState, nextWorkout, changes, onConti
         <KeyValue label="Выполнено" value={`${Math.round(entry.result.completionFraction * 100)}%`} />
         <KeyValue label="Тяжесть" value={String(entry.result.sessionRpe)} />
         <KeyValue label="Длительность" value={`${entry.result.durationMinutes} мин`} />
-        <KeyValue label="Дистанция" value={`${entry.result.distanceMeters} м`} />
+        <KeyValue label="Дистанция" value={entry.result.distanceMeters === 0 ? 'Не указана' :
+          entry.result.repeats.length > 0 && Math.abs(entry.result.distanceMeters - entry.result.repeats.reduce((sum, part) => sum + part.distanceMeters, 0)) < 1e-6
+            ? `Не менее ${Math.round(entry.result.distanceMeters)} м (по отрезкам)`
+            : `${Math.round(entry.result.distanceMeters)} м`} />
         {entry.result.repeats.length > 0 ? (
           <KeyValue label="Отрезки" value={entry.result.repeats.map((repeat) => `${Math.round(repeat.distanceMeters)} м / ${formatTime(repeat.seconds)}`).join(', ')} />
         ) : null}
