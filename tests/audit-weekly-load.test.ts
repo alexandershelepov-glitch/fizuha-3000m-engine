@@ -18,22 +18,31 @@ function highAvailabilityLowHabit() {
   }), NOW);
 }
 
-test('AUDIT-LOAD-01 current 7-day prescription reaches 38 km from a 10 km/week baseline', () => {
+test('AUDIT-LOAD-01 10 km habitual baseline is never inflated to 38 km by seven free days', () => {
   const state = highAvailabilityLowHabit();
-  assert.equal(state.queue.length, 7);
-  const types = state.queue.map(w=>w.type);
-  assert.deepEqual(types,['EASY','EASY','EASY','EASY','LONG_EASY','LONG_EASY','LONG_EASY']);
+  assert.equal(state.queue.length, 2, 'running frequency is habitual, not calendar availability');
   assert.ok(state.queue.every(w=>w.main.mode==='RUN_WALK'), 'no uninterrupted 3 km');
+  assert.deepEqual(state.queue.map(w=>w.type),['EASY','EASY']);
   const plannedMetres = state.queue.reduce((total,w)=>total+w.main.dose.value,0);
-  assert.equal(plannedMetres,38_000);
-  assert.equal(plannedMetres/(state.profile.averageWeeklyKm4Weeks*1000),3.8);
-  // Expected-future invariant (NOT implemented): weekly planned distance should be capped by an approved rule.
+  assert.equal(plannedMetres,10_000);
+  assert.ok(plannedMetres <= state.profile.averageWeeklyKm4Weeks * 1000);
 });
 
-test('AUDIT-LOAD-02 quality prohibition does not enforce at most one LONG_EASY per week',()=>{
-  const state=highAvailabilityLowHabit();
-  assert.equal(state.decision.maximumQualityPerWeek,0);
-  assert.equal(state.queue.filter(w=>w.type==='LONG_EASY').length,3);
+test('AUDIT-LOAD-02 there is at most one LONG_EASY in every rolling seven-day window',()=>{
+  for(const availability of [1,2,3,4,5,6,7]){
+    const state = createEngine(profile({
+      availableRunsPerWeek:availability,actualRunsPerWeek:7,
+      averageWeeklyKm4Weeks:42,longestUsualRunKm:8,
+      canRun3Km:false,performance:null,qualitySessions8Weeks:0,qualityWeeks8Weeks:0,
+      raceDate:'2026-12-28',
+    }), NOW);
+    for(const w of state.queue){
+      const recent=state.queue.filter(x=>x.type==='LONG_EASY' &&
+        Date.parse(x.scheduledDate+'T00:00:00Z')<=Date.parse(w.scheduledDate+'T00:00:00Z') &&
+        Date.parse(x.scheduledDate+'T00:00:00Z')>Date.parse(w.scheduledDate+'T00:00:00Z')-7*86400000);
+      assert.ok(recent.length<=1,`availability=${availability} date=${w.scheduledDate}`);
+    }
+  }
 });
 
 test('AUDIT-FEEDBACK-01 easy can be GREEN without any measured duration, distance or intervals',()=>{
