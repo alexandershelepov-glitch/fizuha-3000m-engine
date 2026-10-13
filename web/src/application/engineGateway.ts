@@ -124,6 +124,12 @@ export function recordCheckpoint(state: EngineState, performance: PerformanceSna
   return engineRecordCheckpoint(state, performance, now);
 }
 
+/** Dedicated capability-only transition; it never records a race time. Caller must verify an explicit
+ * attestation and a current safe state before delegating to the engine. */
+export function confirmContinuousThreeKm(state: EngineState, now: string): EngineState {
+  return engineUpdateTrainingData(state, {canRun3Km: true}, now);
+}
+
 /** Rebuild the plan for the same or a later date. The engine decides the new queue. */
 export function replanTo(state: EngineState, deviceToday: string): EngineState {
   return replan(state, deviceToday);
