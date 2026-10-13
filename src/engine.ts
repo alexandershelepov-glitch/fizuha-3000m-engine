@@ -1,6 +1,6 @@
 import type { EngineState, PerformanceSnapshot, Profile, SafetyData, TrainingBreak, Workout, WorkoutResult, WorkoutType } from './models.ts';
 import { PERFORMANCE_SOURCES } from './models.ts';
-import { assessSafety, decide } from './assessment.ts';
+import { assessSafety, decide, taperDays } from './assessment.ts';
 import { classify, yellowFamily } from './feedback.ts';
 import { day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
 import { EngineError } from './errors.ts';
@@ -49,7 +49,8 @@ function reviewEasyProgression(s: EngineState, now: string): void {
 
   const current = decide(s, now);
   if (current.safety !== 'OK' || s.diagnosticHold || s.relatedYellow || s.progressionBlocked ||
-      s.reentry !== null || s.checkpointRequired ||
+      s.reentry !== null || (s.checkpointRequired && s.profile.canRun3Km) ||
+      (day(s.profile.raceDate) - day(now) <= taperDays(current.capacity,current.quality)) ||
       ['TAPER', 'RE_ENTRY', 'HOLD_DIAGNOSTIC'].includes(current.phase)) return;
   // Tiny/zero bases need a separate run/walk ladder, not a blind 500 m increment.
   if (baselineMeters < 5000 || s.profile.actualRunsPerWeek < 1) return;
@@ -267,7 +268,7 @@ export function deserialize(json: string): EngineState {
   // The event-date rule still applies to every active plan; only the terminal final-result state
   // (produced by `recordFinalResult`) may carry a clock that has passed `raceDate`.
   if (!s.finalResultRecorded) validateEventDate(s.profile, s.asOf);
-  s.easyProgression ??= {approvedMetersPer7Days: s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0 ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000, lastReviewedBlock: Math.floor((day(s.asOf) - day(s.cycleStartDate)) / 14) - 1, lastIncreaseDate: null};
+  s.easyProgression ??= {approvedMetersPer7Days: s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0 ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000, lastReviewedBlock: Math.floor((day(s.asOf) - day(s.cycleStartDate)) / 14), lastIncreaseDate: null};
   s.decision = decide(s, s.asOf);
   return s;
 }
