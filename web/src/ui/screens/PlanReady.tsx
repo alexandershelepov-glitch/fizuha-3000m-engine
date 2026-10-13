@@ -3,15 +3,17 @@ import {addDays, formatDateLong, formatTime} from '../../application/format.ts';
 import {taperDaysFor} from '../../application/engineGateway.ts';
 import type {EngineState} from '../../application/engineGateway.ts';
 import {workoutLine} from '../display.ts';
+import {isSafetyHold, needsPerformanceReview} from '../../application/uiState.ts';
 import {phaseText, phaseWhy} from '../copy/values.ts';
-import {planReady, questionnaire} from '../copy/text.ts';
+import {planReady, questionnaire, today as todayCopy} from '../copy/text.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, KeyValue, Notice} from '../components/Layout.tsx';
 
 export function PlanReady({engineState, onContinue, onRecheck}: {engineState: EngineState; onContinue: () => void; onRecheck: () => void}): ReactNode {
   const {profile, decision, queue} = engineState;
   const taperStart = addDays(profile.raceDate, -taperDaysFor(decision.capacity, decision.quality));
-  const hold = decision.safety !== 'OK' || decision.phase === 'HOLD_DIAGNOSTIC' || engineState.diagnosticHold || engineState.relatedYellow;
+  const hold = isSafetyHold(engineState);
+  const performanceReview = needsPerformanceReview(engineState);
 
   return (
     <div className="screen">
@@ -28,9 +30,10 @@ export function PlanReady({engineState, onContinue, onRecheck}: {engineState: En
       </Card>
 
       {hold ? <Notice tone="warn" title={questionnaire.hold.title}><p>{questionnaire.hold.explanation}</p><p>{questionnaire.hold.next}</p><Button onClick={onRecheck}>{questionnaire.hold.recheck}</Button></Notice> : null}
+      {performanceReview ? <Notice tone="info" title={todayCopy.performanceReview.title}><p>{todayCopy.performanceReview.text}</p></Notice> : null}
 
       <Card title={phaseText[decision.phase].label}>
-        <p className="paragraph">{phaseWhy[decision.phase]}</p>
+        <p className="paragraph">{performanceReview ? todayCopy.performanceReview.text : phaseWhy[decision.phase]}</p>
       </Card>
 
       {!hold ? <Card title={planReady.horizon}>
