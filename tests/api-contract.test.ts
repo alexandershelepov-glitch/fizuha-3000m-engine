@@ -102,6 +102,16 @@ const CASES: Case[] = [
   {code: 'MOVE_OCCUPIED_DATE', message: 'Occupied date', trigger: () => { const s = newState(); return moveWorkout(s, s.queue[0]!.id, s.queue[1]!.scheduledDate); }},
   {code: 'MOVE_RECOVERY_VIOLATION', message: 'Move violates recovery', trigger: () => { const {state, first, second} = twoQualityPlan(); return moveWorkout(state, first.id, dateAfter(-1, second.scheduledDate)); }},
   {code: 'MOVE_QUALITY_LIMIT_VIOLATION', message: 'Move violates weekly quality limit', trigger: () => { const {state, workout, target} = weeklyLimitPlan(); return moveWorkout(state, workout.id, target); }},
+  {code: 'MOVE_WEEKLY_LOAD_LIMIT', message: 'Move exceeds the approved rolling weekly load', trigger: () => {
+    const s=newState(); const w=s.queue.find(w=>!w.countsAsQuality)!;
+    const target=[1,2,3,4,5,6].map(offset=>dateAfter(offset)).find(d=>!s.queue.some(other=>other.scheduledDate===d))!;
+    const historic=structuredClone(w);
+    historic.id='previous-week-budget'; historic.scheduledDate=dateAfter(-1);
+    historic.main.dose={unit:'METERS',value:28000};
+    s.history.push({workout:historic,result:validResult(dateAfter(-1)),
+      classified:{evaluation:'GREEN',yellowReason:null,sessionLoad:0,inRangeFraction:1,speedDropFraction:0}});
+    return moveWorkout(s,w.id,target);
+  }},
 ];
 
 const byCode = new Map(CASES.map(c => [c.code, c]));
