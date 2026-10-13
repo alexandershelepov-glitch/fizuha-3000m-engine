@@ -359,10 +359,13 @@ function continuousSteps(workout: Workout, paceText: string | null): string[] {
   }
 
   if (mode === 'RUN_WALK') {
-    // The workout carries the mode and the total volume, but no run/walk pattern: none is described.
     steps.push(copy.runWalk);
+    const pattern = workout.main.runWalk;
+    steps.push(pattern
+      ? copy.runWalkBouts(pattern.runSeconds, pattern.walkSeconds)
+      : copy.runWalkPattern);
+    if (pattern) steps.push(copy.runWalkRepeat);
     steps.push(copy.runWalkTotal(distanceText(dose.value)));
-    steps.push(copy.runWalkPattern);
     return steps;
   }
 
