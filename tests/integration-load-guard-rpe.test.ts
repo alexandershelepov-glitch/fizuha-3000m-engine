@@ -72,3 +72,49 @@ function workoutSafety() {
     otherStop: false, needsAssessment: false,
   };
 }
+
+
+test('combined: one habitual run stays EASY, never the sole fast workout', () => {
+  const state = createEngine(profile({
+    actualRunsPerWeek: 1,
+    availableRunsPerWeek: 7,
+    averageWeeklyKm4Weeks: 5,
+    longestUsualRunKm: 5,
+    regularRunningWeeks: 4,
+    raceDate: dateAfter(80),
+  }), NOW);
+  assert.equal(state.decision.maximumQualityPerWeek, 0);
+  assert.equal(state.queue.length, 1);
+  assert.equal(state.queue[0]!.type, 'EASY');
+  assert.equal(state.queue[0]!.countsAsQuality, false);
+  assert.ok(state.queue[0]!.main.dose.value <= 5000);
+});
+
+test('combined: one available day stays EASY even for a runner with more habitual days', () => {
+  const state = createEngine(profile({
+    actualRunsPerWeek: 3,
+    availableRunsPerWeek: 1,
+    averageWeeklyKm4Weeks: 16,
+    longestUsualRunKm: 6,
+    raceDate: dateAfter(80),
+  }), NOW);
+  assert.equal(state.decision.maximumQualityPerWeek, 0);
+  assert.equal(state.queue.length, 1);
+  assert.equal(state.queue[0]!.type, 'EASY');
+});
+
+test('combined: 4 genuine running days still allow quality sessions for the prepared runner', () => {
+  const state = createEngine(profile({
+    actualRunsPerWeek: 4,
+    availableRunsPerWeek: 4,
+    regularRunningWeeks: 30,
+    averageWeeklyKm4Weeks: 28,
+    longestUsualRunKm: 9,
+    qualitySessions8Weeks: 8,
+    qualityWeeks8Weeks: 6,
+    qualityMostlyTolerated: true,
+    raceDate: dateAfter(80),
+  }), NOW);
+  assert.ok(state.decision.maximumQualityPerWeek >= 1);
+  assert.ok(state.queue.some(w => w.countsAsQuality));
+});
