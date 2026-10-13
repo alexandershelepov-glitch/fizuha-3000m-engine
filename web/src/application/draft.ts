@@ -75,9 +75,11 @@ export function loadResultDraft(storage: KeyValueStorage | null, workoutId: stri
     if (parsed.workoutId !== workoutId || typeof parsed.draft !== 'object' || parsed.draft === null) return null;
     // Previous versions prefilled "0" to mean "not measured". Migrate this old sentinel
     // to a blank optional total; never silently discard measured repeat entries.
-    return parsed.draft.distanceMeters === '0'
-      ? {...parsed.draft, distanceMeters: ''}
-      : parsed.draft;
+    return {...parsed.draft,
+      completionConfirmed: parsed.draft.completionConfirmed === true,
+      effortConfirmed: parsed.draft.effortConfirmed === true,
+      distanceMeters: parsed.draft.distanceMeters === '0' ? '' : parsed.draft.distanceMeters,
+    };
   } catch {
     return null;
   }
