@@ -5,6 +5,7 @@ import { classify, yellowFamily } from './feedback.ts';
 import { day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
 import { EngineError } from './errors.ts';
 import { generateQueue } from './workouts.ts';
+import {LAST_RUN_WALK_STAGE} from './runWalk.ts';
 function copy(s: EngineState): EngineState { return structuredClone(s); }
 /**
  * Remove a workout from the plan. Approved decision 2: a missed session is deleted from the
@@ -52,8 +53,6 @@ function reviewEasyProgression(s: EngineState, now: string): void {
       s.reentry !== null || (s.checkpointRequired && s.profile.canRun3Km) ||
       (day(s.profile.raceDate) - day(now) <= taperDays(current.capacity,current.quality)) ||
       ['TAPER', 'RE_ENTRY', 'HOLD_DIAGNOSTIC'].includes(current.phase)) return;
-  // Tiny/zero bases need a separate run/walk ladder, not a blind 500 m increment.
-  if (baselineMeters < 5000 || s.profile.actualRunsPerWeek < 1) return;
   // A non-stale, externally measured 3 km is needed before trained-level progression.
   if ((current.capacity === 'T2' || current.capacity === 'T3') && current.confidence === 'LOW') return;
 
@@ -83,6 +82,27 @@ function reviewEasyProgression(s: EngineState, now: string): void {
   if (Object.entries(s.doses).some(([type, dose]) =>
     dose !== undefined && (s.confirmedDoses[type as Workout['type']]?.value ?? dose.value) < dose.value)) return;
 
+  if (!s.profile.canRun3Km) {
+    // Never advance BOTH running-bout duration and distance on the same review.
+    // This is a pedagogical introductory ladder, not proof of continuous 3000 m ability.
+    s.runWalkProgression ??= {stage:0};
+    if (completedBlock % 2 === 0 && s.runWalkProgression.stage < LAST_RUN_WALK_STAGE) {
+      s.runWalkProgression.stage++;
+      return;
+    }
+    // Very low/zero historical mileage needs small, verified increments, NOT +500m.
+    // Max +10% of the already approved WEEKLY distance, capped at 200 m per two-week review.
+    // Combined walking + running metres are guarded by the same weekly budget.
+    const increment = baselineMeters < 5000 || s.profile.actualRunsPerWeek < 1
+      ? Math.min(200, Math.floor(state.approvedMetersPer7Days * .1 / 50) * 50)
+      : 500;
+    if (increment > 0) {
+      state.approvedMetersPer7Days += increment;
+      state.lastIncreaseDate = now;
+    }
+    return;
+  }
+  if (baselineMeters < 5000 || s.profile.actualRunsPerWeek < 1) return;
   const increment = current.capacity === 'T2' || current.capacity === 'T3' ? 1000 : 500;
   state.approvedMetersPer7Days += increment;
   state.lastIncreaseDate = now;
@@ -113,6 +133,7 @@ export function createEngine(profile: Profile, now: string): EngineState {
     lastAssessmentDate: profile.performance?.date ?? now, relatedYellow: false, reducedQualityUntilConfirmed: false, diagnosticHold: false, progressionBlocked: false,
     doses: {}, confirmedDoses: {}, successStreak: {}, qualityRotation: 0, reentry: null, finalResultRecorded: false,
     easyProgression: {approvedMetersPer7Days: profile.actualRunsPerWeek > 0 && profile.averageWeeklyKm4Weeks > 0 ? profile.averageWeeklyKm4Weeks * 1000 : 1000, lastReviewedBlock: -1, lastIncreaseDate: null},
+    runWalkProgression: {stage:0},
   } as unknown as EngineState;
   state.decision = decide(state, now);
   const latest = [...profile.breaks].sort((a, b) => day(b.endDate) - day(a.endDate))[0];
@@ -289,6 +310,17 @@ export function deserialize(json: string): EngineState {
           day(p.lastIncreaseDate) > day(s.asOf)))) {
       throw new EngineError('INVALID_PROGRESSION_STATE');
     }
+  }
+  if (s.runWalkProgression === undefined) {
+    // Older versions had no run/walk steps. Never retroactively claim completion of stages.
+    s.runWalkProgression = {stage:0};
+    if (!s.profile.canRun3Km) s.easyProgression!.lastReviewedBlock = Math.max(
+      s.easyProgression!.lastReviewedBlock, Math.floor((day(s.asOf)-day(s.cycleStartDate))/14));
+  } else {
+    const stage = s.runWalkProgression.stage;
+    const elapsedBlocks = Math.max(0,Math.floor((day(s.asOf)-day(s.cycleStartDate))/14));
+    if (!Number.isInteger(stage) || stage < 0 || stage > Math.min(elapsedBlocks,LAST_RUN_WALK_STAGE))
+      throw new EngineError('INVALID_PROGRESSION_STATE');
   }
   s.decision = decide(s, s.asOf);
   return s;
