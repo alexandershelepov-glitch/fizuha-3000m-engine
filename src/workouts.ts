@@ -66,9 +66,10 @@ function qualityType(s: EngineState, index: number): WorkoutType {
  * These are defensive scheduling rules, not a physiological adaptation model.
  */
 function guardEasyLoad(s: EngineState, proposed: Workout[]): Workout[] {
-  const baselineMeters = s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
-    ? s.profile.averageWeeklyKm4Weeks * 1000
-    : 1000; // Existing no-running-history introductory RUN_WALK minimum.
+  const baselineMeters = s.easyProgression?.approvedMetersPer7Days ??
+    (s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
+      ? s.profile.averageWeeklyKm4Weeks * 1000
+      : 1000); // Existing no-running-history introductory RUN_WALK minimum.
   const alreadyDone = s.history.map(h => h.workout);
   const accepted: Workout[] = [];
   for (const offered of proposed) {
@@ -83,6 +84,16 @@ function guardEasyLoad(s: EngineState, proposed: Workout[]): Workout[] {
       if (offered.main.dose.unit === 'METERS') w.main.dose.value = Math.min(w.main.dose.value, offered.main.dose.value);
     }
     if ((w.type === 'EASY' || w.type === 'LONG_EASY') && w.main.dose.unit === 'METERS') {
+      const originalBaseline = s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
+        ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000;
+      // One existing EASY receives the modest newly approved distance. No frequency or
+      // quality-dose increase is smuggled into this change.
+      if (w.type === 'EASY' && baselineMeters > originalBaseline &&
+          !accepted.some(a => a.type === 'EASY' || a.type === 'LONG_EASY') &&
+          !alreadyDone.some(a => day(a.scheduledDate) >= date - 6 && day(a.scheduledDate) <= date
+            && (a.type === 'EASY' || a.type === 'LONG_EASY'))) {
+        w.main.dose.value += baselineMeters - originalBaseline;
+      }
       const counted = recent
         .filter(other => other.main.dose.unit === 'METERS' && other.type !== 'REST')
         .reduce((sum, other) => sum + other.main.dose.value, 0);
