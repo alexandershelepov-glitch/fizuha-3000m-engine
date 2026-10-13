@@ -109,6 +109,8 @@ export interface WorkoutResult {
   durationMinutes: number; distanceMeters: number; repeats: { distanceMeters: number; seconds: number }[];
   restSeconds: number[]; yellowReason?: YellowReason; conditions: { heat?: boolean; wind?: boolean; surface?: string; notes?: string };
   unexpectedFatigue: boolean;
+  /** Explicitly confirmed completion AND effort; absent in legacy reports and test fixtures. */
+  verifiedForProgression?: boolean;
 }
 export interface ClassifiedResult { evaluation: Evaluation; yellowReason: YellowReason | null; sessionLoad: number; inRangeFraction: number; speedDropFraction: number }
 export interface HistoryEntry { workout: Workout; result: WorkoutResult; classified: ClassifiedResult }
@@ -132,4 +134,6 @@ export interface EngineState {
    * state whose clock has passed `raceDate`.
    */
   finalResultRecorded: boolean;
+  /** Independent approved EASY/long EASY weekly budget, not a fabricated new training history. */
+  easyProgression?: { approvedMetersPer7Days: number; lastIncreaseDate: string | null };
 }
