@@ -56,8 +56,10 @@ test('EASY-PROG-03 one missed workout or yellow blocks first 14-day increase',()
 test('EASY-PROG-04 repeated two-week blocks never cause multiple increases per day',()=>{
   const s=simulate(createEngine(novice(),NOW),14);
   assert.equal(s.easyProgression?.approvedMetersPer7Days,10500);
-  for(let i=0;i<20;i++)s=replan(s,dateAfter(14));
-  assert.equal(s.easyProgression?.approvedMetersPer7Days,10500);
+  for(let i=0;i<20;i++){
+    const replay=replan(s,dateAfter(14));
+    assert.equal(replay.easyProgression?.approvedMetersPer7Days,10500);
+  }
 });
 test('EASY-PROG-05 small 1–4km baseline never receives the blanket 500m step',()=>{
   for(const km of [0,1,2,3,4]){
