@@ -106,3 +106,23 @@ test('LOAD-GUARD-06 quality-workout recovery and type are not changed by easy-di
   assert.ok(s.queue.some(w=>w.countsAsQuality),'experienced profile retains quality sessions');
   for(const w of s.queue.filter(w=>w.countsAsQuality))assert.ok(w.minimumRecoveryHoursBeforeQuality>=48);
 });
+
+test('LOAD-GAP-07 a successful T0 athlete cannot advance canRun3Km from training feedback alone',()=>{
+  let state=createEngine(noContinuous3k(),NOW);
+  for(let i=0;i<35;i++){
+    const date=dateAfter(i);
+    state=replan(state,date);
+    const w=state.queue.find(item=>item.scheduledDate===date);
+    if(w && w.type!=='REST'){
+      assert.equal(w.main.mode,'RUN_WALK');
+      state=recordResult(state,w.id,feedback(w,'GREEN',{
+        completionFraction:1,distanceMeters:w.main.dose.value,durationMinutes:30,repeats:[],
+      }));
+    }
+  }
+  assert.ok(state.history.length>=8,'multiple weeks of positive results were recorded');
+  assert.equal(state.decision.capacity,'T0');
+  assert.equal(state.profile.canRun3Km,false,'status is currently not updatable from completed sessions');
+  assert.ok(state.queue.every(w=>w.type==='REST'||w.main.mode==='RUN_WALK'));
+  // A separate capability check or explicit reassessment pathway is needed before deployment.
+});
