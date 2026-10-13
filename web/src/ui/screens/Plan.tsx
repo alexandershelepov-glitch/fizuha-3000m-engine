@@ -3,6 +3,7 @@ import {addDays, formatDateLong, formatTime} from '../../application/format.ts';
 import {taperDaysFor} from '../../application/engineGateway.ts';
 import type {EngineState} from '../../application/engineGateway.ts';
 import {hasPendingResults} from '../../application/invariants.ts';
+import {isSafetyHold, needsPerformanceReview} from '../../application/uiState.ts';
 import {workoutDate, workoutTitle, workoutVolume} from '../display.ts';
 import {phaseText, phaseWhy} from '../copy/values.ts';
 import {common, nav, plan, today as todayText} from '../copy/text.ts';
@@ -36,12 +37,19 @@ export function Plan({engineState, today, onNavigate, onRefreshPlan, refreshing}
       </header>
 
       <Card>
-        <p className="paragraph">{phaseWhy[decision.phase]}</p>
+        <p className="paragraph">{needsPerformanceReview(engineState) ? todayText.performanceReview.text : phaseWhy[decision.phase]}</p>
       </Card>
-      {(decision.safety !== 'OK' || decision.phase === 'HOLD_DIAGNOSTIC' || engineState.diagnosticHold || engineState.relatedYellow) ? (
+      {isSafetyHold(engineState) ? (
         <Notice tone="warn" title={todayText.hold.title}>
           <p>{todayText.hold.text}</p>
           <Button onClick={() => onNavigate({name: 'SAFETY_RECHECK'})}>{todayText.hold.recheck}</Button>
+        </Notice>
+      ) : null}
+
+      {needsPerformanceReview(engineState) ? (
+        <Notice tone="info" title={todayText.performanceReview.title}>
+          <p>{todayText.performanceReview.text}</p>
+          <Button onClick={() => onNavigate({name: 'CHECKPOINT'})}>{todayText.performanceReview.cta}</Button>
         </Notice>
       ) : null}
 
