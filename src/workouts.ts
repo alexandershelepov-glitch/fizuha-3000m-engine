@@ -88,9 +88,9 @@ function guardEasyLoad(s: EngineState, proposed: Workout[]): Workout[] {
         .reduce((sum, other) => sum + other.main.dose.value, 0);
       const availableMeters = Math.max(0, baselineMeters - counted);
       if (availableMeters < 1000) {
-        // The documented introduction is 1 km. Do not invent a micro-run or silently exceed budget.
-        const planning = {...s, decision: decide(s, w.scheduledDate)};
-        w = prescribe(planning, 'REST', w.scheduledDate, w.id);
+        // No extra workout to "complete" or log: the day is simply left free for recovery.
+        // Never invent a sub-1km running prescription or exceed the habitual budget.
+        continue;
       } else {
         w.main.dose.value = Math.min(w.main.dose.value, availableMeters);
         if (w.type === 'LONG_EASY') {
