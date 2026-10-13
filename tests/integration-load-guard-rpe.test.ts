@@ -22,7 +22,7 @@ test('combined: seven free days and 10 km / two habitual runs yield two EASY ses
   const initial = [...state.queue];
   assert.equal(initial.length, 2);
   assert.ok(initial.every(w => w.type === 'EASY' && w.main.mode === 'RUN_WALK'));
-  assert.ok(initial.every(w => JSON.stringify(w.targetRpe) === JSON.stringify([2, 4])));
+  for (const w of initial) assert.deepEqual(w.targetRpe, [2, 4]);
   assert.equal(initial.reduce((sum, w) => sum + w.main.dose.value, 0), 10000);
 
   for (const workout of initial) {
@@ -49,7 +49,7 @@ test('combined: seven free days and 10 km / two habitual runs yield two EASY ses
   assert.ok(totalMeters <= 10000);
 });
 
-test('combined: false-green avoidance is not yet implemented (safety and fatigue still block)', () => {
+test('combined: normal RPE 4 never overrides an acute illness STOP', () => {
   const state = createEngine(profile({
     performance: null, canRun3Km: false, actualRunsPerWeek: 2,
     availableRunsPerWeek: 7, averageWeeklyKm4Weeks: 10,
