@@ -14,8 +14,15 @@ export function classify(w: Workout, r: WorkoutResult): ClassifiedResult {
   else if (r.unexpectedFatigue || r.sessionRpe >= target + 2) reason = 'RECOVERY';
   else if (r.completionFraction < .95 || inRangeFraction < .8 || speedDropFraction > .05 + 1e-12) reason = r.conditions.heat || r.conditions.wind ? 'ENVIRONMENT' : 'EXECUTION';
   if (reason) return {...base, evaluation: 'YELLOW', yellowReason: reason === 'PAIN' ? 'PAIN' : r.yellowReason ?? reason};
-  if (r.completionFraction === 1 && inRangeFraction >= .8 && speedDropFraction <= .05 + 1e-12 && r.sessionRpe <= target - 1 && r.safety.pain <= 1) return {...base, evaluation: 'GREEN_PLUS', yellowReason: null};
-  if (r.completionFraction >= .95 && inRangeFraction >= .8 && speedDropFraction <= .05 + 1e-12 && Math.abs(r.sessionRpe - target) <= 1 && r.safety.pain <= 1) return {...base, evaluation: 'GREEN', yellowReason: null};
+  const easyRunning = w.type === 'EASY' || w.type === 'LONG_EASY';
+  // RPE 2–4 is an expected easy effort; 4 must not become OTHER/YELLOW merely because
+  // it is above the midpoint. The medical/symptom checks above remain unchanged.
+  const expectedEffort = easyRunning
+    ? r.sessionRpe >= w.targetRpe[0] && r.sessionRpe <= w.targetRpe[1]
+    : Math.abs(r.sessionRpe - target) <= 1;
+  const noticeablyEasier = easyRunning ? r.sessionRpe < w.targetRpe[0] : r.sessionRpe <= target - 1;
+  if (r.completionFraction === 1 && inRangeFraction >= .8 && speedDropFraction <= .05 + 1e-12 && noticeablyEasier && r.safety.pain <= 1) return {...base, evaluation: 'GREEN_PLUS', yellowReason: null};
+  if (r.completionFraction >= .95 && inRangeFraction >= .8 && speedDropFraction <= .05 + 1e-12 && expectedEffort && r.safety.pain <= 1) return {...base, evaluation: 'GREEN', yellowReason: null};
   return {...base, evaluation: 'YELLOW', yellowReason: r.yellowReason ?? 'OTHER'};
 }
 export function yellowFamily(reason: YellowReason): string {

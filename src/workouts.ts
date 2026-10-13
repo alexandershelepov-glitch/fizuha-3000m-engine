@@ -29,7 +29,7 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
   const dose = {...((s.reentry && QUALITY.includes(type) ? s.confirmedDoses[type] : s.doses[type]) ?? initialDose(s, type))}; dose.value *= factor;
   let range: [number, number] | null = null;
   let anchor: Workout['anchor'] = 'EFFORT';
-  let rpe: [number, number] = [2, 3];
+  let rpe: [number, number] = type === 'EASY' || type === 'LONG_EASY' ? [2, 4] : [2, 3];
   if (type === 'THRESHOLD') { rpe = [6, 7]; if (d.currentSpeedMps) range = [d.currentSpeedMps * .90, d.currentSpeedMps * .94]; anchor = 'CURRENT'; }
   if (type === 'VO2') { rpe = [8, 9]; if (d.currentSpeedMps) range = [d.currentSpeedMps * .97, d.currentSpeedMps * 1.03]; anchor = 'CURRENT'; }
   if (type === 'SPECIFIC_3K') { rpe = [8, 9]; if (d.effectiveSpeedMps) range = [d.effectiveSpeedMps * .985, d.effectiveSpeedMps * 1.015]; anchor = d.gate === 'CLOSED' ? 'CURRENT' : 'EFFECTIVE'; }
