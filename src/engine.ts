@@ -268,7 +268,28 @@ export function deserialize(json: string): EngineState {
   // The event-date rule still applies to every active plan; only the terminal final-result state
   // (produced by `recordFinalResult`) may carry a clock that has passed `raceDate`.
   if (!s.finalResultRecorded) validateEventDate(s.profile, s.asOf);
-  s.easyProgression ??= {approvedMetersPer7Days: s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0 ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000, lastReviewedBlock: Math.floor((day(s.asOf) - day(s.cycleStartDate)) / 14), lastIncreaseDate: null};
+  const baseline = s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
+    ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000;
+  if (s.easyProgression === undefined) {
+    // Previously saved v1 cycles may have completed sessions but no verification flags or
+    // approved budget. Start fresh: NO retroactive increases for pre-upgrade sessions.
+    s.easyProgression = {approvedMetersPer7Days: baseline,
+      lastReviewedBlock: Math.floor((day(s.asOf) - day(s.cycleStartDate)) / 14),
+      lastIncreaseDate: null};
+  } else {
+    const p = s.easyProgression;
+    const elapsed = day(s.asOf) - day(s.cycleStartDate);
+    const allowedBlocks = Math.max(0, Math.floor(elapsed / 14));
+    const allowedMax = baseline + allowedBlocks * 1000;
+    if (!p || !Number.isFinite(p.approvedMetersPer7Days) ||
+        p.approvedMetersPer7Days < baseline || p.approvedMetersPer7Days > allowedMax ||
+        !Number.isInteger(p.lastReviewedBlock) || p.lastReviewedBlock < -1 ||
+        p.lastReviewedBlock > allowedBlocks ||
+        (p.lastIncreaseDate !== null && (typeof p.lastIncreaseDate !== 'string' ||
+          day(p.lastIncreaseDate) > day(s.asOf)))) {
+      throw new EngineError('INVALID_PROGRESSION_STATE');
+    }
+  }
   s.decision = decide(s, s.asOf);
   return s;
 }
