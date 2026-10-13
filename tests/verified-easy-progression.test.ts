@@ -178,3 +178,52 @@ test('STEP-14 a missed second week cannot lead to two catch-up increases on a la
   state=replan(state,dateAfter(56));
   assert.equal(state.easyProgression?.approvedMetersPer7Days,11000);
 });
+
+test('STEP-15 eight weeks with a miss every third session do not create catch-up load',()=>{
+  let state=createEngine(amateur({raceDate:dateAfter(85)}),NOW);
+  let index=0;
+  for(let offset=0;offset<=56;offset++){
+    const today=dateAfter(offset);state=replan(state,today);
+    const w=state.queue.find(x=>x.scheduledDate===today);
+    if(w&&w.type!=='REST'){
+      index++;
+      state=index%3===0?skipWorkout(state,w.id,today):recordResult(state,w.id,measured(w));
+    }
+  }
+  assert.ok(state.skippedIds.length>=4);
+  assert.equal(state.easyProgression?.approvedMetersPer7Days,10000);
+  assert.equal(state.profile.canRun3Km,false);
+});
+test('STEP-16 trained 10-week plan never assumes a faster 3000m result or unverified growth',()=>{
+  const current={timeSeconds:880,date:NOW,source:'TEST_3K' as const};
+  const trained=profile({
+    performance:current,canRun3Km:true,raceDate:dateAfter(100),
+    actualRunsPerWeek:4,availableRunsPerWeek:6,
+    regularRunningWeeks:40,averageWeeklyKm4Weeks:28,longestUsualRunKm:9,
+    qualitySessions8Weeks:8,qualityWeeks8Weeks:6,qualityMostlyTolerated:true,
+    experience:{threshold:true,vo2:true,specific3k:true},
+  });
+  let state=createEngine(trained,NOW);
+  let priorBudget=state.easyProgression!.approvedMetersPer7Days;
+  for(let offset=0;offset<=70;offset++){
+    const today=dateAfter(offset);
+    state=replan(state,today);
+    const budget=state.easyProgression!.approvedMetersPer7Days;
+    assert.ok(budget>=priorBudget && budget-priorBudget<=1000);
+    priorBudget=budget;
+    const w=state.queue.find(x=>x.scheduledDate===today);
+    if(w&&w.type!=='REST'){
+      const repeats=w.speedRangeMps?
+        [{distanceMeters:600,seconds:600/((w.speedRangeMps[0]+w.speedRangeMps[1])/2)}]:[];
+      state=recordResult(state,w.id,feedback(w,'GREEN',{
+        feedbackConfirmed:true,durationMinutes:35,repeats,
+        distanceMeters:Math.max(w.main.dose.unit==='METERS'?w.main.dose.value:0,
+          repeats.reduce((n,r)=>n+r.distanceMeters,0)),
+      }));
+    }
+    assert.equal(state.profile.performance?.timeSeconds,880);
+    assert.ok(state.queue.filter(x=>x.type==='LONG_EASY').length<=1);
+  }
+  assert.ok(state.easyProgression!.approvedMetersPer7Days<=33000,
+    'maximum five 1 km steps are possible across the elapsed 10 weeks');
+});
