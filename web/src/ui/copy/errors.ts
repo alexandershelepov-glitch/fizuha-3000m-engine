@@ -43,6 +43,8 @@ export const errorCopy = {
   AVAILABILITY_NOT_INTEGER: fixed('Доступное количество тренировок в неделю — целое число от 1 до 7.', {title: 'Укажите целое число тренировок', cta: 'Исправить', retry: true, showTechnicalDetails: false}),
   INVALID_YELLOW_REASON: fixed('Выберите причину из списка.', {title: 'Не удалось прочитать причину', cta: 'Выбрать причину', retry: true, showTechnicalDetails: false}),
   INVALID_FATIGUE_FLAG: fixed('Ответьте, была ли усталость необычно сильной.', {title: 'Не удалось прочитать ответ об усталости', cta: 'Ответить', retry: true, showTechnicalDetails: false}),
+  INVALID_FEEDBACK_CONFIRMATION: fixed('Выберите фактическое выполнение и тяжесть тренировки.', {title: 'Подтвердите результат тренировки', cta: 'Заполнить ответы', retry: true, showTechnicalDetails: false}),
+  INVALID_PROGRESSION_STATE: fixed('Сохранённый план содержит неверные данные о нагрузке. Данные не удалены. Обновите приложение или обратитесь за помощью.', {title: 'Не удалось загрузить сведения о нагрузке', cta: 'Обновить приложение', retry: false, showTechnicalDetails: true}),
   RESULT_DISTANCE_CONFLICT: fixed('Общая дистанция не может быть меньше суммы записанных отрезков. Проверьте значения.', {title: 'Дистанция не совпадает с отрезками', cta: 'Исправить', retry: true, showTechnicalDetails: false}),
   EVENT_DATE_PASSED: fixed('Обычный план этого цикла завершён: тренировки не назначаются после дня забега. Внесите результат забега, чтобы закрыть цикл.', {title: 'Дата старта уже прошла', cta: 'Внести результат', retry: false, showTechnicalDetails: false}),
   CLOCK_BACKWARDS: fixed('Нельзя вернуться к более ранней дате. Проверьте дату на устройстве.', {title: 'Дата раньше сохранённой', cta: 'Обновить', retry: true, showTechnicalDetails: false}),

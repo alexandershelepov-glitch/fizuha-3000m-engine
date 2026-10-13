@@ -84,7 +84,7 @@ test('SKIP-03 the cause follows the session date and only the application states
 });
 
 test('SKIP-04 only the chosen session is resolved, never the other overdue ones', () => {
-  const fixture = appCycle({availableRunsPerWeek: 4});
+  const fixture = appCycle({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const today = dateAfter(2);
   const overdue = fixture.engineState.queue.filter((workout) => workout.scheduledDate < today);
   assert.ok(overdue.length >= 2, 'the fixture must contain several overdue sessions');
@@ -167,7 +167,7 @@ test('SKIP-07 a storage failure leaves the previous state active and unlogged', 
 });
 
 test('SKIP-08 repeated pending sessions are resolved oldest first', () => {
-  const fixture = appCycle({availableRunsPerWeek: 4});
+  const fixture = appCycle({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const today = dateAfter(2);
   const overdue = fixture.engineState.queue.filter((workout) => workout.scheduledDate < today);
 

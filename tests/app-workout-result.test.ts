@@ -43,7 +43,7 @@ function cycleFixture(overrides: Parameters<typeof profile>[0] = {}, createdOn =
 const firstWorkout = (state: EngineState) => state.queue[0]!;
 
 test('RESULT-01 a successful session is classified GREEN by the engine and stored', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const workout = firstWorkout(fixture.engineState);
 
   const outcome = submitWorkoutResult({
@@ -85,7 +85,7 @@ test('RESULT-02 GREEN_PLUS comes from the engine, not from the UI', () => {
 });
 
 test('RESULT-03 an incomplete session is YELLOW and carries the engine reason', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const workout = firstWorkout(fixture.engineState);
 
   const outcome = submitWorkoutResult({
@@ -103,7 +103,7 @@ test('RESULT-03 an incomplete session is YELLOW and carries the engine reason', 
 });
 
 test('RESULT-04 a safety flag makes the engine stop the usual load', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const workout = firstWorkout(fixture.engineState);
 
   const outcome = submitWorkoutResult({
@@ -121,7 +121,7 @@ test('RESULT-04 a safety flag makes the engine stop the usual load', () => {
 });
 
 test('RESULT-05 an engine rejection leaves everything as it was', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const workout = firstWorkout(fixture.engineState);
   const writesBefore = fixture.storage.writes;
 
@@ -141,7 +141,7 @@ test('RESULT-05 an engine rejection leaves everything as it was', () => {
 });
 
 test('RESULT-06 a storage failure is reported and the previous state stays active', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const workout = firstWorkout(fixture.engineState);
   const broken = {
     read: () => null,
@@ -167,7 +167,7 @@ test('RESULT-06 a storage failure is reported and the previous state stays activ
 });
 
 test('RESULT-07 the stored state is a real engine state that reads back', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const workout = firstWorkout(fixture.engineState);
 
   const outcome = submitWorkoutResult({
@@ -185,7 +185,7 @@ test('RESULT-07 the stored state is a real engine state that reads back', () => 
 });
 
 test('RESULT-08 a pending session can be closed, and then it is no longer pending', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   // Exactly one session is overdue on this date.
   const today = dateAfter(1);
   const pending = earliestPending(fixture.engineState, today);
@@ -205,7 +205,7 @@ test('RESULT-08 a pending session can be closed, and then it is no longer pendin
 });
 
 test('RESULT-08b while another overdue session remains, the state stays PENDING_RESULT', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const today = dateAfter(2);
   const overdue = fixture.engineState.queue.filter((workout) => workout.scheduledDate < today);
   assert.ok(overdue.length >= 2, 'the fixture must have several overdue sessions');
@@ -223,7 +223,7 @@ test('RESULT-08b while another overdue session remains, the state stays PENDING_
 });
 
 test('RESULT-09 several unresolved sessions are closed in chronological order', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const today = dateAfter(4);
   const pending = fixture.engineState.queue.filter((workout) => workout.scheduledDate < today);
   assert.ok(pending.length >= 2, `expected several past sessions, got ${pending.length}`);
@@ -249,7 +249,7 @@ test('RESULT-09 several unresolved sessions are closed in chronological order', 
 });
 
 test('RESULT-10 the completed workout is not duplicated in the application event log', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const workout = firstWorkout(fixture.engineState);
 
   const outcome = submitWorkoutResult({
@@ -265,7 +265,7 @@ test('RESULT-10 the completed workout is not duplicated in the application event
 });
 
 test('RESULT-11 the diff reports only differences that really exist', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const workout = firstWorkout(fixture.engineState);
 
   // A state compared with itself has nothing to report.
@@ -304,7 +304,7 @@ test('RESULT-11 the diff reports only differences that really exist', () => {
 });
 
 test('RESULT-11b closing a routine workout is not misreported as next-workout adaptation', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const closed = firstWorkout(fixture.engineState);
   const beforeNext = fixture.engineState.queue.find(w => w.id !== closed.id)!;
   const outcome = submitWorkoutResult({
@@ -322,7 +322,7 @@ test('RESULT-11b closing a routine workout is not misreported as next-workout ad
 });
 
 test('RESULT-12 a second submission of the same workout is refused by the engine', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const workout = firstWorkout(fixture.engineState);
 
   const first = submitWorkoutResult({
@@ -343,7 +343,7 @@ test('RESULT-12 a second submission of the same workout is refused by the engine
 });
 
 test('FUTURE-01 a result for a session that has not happened yet is refused', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const future = fixture.engineState.queue.find((workout) => workout.scheduledDate > NOW);
   assert.ok(future, 'the fixture must contain a future session');
   const writesBefore = fixture.storage.writes;
@@ -376,7 +376,7 @@ test('FUTURE-01 a result for a session that has not happened yet is refused', ()
 });
 
 test('FUTURE-02 the same session becomes recordable on its own day, in order', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const tomorrow = dateAfter(1);
   const earlier = fixture.engineState.queue.find((workout) => workout.scheduledDate === NOW)!;
   const session = fixture.engineState.queue.find((workout) => workout.scheduledDate === tomorrow)!;
@@ -415,7 +415,7 @@ test('FUTURE-02 the same session becomes recordable on its own day, in order', (
 });
 
 test('FUTURE-03 a session scheduled for today is recordable', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const today = fixture.engineState.queue.find((workout) => workout.scheduledDate === NOW);
   assert.ok(today, 'the fixture must contain a session for today');
 
@@ -427,7 +427,7 @@ test('FUTURE-03 a session scheduled for today is recordable', () => {
 });
 
 test('FUTURE-04 an overdue session is still closed in chronological order, not by date only', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const today = dateAfter(4);
   const overdue = fixture.engineState.queue.filter((workout) => workout.scheduledDate < today);
   assert.ok(overdue.length >= 2, 'the fixture must contain several overdue sessions');
@@ -461,7 +461,7 @@ test('FUTURE-04 an overdue session is still closed in chronological order, not b
 });
 
 test('FUTURE-05 the guard does not replace the engine check for an unknown session', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const workout = firstWorkout(fixture.engineState);
 
   const outcome = submitWorkoutResult({
@@ -477,7 +477,7 @@ test('FUTURE-05 the guard does not replace the engine check for an unknown sessi
 });
 
 test('FUTURE-06 availability is one decision shared by the guard and the screens', () => {
-  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const fixture = cycleFixture({availableRunsPerWeek: 4, actualRunsPerWeek: 4});
   const today = dateAfter(2);
   const overdue = fixture.engineState.queue.filter((workout) => workout.scheduledDate < today);
   const future = fixture.engineState.queue.find((workout) => workout.scheduledDate > today)!;

@@ -1,6 +1,6 @@
 import type { EngineState, PerformanceSnapshot, Profile, SafetyData, TrainingBreak, Workout, WorkoutResult, WorkoutType } from './models.ts';
 import { PERFORMANCE_SOURCES } from './models.ts';
-import { assessSafety, decide } from './assessment.ts';
+import { assessSafety, decide, taperDays } from './assessment.ts';
 import { classify, yellowFamily } from './feedback.ts';
 import { day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
 import { EngineError } from './errors.ts';
@@ -30,8 +30,66 @@ function advanceTo(s: EngineState, now: string): void {
  * committed to: after a skip the remaining prescriptions are kept as they were, so a missed
  * session can never raise or pull forward the following load.
  */
+/**
+ * Two complete seven-day weeks are reviewed at a fixed 14-day boundary.
+ * No increases from old/defaulted feedback: user has to have explicitly confirmed
+ * the actual completion and effort for EVERY scheduled session in the block.
+ *
+ * The review is intentionally NOT catch-up based. Opening the app several blocks
+ * later can produce at most one step; missed and unclear weeks never create credits.
+ */
+function reviewEasyProgression(s: EngineState, now: string): void {
+  const baselineMeters = s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
+    ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000;
+  s.easyProgression ??= {approvedMetersPer7Days: baselineMeters, lastReviewedBlock: -1, lastIncreaseDate: null};
+  const state = s.easyProgression;
+  const completedBlock = Math.floor((day(now) - day(s.cycleStartDate)) / 14) - 1;
+  if (completedBlock < 0 || completedBlock <= state.lastReviewedBlock) return;
+  state.lastReviewedBlock = completedBlock;
+
+  const current = decide(s, now);
+  if (current.safety !== 'OK' || s.diagnosticHold || s.relatedYellow || s.progressionBlocked ||
+      s.reentry !== null || (s.checkpointRequired && s.profile.canRun3Km) ||
+      (day(s.profile.raceDate) - day(now) <= taperDays(current.capacity,current.quality)) ||
+      ['TAPER', 'RE_ENTRY', 'HOLD_DIAGNOSTIC'].includes(current.phase)) return;
+  // Tiny/zero bases need a separate run/walk ladder, not a blind 500 m increment.
+  if (baselineMeters < 5000 || s.profile.actualRunsPerWeek < 1) return;
+  // A non-stale, externally measured 3 km is needed before trained-level progression.
+  if ((current.capacity === 'T2' || current.capacity === 'T3') && current.confidence === 'LOW') return;
+
+  const blockStart = day(s.cycleStartDate) + completedBlock * 14;
+  const blockEnd = blockStart + 13;
+  if (s.profile.breaks.some(b => {
+    const end = day(b.endDate);
+    return end >= blockStart && end - b.days + 1 <= blockEnd;
+  })) return;
+  if (s.skippedWorkouts.some(w => day(w.scheduledDate) >= blockStart && day(w.scheduledDate) <= blockEnd)) return;
+  if (s.skippedIds.some(id => {
+    const match = /^slot-(\\d{4}-\\d{2}-\\d{2})$/.exec(id);
+    return match !== null && day(match[1]!) >= blockStart && day(match[1]!) <= blockEnd;
+  })) return;
+  const inBlock = s.history.filter(h => day(h.workout.scheduledDate) >= blockStart && day(h.workout.scheduledDate) <= blockEnd);
+  if (inBlock.some(h => !['GREEN','GREEN_PLUS'].includes(h.classified.evaluation))) return;
+
+  const count = Math.min(s.profile.availableRunsPerWeek, Math.max(1, s.profile.actualRunsPerWeek));
+  const offsets = Array.from({length: count}, (_, i) => Math.floor(i * 7 / count));
+  const requiredDays = [0, 1].flatMap(week =>
+    offsets.map(offset => blockStart + week * 7 + offset));
+  if (!requiredDays.every(d => {
+    const entry = inBlock.find(h => day(h.workout.scheduledDate) === d && h.workout.type !== 'REST');
+    return !!entry && entry.result.feedbackConfirmed === true;
+  })) return;
+  // A separately increased quality prescription occupies this block's progression step.
+  if (Object.entries(s.doses).some(([type, dose]) =>
+    dose !== undefined && (s.confirmedDoses[type as Workout['type']]?.value ?? dose.value) < dose.value)) return;
+
+  const increment = current.capacity === 'T2' || current.capacity === 'T3' ? 1000 : 500;
+  state.approvedMetersPer7Days += increment;
+  state.lastIncreaseDate = now;
+}
 function rebuildQueue(s: EngineState, now: string, preserve: Workout[] | null): EngineState {
   if (day(now) - day(s.lastAssessmentDate) >= 21 || s.profile.performanceMismatch === 'CLEAR') s.checkpointRequired = true;
+  reviewEasyProgression(s, now);
   s.decision = decide(s, now);
   const generated = generateQueue(s, now);
   s.queue = preserve ? generated.map(w => preserve.find(old => old.id === w.id) ?? w) : generated;
@@ -54,6 +112,7 @@ export function createEngine(profile: Profile, now: string): EngineState {
     greenPlusIds: [], checkpointRequired: !profile.performance && profile.canRun3Km,
     lastAssessmentDate: profile.performance?.date ?? now, relatedYellow: false, reducedQualityUntilConfirmed: false, diagnosticHold: false, progressionBlocked: false,
     doses: {}, confirmedDoses: {}, successStreak: {}, qualityRotation: 0, reentry: null, finalResultRecorded: false,
+    easyProgression: {approvedMetersPer7Days: profile.actualRunsPerWeek > 0 && profile.averageWeeklyKm4Weeks > 0 ? profile.averageWeeklyKm4Weeks * 1000 : 1000, lastReviewedBlock: -1, lastIncreaseDate: null},
   } as unknown as EngineState;
   state.decision = decide(state, now);
   const latest = [...profile.breaks].sort((a, b) => day(b.endDate) - day(a.endDate))[0];
@@ -209,6 +268,28 @@ export function deserialize(json: string): EngineState {
   // The event-date rule still applies to every active plan; only the terminal final-result state
   // (produced by `recordFinalResult`) may carry a clock that has passed `raceDate`.
   if (!s.finalResultRecorded) validateEventDate(s.profile, s.asOf);
+  const baseline = s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
+    ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000;
+  if (s.easyProgression === undefined) {
+    // Previously saved v1 cycles may have completed sessions but no verification flags or
+    // approved budget. Start fresh: NO retroactive increases for pre-upgrade sessions.
+    s.easyProgression = {approvedMetersPer7Days: baseline,
+      lastReviewedBlock: Math.floor((day(s.asOf) - day(s.cycleStartDate)) / 14),
+      lastIncreaseDate: null};
+  } else {
+    const p = s.easyProgression;
+    const elapsed = day(s.asOf) - day(s.cycleStartDate);
+    const allowedBlocks = Math.max(0, Math.floor(elapsed / 14));
+    const allowedMax = baseline + allowedBlocks * 1000;
+    if (!p || !Number.isFinite(p.approvedMetersPer7Days) ||
+        p.approvedMetersPer7Days < baseline || p.approvedMetersPer7Days > allowedMax ||
+        !Number.isInteger(p.lastReviewedBlock) || p.lastReviewedBlock < -1 ||
+        p.lastReviewedBlock > allowedBlocks ||
+        (p.lastIncreaseDate !== null && (typeof p.lastIncreaseDate !== 'string' ||
+          day(p.lastIncreaseDate) > day(s.asOf)))) {
+      throw new EngineError('INVALID_PROGRESSION_STATE');
+    }
+  }
   s.decision = decide(s, s.asOf);
   return s;
 }

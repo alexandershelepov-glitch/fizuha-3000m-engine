@@ -31,6 +31,8 @@ export const ERROR_CODES = Object.freeze([
   'AVAILABILITY_NOT_INTEGER',
   'INVALID_YELLOW_REASON',
   'INVALID_FATIGUE_FLAG',
+  'INVALID_FEEDBACK_CONFIRMATION',
+  'INVALID_PROGRESSION_STATE',
   'RESULT_DISTANCE_CONFLICT',
   // lifecycle
   'EVENT_DATE_PASSED',
@@ -71,6 +73,8 @@ const MESSAGES = {
   AVAILABILITY_NOT_INTEGER: 'Availability must be integer',
   INVALID_YELLOW_REASON: 'Invalid yellow reason',
   INVALID_FATIGUE_FLAG: 'Invalid fatigue flag',
+  INVALID_FEEDBACK_CONFIRMATION: 'Invalid explicit feedback confirmation',
+  INVALID_PROGRESSION_STATE: 'Invalid saved training progression',
   RESULT_DISTANCE_CONFLICT: 'Reported total distance is less than measured splits',
   EVENT_DATE_PASSED: 'EVENT_DATE_PASSED: the active plan works only up to and including the target race date',
   CLOCK_BACKWARDS: 'Clock cannot move backwards',

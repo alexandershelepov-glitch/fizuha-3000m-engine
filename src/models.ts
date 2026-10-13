@@ -109,6 +109,8 @@ export interface WorkoutResult {
   durationMinutes: number; distanceMeters: number; repeats: { distanceMeters: number; seconds: number }[];
   restSeconds: number[]; yellowReason?: YellowReason; conditions: { heat?: boolean; wind?: boolean; surface?: string; notes?: string };
   unexpectedFatigue: boolean;
+  /** True only when the user actively confirmed completion and perceived effort, not defaults. */
+  feedbackConfirmed?: boolean;
 }
 export interface ClassifiedResult { evaluation: Evaluation; yellowReason: YellowReason | null; sessionLoad: number; inRangeFraction: number; speedDropFraction: number }
 export interface HistoryEntry { workout: Workout; result: WorkoutResult; classified: ClassifiedResult }
@@ -132,4 +134,6 @@ export interface EngineState {
    * state whose clock has passed `raceDate`.
    */
   finalResultRecorded: boolean;
+  /** Additive v1 extension: older serialized cycles without this field remain loadable. */
+  easyProgression?: { approvedMetersPer7Days: number; lastReviewedBlock: number; lastIncreaseDate: string | null };
 }

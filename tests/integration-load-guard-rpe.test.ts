@@ -1,0 +1,120 @@
+/**
+ * Cross-PR regression: weekly-distance/frequency guard and the easy-effort
+ * classification must work simultaneously without opening a false health hold.
+ */
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {createEngine, recordResult, replan} from '../src/index.ts';
+import {NOW, dateAfter, feedback, profile} from './helpers.ts';
+
+test('combined: seven free days and 10 km / two habitual runs yield two EASY sessions; RPE 4 remains GREEN', () => {
+  let state = createEngine(profile({
+    canRun3Km: false,
+    performance: null,
+    actualRunsPerWeek: 2,
+    availableRunsPerWeek: 7,
+    regularRunningWeeks: 4,
+    averageWeeklyKm4Weeks: 10,
+    longestUsualRunKm: 6,
+    raceDate: dateAfter(80),
+  }), NOW);
+
+  const initial = [...state.queue];
+  assert.equal(initial.length, 2);
+  assert.ok(initial.every(w => w.type === 'EASY' && w.main.mode === 'RUN_WALK'));
+  for (const w of initial) assert.deepEqual(w.targetRpe, [2, 4]);
+  assert.equal(initial.reduce((sum, w) => sum + w.main.dose.value, 0), 10000);
+
+  for (const workout of initial) {
+    const current = state.queue.find(w => w.id === workout.id);
+    assert.ok(current, 'remaining workout must not disappear after a normal report');
+    state = recordResult(state, current.id, feedback(current, 'GREEN', {
+      sessionRpe: 4,
+      completionFraction: 1,
+      distanceMeters: current.main.dose.value,
+      durationMinutes: 35,
+      repeats: [],
+    }));
+    assert.equal(state.history.at(-1)?.classified.evaluation, 'GREEN');
+    assert.equal(state.relatedYellow, false);
+    assert.equal(state.diagnosticHold, false);
+    assert.equal(state.decision.safety, 'OK');
+  }
+
+  const followingWeek = replan(state, dateAfter(7));
+  assert.ok(followingWeek.queue.filter(w => w.type !== 'REST').length <= 2);
+  const totalMeters = followingWeek.queue
+    .filter(w => w.main.dose.unit === 'METERS')
+    .reduce((sum, w) => sum + w.main.dose.value, 0);
+  assert.ok(totalMeters <= 10000);
+});
+
+test('combined: normal RPE 4 never overrides an acute illness STOP', () => {
+  const state = createEngine(profile({
+    performance: null, canRun3Km: false, actualRunsPerWeek: 2,
+    availableRunsPerWeek: 7, averageWeeklyKm4Weeks: 10,
+    longestUsualRunKm: 6, raceDate: dateAfter(80),
+  }), NOW);
+  const workout = state.queue[0]!;
+  const ill = recordResult(state, workout.id, feedback(workout, 'GREEN', {
+    sessionRpe: 4,
+    safety: {...workoutSafety(), acuteIllness: true},
+  }));
+  assert.equal(ill.history.at(-1)?.classified.evaluation, 'RED');
+  assert.equal(ill.decision.safety, 'STOP');
+  assert.ok(ill.queue.every(w => !w.countsAsQuality));
+});
+
+function workoutSafety() {
+  return {
+    pain: 0, painIncreasing: false, alteredMovement: false,
+    painWalkingOrRest: false, swelling: false, acuteIllness: false,
+    otherStop: false, needsAssessment: false,
+  };
+}
+
+
+test('combined: one habitual run stays EASY, never the sole fast workout', () => {
+  const state = createEngine(profile({
+    actualRunsPerWeek: 1,
+    availableRunsPerWeek: 7,
+    averageWeeklyKm4Weeks: 5,
+    longestUsualRunKm: 5,
+    regularRunningWeeks: 4,
+    raceDate: dateAfter(80),
+  }), NOW);
+  assert.equal(state.decision.maximumQualityPerWeek, 0);
+  assert.equal(state.queue.length, 1);
+  assert.equal(state.queue[0]!.type, 'EASY');
+  assert.equal(state.queue[0]!.countsAsQuality, false);
+  assert.ok(state.queue[0]!.main.dose.value <= 5000);
+});
+
+test('combined: one available day stays EASY even for a runner with more habitual days', () => {
+  const state = createEngine(profile({
+    actualRunsPerWeek: 3,
+    availableRunsPerWeek: 1,
+    averageWeeklyKm4Weeks: 16,
+    longestUsualRunKm: 6,
+    raceDate: dateAfter(80),
+  }), NOW);
+  assert.equal(state.decision.maximumQualityPerWeek, 0);
+  assert.equal(state.queue.length, 1);
+  assert.equal(state.queue[0]!.type, 'EASY');
+});
+
+test('combined: 4 genuine running days still allow quality sessions for the prepared runner', () => {
+  const state = createEngine(profile({
+    actualRunsPerWeek: 4,
+    availableRunsPerWeek: 4,
+    regularRunningWeeks: 30,
+    averageWeeklyKm4Weeks: 28,
+    longestUsualRunKm: 9,
+    qualitySessions8Weeks: 8,
+    qualityWeeks8Weeks: 6,
+    qualityMostlyTolerated: true,
+    raceDate: dateAfter(80),
+  }), NOW);
+  assert.ok(state.decision.maximumQualityPerWeek >= 1);
+  assert.ok(state.queue.some(w => w.countsAsQuality));
+});
