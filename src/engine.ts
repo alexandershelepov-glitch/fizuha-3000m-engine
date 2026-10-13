@@ -341,7 +341,7 @@ export function moveWorkout(state: EngineState, id: string, date: string): Engin
     if (dates.some(end => dates.filter(d => d <= end && d > end - 7).length > s.decision.maximumQualityPerWeek)) throw new EngineError('MOVE_QUALITY_LIMIT_VIOLATION');
   }
   w.scheduledDate = date;
-  if (!withinRollingWeekBudget(s,[...s.history.map(h=>h.workout),...s.queue]))
+  if (!withinRollingWeekBudget(s,[...s.history.map(h=>h.workout),...s.queue],date))
     throw new EngineError('MOVE_WEEKLY_LOAD_LIMIT');
   s.movedWorkouts = [...s.movedWorkouts.filter(other => other.id !== id), structuredClone(w)];
   // Reserve both slots; a later replan cannot refill the moved workout's original slot.
