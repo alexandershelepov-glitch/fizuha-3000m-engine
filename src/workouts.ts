@@ -2,6 +2,7 @@ import type { Dose, EngineState, Workout, WorkoutType } from './models.ts';
 import { decide } from './assessment.ts';
 import { addDays, day } from './validation.ts';
 import { EngineError } from './errors.ts';
+import { RUN_WALK_STAGES, LAST_RUN_WALK_STAGE } from './runWalk.ts';
 const QUALITY: WorkoutType[] = ['INTRO_QUALITY', 'THRESHOLD', 'VO2', 'SPECIFIC_3K', 'CONTROL'];
 export function initialDose(s: EngineState, type: WorkoutType): Dose {
   const q = s.decision.quality;
@@ -40,10 +41,14 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
   const repeatMeters = type === 'SPECIFIC_3K' ? 600 : type === 'STRIDES' ? 100 : null;
   const repeats = repeatMeters ? Math.ceil(dose.value / repeatMeters) : interval ? 4 : 1;
   const countsAsQuality = QUALITY.includes(type);
+  const mode: Workout['main']['mode'] = type === 'REST' ? 'REST' :
+    !s.profile.canRun3Km && !countsAsQuality ? 'RUN_WALK' : interval ? 'INTERVALS' : 'CONTINUOUS';
+  const stage = Math.min(LAST_RUN_WALK_STAGE, s.runWalkProgression?.stage ?? 0);
   return {
     id, scheduledDate: date, type, goal: type === 'CONTROL' ? 'ASSESS_CURRENT_PERFORMANCE' : type === 'EASY' || type === 'LONG_EASY' ? 'AEROBIC_BASE' : type === 'REST' ? 'RECOVERY' : 'QUALITY_ADAPTATION', priority: countsAsQuality ? 1 : 2,
-    countsAsQuality, warmupMinutes: countsAsQuality ? 10 : 0, cooldownMinutes: countsAsQuality ? 10 : 0,
-    main: {mode: type === 'REST' ? 'REST' : !s.profile.canRun3Km && !countsAsQuality ? 'RUN_WALK' : interval ? 'INTERVALS' : 'CONTINUOUS', dose, repeats, repeatMeters, finalRepeatMeters: repeatMeters ? dose.value - repeatMeters * (repeats - 1) : null},
+    countsAsQuality, warmupMinutes: countsAsQuality ? 10 : mode === 'RUN_WALK' ? 5 : 0, cooldownMinutes: countsAsQuality ? 10 : mode === 'RUN_WALK' ? 5 : 0,
+    main: {mode, dose, repeats, repeatMeters, finalRepeatMeters: repeatMeters ? dose.value - repeatMeters * (repeats - 1) : null,
+      ...(mode === 'RUN_WALK' ? {runWalk:{stage, ...RUN_WALK_STAGES[stage]!}} : {})},
     targetRpe: rpe, effortCues: type === 'EASY' || type === 'LONG_EASY' ? ['FULL_SENTENCES', 'CONTROLLED_BREATHING'] : [], speedRangeMps: range, paceRangeSecondsPerKm: range ? [1000 / range[1], 1000 / range[0]] : null,
     anchor, gateAtPrescription: d.gate, restSeconds: interval ? 90 : 0,
     minimumRecoveryHoursBeforeQuality: countsAsQuality ? 48 : 0,
@@ -166,6 +171,8 @@ export function generateQueue(s: EngineState, now: string): Workout[] {
     const next = prescribe(planning, type, original.scheduledDate, original.id, factor);
     if (type === original.type) {
       next.main.dose.value = Math.min(original.main.dose.value, next.main.dose.value);
+      // Moving a committed run/walk workout does not silently make its running bouts harder.
+      if (original.main.mode === 'RUN_WALK' && original.main.runWalk) next.main.runWalk = {...original.main.runWalk};
       if (next.main.repeatMeters) { next.main.repeats = Math.ceil(next.main.dose.value / next.main.repeatMeters); next.main.finalRepeatMeters = next.main.dose.value - next.main.repeatMeters * (next.main.repeats - 1); }
     }
     return next;
