@@ -141,7 +141,7 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
           <Choice
             id="completion"
             value={draft.completion}
-            onChange={(value: CompletionPreset) => update({completion: value})}
+            onChange={(value: CompletionPreset) => update({completion: value, completionConfirmed: true})}
             options={COMPLETION_PRESETS.map((preset) => ({value: preset, label: copy.completion.options[preset]}))}
           />
         </Field>
@@ -163,7 +163,7 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
                 className={`scale__option${value === draft.sessionRpe ? ' scale__option--active' : ''}`}
                 aria-pressed={value === draft.sessionRpe}
                 aria-label={scaleLabels[value] ?? `${copy.rpe.label}: ${value}`}
-                onClick={() => update({sessionRpe: value})}
+                onClick={() => update({sessionRpe: value, effortConfirmed: true})}
               >
                 {value}
               </button>
@@ -172,6 +172,7 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
         </Field>
       </Card>
 
+      <p className="hint">Для увеличения нагрузки подтвердите выполнение и тяжесть тренировки своими ответами. Значения, подставленные из плана, не считаются подтверждением.</p>
       <Card title={copy.repeats.label}>
         {expanded ? (
           <>
