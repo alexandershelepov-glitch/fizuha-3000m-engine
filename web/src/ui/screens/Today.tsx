@@ -44,6 +44,13 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
         </Notice>
       ) : null}
 
+      {view.state === 'PERFORMANCE_REVIEW' ? (
+        <Notice tone="info" title={todayText.performanceReview.title}>
+          <p>{todayText.performanceReview.text}</p>
+          <Button onClick={() => onNavigate({name: 'CHECKPOINT'})}>{todayText.performanceReview.cta}</Button>
+        </Notice>
+      ) : null}
+
       {view.state === 'COMPLETED' ? (
         <Card title={todayText.completed.title}>
           <p className="paragraph">{todayText.completed.text}</p>
@@ -97,12 +104,20 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
         </Card>
       ) : null}
 
-      {(view.state === 'WORKOUT_TODAY' || (view.workout !== null && (view.state === 'TAPER' || view.state === 'CHECKPOINT_REQUIRED'))) && view.workout !== null ? (
+      {(view.state === 'WORKOUT_TODAY' || (view.workout !== null && (view.state === 'TAPER' || view.state === 'CHECKPOINT_REQUIRED' || view.state === 'PERFORMANCE_REVIEW'))) && view.workout !== null ? (
         <WorkoutCard
           workout={view.workout}
           onOpen={() => onNavigate({name: 'WORKOUT', id: view.workout!.id})}
           onEnterResult={() => onNavigate({name: 'WORKOUT_RESULT', id: view.workout!.id})}
         />
+      ) : null}
+
+      {view.state === 'PERFORMANCE_REVIEW' && view.workout === null ? (
+        <Card title={todayText.rest.title}>
+          <p className="paragraph">{view.nextWorkout === null
+            ? todayText.performanceReview.noWorkout
+            : `${todayText.rest.next}: ${workoutTitle(view.nextWorkout)} · ${formatDateLong(view.nextWorkout.scheduledDate)}`}</p>
+        </Card>
       ) : null}
 
       {view.state === 'REST_DAY' ? (
