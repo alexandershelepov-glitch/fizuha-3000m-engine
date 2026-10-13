@@ -2,6 +2,8 @@ import {archiveCompletedCycle, loadArchives} from '../application/archive.ts';
 import {createArchiveRepository} from '../application/archiveStorage.ts';
 import {submitFinalResult} from '../application/finalResult.ts';
 import {updateGoalAndRaceDate} from '../application/parameters.ts';
+import {confirmContinuous3k} from '../application/continuous3k.ts';
+import {Continuous3kConfirmation} from '../ui/screens/Continuous3kConfirmation.tsx';
 import type {PerformanceSource} from '../application/engineGateway.ts';
 import {ParametersForm} from '../ui/screens/ParametersForm.tsx';
 import {ParametersOutcome} from '../ui/screens/ParametersOutcome.tsx';
@@ -262,6 +264,22 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
       : {ok: false as const, error: outcome.error};
   };
 
+  const handleContinuous3k = (runDate: string, completed: boolean, noSymptoms: boolean) => {
+    if (!repo || !store.appState || !store.engineState) {
+      return {ok:false as const, error:{code:'STORAGE_UNAVAILABLE' as const,params:{},retry:true,fromEngine:false}};
+    }
+    const result=confirmContinuous3k({
+      repo,appState:store.appState,engineState:store.engineState,
+      deviceToday:store.today,at:deviceTimestamp(),runDate,
+      ranAll3000WithoutWalking:completed,noUnusualSymptoms:noSymptoms,
+    });
+    if(result.ok){
+      store.replaceActiveState({appState:result.done.appState,engineState:result.done.engineState});
+      navigate({name:'PLAN'});
+    }
+    return result;
+  };
+
   const handleResetCycle = () => {
     if (!repo || !storage || !store.appState || !store.engineState) {
       return {ok: false as const, error: {code: 'STORAGE_UNAVAILABLE' as const, params: {}, retry: true, fromEngine: false}};
@@ -373,6 +391,11 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
         return store.engineState === null ? null : (
           <Plan engineState={store.engineState} today={store.today} onNavigate={goTo} onRefreshPlan={handleRefreshPlan} refreshing={refreshing} />
         );
+      case 'CONTINUOUS_3K':
+        if (!store.engineState || !store.appState) return null;
+        if (store.engineState.finalResultRecorded) return renderSummary(store.appState.cycle.cycleId);
+        return <Continuous3kConfirmation key={store.appState.cycle.cycleId} engineState={store.engineState}
+          today={store.today} submit={handleContinuous3k} onCancel={() => goTo({name:'TODAY'})} />;
       case 'SAFETY_RECHECK':
         if (!store.engineState) return null;
         if (store.engineState.finalResultRecorded) return renderSummary(store.appState!.cycle.cycleId);
@@ -399,7 +422,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
           <History appState={store.appState} engineState={store.engineState} onNavigate={goTo} archiveContent={renderArchives()} />
         );
       case 'PROFILE':
-        return store.appState === null || store.engineState === null ? null : <Profile appState={store.appState} engineState={store.engineState} onEdit={() => goTo({name: 'PARAMETERS'})} onRecheck={() => goTo({name: 'SAFETY_RECHECK'})} onReset={handleResetCycle} />;
+        return store.appState === null || store.engineState === null ? null : <Profile appState={store.appState} engineState={store.engineState} onEdit={() => goTo({name: 'PARAMETERS'})} onRecheck={() => goTo({name: 'SAFETY_RECHECK'})} onConfirm3k={() => goTo({name: 'CONTINUOUS_3K'})} onReset={handleResetCycle} />;
       case 'WORKOUT': {
         const workout = store.engineState?.queue.find((entry) => entry.id === effective.id) ?? null;
         // The application rule decides what the screen may offer; the screen only mirrors it.
