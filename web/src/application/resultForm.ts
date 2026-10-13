@@ -42,6 +42,9 @@ export function hasSafetyConcerns(safety: SafetyData): boolean {
 
 export interface ResultDraft {
   readonly completion: CompletionPreset;
+  /** Both values require a fresh conscious user selection, never a prescription default. */
+  readonly completionConfirmed?: boolean;
+  readonly effortConfirmed?: boolean;
   /** Percent, used only with the exact option. */
   readonly completionPercent: string;
   readonly sessionRpe: number;
@@ -93,6 +96,8 @@ function plannedDuration(workout: Workout): number {
 export function defaultResultDraft(workout: Workout): ResultDraft {
   return {
     completion: 'FULL',
+    completionConfirmed: false,
+    effortConfirmed: false,
     completionPercent: '',
     sessionRpe: Math.round((workout.targetRpe[0] + workout.targetRpe[1]) / 2),
     safety: {pain: 0, painIncreasing: false, alteredMovement: false, painWalkingOrRest: false, swelling: false, acuteIllness: false, otherStop: false, needsAssessment: false},
@@ -218,6 +223,8 @@ export function buildWorkoutResult(workout: Workout, draft: ResultDraft): BuildR
       restSeconds: Array.from({length: Math.max(1, repeats.length)}, () => rawRest),
       conditions,
       unexpectedFatigue: draft.unexpectedFatigue,
+      verifiedForProgression: draft.completionConfirmed === true && draft.effortConfirmed === true &&
+        draft.safetyResponse !== undefined && draft.safetyResponse !== 'UNANSWERED',
     },
   };
 }
