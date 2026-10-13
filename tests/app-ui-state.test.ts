@@ -4,9 +4,9 @@
  */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {createEngine, recordCheckpoint, recordFinalResult, recordResult} from '../src/index.ts';
+import {createEngine, recordFinalResult, recordResult} from '../src/index.ts';
 import type {EngineState} from '../src/index.ts';
-import {deriveCycleStatus, deriveToday, isSafetyHold, needsPerformanceReview, TODAY_STATES} from '../web/src/application/uiState.ts';
+import {deriveCycleStatus, deriveToday, TODAY_STATES} from '../web/src/application/uiState.ts';
 import {deserializeEngineState, serializeEngineState} from '../web/src/application/engineGateway.ts';
 import {TODAY_LABELS} from './helpers-app.ts';
 import {NOW, dateAfter, feedback, healthy, profile} from './helpers.ts';
