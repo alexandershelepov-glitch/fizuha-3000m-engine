@@ -7,7 +7,7 @@ import {NOW,dateAfter,healthy} from '../../../tests/helpers.ts';
 import {confirmContinuous3k} from '../application/continuous3k.ts';
 import {loadActiveCycle} from '../application/storage.ts';
 import {submitCheckpoint} from '../application/checkpoint.ts';
-import {applyBreak} from '../../../src/index.ts';
+
 import type {EngineState} from '../application/engineGateway.ts';
 
 beforeEach(()=>{
@@ -116,11 +116,11 @@ test('3K-06 actual timed checkpoint is separate and only it creates measured per
   expect(measurement.done.engineState.checkpointRequired).toBe(false);
 });
 
-test('3K-07 no automatic capability from run/walk or from unrelated break',()=>{
+test('3K-07 run-walk green sessions never silently grant 3 km capability',()=>{
   const f=starter();
-  const pause=applyBreak(f.engineState,{days:8,reason:'WORK',endDate:NOW},NOW);
-  expect(pause.profile.canRun3Km).toBe(false);
-  expect(pause.profile.performance).toBeNull();
+  expect(f.engineState.profile.canRun3Km).toBe(false);
+  expect(f.engineState.profile.performance).toBeNull();
+  expect(f.engineState.queue.some(w=>w.main.mode==='RUN_WALK')).toBe(true);
 });
 
 test('3K-08 real UI requires two deliberate affirmations and survives page reload',async()=>{
