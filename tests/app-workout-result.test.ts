@@ -287,8 +287,11 @@ test('RESULT-11 the diff reports only differences that really exist', () => {
     if (nextChange.from === null) {
       assert.deepEqual(nextChange.to, summariseWorkout(nextWorkout(outcome.done.engineState, NOW)!));
     } else {
-      // Every reported change matches the two states exactly.
-      assert.deepEqual(nextChange.from, summariseWorkout(nextWorkout(fixture.engineState, NOW)!));
+      // A recorded workout is not the previously planned "next" workout after it is closed.
+      // Compare to the next still-uncompleted session, not to the workout just recorded.
+      const pendingBefore = fixture.engineState.queue.find(w => w.id !== workout.id && w.scheduledDate >= NOW);
+      assert.ok(pendingBefore);
+      assert.deepEqual(nextChange.from, summariseWorkout(pendingBefore));
     }
   }
 
@@ -298,6 +301,24 @@ test('RESULT-11 the diff reports only differences that really exist', () => {
   for (const change of outcome.done.changes) {
     assert.equal(Object.prototype.hasOwnProperty.call(change, 'reason'), false, 'the diff must not carry a reason of its own');
   }
+});
+
+test('RESULT-11b closing a routine workout is not misreported as next-workout adaptation', () => {
+  const fixture = cycleFixture({availableRunsPerWeek: 4});
+  const closed = firstWorkout(fixture.engineState);
+  const beforeNext = fixture.engineState.queue.find(w => w.id !== closed.id)!;
+  const outcome = submitWorkoutResult({
+    repo: fixture.repo, appState: fixture.appState, engineState: fixture.engineState,
+    workoutId: closed.id, result: feedback(closed, 'GREEN'), deviceToday: NOW,
+  });
+  assert.equal(outcome.ok, true);
+  if (!outcome.ok) return;
+  const afterNext = outcome.done.engineState.queue.find(w => w.id === beforeNext.id);
+  assert.ok(afterNext);
+  assert.equal(afterNext.type, beforeNext.type);
+  assert.equal(afterNext.main.dose.value, beforeNext.main.dose.value);
+  assert.equal(outcome.done.changes.some(change => change.kind === 'NEXT_WORKOUT_CHANGED'), false,
+    'moving to the next scheduled workout must not count as a plan correction');
 });
 
 test('RESULT-12 a second submission of the same workout is refused by the engine', () => {
