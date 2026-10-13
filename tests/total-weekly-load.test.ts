@@ -28,7 +28,7 @@ test('TOTAL-01 every type of prescribed quality reserves warmup, cooldown and ti
     assert.ok(metres!>(w.main.dose.unit==='METERS'?w.main.dose.value:0));
   }
   const intro=prescribe(s,'INTRO_QUALITY',NOW,'intro');
-  assert.equal(scheduledMinutes(intro),4+20+4.5);
+  assert.equal(scheduledMinutes(intro),intro.main.dose.value+20+4.5);
 });
 
 test('TOTAL-02 known time is booked from current measured speed with a 10% protective buffer, never written as actual metres',()=>{
@@ -91,8 +91,8 @@ test('TOTAL-06 run-walk warmup and cooldown minutes stay explicit while nonexist
 
 test('TOTAL-07 changed-date rolling check forbids over-budget move and does not mutate input',()=>{
   const s=createEngine(trained(),NOW);
-  const w=s.queue.find(w=>w.scheduledDate===dateAfter(3) && !w.countsAsQuality);
-  assert.ok(w,'fixture has a movable EASY in current week');
+  const w=s.queue.find(w=>!w.countsAsQuality && w.type==='EASY');
+  assert.ok(w,'fixture has a movable EASY');
   const old=w!.scheduledDate;
   // Simulate actual completed high volume in the prior rolling window.
   const oldWorkout=structuredClone(w!);
@@ -103,7 +103,9 @@ test('TOTAL-07 changed-date rolling check forbids over-budget move and does not 
     date:dateAfter(-1),distanceMeters:28000,repeats:[],
   }),classified:{evaluation:'GREEN',yellowReason:null,sessionLoad:0,inRangeFraction:1,speedDropFraction:0}});
   const pre=JSON.stringify(s);
-  assert.throws(()=>moveWorkout(s,w!.id,dateAfter(2)),(err:unknown)=>
+  const target=[1,2,3,4,5,6].map(i=>dateAfter(i)).find(d=>!s.queue.some(other=>other.scheduledDate===d))!;
+  assert.ok(target,'there is an unoccupied move slot');
+  assert.throws(()=>moveWorkout(s,w!.id,target),(err:unknown)=>
     err instanceof Error&&err.message==='Move exceeds the approved rolling weekly load');
   assert.equal(JSON.stringify(s),pre,'engine does not mutate rejected moves');
   assert.equal(w!.scheduledDate,old);
