@@ -223,8 +223,9 @@ export function buildWorkoutResult(workout: Workout, draft: ResultDraft): BuildR
       restSeconds: Array.from({length: Math.max(1, repeats.length)}, () => rawRest),
       conditions,
       unexpectedFatigue: draft.unexpectedFatigue,
-      verifiedForProgression: draft.completionConfirmed === true && draft.effortConfirmed === true &&
-        draft.safetyResponse !== undefined && draft.safetyResponse !== 'UNANSWERED',
+      ...(draft.completionConfirmed === true && draft.effortConfirmed === true &&
+        draft.safetyResponse !== undefined && draft.safetyResponse !== 'UNANSWERED'
+        ? {verifiedForProgression: true} : {}),
     },
   };
 }
