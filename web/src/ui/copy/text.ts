@@ -708,7 +708,7 @@ export const outcome = {
   noNextSession: 'В ближайшие дни тренировок нет',
   continue: 'Продолжить',
   openPlan: 'Посмотреть план',
-  why: 'Почему изменился план?',
+  why: 'Что влияет на текущий план',
   recorded: 'Записано',
 } as const;
 
