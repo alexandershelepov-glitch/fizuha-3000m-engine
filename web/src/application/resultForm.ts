@@ -103,7 +103,8 @@ export function defaultResultDraft(workout: Workout): ResultDraft {
     sessionRpe: Math.round((workout.targetRpe[0] + workout.targetRpe[1]) / 2),
     safety: {pain: 0, painIncreasing: false, alteredMovement: false, painWalkingOrRest: false, swelling: false, acuteIllness: false, otherStop: false, needsAssessment: false},
     safetyResponse: 'UNANSWERED',
-    durationMinutes: String(plannedDuration(workout)),
+    // A scheduled five-minute walk is not evidence of a measured 10-minute session.
+    durationMinutes: workout.main.mode === 'RUN_WALK' ? '0' : String(plannedDuration(workout)),
     distanceMeters: '',
     repeats: defaultRepeats(workout),
     restSeconds: String(workout.restSeconds),
