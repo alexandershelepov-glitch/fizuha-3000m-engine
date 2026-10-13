@@ -12,11 +12,12 @@ import type {UiError} from '../../application/errorContract.ts';
 
 type ResetOutcome = {ok: true} | {ok: false; error: UiError};
 
-export function Profile({appState, engineState, onEdit, onRecheck, onReset}: {
+export function Profile({appState, engineState, onEdit, onRecheck, onConfirm3k, onReset}: {
   appState: AppStateV1;
   engineState: EngineState;
   onEdit?: () => void;
   onRecheck?: () => void;
+  onConfirm3k?: () => void;
   onReset?: () => ResetOutcome;
 }): ReactNode {
   const [confirmReset, setConfirmReset] = useState(false);
@@ -50,6 +51,12 @@ export function Profile({appState, engineState, onEdit, onRecheck, onReset}: {
       </Card>
 
       {!engineState.finalResultRecorded && onEdit ? <Button onClick={onEdit}>{lifecycle.edit}</Button> : null}
+      {!engineState.finalResultRecorded && !profile.canRun3Km && onConfirm3k ? (
+        <Button variant="secondary" onClick={onConfirm3k}>Подтвердить непрерывный бег на 3 км</Button>
+      ) : null}
+      {profile.canRun3Km && !profile.performance ? (
+        <Notice tone="info">Непрерывные 3 км подтверждены. Результат на время пока не измерен, поэтому скоростные тренировки не назначаются.</Notice>
+      ) : null}
       {!engineState.finalResultRecorded && onRecheck ? <Button variant="secondary" onClick={onRecheck}>{lifecycle.recheckSafety}</Button> : null}
 
       <Card title={profileText.cycle}>
