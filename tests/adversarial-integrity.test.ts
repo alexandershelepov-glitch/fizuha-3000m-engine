@@ -182,7 +182,7 @@ test('F09 an explicit skip never changes the following prescription', () => {
 });
 
 test('F09b an explicit skip and an automatic past-due miss produce the same state (approved decision 2)', () => {
-  const s = createEngine(baseProfile({...experienced, availableRunsPerWeek: 4, actualRunsPerWeek: 3,
+  const s = createEngine(baseProfile({...experienced, availableRunsPerWeek: 4, actualRunsPerWeek: 4,
     averageWeeklyKm4Weeks: 28, longestUsualRunKm: 9, raceDate: dateAfter(90)}), NOW);
   const first = s.queue[0]!;
   const second = s.queue[1]!;
