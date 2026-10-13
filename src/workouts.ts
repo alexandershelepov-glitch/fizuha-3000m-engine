@@ -85,7 +85,15 @@ export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] 
       const load = reservedMetres(s,other);
       return sum + (load ?? Infinity);
     },0);
-    let available = Math.max(0,baselineMeters-booked);
+    // Reserve upcoming quality first. Otherwise an earlier easy run can exhaust the budget,
+    // causing the later, approved quality session to disappear even though trimming EASY
+    // would have fitted BOTH prescriptions. Only future dates sharing a 7-day window count.
+    const futureQualityReserve = !w.countsAsQuality ?
+      proposed.filter(other=>other.countsAsQuality &&
+        day(other.scheduledDate)>date && day(other.scheduledDate)<=date+6)
+        .reduce((sum,other)=>sum+(reservedMetres(s,other)??Infinity),0)
+      : 0;
+    const available = Math.max(0,baselineMeters-booked-futureQualityReserve);
 
     if (w.type === 'LONG_EASY' && recent.some(other => other.type === 'LONG_EASY')) {
       const planning = {...s, decision: decide(s, w.scheduledDate)};
