@@ -55,7 +55,7 @@ export const ANCHORS = Object.freeze(['CURRENT', 'EFFECTIVE', 'EFFORT', 'NONE'] 
 export type Anchor = (typeof ANCHORS)[number];
 
 /** Fields the engine expects back after a workout; the MVP result form is built from exactly these. */
-export const FEEDBACK_FIELDS = Object.freeze(['completionFraction', 'sessionRpe', 'safety', 'durationMinutes', 'distanceMeters', 'repeats', 'restSeconds', 'conditions', 'unexpectedFatigue', 'verifiedForProgression'] as const);
+export const FEEDBACK_FIELDS = Object.freeze(['completionFraction', 'sessionRpe', 'safety', 'durationMinutes', 'distanceMeters', 'repeats', 'restSeconds', 'conditions', 'unexpectedFatigue'] as const);
 export type FeedbackField = (typeof FEEDBACK_FIELDS)[number];
 
 // ---------------------------------------------------------------- result values
