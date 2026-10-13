@@ -34,6 +34,7 @@ export type CycleEvent =
   | {type: 'CYCLE_CREATED'; at: string; cycleId: string}
   | {type: 'WORKOUT_SKIPPED'; at: string; workoutId: string; scheduledDate: string; workoutType: string; cause: 'VOLUNTARY' | 'PAST_DUE'}
   | {type: 'WORKOUT_MOVED'; at: string; workoutId: string; fromDate: string; toDate: string}
+  | {type: 'CONTINUOUS_3K_CONFIRMED'; at: string; runDate: string; decisionAfter: AssessmentSnapshot}
   | {type: 'CHECKPOINT_RECORDED'; at: string; result: {timeSeconds: number; date: string; source: string}; previousPerformance: number | null; decisionAfter: AssessmentSnapshot}
   | {type: 'TRAINING_PARAMETERS_CHANGED'; at: string; from: Record<string, unknown>; to: Record<string, unknown>}
   | {type: 'SAFETY_REASSESSED'; at: string; safety: import('./engineGateway.ts').SafetyData; decisionAfter: AssessmentSnapshot}
