@@ -48,6 +48,15 @@ export function validateResult(r: WorkoutResult): void {
   if (typeof r.unexpectedFatigue !== 'boolean') throw new EngineError('INVALID_FATIGUE_FLAG');
   day(r.date); number(r.completionFraction, 0, 1); number(r.sessionRpe, 0, 10);
   number(r.durationMinutes, 0); number(r.distanceMeters, 0); validateSafety(r.safety);
-  for (const rep of r.repeats) { number(rep.distanceMeters, 1); number(rep.seconds, 0.001); }
+  let knownRepeatMeters = 0;
+  for (const rep of r.repeats) {
+    number(rep.distanceMeters, 1); number(rep.seconds, 0.001);
+    knownRepeatMeters += rep.distanceMeters;
+  }
+  // The total may also include warmup/cooldown, but cannot be LESS than measured splits.
+  // Zero is allowed only when NO splits were measured (legacy "unknown" total).
+  if (knownRepeatMeters > 0 && r.distanceMeters + 1e-6 < knownRepeatMeters) {
+    throw new EngineError('RESULT_DISTANCE_CONFLICT');
+  }
   for (const rest of r.restSeconds) number(rest, 0);
 }
