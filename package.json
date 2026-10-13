@@ -17,7 +17,8 @@
     "dev:web": "vite",
     "preview:web": "vite preview",
     "lint": "eslint src tests web/src e2e",
-    "demo": "node --experimental-strip-types examples/demo.ts"
+    "demo": "node --experimental-strip-types examples/demo.ts",
+    "audit:training": "node --experimental-strip-types audit/run.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

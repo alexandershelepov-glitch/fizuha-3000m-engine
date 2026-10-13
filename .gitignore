@@ -73,3 +73,6 @@ desktop.ini
 *.bak
 *.orig
 *~
+
+# Generated deterministic long-cycle audit reports (CI artifacts)
+audit/reports/
