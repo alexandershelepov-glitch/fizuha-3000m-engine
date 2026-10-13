@@ -2,8 +2,8 @@ import type {ReactNode} from 'react';
 import {formatDateShort, formatTime} from '../../application/format.ts';
 import type {EngineState, HistoryEntry, Workout} from '../../application/engineGateway.ts';
 import type {PlanChange} from '../../application/planDiff.ts';
-import {evaluationSign, evaluationText, reasonText, yellowReasonText} from '../copy/values.ts';
-import {change as changeText, outcome as copy, today as todayText} from '../copy/text.ts';
+import {evaluationSign, evaluationText, feasibilityText, gateText, phaseText, reasonText, safetyStatusText, workoutTypeText, yellowReasonText} from '../copy/values.ts';
+import {change as changeText, durationText, outcome as copy, today as todayText} from '../copy/text.ts';
 import {paceRangeText, workoutSummaryText, workoutTitle, workoutVolume} from '../display.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, EmptyState, KeyValue, Notice, Sign} from '../components/Layout.tsx';
@@ -26,6 +26,13 @@ interface Props {
 export function ResultOutcome({entry, engineState, nextWorkout, changes, onContinue, onOpenPlan}: Props): ReactNode {
   const evaluation = entry.classified.evaluation;
   const yellow = entry.classified.yellowReason;
+  // Closure and granular NEXT_* details are not separate changes worth repeating here.
+  // The next workout card already explains its complete current prescription.
+  const visibleChanges = (changes ?? []).filter(change =>
+    !['WORKOUT_RECORDED', 'NEXT_WORKOUT_TYPE_CHANGED', 'NEXT_WORKOUT_DATE_CHANGED',
+      'NEXT_WORKOUT_VOLUME_CHANGED', 'NEXT_WORKOUT_PACE_CHANGED'].includes(change.kind));
+  const hasMeasuredResult = entry.result.distanceMeters > 0 ||
+    entry.result.durationMinutes > 0 || entry.result.repeats.length > 0;
 
   return (
     <div className="screen">
@@ -46,7 +53,7 @@ export function ResultOutcome({entry, engineState, nextWorkout, changes, onConti
         )}
       </Card>
 
-      {engineState.decision.reasons.length > 0 ? (
+      {visibleChanges.length > 0 && engineState.decision.reasons.length > 0 ? (
         <Card title={copy.why}>
           <ul className="list">
             {engineState.decision.reasons.map((reason) => (
@@ -59,9 +66,9 @@ export function ResultOutcome({entry, engineState, nextWorkout, changes, onConti
       ) : null}
 
       <Card title={copy.recorded}>
-        <KeyValue label="Выполнено" value={`${Math.round(entry.result.completionFraction * 100)}%`} />
-        <KeyValue label="Тяжесть" value={String(entry.result.sessionRpe)} />
-        <KeyValue label="Длительность" value={`${entry.result.durationMinutes} мин`} />
+        <KeyValue label="Выполнено по отчёту" value={`${Math.round(entry.result.completionFraction * 100)}%`} />
+        <KeyValue label="Тяжесть по вашей оценке" value={`${entry.result.sessionRpe} из 10`} />
+        <KeyValue label="Длительность" value={entry.result.durationMinutes > 0 ? durationText(entry.result.durationMinutes * 60) : 'Не измерена'} />
         <KeyValue label="Дистанция" value={entry.result.distanceMeters === 0 ? 'Не указана' :
           entry.result.repeats.length > 0 && Math.abs(entry.result.distanceMeters - entry.result.repeats.reduce((sum, part) => sum + part.distanceMeters, 0)) < 1e-6
             ? `Не менее ${Math.round(entry.result.distanceMeters)} м (по отрезкам)`
@@ -69,12 +76,15 @@ export function ResultOutcome({entry, engineState, nextWorkout, changes, onConti
         {entry.result.repeats.length > 0 ? (
           <KeyValue label="Отрезки" value={entry.result.repeats.map((repeat) => `${Math.round(repeat.distanceMeters)} м / ${formatTime(repeat.seconds)}`).join(', ')} />
         ) : null}
+        {!hasMeasuredResult && (evaluation === 'GREEN' || evaluation === 'GREEN_PLUS') ? (
+          <p className="hint">Оценка основана на отметке о выполнении и тяжести. Время и расстояние не измерялись — точность оценки ограничена.</p>
+        ) : null}
       </Card>
 
-      {changes === null || changes.length === 0 ? null : (
+      {visibleChanges.length === 0 ? null : (
         <Card title={copy.whatChanged}>
           <ul className="list">
-            {changes.map((item, index) => (
+            {visibleChanges.map((item, index) => (
               <li key={`${item.kind}-${index}`} className="list__item">{describeChange(item)}</li>
             ))}
           </ul>
@@ -108,9 +118,9 @@ function describeChange(change: PlanChange): string {
     case 'WORKOUT_RECORDED':
       return changeText.WORKOUT_RECORDED;
     case 'NEXT_WORKOUT_CHANGED':
-      return change.to === null ? `${changeText.NEXT_WORKOUT_CHANGED}: ${changeText.none}` : `${changeText.NEXT_WORKOUT_CHANGED}: ${workoutSummaryText(change.to)}`;
+      return change.to === null ? 'Следующее назначение отменено' : `Следующее назначение скорректировано: ${workoutSummaryText(change.to)}`;
     case 'NEXT_WORKOUT_TYPE_CHANGED':
-      return `${changeText.NEXT_WORKOUT_TYPE_CHANGED}: ${changeText.from} ${change.from}, ${changeText.to} ${change.to}`;
+      return `${changeText.NEXT_WORKOUT_TYPE_CHANGED}: ${workoutTypeText[change.from].label} → ${workoutTypeText[change.to].label}`;
     case 'NEXT_WORKOUT_DATE_CHANGED':
       return `${changeText.NEXT_WORKOUT_DATE_CHANGED}: ${changeText.from} ${formatDateShort(change.from)}, ${changeText.to} ${formatDateShort(change.to)}`;
     case 'NEXT_WORKOUT_VOLUME_CHANGED':
@@ -120,13 +130,13 @@ function describeChange(change: PlanChange): string {
     case 'CONTROL_SCHEDULED':
       return `${changeText.CONTROL_SCHEDULED}: ${workoutSummaryText(change.workout)}`;
     case 'PHASE_CHANGED':
-      return `${changeText.PHASE_CHANGED}`;
+      return `${changeText.PHASE_CHANGED}: ${phaseText[change.from].label} → ${phaseText[change.to].label}`;
     case 'GATE_CHANGED':
-      return `${changeText.GATE_CHANGED}`;
+      return `${changeText.GATE_CHANGED}: ${gateText[change.from].label} → ${gateText[change.to].label}`;
     case 'FEASIBILITY_CHANGED':
-      return `${changeText.FEASIBILITY_CHANGED}`;
+      return `${changeText.FEASIBILITY_CHANGED}: ${change.from === null ? 'Нет оценки' : feasibilityText[change.from].label} → ${change.to === null ? 'Нет оценки' : feasibilityText[change.to].label}`;
     case 'SAFETY_CHANGED':
-      return `${changeText.SAFETY_CHANGED}`;
+      return `${changeText.SAFETY_CHANGED}: ${safetyStatusText[change.from]} → ${safetyStatusText[change.to]}`;
     case 'CHECKPOINT_REQUIRED':
       return changeText.CHECKPOINT_REQUIRED;
     case 'QUEUE_BECAME_EMPTY':
