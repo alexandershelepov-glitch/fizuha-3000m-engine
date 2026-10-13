@@ -112,7 +112,7 @@ test('E05 rejected lifecycle operations', () => {
 });
 
 // ------------------------------------------------------- Documented gaps
-test('E06 DOCUMENTED GAP: contradictory training volumes are accepted', () => {
+test('E06 contradictory profile data are accepted, but LONG_EASY load is now constrained', () => {
   // A 40 km long run inside a 10 km training week, and 6 runs a week with 1 available slot.
   const contradictory = createEngine(baseProfile({
     averageWeeklyKm4Weeks: 10, longestUsualRunKm: 40, actualRunsPerWeek: 6, availableRunsPerWeek: 1,
@@ -120,14 +120,16 @@ test('E06 DOCUMENTED GAP: contradictory training volumes are accepted', () => {
   // Capacity stays conservative (the 10 km/week band caps it at T1), so the contradiction
   // does not inflate Training Capacity — but nothing rejects the input either.
   assert.equal(contradictory.decision.capacity, 'T1');
-  // Long run is taken straight from longestUsualRunKm with no sanity check against weekly volume.
+  // The profile still accepts inconsistent self-reports; conservative planning must not
+  // repeat the 40 km error just because "longest ever run" is contradictory.
   const withLong = createEngine(baseProfile({
     averageWeeklyKm4Weeks: 10, longestUsualRunKm: 40, actualRunsPerWeek: 3, availableRunsPerWeek: 3, raceDate: dateAfter(60),
   }), NOW);
   const long = withLong.queue.find(w => w.type === 'LONG_EASY');
-  assert.ok(long, 'precondition: a long easy run is prescribed');
-  assert.equal(long.main.dose.value, 40000, 'a 40 km long run is prescribed inside a 10 km training week');
-  // Pin the risk explicitly: nothing in validation cross-checks these fields today.
+  assert.ok(long, 'the planned long session remains reachable');
+  assert.ok(long.main.dose.value <= 10000, 'never prescribe a 40 km long run inside a 10 km baseline week');
+  assert.ok(withLong.queue.filter(w=>w.main.dose.unit==='METERS').reduce((n,w)=>n+w.main.dose.value,0)<=10000);
+  // Profile-level contradictions are still not rejected: input quality is a separate issue.
   assert.doesNotThrow(() => createEngine(baseProfile({averageWeeklyKm4Weeks: 5, longestUsualRunKm: 50}), NOW));
   assert.doesNotThrow(() => createEngine(baseProfile({actualRunsPerWeek: 6, availableRunsPerWeek: 1}), NOW));
 });
