@@ -4,9 +4,9 @@
  */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {createEngine, recordFinalResult, recordResult} from '../src/index.ts';
+import {createEngine, recordCheckpoint, recordFinalResult, recordResult} from '../src/index.ts';
 import type {EngineState} from '../src/index.ts';
-import {deriveCycleStatus, deriveToday, TODAY_STATES} from '../web/src/application/uiState.ts';
+import {deriveCycleStatus, deriveToday, isSafetyHold, needsPerformanceReview, TODAY_STATES} from '../web/src/application/uiState.ts';
 import {deserializeEngineState, serializeEngineState} from '../web/src/application/engineGateway.ts';
 import {TODAY_LABELS} from './helpers-app.ts';
 import {NOW, dateAfter, feedback, healthy, profile} from './helpers.ts';
@@ -59,7 +59,7 @@ test('UI-01 every engine-driven Today state is reachable through real data', () 
 
 test('UI-02 the selection order is the documented one', () => {
   assert.deepEqual([...TODAY_STATES], [
-    'COMPLETED', 'AWAITING_FINAL_RESULT', 'RACE_DAY', 'PENDING_RESULT', 'TRAINING_HOLD',
+    'COMPLETED', 'AWAITING_FINAL_RESULT', 'RACE_DAY', 'PENDING_RESULT', 'TRAINING_HOLD', 'PERFORMANCE_REVIEW',
     'TAPER', 'CHECKPOINT_REQUIRED', 'WORKOUT_TODAY', 'EMPTY_QUEUE', 'REST_DAY',
   ]);
   // A pending result outranks the taper: the plan is not recalculated before the result is recorded.
