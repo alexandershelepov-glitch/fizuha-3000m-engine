@@ -73,7 +73,11 @@ export function loadResultDraft(storage: KeyValueStorage | null, workoutId: stri
   try {
     const parsed = JSON.parse(raw) as Partial<StoredResultDraft>;
     if (parsed.workoutId !== workoutId || typeof parsed.draft !== 'object' || parsed.draft === null) return null;
-    return parsed.draft;
+    // Previous versions prefilled "0" to mean "not measured". Migrate this old sentinel
+    // to a blank optional total; never silently discard measured repeat entries.
+    return parsed.draft.distanceMeters === '0'
+      ? {...parsed.draft, distanceMeters: ''}
+      : parsed.draft;
   } catch {
     return null;
   }
