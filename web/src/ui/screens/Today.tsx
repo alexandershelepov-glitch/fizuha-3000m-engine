@@ -33,7 +33,7 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
         </div>
       </header>
 
-      <p className="chip">{`${todayText.phaseLabel}: ${phaseText[decision.phase].label}`}</p>
+      <p className="chip">{`${todayText.phaseLabel}: ${view.state === 'PERFORMANCE_REVIEW' ? todayText.performanceReview.title : phaseText[decision.phase].label}`}</p>
 
       {view.state === 'TRAINING_HOLD' ? (
         <Notice tone="danger" title={todayText.hold.title}>
