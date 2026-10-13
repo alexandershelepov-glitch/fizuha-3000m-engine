@@ -154,23 +154,19 @@ test('INSTR-09 the control run names the real distance and states that no pace i
   assert.equal(/в полную силу|максимальн/i.test(plan.steps.join(' ')), false);
 });
 
-test('INSTR-10 run and walk is explained in words, without inventing a pattern', () => {
+test('INSTR-10 run and walk is described with precisely the engine-prescribed bouts and distance', () => {
   const fixture = walkCycle();
   const workout = prescribe(fixture.engineState, 'EASY', fixture.engineState.asOf, 'test-walk');
-  assert.equal(workout.main.mode, 'RUN_WALK', 'the fixture must be a run-and-walk session');
+  assert.equal(workout.main.mode, 'RUN_WALK');
   const plan = workoutInstruction(workout);
-
   assert.ok(plan.headline.startsWith('Сегодня: спокойный бег'));
-  assert.equal(plan.steps[0], 'Эта тренировка выполняется с чередованием бега и ходьбы.');
-  assert.ok(plan.steps.some((step) => step.startsWith('Общий объём — ')));
-  assert.ok(plan.steps.some((step) => step === 'Точная длительность беговых и шаговых отрезков в плане не задана.'));
-  // Nothing about the pattern may be invented: no switching rule, no walking or running minutes.
-  const text = plan.steps.join(' ');
-  assert.equal(/\d+\s*(раз|цикл)/.test(text), false, text);
-  assert.equal(/пока дыхание|восстановления дыхания|пульс/i.test(text), false, text);
-  assert.equal(/минут[уы]?\s+бега|минут[уы]?\s+ходьбы/i.test(text), false, text);
+  assert.ok(plan.steps.some(step=>step.includes('Разминка')&&step.includes('5')));
+  assert.ok(plan.steps.some(step=>step.includes('30 секунд')&&step.includes('2 минуты')));
+  assert.ok(plan.steps.some(step=>step.includes('пока не наберёте указанную общую дистанцию')));
+  assert.ok(plan.steps.some(step=>step.includes('Учитывайте и шаги, и бег')));
+  assert.ok(plan.steps.some(step=>step.includes('Заминка')&&step.includes('5')));
+  assert.equal(plan.paceText,null,'no invented beginner pace');
 });
-
 test('INSTR-11 strides are described by technique, not by a target time', () => {
   const workout = ordered('STRIDES');
   const plan = workoutInstruction(workout);

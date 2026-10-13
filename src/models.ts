@@ -98,7 +98,9 @@ export interface Dose { unit: DoseUnit; value: number }
 export interface Workout {
   id: string; scheduledDate: string; type: WorkoutType; goal: WorkoutGoal; priority: number;
   countsAsQuality: boolean; warmupMinutes: number; cooldownMinutes: number;
-  main: { mode: WorkoutMainMode; dose: Dose; repeats: number; repeatMeters: number | null; finalRepeatMeters: number | null };
+  main: { mode: WorkoutMainMode; dose: Dose; repeats: number; repeatMeters: number | null; finalRepeatMeters: number | null;
+    /** Engine-approved alternating steps for RUN_WALK; older saved workouts may omit it. */
+    runWalk?: {stage: number; runSeconds: number; walkSeconds: number} };
   targetRpe: [number, number]; effortCues: EffortCue[]; speedRangeMps: [number, number] | null; paceRangeSecondsPerKm: [number, number] | null;
   anchor: Anchor; gateAtPrescription: Gate;
   restSeconds: number; minimumRecoveryHoursBeforeQuality: number;
@@ -136,4 +138,6 @@ export interface EngineState {
   finalResultRecorded: boolean;
   /** Additive v1 extension: older serialized cycles without this field remain loadable. */
   easyProgression?: { approvedMetersPer7Days: number; lastReviewedBlock: number; lastIncreaseDate: string | null };
+  /** Additive v1 extension. Missing on legacy saves: initialize at beginner stage, no retroactive credit. */
+  runWalkProgression?: {stage: number};
 }
