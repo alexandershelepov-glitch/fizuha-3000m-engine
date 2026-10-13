@@ -89,6 +89,8 @@ function describeEvent(event: CycleEvent): string {
       return `${event.cause === 'PAST_DUE' ? historyItems.WORKOUT_SKIPPED_PAST_DUE : historyItems.WORKOUT_SKIPPED_VOLUNTARY} · ${formatDateShort(event.scheduledDate)}`;
     case 'WORKOUT_MOVED':
       return `${historyItems.WORKOUT_MOVED} · ${historyItems.moved(formatDateShort(event.fromDate), formatDateShort(event.toDate))}`;
+    case 'CONTINUOUS_3K_CONFIRMED':
+      return `${historyItems.CONTINUOUS_3K_CONFIRMED} · ${formatDateShort(event.runDate)}`;
     case 'CHECKPOINT_RECORDED':
       return `${historyItems.CHECKPOINT_RECORDED} · ${historyItems.performance(event.previousPerformance === null ? null : formatTime(event.previousPerformance), formatTime(event.result.timeSeconds))}`;
     case 'TRAINING_PARAMETERS_CHANGED':
