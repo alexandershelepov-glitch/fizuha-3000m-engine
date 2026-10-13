@@ -31,8 +31,7 @@ export function ResultOutcome({entry, engineState, nextWorkout, changes, onConti
   const visibleChanges = (changes ?? []).filter(change =>
     !['WORKOUT_RECORDED', 'NEXT_WORKOUT_TYPE_CHANGED', 'NEXT_WORKOUT_DATE_CHANGED',
       'NEXT_WORKOUT_VOLUME_CHANGED', 'NEXT_WORKOUT_PACE_CHANGED'].includes(change.kind));
-  const hasMeasuredResult = entry.result.distanceMeters > 0 ||
-    entry.result.durationMinutes > 0 || entry.result.repeats.length > 0;
+  const hasMeasuredDistanceOrSplits = entry.result.distanceMeters > 0 || entry.result.repeats.length > 0;
 
   return (
     <div className="screen">
@@ -76,8 +75,8 @@ export function ResultOutcome({entry, engineState, nextWorkout, changes, onConti
         {entry.result.repeats.length > 0 ? (
           <KeyValue label="Отрезки" value={entry.result.repeats.map((repeat) => `${Math.round(repeat.distanceMeters)} м / ${formatTime(repeat.seconds)}`).join(', ')} />
         ) : null}
-        {!hasMeasuredResult && (evaluation === 'GREEN' || evaluation === 'GREEN_PLUS') ? (
-          <p className="hint">Оценка основана на отметке о выполнении и тяжести. Время и расстояние не измерялись — точность оценки ограничена.</p>
+        {!hasMeasuredDistanceOrSplits && (evaluation === 'GREEN' || evaluation === 'GREEN_PLUS') ? (
+          <p className="hint">Оценка основана на ответах о выполнении и тяжести. Километраж и отрезки не измерены; указанное время могло быть взято из плана. Это не проверка по часам или GPS.</p>
         ) : null}
       </Card>
 
