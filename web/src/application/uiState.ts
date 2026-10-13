@@ -20,6 +20,7 @@ export const TODAY_STATES = Object.freeze([
   'RACE_DAY',
   'PENDING_RESULT',
   'TRAINING_HOLD',
+  'PERFORMANCE_REVIEW',
   'TAPER',
   'CHECKPOINT_REQUIRED',
   'WORKOUT_TODAY',
@@ -41,6 +42,16 @@ export interface TodayView {
   readonly pendingWorkouts: readonly Workout[];
 }
 
+/** Distinguish a genuine safety block from the need to repeat a stale 3000 m test. */
+export function isSafetyHold(s: EngineState): boolean {
+  return s.decision.safety !== 'OK' || s.diagnosticHold || s.relatedYellow;
+}
+
+export function needsPerformanceReview(s: EngineState): boolean {
+  return !isSafetyHold(s) && s.decision.confidence === 'LOW' &&
+    s.decision.phase === 'HOLD_DIAGNOSTIC';
+}
+
 export function deriveToday(engineState: EngineState, today: string = deviceToday()): TodayView {
   const workout = engineState.queue.find(entry => entry.scheduledDate === today) ?? null;
   const nextWorkout = engineState.queue.find(entry => entry.scheduledDate > today) ?? null;
@@ -56,7 +67,8 @@ function selectState(engineState: EngineState, today: string, workout: Workout |
   if (today > engineState.profile.raceDate) return 'AWAITING_FINAL_RESULT';
   if (today === engineState.profile.raceDate) return 'RACE_DAY';
   if (pending.length > 0) return 'PENDING_RESULT';
-  if (engineState.decision.safety !== 'OK' || engineState.decision.phase === 'HOLD_DIAGNOSTIC' || engineState.diagnosticHold || engineState.relatedYellow) return 'TRAINING_HOLD';
+  if (isSafetyHold(engineState)) return 'TRAINING_HOLD';
+  if (needsPerformanceReview(engineState)) return 'PERFORMANCE_REVIEW';
   if (engineState.decision.phase === 'TAPER') return 'TAPER';
   if (engineState.checkpointRequired) return 'CHECKPOINT_REQUIRED';
   if (workout !== null) return 'WORKOUT_TODAY';
