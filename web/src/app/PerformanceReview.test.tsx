@@ -1,6 +1,6 @@
 import {afterEach, describe, expect, test} from 'vitest';
 import {cleanup, render, screen} from '@testing-library/react';
-import {createEngine} from '../../../src/index.ts';
+import {createEngineState} from '../application/engineGateway.ts';
 import {NOW, dateAfter, experienced, healthy, profile} from '../../../tests/helpers.ts';
 import {Today} from '../ui/screens/Today.tsx';
 import {Plan} from '../ui/screens/Plan.tsx';
@@ -10,7 +10,7 @@ import type {Route} from './routes.ts';
 
 afterEach(cleanup);
 
-const base = (safety=healthy()):EngineState=>createEngine(profile({
+const base = (safety=healthy()):EngineState=>createEngineState(profile({
   ...experienced,
   performance:{timeSeconds:900,date:dateAfter(-50),source:'TEST_3K'},
   raceDate:dateAfter(90),
