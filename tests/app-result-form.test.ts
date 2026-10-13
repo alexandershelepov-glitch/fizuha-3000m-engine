@@ -56,7 +56,7 @@ test('FORM-01 a started draft comes from the prescription and invents nothing', 
   const draft = defaultResultDraft(workout);
 
   assert.equal(draft.completion, 'FULL');
-  assert.equal(draft.distanceMeters, '0');
+  assert.equal(draft.distanceMeters, '');
   assert.equal(draft.sessionRpe, Math.round((workout.targetRpe[0] + workout.targetRpe[1]) / 2));
   assert.equal(draft.restSeconds, String(workout.restSeconds));
   assert.equal(draft.repeats.length, Math.max(1, workout.main.repeats));
