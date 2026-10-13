@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {createEngine, replan, recordResult, skipWorkout, applyBreak, serialize, deserialize} from '../src/index.ts';
+import {createEngine, replan, recordResult, skipWorkout, applyBreak, serialize, deserialize, updateTrainingData} from '../src/index.ts';
 import {buildWorkoutResult, defaultResultDraft} from '../web/src/application/resultForm.ts';
 import {NOW, dateAfter, feedback, profile, healthy} from './helpers.ts';
 import type {EngineState, Workout} from '../src/index.ts';
@@ -128,4 +128,14 @@ test('EASY-PROG-11 mild reported pain within the 14-day block prevents a load in
   }
   s=replan(s,dateAfter(14));
   assert.equal(s.easyProgression?.approvedMetersPer7Days,10000);
+});
+
+test('EASY-PROG-12 a corrected habitual mileage resets approved budget without losing history',()=>{
+  const before=simulate(createEngine(novice(),NOW),14);
+  assert.equal(before.easyProgression?.approvedMetersPer7Days,10500);
+  const changed=updateTrainingData(before,{averageWeeklyKm4Weeks:6},dateAfter(14));
+  assert.equal(changed.easyProgression?.approvedMetersPer7Days,6000);
+  assert.equal(changed.easyProgression?.lastIncreaseDate,dateAfter(14));
+  assert.equal(changed.history.length,before.history.length);
+  assert.ok(changed.queue.filter(w=>w.main.dose.unit==='METERS').reduce((n,w)=>n+w.main.dose.value,0)<=6000);
 });
