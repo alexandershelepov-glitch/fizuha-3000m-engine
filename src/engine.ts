@@ -30,8 +30,49 @@ function advanceTo(s: EngineState, now: string): void {
  * committed to: after a skip the remaining prescriptions are kept as they were, so a missed
  * session can never raise or pull forward the following load.
  */
+/**
+ * EASY progression is based on two FULL, explicitly acknowledged 7-day blocks.
+ * Calendar availability and implicit form defaults are never evidence of adaptation.
+ * No numeric improvement in 3 km performance is assumed.
+ */
+function considerEasyProgression(s: EngineState, now: string): void {
+  const baselineMeters = s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
+    ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000;
+  s.easyProgression ??= {approvedMetersPer7Days:baselineMeters, lastIncreaseDate:null};
+  const p=s.easyProgression;
+  const date=day(now);
+  if (date - day(s.cycleStartDate) < 14 ||
+      (p.lastIncreaseDate !== null && date-day(p.lastIncreaseDate)<14) ||
+      baselineMeters < 5000 || s.profile.actualRunsPerWeek===0) return;
+  const decision=decide(s,now);
+  if (decision.safety!=='OK' || s.progressionBlocked || s.relatedYellow ||
+      s.diagnosticHold || s.reentry || s.checkpointRequired ||
+      decision.phase==='TAPER' || decision.phase==='HOLD_DIAGNOSTIC') return;
+  // Never increase easy and quality dose at the same time.
+  if (Object.entries(s.doses).some(([type,dose])=>dose.value >
+    (s.confirmedDoses[type as WorkoutType]?.value ?? dose.value))) return;
+  const first=date-14;
+  const workouts=s.history.filter(h=>day(h.result.date)>=first && day(h.result.date)<date &&
+    h.workout.type!=='REST');
+  const skipped=s.skippedWorkouts.some(w=>day(w.scheduledDate)>=first && day(w.scheduledDate)<date &&
+    w.type!=='REST');
+  if (skipped || workouts.length < s.profile.actualRunsPerWeek*2) return;
+  for(const week of [0,1]){
+    const weekly=workouts.filter(h=>day(h.result.date)>=first+week*7 &&
+      day(h.result.date)<first+(week+1)*7);
+    if (weekly.length<s.profile.actualRunsPerWeek) return;
+  }
+  if(workouts.some(h=>!h.result.verifiedForProgression ||
+    !['GREEN','GREEN_PLUS'].includes(h.classified.evaluation) ||
+    h.result.completionFraction<.95 || h.result.unexpectedFatigue)) return;
+  // Separate small-base/run-walk staircase needs methodical sign-off.
+  const step=decision.capacity==='T2'||decision.capacity==='T3' ? 1000 : 500;
+  p.approvedMetersPer7Days += step;
+  p.lastIncreaseDate=now;
+}
 function rebuildQueue(s: EngineState, now: string, preserve: Workout[] | null): EngineState {
   if (day(now) - day(s.lastAssessmentDate) >= 21 || s.profile.performanceMismatch === 'CLEAR') s.checkpointRequired = true;
+  considerEasyProgression(s, now);
   s.decision = decide(s, now);
   const generated = generateQueue(s, now);
   s.queue = preserve ? generated.map(w => preserve.find(old => old.id === w.id) ?? w) : generated;
