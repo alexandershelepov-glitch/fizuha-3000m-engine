@@ -26,13 +26,13 @@ export function PlanReady({engineState, onContinue, onRecheck}: {engineState: En
       <Card>
         <KeyValue label={planReady.goal} value={`3000 м за ${formatTime(profile.targetTimeSeconds)}`} />
         <KeyValue label={planReady.raceDate} value={formatDateLong(profile.raceDate)} />
-        <KeyValue label={planReady.phase} value={phaseText[decision.phase].label} />
+        <KeyValue label={planReady.phase} value={performanceReview ? todayCopy.performanceReview.title : phaseText[decision.phase].label} />
       </Card>
 
       {hold ? <Notice tone="warn" title={questionnaire.hold.title}><p>{questionnaire.hold.explanation}</p><p>{questionnaire.hold.next}</p><Button onClick={onRecheck}>{questionnaire.hold.recheck}</Button></Notice> : null}
       {performanceReview ? <Notice tone="info" title={todayCopy.performanceReview.title}><p>{todayCopy.performanceReview.text}</p></Notice> : null}
 
-      <Card title={phaseText[decision.phase].label}>
+      <Card title={performanceReview ? todayCopy.performanceReview.title : phaseText[decision.phase].label}>
         <p className="paragraph">{performanceReview ? todayCopy.performanceReview.text : phaseWhy[decision.phase]}</p>
       </Card>
 
