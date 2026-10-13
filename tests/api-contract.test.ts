@@ -83,6 +83,7 @@ const CASES: Case[] = [
   {code: 'INVALID_YELLOW_REASON', message: 'Invalid yellow reason', trigger: () => validateResult({...validResult(), yellowReason: 'LAZY'} as never)},
   {code: 'INVALID_FATIGUE_FLAG', message: 'Invalid fatigue flag', trigger: () => validateResult({...validResult(), unexpectedFatigue: 'yes'} as never)},
   {code: 'INVALID_FEEDBACK_CONFIRMATION', message: 'Invalid explicit feedback confirmation', trigger: () => validateResult({...validResult(), feedbackConfirmed: 'yes'} as never)},
+  {code: 'INVALID_PROGRESSION_STATE', message: 'Invalid saved training progression', trigger: () => {const s = newState(); return deserialize(JSON.stringify({...s, easyProgression:{approvedMetersPer7Days: 1000000, lastReviewedBlock: 0, lastIncreaseDate: null}}));}},
   {code: 'RESULT_DISTANCE_CONFLICT', message: 'Reported total distance is less than measured splits', trigger: () => validateResult({...validResult(), distanceMeters: 0, repeats: [{distanceMeters: 400, seconds: 90}]})},
   {code: 'EVENT_DATE_PASSED', message: 'EVENT_DATE_PASSED: the active plan works only up to and including the target race date', trigger: () => createEngine(baseProfile({raceDate: dateAfter(-1)}), NOW)},
   {code: 'CLOCK_BACKWARDS', message: 'Clock cannot move backwards', trigger: () => replan(newState(), dateAfter(-1))},
