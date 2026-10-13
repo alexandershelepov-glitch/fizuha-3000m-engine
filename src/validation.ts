@@ -46,6 +46,7 @@ export function validateProfile(p: Profile, now: string): void {
 export function validateResult(r: WorkoutResult): void {
   if (r.yellowReason && !YELLOW_REASONS.includes(r.yellowReason)) throw new EngineError('INVALID_YELLOW_REASON');
   if (typeof r.unexpectedFatigue !== 'boolean') throw new EngineError('INVALID_FATIGUE_FLAG');
+  if (r.verifiedForProgression !== undefined && typeof r.verifiedForProgression !== 'boolean') throw new EngineError('INVALID_PROFILE_FLAG');
   day(r.date); number(r.completionFraction, 0, 1); number(r.sessionRpe, 0, 10);
   number(r.durationMinutes, 0); number(r.distanceMeters, 0); validateSafety(r.safety);
   let knownRepeatMeters = 0;
