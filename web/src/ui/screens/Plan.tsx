@@ -32,7 +32,7 @@ export function Plan({engineState, today, onNavigate, onRefreshPlan, refreshing}
       <header className="appbar">
         <div>
           <h1 className="appbar__title">{plan.title}</h1>
-          <p className="appbar__subtitle">{`${plan.currentPhase}: ${phaseText[decision.phase].label}`}</p>
+          <p className="appbar__subtitle">{`${plan.currentPhase}: ${needsPerformanceReview(engineState) ? todayText.performanceReview.title : phaseText[decision.phase].label}`}</p>
         </div>
       </header>
 
