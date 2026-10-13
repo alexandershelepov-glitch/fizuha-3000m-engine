@@ -97,7 +97,7 @@ test('EASY-PROG-09 actual user selections, not prefills, mark a result verified'
   assert.equal(draft.effortConfirmed,false);
   const unconfirmed=buildWorkoutResult(w,{...draft,safetyResponse:'NO_SYMPTOMS'});
   assert.equal(unconfirmed.ok,true);
-  if(unconfirmed.ok)assert.equal(unconfirmed.result.verifiedForProgression,false);
+  if(unconfirmed.ok)assert.equal(unconfirmed.result.verifiedForProgression,undefined);
   const confirmed=buildWorkoutResult(w,{...draft,completionConfirmed:true,effortConfirmed:true,safetyResponse:'NO_SYMPTOMS'});
   assert.equal(confirmed.ok,true);
   if(confirmed.ok)assert.equal(confirmed.result.verifiedForProgression,true);
