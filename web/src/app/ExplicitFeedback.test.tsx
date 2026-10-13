@@ -22,7 +22,7 @@ test('PWA-FEEDBACK-01 two deliberate taps (including the default choices) are re
   expect(screen.getByText(/Плановая оценка ещё не подтверждена/)).toBeInTheDocument();
   await user.click(screen.getByRole('radio',{name:'Выполнено полностью'}));
   const rpe=Math.round((workout.targetRpe[0]+workout.targetRpe[1])/2);
-  await user.click(screen.getByRole('button',{name:scaleLabels[rpe]!}));
+  await user.click(screen.getByRole('button',{name:scaleLabels[rpe] ?? `Насколько тяжело было: ${rpe}`}));
   await user.click(screen.getByRole('radio',{name:'Нет, всё нормально'}));
   await user.click(screen.getByRole('button',{name:'Сохранить результат'}));
   expect(reported.length).toBe(1);
