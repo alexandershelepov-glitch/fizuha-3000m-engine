@@ -58,7 +58,7 @@ export interface ResultDraft {
 export type ResultField = 'completionPercent' | 'durationMinutes' | 'distanceMeters' | 'repeats' | 'restSeconds';
 export interface ResultProblem {
   readonly field: ResultField;
-  readonly kind: 'EMPTY' | 'FORMAT' | 'IMPOSSIBLE' | 'NOT_A_NUMBER' | 'NEGATIVE';
+  readonly kind: 'EMPTY' | 'FORMAT' | 'IMPOSSIBLE' | 'NOT_A_NUMBER' | 'NEGATIVE' | 'CONFLICT';
 }
 
 /** The B1 trigger: a prescribed pace range is what makes an empty repeats block cost accuracy. */
@@ -88,7 +88,7 @@ function plannedDuration(workout: Workout): number {
 /**
  * A started draft for this session. Defaults come from the prescription where the engine provides it
  * (repeats, rest, planned duration); nothing is invented for values the engine does not know, and the
- * distance stays at the documented zero until the user states it.
+ * total distance stays blank ("not measured") until the user states it.
  */
 export function defaultResultDraft(workout: Workout): ResultDraft {
   return {
@@ -98,7 +98,7 @@ export function defaultResultDraft(workout: Workout): ResultDraft {
     safety: {pain: 0, painIncreasing: false, alteredMovement: false, painWalkingOrRest: false, swelling: false, acuteIllness: false, otherStop: false, needsAssessment: false},
     safetyResponse: 'UNANSWERED',
     durationMinutes: String(plannedDuration(workout)),
-    distanceMeters: '0',
+    distanceMeters: '',
     repeats: defaultRepeats(workout),
     restSeconds: String(workout.restSeconds),
     conditions: {heat: false, wind: false, surface: '', notes: ''},
@@ -166,7 +166,11 @@ export function buildWorkoutResult(workout: Workout, draft: ResultDraft): BuildR
   }
 
   const durationMinutes = numberField(draft.durationMinutes, 'durationMinutes', problems);
-  const distanceMeters = numberField(draft.distanceMeters, 'distanceMeters', problems);
+  // A blank total is not a measured zero. Keep this separate from a deliberate "0".
+  const totalDistanceWasProvided = draft.distanceMeters.trim() !== '';
+  const enteredTotalDistance = totalDistanceWasProvided
+    ? numberField(draft.distanceMeters, 'distanceMeters', problems)
+    : 0;
   const rawRest = numberField(draft.restSeconds, 'restSeconds', problems);
 
   const repeats: {distanceMeters: number; seconds: number}[] = [];
@@ -188,7 +192,13 @@ export function buildWorkoutResult(workout: Workout, draft: ResultDraft): BuildR
     }
   }
 
+  const knownRepeatMeters = repeats.reduce((sum, part) => sum + part.distanceMeters, 0);
+  if (totalDistanceWasProvided && knownRepeatMeters > enteredTotalDistance + 1e-6) {
+    problems.push({field: 'distanceMeters', kind: 'CONFLICT'});
+  }
   if (problems.length > 0) return {ok: false, problems};
+  // Only measured splits can support this lower bound; we do not invent warmup/cooldown distance.
+  const distanceMeters = totalDistanceWasProvided ? enteredTotalDistance : knownRepeatMeters;
 
   const conditions: WorkoutResult['conditions'] = {heat: draft.conditions.heat, wind: draft.conditions.wind};
   if (draft.conditions.surface.trim() !== '') conditions.surface = draft.conditions.surface.trim();
