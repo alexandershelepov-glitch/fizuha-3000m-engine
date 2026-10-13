@@ -71,6 +71,10 @@ export function decide(s: EngineState, now: string): Decision {
   const effectiveSpeedMps = currentSpeedMps === null ? null : gate === 'CLOSED' ? currentSpeedMps : gate === 'OPEN' ? 3000 / p.targetTimeSeconds : currentSpeedMps + 0.5 * (3000 / p.targetTimeSeconds - currentSpeedMps);
   const recentRed = s.history.some(h => h.classified.evaluation === 'RED' && day(now) - day(h.result.date) <= 7);
   let maximumQualityPerWeek = p.availableRunsPerWeek >= 4 && (capacity === 'T2' || capacity === 'T3') && quality !== 'Q0' && !recentRed && !s.relatedYellow ? 2 : 1;
+  // A single planned or habitual running day must not consist solely of fast work.
+  // The baseline frequency guard may shrink seven available days to just one actual run.
+  // Until normal running frequency is established, that slot stays aerobic.
+  if (p.actualRunsPerWeek < 2 || p.availableRunsPerWeek < 2) maximumQualityPerWeek = 0;
   if (s.reducedQualityUntilConfirmed || s.reentry) maximumQualityPerWeek = Math.min(1, maximumQualityPerWeek);
   if (safety !== 'OK' || phase === 'HOLD_DIAGNOSTIC' || (s.reentry && (s.reentry.easyRemaining > 0 || s.reentry.diagnosticRequired)) || (phase === 'FOUNDATION' && (confidence === 'LOW' || !p.canRun3Km))) maximumQualityPerWeek = 0;
   if (safety === 'STOP') reasons.push('SAFETY_STOP'); else if (safety === 'HOLD') reasons.push('SAFETY_HOLD');
