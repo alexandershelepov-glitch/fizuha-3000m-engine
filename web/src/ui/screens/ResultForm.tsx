@@ -108,7 +108,7 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
     const problem = problems.find((item) => item.field === field);
     if (!problem) return undefined;
     if (field === 'repeats') {
-      const kind = problem.kind === 'NOT_A_NUMBER' || problem.kind === 'NEGATIVE' ? 'FORMAT' : problem.kind;
+      const kind = problem.kind === 'NOT_A_NUMBER' || problem.kind === 'NEGATIVE' || problem.kind === 'CONFLICT' ? 'FORMAT' : problem.kind;
       return copy.timeErrors[kind];
     }
     return copy.errors[problem.kind];
