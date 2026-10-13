@@ -73,7 +73,7 @@ test('EASY-PROG-06 RED and diagnostic holds cannot award a progression step',()=
   assert.equal(s.diagnosticHold,true);
 });
 test('EASY-PROG-07 re-entry after 8-day break never rewards absent weeks',()=>{
-  let s=createEngine(novice());
+  let s=createEngine(novice(),NOW);
   s=simulate(s,14);
   const approved=s.easyProgression?.approvedMetersPer7Days;
   s=applyBreak(s,{days:8,endDate:dateAfter(22),reason:'WORK'},dateAfter(22));
