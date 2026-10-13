@@ -27,7 +27,7 @@ test('unrelated environment and recovery YELLOW do not merge',()=>{
  s=recordResult(n.state,n.workout.id,feedback(n.workout,'YELLOW',{yellowReason:'RECOVERY',unexpectedFatigue:true}));assert.equal(s.relatedYellow,false);
 });
 test('two related yellow roll back last confirmed dose and restrict quality after diagnostic',()=>{
- let s=createEngine(profile({...experienced,availableRunsPerWeek:4}),NOW);s=performQuality(s);s=performQuality(s);
+ let s=createEngine(profile({...experienced,availableRunsPerWeek:4,actualRunsPerWeek:4}),NOW);s=performQuality(s);s=performQuality(s);
  const confirmed=structuredClone(s.confirmedDoses);let n=nextQuality(s);s=recordResult(n.state,n.workout.id,feedback(n.workout,'YELLOW'));
  const easy=s.queue[0]!;s=recordResult(s,easy.id,feedback(easy));n=nextQuality(s);s=recordResult(n.state,n.workout.id,feedback(n.workout,'YELLOW'));
  assert.equal(s.relatedYellow,true);assert.deepEqual(s.doses,confirmed);
@@ -67,7 +67,7 @@ for(const reason of ['ILLNESS','INJURY'] as const) test(`medical ${reason} break
  const s=applyBreak(createEngine(profile(),NOW),{days:4,endDate:dateAfter(4),reason},dateAfter(4));assert.equal(s.reentry,null);assert.equal(s.decision.phase,'HOLD_DIAGNOSTIC');assert.equal(s.decision.maximumQualityPerWeek,0);
 });
 test('skip removes a workout without debt, replacement quality or changing next prescription',()=>{
- const s=createEngine(profile({...experienced,availableRunsPerWeek:4}),NOW);const w=s.queue[0]!,next=s.queue[1]!;
+ const s=createEngine(profile({...experienced,availableRunsPerWeek:4,actualRunsPerWeek:4}),NOW);const w=s.queue[0]!,next=s.queue[1]!;
  const after=skipWorkout(s,w.id);assert.deepEqual(after.queue.find(w=>w.id===next.id),next);assert.equal(after.history.length,0);
  const again=replan(after);assert.ok(again.queue.filter(w=>w.countsAsQuality).length <= s.queue.filter(w=>w.countsAsQuality).length-1);
 });
@@ -123,7 +123,7 @@ test('first quality after two reentry easies still uses CLOSED gate and confirme
  const n=nextQuality(s);assert.equal(n.state.decision.phase,'RE_ENTRY');assert.equal(n.workout.gateAtPrescription,'CLOSED');assert.equal(n.workout.volumeFactor,.75);
 });
 test('small break easy reduction is applied once, not repeatedly',()=>{
- let s=createEngine(profile({...experienced,availableRunsPerWeek:4}),NOW);s=applyBreak(s,{days:4,endDate:dateAfter(4),reason:'WORK'},dateAfter(4));
+ let s=createEngine(profile({...experienced,availableRunsPerWeek:4,actualRunsPerWeek:4}),NOW);s=applyBreak(s,{days:4,endDate:dateAfter(4),reason:'WORK'},dateAfter(4));
  const easy=s.queue.find(w=>w.type==='EASY')!;assert.equal(easy.volumeFactor,.8);s=recordResult(s,easy.id,feedback(easy));
  assert.equal(s.reentry?.easyReductionPending,false);
 });
@@ -132,7 +132,7 @@ test('Q0 threshold introduction does not leap to Q1 minimum12 minutes',()=>{
  assert.equal(q.type,'THRESHOLD');assert.ok(q.main.dose.value<=s.confirmedDoses.INTRO_QUALITY!.value+2);
 });
 test('a moved quality is cancelled by RED, not resurrected on replan',async()=>{
- const {moveWorkout}=await import('../src/index.ts');let s=createEngine(profile({...experienced,availableRunsPerWeek:4}),NOW);
+ const {moveWorkout}=await import('../src/index.ts');let s=createEngine(profile({...experienced,availableRunsPerWeek:4,actualRunsPerWeek:4}),NOW);
  const second=s.queue.find((w,i)=>i>0&&w.countsAsQuality)!;s=moveWorkout(s,second.id,dateAfter(4));
  const first=s.queue[0]!;s=recordResult(s,first.id,feedback(first,'RED'));assert.ok(s.queue.every(w=>!w.countsAsQuality));
  assert.ok(deserialize(serialize(s)).queue.every(w=>!w.countsAsQuality));
