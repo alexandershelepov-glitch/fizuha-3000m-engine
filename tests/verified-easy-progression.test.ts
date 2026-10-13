@@ -113,3 +113,19 @@ test('EASY-PROG-10 10-week fully verified scenario never invents measured 3 km t
   assert.ok(s.queue.filter(w=>w.type==='LONG_EASY').length<=1);
   assert.ok(s.queue.filter(w=>w.main.dose.unit==='METERS').reduce((sum,w)=>sum+w.main.dose.value,0)<=s.easyProgression!.approvedMetersPer7Days);
 });
+
+test('EASY-PROG-11 mild reported pain within the 14-day block prevents a load increase',()=>{
+  let s=createEngine(novice(),NOW);
+  for(let i=0;i<14;i++){
+    const date=dateAfter(i);
+    s=replan(s,date);
+    const w=s.queue.find(x=>x.scheduledDate===date);
+    if(!w || w.type==='REST')continue;
+    s=recordResult(s,w.id,feedback(w,'GREEN',{
+      verifiedForProgression:true,distanceMeters:w.main.dose.value,
+      repeats:[], safety:i===7?{...healthy(),pain:1}:healthy(),
+    }));
+  }
+  s=replan(s,dateAfter(14));
+  assert.equal(s.easyProgression?.approvedMetersPer7Days,10000);
+});
