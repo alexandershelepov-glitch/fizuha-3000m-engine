@@ -604,7 +604,10 @@ describe('closing a workout', () => {
     // The outcome comes from the engine's own evaluation.
     expect(path()).toMatch(/\/workout\/.+\/outcome$/);
     expect(screen.getByText(/Тренировка выполнена|Лучше ожидаемого|Нагрузка потребовала корректировки|Текущую нагрузку нужно снизить/)).toBeInTheDocument();
-    expect(screen.getByText('Что изменилось')).toBeInTheDocument();
+    // A normal transition to the next date is not itself a training-plan correction.
+    expect(screen.getByText('Следующая тренировка')).toBeInTheDocument();
+    expect(screen.getByText(/Это не проверка по часам или GPS/)).toBeInTheDocument();
+    expect(screen.queryByText(/было INTRO_QUALITY|стало EASY/)).not.toBeInTheDocument();
 
     const stored = loadActiveCycle(createRepository(storage));
     expect(stored.kind).toBe('READY');
