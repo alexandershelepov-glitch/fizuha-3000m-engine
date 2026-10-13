@@ -64,7 +64,8 @@ function considerEasyProgression(s: EngineState, now: string): void {
   }
   if(workouts.some(h=>!h.result.verifiedForProgression ||
     !['GREEN','GREEN_PLUS'].includes(h.classified.evaluation) ||
-    h.result.completionFraction<.95 || h.result.unexpectedFatigue)) return;
+    h.result.completionFraction<.95 || h.result.unexpectedFatigue ||
+    h.result.safety.pain>0 || assessSafety(h.result.safety)!=='OK')) return;
   // Separate small-base/run-walk staircase needs methodical sign-off.
   const step=decision.capacity==='T2'||decision.capacity==='T3' ? 1000 : 500;
   p.approvedMetersPer7Days += step;
