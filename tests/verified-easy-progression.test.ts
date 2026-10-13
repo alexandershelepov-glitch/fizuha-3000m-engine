@@ -136,7 +136,10 @@ test('STEP-11 confirmation is available only after deliberate completion and eff
   if(oneAnswer.ok)assert.equal(oneAnswer.result.feedbackConfirmed,undefined);
   const both=buildWorkoutResult(w,{...draft,completionConfirmed:true,effortConfirmed:true});
   assert.equal(both.ok,true);
-  if(both.ok)assert.equal(both.result.feedbackConfirmed,true);
+  if(both.ok)assert.equal(both.result.feedbackConfirmed,undefined,'missing safety answer cannot approve load');
+  const allThree=buildWorkoutResult(w,{...draft,completionConfirmed:true,effortConfirmed:true,safetyResponse:'NO_SYMPTOMS'});
+  assert.equal(allThree.ok,true);
+  if(allThree.ok)assert.equal(allThree.result.feedbackConfirmed,true);
 });
 test('STEP-12 explicit T0 capability update stays separate from measured 3000m performance',()=>{
   const initial=createEngine(amateur(),NOW);

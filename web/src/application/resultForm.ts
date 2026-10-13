@@ -224,7 +224,10 @@ export function buildWorkoutResult(workout: Workout, draft: ResultDraft): BuildR
       restSeconds: Array.from({length: Math.max(1, repeats.length)}, () => rawRest),
       conditions,
       unexpectedFatigue: draft.unexpectedFatigue,
-      ...(draft.completionConfirmed === true && draft.effortConfirmed === true ? {feedbackConfirmed: true} : {}),
+      // All three answers must be consciously provided; existing saved drafts never earn retrospective mileage.
+      ...(draft.completionConfirmed === true && draft.effortConfirmed === true &&
+        draft.safetyResponse !== undefined && draft.safetyResponse !== 'UNANSWERED'
+        ? {feedbackConfirmed: true} : {}),
     },
   };
 }
