@@ -39,6 +39,12 @@ export function Plan({engineState, today, onNavigate, onRefreshPlan, refreshing}
       <Card>
         <p className="paragraph">{needsPerformanceReview(engineState) ? todayText.performanceReview.text : phaseWhy[decision.phase]}</p>
       </Card>
+      {profile.canRun3Km && profile.performance === null ? (
+        <Notice tone="info" title="3 км без остановки — подтверждено">
+          <p>Продолжайте спокойные непрерывные тренировки. Время на 3000 м ещё неизвестно — быстрые занятия не назначаются. Когда будет удобно и позволит самочувствие, внесите отдельно измеренный результат.</p>
+          <Button variant="secondary" onClick={() => onNavigate({name:'CHECKPOINT'})}>Внести измеренный результат</Button>
+        </Notice>
+      ) : null}
       {isSafetyHold(engineState) ? (
         <Notice tone="warn" title={todayText.hold.title}>
           <p>{todayText.hold.text}</p>
