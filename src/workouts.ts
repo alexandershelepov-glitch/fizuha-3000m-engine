@@ -3,6 +3,7 @@ import { decide } from './assessment.ts';
 import { addDays, day } from './validation.ts';
 import { EngineError } from './errors.ts';
 import { RUN_WALK_STAGES, LAST_RUN_WALK_STAGE } from './runWalk.ts';
+import {approvedWeekMeters,reservedMetres} from './weeklyLoad.ts';
 const QUALITY: WorkoutType[] = ['INTRO_QUALITY', 'THRESHOLD', 'VO2', 'SPECIFIC_3K', 'CONTROL'];
 export function initialDose(s: EngineState, type: WorkoutType): Dose {
   const q = s.decision.quality;
@@ -64,54 +65,73 @@ function qualityType(s: EngineState, index: number): WorkoutType {
   return (s.qualityRotation + index - (s.decision.phase === 'SPECIFIC' ? 1 : 0)) % 2 === 0 ? 'THRESHOLD' : 'VO2';
 }
 /**
- * Conservative initial load guard:
- * - "I have time for seven sessions" is not evidence of seven-session running fitness.
- * - Meter-based easy work is never raised above the habitual weekly volume by calendar density.
- * - A long easy session may occur at most once in any rolling seven-day window.
+ * Conservative total-load guard. A quality session with an actual measured baseline reserves
+ * planning space for timed repeats, warmup, cooldown and rests; EASY only gets the remaining
+ * distance. An over-budget quality slot becomes EASY or a free day, NEVER extra training debt.
  *
- * A prescribed time-based quality session is NOT converted into invented metres here.
- * These are defensive scheduling rules, not a physiological adaptation model.
+ * This is evaluated chronologically against completed HISTORY plus planned sessions to keep
+ * every rolling seven-day window within the approved weekly booking budget.
  */
-function guardEasyLoad(s: EngineState, proposed: Workout[]): Workout[] {
-  const baselineMeters = s.easyProgression?.approvedMetersPer7Days ??
-    (s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
-      ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000);
+export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] {
+  const baselineMeters = approvedWeekMeters(s);
   const alreadyDone = s.history.map(h => h.workout);
   const accepted: Workout[] = [];
-  for (const offered of proposed) {
-    let w = offered;
+  for (const offered of [...proposed].sort((a,b)=>day(a.scheduledDate)-day(b.scheduledDate))) {
+    let w = structuredClone(offered);
     const date = day(w.scheduledDate);
     const recent = [...alreadyDone, ...accepted].filter(other =>
       day(other.scheduledDate) >= date - 6 && day(other.scheduledDate) <= date);
+    const booked = recent.reduce((sum,other)=>{
+      const load = reservedMetres(s,other);
+      return sum + (load ?? Infinity);
+    },0);
+    let available = Math.max(0,baselineMeters-booked);
+
     if (w.type === 'LONG_EASY' && recent.some(other => other.type === 'LONG_EASY')) {
       const planning = {...s, decision: decide(s, w.scheduledDate)};
       w = prescribe(planning, 'EASY', w.scheduledDate, w.id, w.volumeFactor);
-      // Moving a previously shorter session must never inflate it.
+      // A converted long session can be shortened, never lengthened.
       if (offered.main.dose.unit === 'METERS') w.main.dose.value = Math.min(w.main.dose.value, offered.main.dose.value);
     }
-    if ((w.type === 'EASY' || w.type === 'LONG_EASY') && w.main.dose.unit === 'METERS') {
-      const counted = recent
-        .filter(other => other.main.dose.unit === 'METERS' && other.type !== 'REST')
-        .reduce((sum, other) => sum + other.main.dose.value, 0);
-      const availableMeters = Math.max(0, baselineMeters - counted);
-      if (availableMeters < 1000) {
-        // No extra workout to "complete" or log: the day is simply left free for recovery.
-        // Never invent a sub-1km running prescription or exceed the habitual budget.
-        continue;
+
+    if (w.countsAsQuality) {
+      const reserved = reservedMetres(s,w);
+      if (reserved === null || reserved > available + 1e-6) {
+        // If the reserve cannot fit, there is no evidence for extra intense work this week.
+        const planning = {...s,decision:decide(s,w.scheduledDate)};
+        w = prescribe(planning,'EASY',w.scheduledDate,w.id,w.volumeFactor);
+        // Never turn an already committed smaller meter prescription into a longer one.
+        if(offered.main.dose.unit==='METERS')w.main.dose.value=Math.min(w.main.dose.value,offered.main.dose.value);
       } else {
-        w.main.dose.value = Math.min(w.main.dose.value, availableMeters);
-        if (w.type === 'LONG_EASY') {
-          const planning = {...s, decision: decide(s, w.scheduledDate)};
-          const ordinary = prescribe(planning, 'EASY', w.scheduledDate, w.id, w.volumeFactor);
-          if (w.main.dose.value <= ordinary.main.dose.value) {
-            // A shortened "long" run is not a long session.
-            w = ordinary;
-            w.main.dose.value = Math.min(w.main.dose.value, availableMeters, offered.main.dose.value);
-          }
-        }
+        accepted.push(w);
+        continue;
       }
     }
-    accepted.push(w);
+
+    if (w.main.dose.unit === 'METERS') {
+      if (w.main.dose.value > available) {
+        if (available < 1000) {
+          // We never prescribe sub-1km EASY just to use up a small remaining budget.
+          continue;
+        }
+        w.main.dose.value = Math.min(w.main.dose.value,available);
+      }
+      if (w.type === 'LONG_EASY') {
+        const planning = {...s, decision:decide(s,w.scheduledDate)};
+        const ordinary = prescribe(planning,'EASY',w.scheduledDate,w.id,w.volumeFactor);
+        if(w.main.dose.value <= ordinary.main.dose.value){
+          w = ordinary;
+          w.main.dose.value=Math.min(w.main.dose.value,available,offered.main.dose.value);
+        }
+      }
+      // STRIDES retain their known metre dose and count toward the same budget.
+      accepted.push(w);
+      continue;
+    }
+
+    // Non-distance, non-quality work is not inventively converted into metres.
+    // The current engine prescribes none other than REST, which is a zero-dose event.
+    if(w.type==='REST' || reservedMetres(s,w) === 0)accepted.push(w);
   }
   return accepted;
 }
@@ -177,5 +197,5 @@ export function generateQueue(s: EngineState, now: string): Workout[] {
     }
     return next;
   });
-  return guardEasyLoad(s, [...result, ...safeMoved].sort((a, b) => day(a.scheduledDate) - day(b.scheduledDate)));
+  return guardWeeklyLoad(s, [...result, ...safeMoved].sort((a, b) => day(a.scheduledDate) - day(b.scheduledDate)));
 }
