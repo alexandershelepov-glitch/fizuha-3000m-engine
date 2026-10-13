@@ -14,6 +14,7 @@ import {recordWorkoutResult as engineRecord} from './engineGateway.ts';
 import type {EngineState, Evaluation, WorkoutResult, YellowReason} from './engineGateway.ts';
 import type {UiError} from './errorContract.ts';
 import {assertWorkoutResultAllowed} from './invariants.ts';
+import {diffPlan} from './planDiff.ts';
 import type {PlanChange} from './planDiff.ts';
 import {applyEngineTransition} from './transition.ts';
 import type {CycleRepository} from './storage.ts';
@@ -62,7 +63,17 @@ export function submitWorkoutResult(request: RecordWorkoutRequest): RecordWorkou
       engineState: outcome.done.engineState,
       evaluation: entry.classified.evaluation,
       yellowReason: entry.classified.yellowReason,
-      changes: [{kind: 'WORKOUT_RECORDED', workoutId: request.workoutId}, ...outcome.done.changes],
+      // Compare the NEXT pending workout to the NEXT pending workout. The session just closed
+      // is not a "changed next prescription": it was completed. diffPlan's general-purpose
+      // comparison is correct for checkpoints, but misleading here without this exclusion.
+      changes: [
+        {kind: 'WORKOUT_RECORDED', workoutId: request.workoutId},
+        ...diffPlan(
+          {...request.engineState, queue: request.engineState.queue.filter(w => w.id !== request.workoutId)},
+          outcome.done.engineState,
+          request.deviceToday,
+        ),
+      ],
     },
   };
 }
