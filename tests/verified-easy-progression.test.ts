@@ -83,7 +83,7 @@ test('EASY-PROG-07 re-entry after 8-day break never rewards absent weeks',()=>{
   assert.ok(s.reentry);
 });
 test('EASY-PROG-08 a verified result survives serialize/deserialize without double credit',()=>{
-  let s=simulate(createEngine(novice(),NOW),14);
+  const s=simulate(createEngine(novice(),NOW),14);
   const saved=serialize(s);
   const loaded=deserialize(saved);
   assert.equal(loaded.easyProgression?.approvedMetersPer7Days,10500);
