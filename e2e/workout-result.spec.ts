@@ -25,7 +25,10 @@ test('a full session is closed, reported and persisted', async ({page}) => {
   await page.getByRole('button', {name: 'Сохранить результат'}).click();
   await expect(page).toHaveURL(/\/outcome$/);
   await expect(page.getByText('Тренировка выполнена')).toBeVisible();
-  await expect(page.getByText('Что изменилось')).toBeVisible();
+  // A routine advance to the next scheduled workout is not a plan modification.
+  await expect(page.getByText('Следующая тренировка')).toBeVisible();
+  await expect(page.getByText(/Это не проверка по часам или GPS/)).toBeVisible();
+  await expect(page.getByText('Что изменилось')).toHaveCount(0);
 
   const after = await readEngineState(page);
   expect(after.history.length).toBe(1);
