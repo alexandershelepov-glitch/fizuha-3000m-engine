@@ -74,7 +74,7 @@ export function decide(s: EngineState, now: string): Decision {
   // A single planned or habitual running day must not consist solely of fast work.
   // The baseline frequency guard may shrink seven available days to just one actual run.
   // Until normal running frequency is established, that slot stays aerobic.
-  if (p.actualRunsPerWeek < 2 || p.availableRunsPerWeek < 2) maximumQualityPerWeek = 0;
+  if (p.actualRunsPerWeek < 2 || p.availableRunsPerWeek < 2 || !p.performance) maximumQualityPerWeek = 0;
   if (s.reducedQualityUntilConfirmed || s.reentry) maximumQualityPerWeek = Math.min(1, maximumQualityPerWeek);
   if (safety !== 'OK' || phase === 'HOLD_DIAGNOSTIC' || (s.reentry && (s.reentry.easyRemaining > 0 || s.reentry.diagnosticRequired)) || (phase === 'FOUNDATION' && (confidence === 'LOW' || !p.canRun3Km))) maximumQualityPerWeek = 0;
   if (safety === 'STOP') reasons.push('SAFETY_STOP'); else if (safety === 'HOLD') reasons.push('SAFETY_HOLD');

@@ -695,6 +695,7 @@ export const historyItems = {
   WORKOUT_SKIPPED_VOLUNTARY: 'Тренировка пропущена',
   WORKOUT_SKIPPED_PAST_DUE: 'Тренировка не выполнена',
   WORKOUT_MOVED: 'Тренировка перенесена',
+  CONTINUOUS_3K_CONFIRMED: 'Подтверждено: пробежал 3000 м без остановки (без измеренного времени)',
   CHECKPOINT_RECORDED: 'Контрольный результат',
   TRAINING_PARAMETERS_CHANGED: 'Параметры подготовки изменены',
   SAFETY_REASSESSED: 'Состояние повторно проверено',

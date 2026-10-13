@@ -44,6 +44,17 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
         </Notice>
       ) : null}
 
+      {!profile.canRun3Km && !engineState.finalResultRecorded &&
+        today < profile.raceDate && decision.safety === 'OK' &&
+        !engineState.diagnosticHold && !engineState.relatedYellow &&
+        !engineState.progressionBlocked && engineState.reentry === null &&
+        view.pendingWorkouts.length === 0 ? (
+        <Card title="Уже можете пробежать 3000 м подряд?">
+          <p className="paragraph">Если вы действительно пробежали все 3 км без остановки и ходьбы и чувствовали себя нормально, отметьте это отдельно. Время на дистанции знать не обязательно.</p>
+          <Button variant="secondary" onClick={() => onNavigate({name: 'CONTINUOUS_3K'})}>Подтвердить непрерывный бег на 3 км</Button>
+        </Card>
+      ) : null}
+
       {view.state === 'PERFORMANCE_REVIEW' ? (
         <Notice tone="info" title={todayText.performanceReview.title}>
           <p>{todayText.performanceReview.text}</p>

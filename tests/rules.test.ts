@@ -52,7 +52,7 @@ test('CONTROL workout feedback alone never changes performance',()=>{
 });
 test('resultless runner becomes able3km → baseline checkpoint → snapshot',()=>{
  let s=createEngine(profile({performance:null,canRun3Km:false}),NOW);assert.equal(s.checkpointRequired,false);
- s=updateTrainingData(s,{canRun3Km:true},NOW);assert.equal(s.checkpointRequired,true);assert.ok(s.queue.some(w=>w.type==='CONTROL'));
+ s=updateTrainingData(s,{canRun3Km:true},NOW);assert.equal(s.checkpointRequired,true);assert.ok(s.queue.every(w=>!w.countsAsQuality),'no intense CONTROL without an actual 3km time');assert.ok(s.queue.some(w=>w.main.mode==='CONTINUOUS'));
  s=recordCheckpoint(s,{timeSeconds:1100,date:NOW,source:'TEST_3K'},NOW);assert.equal(s.profile.performance!.timeSeconds,1100);
 });
 for(const days of [1,3,4,7,8,14,15,30]) test(`healthy break ${days} days has correct return policy`,()=>{
