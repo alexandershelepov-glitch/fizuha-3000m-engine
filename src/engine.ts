@@ -226,6 +226,15 @@ export function updateTrainingData(state: EngineState, data: Partial<Omit<Profil
   // Runtime callers cannot bypass the dedicated performance/safety/break transitions.
   for (const key of Object.keys(data)) if (['performance', 'breaks', 'safety'].includes(key)) throw new EngineError('PROTECTED_FIELD');
   s.profile = {...s.profile, ...structuredClone(data)};
+  if (data.averageWeeklyKm4Weeks !== undefined || data.actualRunsPerWeek !== undefined) {
+    // A changed habitual baseline invalidates a previously earned budget. Old history is kept,
+    // but it cannot immediately re-approve the prior higher dose after this user edit.
+    s.easyProgression = {
+      approvedMetersPer7Days: s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
+        ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000,
+      lastIncreaseDate:now,
+    };
+  }
   if (!before && s.profile.canRun3Km && !s.profile.performance) s.checkpointRequired = true;
   return replan(s, now);
 }
