@@ -141,10 +141,11 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
           <Choice
             id="completion"
             value={draft.completion}
-            onChange={(value: CompletionPreset) => update({completion: value})}
+            onChange={(value: CompletionPreset) => update({completion: value, completionConfirmed: true})}
             options={COMPLETION_PRESETS.map((preset) => ({value: preset, label: copy.completion.options[preset]}))}
           />
         </Field>
+        {!draft.completionConfirmed ? <p className="hint">Выберите, сколько выполнили на самом деле. Значение по умолчанию ещё не подтверждено.</p> : null}
         {draft.completion === 'EXACT' ? (
           <Field id="completionPercent" label={copy.completion.exactLabel} hint={copy.completion.exactHint} error={errorFor('completionPercent')}>
             <TextInput id="completionPercent" value={draft.completionPercent} onChange={(value) => update({completionPercent: value})} inputMode="numeric" />
@@ -163,13 +164,14 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
                 className={`scale__option${value === draft.sessionRpe ? ' scale__option--active' : ''}`}
                 aria-pressed={value === draft.sessionRpe}
                 aria-label={scaleLabels[value] ?? `${copy.rpe.label}: ${value}`}
-                onClick={() => update({sessionRpe: value})}
+                onClick={() => update({sessionRpe: value, effortConfirmed: true})}
               >
                 {value}
               </button>
             ))}
           </div>
         </Field>
+        {!draft.effortConfirmed ? <p className="hint">Отметьте реальную тяжесть тренировки. Плановая оценка ещё не подтверждена.</p> : null}
       </Card>
 
       <Card title={copy.repeats.label}>
