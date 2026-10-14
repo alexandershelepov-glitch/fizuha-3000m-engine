@@ -48,3 +48,4 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chrome
       - run: npm run test:e2e
+      - run: npm run test:e2e:pages
