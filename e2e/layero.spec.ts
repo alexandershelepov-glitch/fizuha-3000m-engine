@@ -36,16 +36,6 @@ test('Layero root PWA: install cache and nested-route offline reload',async({pag
     navigator.serviceWorker.controller!==null)).toBe(true);
   await page.context().setOffline(true);
   await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForTimeout(250);
-  const offlineInfo=await page.evaluate(async()=>({
-    url:location.href,
-    controlled:!!navigator.serviceWorker.controller,
-    body:document.body.innerText.slice(0,400),
-    cache:await Promise.all((await caches.keys()).map(async name=>({
-      name,keys:(await (await caches.open(name)).keys()).map(r=>r.url),
-    }))),
-  }));
-  console.log('Layero offline diagnosis',JSON.stringify({offlineInfo,errors}));
   await expect(page.getByLabel('Ваш результат')).toBeVisible();
   await page.context().setOffline(false);
   expect(errors).toEqual([]);
