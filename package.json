@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit && tsc -p web/tsconfig.json",
     "build": "tsc -p tsconfig.build.json",
     "build:web": "vite build",
+    "build:layero": "npm run build:web && node scripts/prepare-layero.mjs",
     "dev:web": "vite",
     "preview:web": "vite preview",
     "lint": "eslint src tests web/src e2e",

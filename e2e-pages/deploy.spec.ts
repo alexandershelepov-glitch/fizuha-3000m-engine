@@ -29,8 +29,12 @@ test('project path, deep link and offline reload work in a real mobile browser',
   expect(manifest.start_url).toBe('./');
   expect(manifest.scope).toBe('./');
 
-  // The worker precaches JS/CSS at install, including files initially requested
-  // before it took control. A real offline reload of a nested route must work.
+  // Service worker installation may finish after the first online page load.
+  // Test an installed app reopened under SW control before disabling the network.
+  await expect.poll(async()=>page.evaluate(()=>navigator.serviceWorker.controller!==null),
+    {timeout:15000}).toBe(true);
+  await page.reload();
+  await expect(page.getByLabel('Ваш результат')).toBeVisible();
   await page.context().setOffline(true);
   await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.getByLabel('Ваш результат')).toBeVisible();

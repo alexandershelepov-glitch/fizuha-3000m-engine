@@ -24,7 +24,7 @@ export default defineConfig({
   ],
   webServer: {
     // Always build first: running the suite against a stale `web/dist` would silently test old code.
-    command: 'npm run build:web && npm run preview:web',
+    command: 'npm run build:layero && npm run preview:web',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: false,
     timeout: 120_000,
