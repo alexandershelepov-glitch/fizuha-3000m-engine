@@ -47,14 +47,18 @@ function reviewEasyProgression(s: EngineState, now: string): void {
   const state = s.easyProgression;
   const completedBlock = Math.floor((day(now) - day(s.cycleStartDate)) / 14) - 1;
   if (completedBlock < 0 || completedBlock <= state.lastReviewedBlock) return;
-  state.lastReviewedBlock = completedBlock;
-
   const current = decide(s, now);
   if (current.safety !== 'OK' || s.diagnosticHold || s.relatedYellow || s.progressionBlocked ||
-      s.reentry !== null || (s.checkpointRequired && s.profile.canRun3Km) ||
+      s.reentry !== null ||
       (day(s.profile.raceDate) - day(now) <= taperDays(current.capacity,current.quality)) ||
-      ['TAPER', 'RE_ENTRY', 'HOLD_DIAGNOSTIC'].includes(current.phase)) return;
-  // A non-stale, externally measured 3 km is needed before trained-level progression.
+      ['TAPER', 'RE_ENTRY', 'HOLD_DIAGNOSTIC'].includes(current.phase)) {
+    state.lastReviewedBlock = completedBlock; // unsafe blocks never earn retroactive credit
+    return;
+  }
+  // Defer (rather than permanently discard) an otherwise healthy block until a pending
+  // assessment or increased quality dose is confirmed. Unmeasured continuous-3k beginners
+  // may progress easy running without a timed test; they never receive fast prescriptions.
+  if (s.checkpointRequired && s.profile.canRun3Km && s.profile.performance !== null) return;
   if ((current.capacity === 'T2' || current.capacity === 'T3') && current.confidence === 'LOW') return;
 
   const blockStart = day(s.cycleStartDate) + completedBlock * 14;
@@ -62,26 +66,32 @@ function reviewEasyProgression(s: EngineState, now: string): void {
   if (s.profile.breaks.some(b => {
     const end = day(b.endDate);
     return end >= blockStart && end - b.days + 1 <= blockEnd;
-  })) return;
-  if (s.skippedWorkouts.some(w => day(w.scheduledDate) >= blockStart && day(w.scheduledDate) <= blockEnd)) return;
+  })) { state.lastReviewedBlock = completedBlock; return; }
+  if (s.skippedWorkouts.some(w => day(w.scheduledDate) >= blockStart && day(w.scheduledDate) <= blockEnd)) {
+    state.lastReviewedBlock = completedBlock; return;
+  }
   if (s.skippedIds.some(id => {
-    const match = /^slot-(\\d{4}-\\d{2}-\\d{2})$/.exec(id);
+    const match = /^slot-(\d{4}-\d{2}-\d{2})$/.exec(id);
     return match !== null && day(match[1]!) >= blockStart && day(match[1]!) <= blockEnd;
-  })) return;
+  })) { state.lastReviewedBlock = completedBlock; return; }
   const inBlock = s.history.filter(h => day(h.workout.scheduledDate) >= blockStart && day(h.workout.scheduledDate) <= blockEnd);
-  if (inBlock.some(h => !['GREEN','GREEN_PLUS'].includes(h.classified.evaluation))) return;
+  if (inBlock.some(h => !['GREEN','GREEN_PLUS'].includes(h.classified.evaluation))) {
+    state.lastReviewedBlock = completedBlock; return;
+  }
 
   const count = Math.min(s.profile.availableRunsPerWeek, Math.max(1, s.profile.actualRunsPerWeek));
-  const offsets = Array.from({length: count}, (_, i) => Math.floor(i * 7 / count));
-  const requiredDays = [0, 1].flatMap(week =>
-    offsets.map(offset => blockStart + week * 7 + offset));
-  if (!requiredDays.every(d => {
-    const entry = inBlock.find(h => day(h.workout.scheduledDate) === d && h.workout.type !== 'REST');
-    return !!entry && entry.result.feedbackConfirmed === true;
-  })) return;
+  // Scheduling changes within a week are allowed. Require the full habitual number of
+  // explicitly confirmed sessions EACH week, not exact original weekday offsets.
+  // Missing and unverified sessions never create load credit.
+  const bothWeeksVerified = [0, 1].every(week => inBlock.filter(h =>
+    day(h.workout.scheduledDate) >= blockStart + week * 7 &&
+    day(h.workout.scheduledDate) < blockStart + (week + 1) * 7 &&
+    h.workout.type !== 'REST' && h.result.feedbackConfirmed === true).length >= count);
+  if (!bothWeeksVerified) { state.lastReviewedBlock = completedBlock; return; }
   // A separately increased quality prescription occupies this block's progression step.
   if (Object.entries(s.doses).some(([type, dose]) =>
     dose !== undefined && (s.confirmedDoses[type as Workout['type']]?.value ?? dose.value) < dose.value)) return;
+  state.lastReviewedBlock = completedBlock;
 
   if (!s.profile.canRun3Km) {
     // Never advance BOTH running-bout duration and distance on the same review.
@@ -103,8 +113,12 @@ function reviewEasyProgression(s: EngineState, now: string): void {
     }
     return;
   }
-  if (baselineMeters < 5000 || s.profile.actualRunsPerWeek < 1) return;
-  const increment = current.capacity === 'T2' || current.capacity === 'T3' ? 1000 : 500;
+  // A verified 3km capability is not a reason to freeze the weekly budget forever.
+  // Very-low-base athletes retain the same <=10%, <=200m fortnightly protective step.
+  const increment = baselineMeters < 5000 || s.profile.actualRunsPerWeek < 1
+    ? Math.min(200, Math.floor(state.approvedMetersPer7Days * .1 / 50) * 50)
+    : current.capacity === 'T2' || current.capacity === 'T3' ? 1000 : 500;
+  if (increment <= 0) return;
   state.approvedMetersPer7Days += increment;
   state.lastIncreaseDate = now;
 }
@@ -267,7 +281,14 @@ export function updateTrainingData(state: EngineState, data: Partial<Omit<Profil
   // Runtime callers cannot bypass the dedicated performance/safety/break transitions.
   for (const key of Object.keys(data)) if (['performance', 'breaks', 'safety'].includes(key)) throw new EngineError('PROTECTED_FIELD');
   s.profile = {...s.profile, ...structuredClone(data)};
-  if (!before && s.profile.canRun3Km && !s.profile.performance) s.checkpointRequired = true;
+  if (!before && s.profile.canRun3Km && !s.profile.performance) {
+    // Explicitly confirmed completion of continuous 3000m is evidence of ONE such run,
+    // not of faster pacing or a higher training frequency. Allow its already-achieved
+    // distance within the weekly booking ceiling, without inventing a race time.
+    s.checkpointRequired = true;
+    if (s.easyProgression) s.easyProgression.approvedMetersPer7Days =
+      Math.max(s.easyProgression.approvedMetersPer7Days, 3000);
+  }
   return replan(s, now);
 }
 export function skipWorkout(state: EngineState, id: string, now = state.asOf): EngineState {
@@ -304,7 +325,9 @@ export function deserialize(json: string): EngineState {
     const p = s.easyProgression;
     const elapsed = day(s.asOf) - day(s.cycleStartDate);
     const allowedBlocks = Math.max(0, Math.floor(elapsed / 14));
-    const allowedMax = baseline + allowedBlocks * 1000;
+    // Capability confirmation may raise a previously sub-3km booking ceiling to
+    // the explicitly attested 3000m; permit its persisted value without inventing pace.
+    const allowedMax = Math.max(baseline, s.profile.canRun3Km ? 3000 : baseline) + allowedBlocks * 1000;
     if (!p || !Number.isFinite(p.approvedMetersPer7Days) ||
         p.approvedMetersPer7Days < baseline || p.approvedMetersPer7Days > allowedMax ||
         !Number.isInteger(p.lastReviewedBlock) || p.lastReviewedBlock < -1 ||
