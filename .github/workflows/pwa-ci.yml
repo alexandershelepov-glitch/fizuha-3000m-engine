@@ -24,13 +24,13 @@ jobs:
       - run: npm run demo
       - run: npm run audit:training
       - name: Verify deployable GitHub Pages PWA
+        env:
+          PWA_BASE: /fizuha-3000m-engine/
         run: |
           npm run build:web
           node scripts/prepare-pages.mjs
       - name: Verify Layero root-site build
         run: npm run build:layero
-        env:
-          PWA_BASE: /fizuha-3000m-engine/
       - uses: actions/upload-artifact@v4
         if: always()
         with:
