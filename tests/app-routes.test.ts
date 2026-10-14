@@ -4,7 +4,7 @@
  */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {guardRoute, parseRoute, routeToPath} from '../web/src/app/routes.ts';
+import {appPath, deploymentPath, guardRoute, parseRoute, routeToPath} from '../web/src/app/routes.ts';
 import {QUESTIONNAIRE_STEPS} from '../web/src/application/questionnaire.ts';
 
 test('ROUTE-01 every screen has a stable path and parses back', () => {
@@ -20,6 +20,26 @@ test('ROUTE-01 every screen has a stable path and parses back', () => {
   }
   assert.deepEqual(parseRoute('/nope'), {name: 'NOT_FOUND'});
   assert.deepEqual(parseRoute('/workout/w%201'), {name: 'WORKOUT', id: 'w 1'});
+});
+
+test('ROUTE-PAGES project paths survive navigation, reload and deep links', () => {
+  for (const base of ['/', '/fizuha-3000m-engine/']) {
+    for (const route of [
+      {name:'FIRST_RUN'}, {name:'TODAY'}, {name:'PLAN'}, {name:'PROFILE'},
+      {name:'QUESTIONNAIRE',step:'GOAL'}, {name:'WORKOUT',id:'slot-2026-10-14'},
+      {name:'WORKOUT_RESULT',id:'slot-2026-10-14'},
+    ] as const) {
+      const prefixed=deploymentPath(routeToPath(route as never),base);
+      const [pathname,search=''] = prefixed.split('?');
+      const parsed=parseRoute(appPath(pathname!,base),search ? '?'+search : '');
+      assert.deepEqual(parsed,route,`base=${base} URL=${prefixed}`);
+      assert.equal(deploymentPath(routeToPath(parsed),base),prefixed);
+    }
+  }
+  assert.equal(appPath('/fizuha-3000m-engine/', '/fizuha-3000m-engine/'),'/');
+  assert.equal(appPath('/fizuha-3000m-engine', '/fizuha-3000m-engine/'),'/');
+  assert.equal(appPath('/different/today', '/fizuha-3000m-engine/'),'/different/today');
+  assert.deepEqual(parseRoute(appPath('/different/today','/fizuha-3000m-engine/')),{name:'NOT_FOUND'});
 });
 
 test('ROUTE-02 an unknown or missing questionnaire step falls back to the first one', () => {
