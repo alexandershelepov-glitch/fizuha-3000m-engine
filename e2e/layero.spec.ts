@@ -20,7 +20,7 @@ test('Layero root PWA: install cache and nested-route offline reload',async({pag
     const cacheNames=await caches.keys();
     return {scope:registration.scope,cacheNames};
   });
-  expect(packageInfo.scope).toBe('http://127.0.0.1:4173/'); // overridden below by preview port
+  expect(packageInfo.scope).toBe('http://127.0.0.1:4173/');
   expect(packageInfo.cacheNames.some(key=>
     /^fizuha-shell-[0-9a-f]{16}$/.test(key))).toBe(true);
 
@@ -28,6 +28,12 @@ test('Layero root PWA: install cache and nested-route offline reload',async({pag
   await expect(page).toHaveURL(/\/questionnaire\?step=RESULT$/);
   await expect(page.getByLabel('Ваш результат')).toBeVisible();
 
+  // An already-controlled document should first reload online, as happens when
+  // an installed PWA is re-opened later, before the user goes offline.
+  await page.reload();
+  await expect(page.getByLabel('Ваш результат')).toBeVisible();
+  await expect.poll(async()=>page.evaluate(()=>
+    navigator.serviceWorker.controller!==null)).toBe(true);
   await page.context().setOffline(true);
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForTimeout(250);
