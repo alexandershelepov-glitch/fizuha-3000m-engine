@@ -107,6 +107,8 @@ test('AUDIT-N4 earned novice distance actually reaches the single run/walk presc
   }
   assert.equal(state.easyProgression?.approvedMetersPer7Days,1100);
   assert.equal(state.runWalkProgression?.stage,1);
-  assert.ok(state.queue.some(w=>w.main.mode==='RUN_WALK'&&w.main.dose.value===1100),
+  // The day-28 session has already been completed, so the next weekly slot is day 35.
+  const next=replan(state,dateAfter(29));
+  assert.ok(next.queue.some(w=>w.main.mode==='RUN_WALK'&&w.main.dose.value===1100),
     'small earned increases must not disappear behind a hardcoded 1000m fallback');
 });
