@@ -4,7 +4,7 @@ import { assessSafety, decide, taperDays } from './assessment.ts';
 import { classify, yellowFamily } from './feedback.ts';
 import { day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
 import { EngineError } from './errors.ts';
-import { generateQueue, guardWeeklyLoad } from './workouts.ts';
+import { generateQueue, guardWeeklyLoad, qualityDoseCeiling } from './workouts.ts';
 import {withinRollingWeekBudget} from './weeklyLoad.ts';
 import {LAST_RUN_WALK_STAGE} from './runWalk.ts';
 function copy(s: EngineState): EngineState { return structuredClone(s); }
@@ -176,7 +176,7 @@ function progress(s: EngineState, type: WorkoutType): void {
   const dose = s.confirmedDoses[type]; if (!dose) return;
   const step = dose.unit === 'MINUTES' ? s.decision.quality === 'Q2' ? 4 : s.decision.quality === 'Q1' ? 3 : 2 : s.decision.quality === 'Q2' ? 600 : 400;
   // Only volume changes. Speed, repeat length and recovery are preserved.
-  s.doses[type] = {...dose, value: dose.value + step};
+  s.doses[type] = {...dose, value: Math.min(dose.value + step,qualityDoseCeiling(s,type))};
 }
 export function recordResult(state: EngineState, workoutId: string, result: WorkoutResult): EngineState {
   const s = copy(state); const w = s.queue.find(w => w.id === workoutId);
