@@ -68,7 +68,8 @@ test('D02 a success in one workout type never progresses a different type', () =
     .filter(([type]) => type !== 'THRESHOLD')
     .map(([type, dose]) => [type, dose!.value]));
   s = nextOfType(s, 'THRESHOLD').state;
-  assert.equal(s.doses.THRESHOLD!.value, s.confirmedDoses.THRESHOLD!.value + 4, 'THRESHOLD advances by its own Q2 step');
+  assert.equal(s.doses.THRESHOLD!.value, Math.min(s.confirmedDoses.THRESHOLD!.value + 4, 25),
+    'THRESHOLD only advances by its own Q2 step within the protective v1 ceiling');
   for (const [type, value] of others) {
     assert.equal(s.doses[type as WorkoutType]!.value, value, `${type} must not grow because THRESHOLD succeeded`);
   }
@@ -236,6 +237,8 @@ test('D12 SPECIFIC then TAPER by date, and the event date itself stays in TAPER'
   let t = s;
   for (let n = 0; n < 40 && t.asOf < taperStart; n++) t = replan(t, dateAfter(1, t.asOf));
   assert.equal(t.decision.phase, 'TAPER', `taper must start 7 days before the race (${taperStart})`);
-  assert.ok(t.queue.filter(w => w.scheduledDate >= taperStart).every(w => w.volumeFactor === 0.6));
+  assert.ok(t.queue.filter(w => w.scheduledDate >= taperStart).every(w =>
+    w.type === 'REST' || w.volumeFactor <= 0.6),
+    'final-week taper may prescribe additional recovery but no more than 60% active dose');
   assert.equal(replan(t, race).decision.phase, 'TAPER', 'the event date itself is still taper');
 });

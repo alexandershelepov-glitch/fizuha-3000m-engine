@@ -5,6 +5,31 @@ import { EngineError } from './errors.ts';
 import { RUN_WALK_STAGES, LAST_RUN_WALK_STAGE } from './runWalk.ts';
 import {approvedWeekMeters,reservedMetres} from './weeklyLoad.ts';
 const QUALITY: WorkoutType[] = ['INTRO_QUALITY', 'THRESHOLD', 'VO2', 'SPECIFIC_3K', 'CONTROL'];
+
+/** Provisional conservative v1 ceilings for the 3000m module, not evidence of a
+ * universally safe athletic dose. Never let an old saved dose bypass these limits. */
+export function qualityDoseCeiling(s: EngineState, type: WorkoutType): number {
+  const t=s.decision.capacity;
+  switch(type){
+    case 'INTRO_QUALITY': return t==='T3'?12:8;
+    case 'THRESHOLD': return t==='T3'?25:t==='T2'?20:12;
+    case 'VO2': return t==='T3'?18:t==='T2'?12:8;
+    case 'SPECIFIC_3K': return t==='T3'?3000:t==='T2'?2400:1800;
+    default: return Infinity;
+  }
+}
+
+/** Simpler final-week protection: no long runs inside 7 days, no speed sessions
+ * inside 3 days, and no ordinary training the day before the actual event. */
+function taperSafe(type: WorkoutType,date:string,raceDate:string,factor:number):
+  {type:WorkoutType;factor:number} {
+  const remaining=day(raceDate)-day(date);
+  if (remaining===1) return {type:'REST',factor:1};
+  if (remaining<=3 && type!=='REST') return {type:'EASY',factor:Math.min(factor,.4)};
+  if (remaining<=7 && (type==='LONG_EASY'||type==='CONTROL'))
+    return {type:'EASY',factor:Math.min(factor,.6)};
+  return {type,factor};
+}
 export function initialDose(s: EngineState, type: WorkoutType): Dose {
   const q = s.decision.quality;
   const upper = s.decision.capacity === 'T3';
@@ -22,13 +47,16 @@ export function initialDose(s: EngineState, type: WorkoutType): Dose {
   const runsPerWeek = s.profile.actualRunsPerWeek;
   const approvedMeters = s.easyProgression?.approvedMetersPer7Days ??
     (s.profile.averageWeeklyKm4Weeks * 1000);
-  const ordinary = runsPerWeek > 0 ? approvedMeters / runsPerWeek : 0;
+  // A zero-history starter has one introductory slot. Once repeated completion
+  // earns a small approved increase, that single slot must actually grow.
+  const ordinary = runsPerWeek > 0 ? approvedMeters / runsPerWeek : approvedMeters;
   return {unit: 'METERS', value: type === 'LONG_EASY' ? s.profile.longestUsualRunKm * 1000 : ordinary > 0 ? ordinary : 1000};
 }
 export function prescribe(s: EngineState, type: WorkoutType, date: string, id: string, factor = 1): Workout {
   const d = s.decision;
   if ((QUALITY.includes(type) && d.maximumQualityPerWeek === 0) || (d.phase === 'FOUNDATION' && ['VO2', 'SPECIFIC_3K'].includes(type))) throw new EngineError('WORKOUT_BLOCKED_BY_PHASE_OR_SAFETY');
-  const dose = {...((s.reentry && QUALITY.includes(type) ? s.confirmedDoses[type] : s.doses[type]) ?? initialDose(s, type))}; dose.value *= factor;
+  const dose = {...((s.reentry && QUALITY.includes(type) ? s.confirmedDoses[type] : s.doses[type]) ?? initialDose(s, type))};
+  dose.value=Math.min(dose.value,qualityDoseCeiling(s,type))*factor;
   let range: [number, number] | null = null;
   let anchor: Workout['anchor'] = 'EFFORT';
   let rpe: [number, number] = type === 'EASY' || type === 'LONG_EASY' ? [2, 4] : [2, 3];
@@ -78,22 +106,34 @@ export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] 
   const accepted: Workout[] = [];
   for (const offered of [...proposed].sort((a,b)=>day(a.scheduledDate)-day(b.scheduledDate))) {
     let w = structuredClone(offered);
+    if(w.countsAsQuality) {
+      // Committed/legacy queues must not restore an unbounded older intensity dose.
+      w.main.dose.value=Math.min(w.main.dose.value,qualityDoseCeiling(s,w.type));
+      if(w.main.repeatMeters){
+        w.main.repeats=Math.ceil(w.main.dose.value/w.main.repeatMeters);
+        w.main.finalRepeatMeters=w.main.dose.value-w.main.repeatMeters*(w.main.repeats-1);
+      }
+    }
     const date = day(w.scheduledDate);
     const recent = [...alreadyDone, ...accepted].filter(other =>
       day(other.scheduledDate) >= date - 6 && day(other.scheduledDate) <= date);
-    const booked = recent.reduce((sum,other)=>{
-      const load = reservedMetres(s,other);
-      return sum + (load ?? Infinity);
-    },0);
-    // Reserve upcoming quality first. Otherwise an earlier easy run can exhaust the budget,
-    // causing the later, approved quality session to disappear even though trimming EASY
-    // would have fitted BOTH prescriptions. Only future dates sharing a 7-day window count.
-    const futureQualityReserve = !w.countsAsQuality ?
-      proposed.filter(other=>other.countsAsQuality &&
-        day(other.scheduledDate)>date && day(other.scheduledDate)<=date+6)
-        .reduce((sum,other)=>sum+(reservedMetres(s,other)??Infinity),0)
-      : 0;
-    const available = Math.max(0,baselineMeters-booked-futureQualityReserve);
+    // A candidate belongs to SEVEN different rolling windows (ending on its date through
+    // date+6). Do not add all six past days to all six future quality days: those sessions
+    // may be up to 12 days apart and never share any actual seven-day window.
+    // Preserve space for future quality only in windows that contain BOTH sessions.
+    const futureQuality = w.countsAsQuality ? [] : proposed.filter(other =>
+      other.countsAsQuality && day(other.scheduledDate) > date &&
+      day(other.scheduledDate) <= date + 6);
+    const bookedSessions = [...alreadyDone, ...accepted, ...futureQuality];
+    let available = baselineMeters;
+    for (let windowEnd = date; windowEnd <= date + 6; windowEnd++) {
+      const booked = bookedSessions.reduce((sum, other) => {
+        const scheduled = day(other.scheduledDate);
+        if (scheduled <= windowEnd - 7 || scheduled > windowEnd) return sum;
+        return sum + (reservedMetres(s, other) ?? Infinity);
+      }, 0);
+      available = Math.min(available, Math.max(0, baselineMeters - booked));
+    }
 
     if (w.type === 'LONG_EASY' && recent.some(other => other.type === 'LONG_EASY')) {
       const planning = {...s, decision: decide(s, w.scheduledDate)};
@@ -188,7 +228,8 @@ export function generateQueue(s: EngineState, now: string): Workout[] {
     if (type === 'EASY' && pendingFirstEasyReduction) { factor = s.reentry!.easyFactor; pendingFirstEasyReduction = false; }
     // No quality is pre-authorized beyond re-entry: feedback must complete the mandatory easy sessions first.
     if (s.reentry && s.reentry.easyRemaining > 0 && QUALITY.includes(type)) type = 'EASY';
-    result.push(prescribe(planning, type, date, id, factor));
+    const tapered=taperSafe(type,date,s.profile.raceDate,factor);
+    result.push(prescribe(planning, tapered.type, date, id, tapered.factor));
   }
   const moved = s.movedWorkouts.filter(w => !completed.has(w.id) && day(w.scheduledDate) >= day(now) && day(w.scheduledDate) < day(now) + 7 && day(w.scheduledDate) < day(s.profile.raceDate));
   const safeMoved = moved.map(original => {
@@ -196,13 +237,17 @@ export function generateQueue(s: EngineState, now: string): Workout[] {
     const d = planning.decision;
     const type: WorkoutType = d.safety !== 'OK' || s.diagnosticHold || s.relatedYellow ? 'REST' : original.countsAsQuality && (s.progressionBlocked || d.maximumQualityPerWeek === 0 || (d.phase === 'FOUNDATION' && ['VO2', 'SPECIFIC_3K'].includes(original.type))) ? 'EASY' : original.type;
     const factor = d.phase === 'TAPER' ? Math.min(.6, original.volumeFactor) : original.volumeFactor;
-    const next = prescribe(planning, type, original.scheduledDate, original.id, factor);
-    if (type === original.type) {
+    const tapered=taperSafe(type,original.scheduledDate,s.profile.raceDate,factor);
+    const next = prescribe(planning, tapered.type, original.scheduledDate, original.id, tapered.factor);
+    if (tapered.type === original.type) {
       next.main.dose.value = Math.min(original.main.dose.value, next.main.dose.value);
       // Moving a committed run/walk workout does not silently make its running bouts harder.
       if (original.main.mode === 'RUN_WALK' && original.main.runWalk) next.main.runWalk = {...original.main.runWalk};
       if (next.main.repeatMeters) { next.main.repeats = Math.ceil(next.main.dose.value / next.main.repeatMeters); next.main.finalRepeatMeters = next.main.dose.value - next.main.repeatMeters * (next.main.repeats - 1); }
     }
+    if (tapered.type !== original.type && original.main.dose.unit === 'METERS' &&
+        next.main.dose.unit === 'METERS')
+      next.main.dose.value=Math.min(next.main.dose.value,original.main.dose.value);
     return next;
   });
   return guardWeeklyLoad(s, [...result, ...safeMoved].sort((a, b) => day(a.scheduledDate) - day(b.scheduledDate)));

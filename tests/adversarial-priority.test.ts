@@ -185,7 +185,8 @@ test('C12 TAPER suppresses the diagnostic CONTROL workout without losing the che
   assert.ok(!inTaper.queue.some(w => w.type === 'CONTROL'), 'no 3 km time trial inside the taper');
   assert.ok(inTaper.queue.length > 0, 'the taper still plans sessions');
   assert.ok(inTaper.queue.every(w => w.scheduledDate <= inTaper.profile.raceDate), 'nothing is planned after the race date');
-  assert.ok(inTaper.queue.every(w => w.volumeFactor === 0.6), 'taper reduces volume for every session');
+  assert.ok(inTaper.queue.every(w => w.type === 'REST' || w.volumeFactor <= 0.6),
+    'taper reduces active sessions and can replace the eve of the race with rest');
   // The checkpoint request itself survives inside the active window.
   const carried = replan(inTaper, inTaper.profile.raceDate);
   assert.equal(carried.decision.phase, 'TAPER');
