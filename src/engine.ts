@@ -279,7 +279,14 @@ export function resolveDiagnostic(state: EngineState, safety: SafetyData, now: s
 export function updateTrainingData(state: EngineState, data: Partial<Omit<Profile, 'performance' | 'breaks' | 'safety'>>, now: string): EngineState {
   const s = copy(state); const before = s.profile.canRun3Km;
   // Runtime callers cannot bypass the dedicated performance/safety/break transitions.
-  for (const key of Object.keys(data)) if (['performance', 'breaks', 'safety'].includes(key)) throw new EngineError('PROTECTED_FIELD');
+  // Mileage and habitual frequency define the locked baseline for the running cycle.
+  // Changing them without a dedicated re-baselining transition can corrupt the approved
+  // weekly budget and make a previously saved cycle fail validation on the next launch.
+  // The current UI only edits goals/dates and confirms continuous 3km.
+  for (const key of Object.keys(data)) if ([
+    'performance','breaks','safety','averageWeeklyKm4Weeks',
+    'actualRunsPerWeek','regularRunningWeeks','longestUsualRunKm',
+  ].includes(key)) throw new EngineError('PROTECTED_FIELD');
   s.profile = {...s.profile, ...structuredClone(data)};
   if (!before && s.profile.canRun3Km && !s.profile.performance) {
     // Explicitly confirmed completion of continuous 3000m is evidence of ONE such run,
