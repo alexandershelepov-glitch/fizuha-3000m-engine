@@ -277,7 +277,11 @@ export function resolveDiagnostic(state: EngineState, safety: SafetyData, now: s
   return replan(s, now);
 }
 export function updateTrainingData(state: EngineState, data: Partial<Omit<Profile, 'performance' | 'breaks' | 'safety'>>, now: string): EngineState {
-  const s = copy(state); const before = s.profile.canRun3Km;
+  const s = copy(state);
+  // An expired training cycle stays expired, even if the caller also attempts a
+  // prohibited field edit: the event-date boundary takes precedence.
+  validateEventDate(s.profile, now);
+  const before = s.profile.canRun3Km;
   // Runtime callers cannot bypass the dedicated performance/safety/break transitions.
   // Mileage and habitual frequency define the locked baseline for the running cycle.
   // Changing them without a dedicated re-baselining transition can corrupt the approved
