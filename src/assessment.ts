@@ -77,6 +77,9 @@ export function decide(s: EngineState, now: string): Decision {
   if (p.actualRunsPerWeek < 2 || p.availableRunsPerWeek < 2 || !p.performance) maximumQualityPerWeek = 0;
   if (s.reducedQualityUntilConfirmed || s.reentry) maximumQualityPerWeek = Math.min(1, maximumQualityPerWeek);
   if (safety !== 'OK' || phase === 'HOLD_DIAGNOSTIC' || (s.reentry && (s.reentry.easyRemaining > 0 || s.reentry.diagnosticRequired)) || (phase === 'FOUNDATION' && (confidence === 'LOW' || !p.canRun3Km))) maximumQualityPerWeek = 0;
+  const daysBeforeRace=day(p.raceDate)-day(now);
+  if (daysBeforeRace <= 3) maximumQualityPerWeek=0;
+  else if (daysBeforeRace <= 7) maximumQualityPerWeek=Math.min(1,maximumQualityPerWeek);
   if (safety === 'STOP') reasons.push('SAFETY_STOP'); else if (safety === 'HOLD') reasons.push('SAFETY_HOLD');
   if (!p.performance) reasons.push('FOUNDATION_NO_3K_RESULT');
   if (goalGap !== null && goalGap > 0.08 + 1e-12) reasons.push('GOAL_GAP_TOO_LARGE');
