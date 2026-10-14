@@ -23,6 +23,12 @@ jobs:
       - run: npm run build:web
       - run: npm run demo
       - run: npm run audit:training
+      - name: Verify deployable GitHub Pages PWA
+        run: |
+          npm run build:web
+          node scripts/prepare-pages.mjs
+        env:
+          PWA_BASE: /fizuha-3000m-engine/
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -42,3 +48,4 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chrome
       - run: npm run test:e2e
+      - run: npm run test:e2e:pages

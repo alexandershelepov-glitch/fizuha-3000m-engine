@@ -115,6 +115,29 @@ export function routeToPath(route: Route): string {
   }
 }
 
+/**
+ * Keep the domain origin fixed while supporting static hosts that publish the app in
+ * a project subdirectory (for example /fizuha-3000m-engine/ on GitHub Pages).
+ * Pure helpers are used by navigation, route parsing and guard redirects.
+ */
+function deploymentPrefix(base: string): string {
+  const part=base.replace(/^\/+|\/+$/g,'');
+  return part ? `/${part}` : '';
+}
+
+export function deploymentPath(path: string, base = '/'): string {
+  if (!path.startsWith('/')) throw new Error('App path must begin with /');
+  return deploymentPrefix(base) + path;
+}
+
+export function appPath(pathname: string, base = '/'): string {
+  const prefix=deploymentPrefix(base);
+  if (prefix === '') return pathname;
+  if (pathname === prefix) return '/';
+  if (pathname.startsWith(prefix + '/')) return pathname.slice(prefix.length);
+  return pathname; // route parsing will treat unrelated paths as NOT_FOUND
+}
+
 export interface RouteContext {
   /** True when a stored active cycle is available. */
   readonly hasCycle: boolean;

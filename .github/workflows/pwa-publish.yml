@@ -1,0 +1,52 @@
+name: Publish Fizuha PWA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  package:
+    name: Build Pages package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Build under the GitHub Pages project path
+        run: npm run build:web
+        env:
+          PWA_BASE: /fizuha-3000m-engine/
+      - name: Prepare PWA and validate offline resources
+        run: node scripts/prepare-pages.mjs
+        env:
+          PWA_BASE: /fizuha-3000m-engine/
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: web/dist
+
+  deploy:
+    name: Deploy (only after Pages has been enabled)
+    if: ${{ github.event.repository.has_pages == true }}
+    needs: package
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

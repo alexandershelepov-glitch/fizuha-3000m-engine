@@ -10,6 +10,8 @@ const webRoot = resolve(import.meta.dirname, 'web');
  */
 export default defineConfig({
   root: webRoot,
+  // Root-based local development; GitHub Pages hosts production under /<repository>/.
+  base: process.env.PWA_BASE || '/',
   plugins: [react()],
   build: {
     outDir: resolve(webRoot, 'dist'),
