@@ -81,19 +81,23 @@ export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] 
     const date = day(w.scheduledDate);
     const recent = [...alreadyDone, ...accepted].filter(other =>
       day(other.scheduledDate) >= date - 6 && day(other.scheduledDate) <= date);
-    const booked = recent.reduce((sum,other)=>{
-      const load = reservedMetres(s,other);
-      return sum + (load ?? Infinity);
-    },0);
-    // Reserve upcoming quality first. Otherwise an earlier easy run can exhaust the budget,
-    // causing the later, approved quality session to disappear even though trimming EASY
-    // would have fitted BOTH prescriptions. Only future dates sharing a 7-day window count.
-    const futureQualityReserve = !w.countsAsQuality ?
-      proposed.filter(other=>other.countsAsQuality &&
-        day(other.scheduledDate)>date && day(other.scheduledDate)<=date+6)
-        .reduce((sum,other)=>sum+(reservedMetres(s,other)??Infinity),0)
-      : 0;
-    const available = Math.max(0,baselineMeters-booked-futureQualityReserve);
+    // A candidate belongs to SEVEN different rolling windows (ending on its date through
+    // date+6). Do not add all six past days to all six future quality days: those sessions
+    // may be up to 12 days apart and never share any actual seven-day window.
+    // Preserve space for future quality only in windows that contain BOTH sessions.
+    const futureQuality = w.countsAsQuality ? [] : proposed.filter(other =>
+      other.countsAsQuality && day(other.scheduledDate) > date &&
+      day(other.scheduledDate) <= date + 6);
+    const bookedSessions = [...alreadyDone, ...accepted, ...futureQuality];
+    let available = baselineMeters;
+    for (let windowEnd = date; windowEnd <= date + 6; windowEnd++) {
+      const booked = bookedSessions.reduce((sum, other) => {
+        const scheduled = day(other.scheduledDate);
+        if (scheduled <= windowEnd - 7 || scheduled > windowEnd) return sum;
+        return sum + (reservedMetres(s, other) ?? Infinity);
+      }, 0);
+      available = Math.min(available, Math.max(0, baselineMeters - booked));
+    }
 
     if (w.type === 'LONG_EASY' && recent.some(other => other.type === 'LONG_EASY')) {
       const planning = {...s, decision: decide(s, w.scheduledDate)};
