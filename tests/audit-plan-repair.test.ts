@@ -5,7 +5,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createEngine, deserialize, prescribe, recordResult, replan, serialize, updateTrainingData} from '../src/index.ts';
-import {guardWeeklyLoad} from '../src/workouts.ts';
+import {guardWeeklyLoad, qualityDoseCeiling} from '../src/workouts.ts';
 import {withinRollingWeekBudget} from '../src/weeklyLoad.ts';
 import {NOW, dateAfter, feedback, profile} from './helpers.ts';
 
@@ -111,4 +111,51 @@ test('AUDIT-N4 earned novice distance actually reaches the single run/walk presc
   const next=replan(state,dateAfter(29));
   assert.ok(next.queue.some(w=>w.main.mode==='RUN_WALK'&&w.main.dose.value===1100),
     'small earned increases must not disappear behind a hardcoded 1000m fallback');
+});
+
+test('AUDIT-N5 last days before race contain no long run, final three contain no quality',()=>{
+  for(const remaining of [1,2,3,4,5,6,7,8,10]){
+    const state=createEngine(profile({
+      actualRunsPerWeek:4,availableRunsPerWeek:4,regularRunningWeeks:48,
+      averageWeeklyKm4Weeks:28,longestUsualRunKm:9,
+      performance:{timeSeconds:880,date:NOW,source:'TEST_3K'},
+      qualitySessions8Weeks:8,qualityWeeks8Weeks:6,qualityMostlyTolerated:true,
+      raceDate:dateAfter(remaining),
+    }),NOW);
+    for(const w of state.queue){
+      const daysLeft=(Date.parse(state.profile.raceDate)-Date.parse(w.scheduledDate))/86400000;
+      if(daysLeft<=7)assert.notEqual(w.type,'LONG_EASY','no long inside last seven days');
+      if(daysLeft<=3)assert.equal(w.countsAsQuality,false,'no hard work in final three days');
+      if(daysLeft===1)assert.equal(w.type,'REST','day before the event is rest');
+    }
+  }
+});
+
+test('AUDIT-N6 old or new high-intensity doses cannot bypass per-category v1 ceilings',()=>{
+  for(const cfg of [
+    {regularRunningWeeks:52,actualRunsPerWeek:4,averageWeeklyKm4Weeks:28,longestUsualRunKm:9},
+    {regularRunningWeeks:52,actualRunsPerWeek:5,averageWeeklyKm4Weeks:45,longestUsualRunKm:12},
+  ]){
+    const state=createEngine(profile({
+      ...cfg,availableRunsPerWeek:cfg.actualRunsPerWeek,
+      qualitySessions8Weeks:8,qualityWeeks8Weeks:7,qualityMostlyTolerated:true,
+      raceDate:dateAfter(100),
+    }),NOW);
+    for(const [type,unit,value] of [
+      ['THRESHOLD','MINUTES',41],
+      ['VO2','MINUTES',30],
+      ['SPECIFIC_3K','METERS',5000],
+    ] as const){
+      state.doses[type]={unit,value};
+      const capped=prescribe(state,type,NOW,'excess-'+type);
+      assert.ok(capped.main.dose.value<=qualityDoseCeiling(state,type),type);
+      assert.ok(qualityDoseCeiling(state,type)<value,type);
+      const legacy=structuredClone(capped);
+      legacy.main.dose.value=value;
+      const guarded=guardWeeklyLoad(state,[legacy]);
+      const accepted=guarded.find(w=>w.id===legacy.id);
+      if(accepted?.countsAsQuality)assert.ok(accepted.main.dose.value<=qualityDoseCeiling(state,type),
+        'previously saved quality doses must also be capped');
+    }
+  }
 });
