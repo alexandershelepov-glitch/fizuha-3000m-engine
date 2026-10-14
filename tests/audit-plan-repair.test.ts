@@ -8,6 +8,7 @@ import {createEngine, deserialize, prescribe, recordResult, replan, serialize, u
 import {guardWeeklyLoad, qualityDoseCeiling} from '../src/workouts.ts';
 import {withinRollingWeekBudget} from '../src/weeklyLoad.ts';
 import {NOW, dateAfter, feedback, profile} from './helpers.ts';
+import {SCENARIOS, simulateScenario} from '../audit/trainingSimulator.ts';
 
 test('AUDIT-N1 a past and a future quality run outside one shared week must not jointly erase EASY', () => {
   const state=createEngine(profile({
@@ -158,4 +159,27 @@ test('AUDIT-N6 old or new high-intensity doses cannot bypass per-category v1 cei
         'previously saved quality doses must also be capped');
     }
   }
+});
+
+test('AUDIT-N7 publicly changing historical running mileage cannot break saved cycle validation',()=>{
+  const state=createEngine(profile({averageWeeklyKm4Weeks:16,raceDate:dateAfter(80)}),NOW);
+  const unchanged=serialize(state);
+  for(const data of [{averageWeeklyKm4Weeks:24},{averageWeeklyKm4Weeks:8},{actualRunsPerWeek:4}]){
+    assert.throws(()=>updateTrainingData(state,data,NOW),/Protected field/);
+    assert.equal(serialize(state),unchanged);
+    assert.deepEqual(deserialize(serialize(state)).easyProgression,state.easyProgression);
+  }
+});
+
+test('AUDIT-N1/N2 simulated normal preparation retains easy days and earns a verified weekly review',()=>{
+  const scenario=SCENARIOS.find(s=>s.id==='03-trained-easy-wins-12w');
+  assert.ok(scenario);
+  const report=simulateScenario(scenario!);
+  const normal=report.events.filter(e=>e.action==='WORKOUT_RESULT' && e.workoutType!==null);
+  const easy=normal.filter(e=>e.workoutType==='EASY'||e.workoutType==='LONG_EASY');
+  const quality=normal.filter(e=>['THRESHOLD','VO2','SPECIFIC_3K','INTRO_QUALITY','CONTROL'].includes(e.workoutType??''));
+  assert.ok(easy.length>=quality.length,
+    'a trained runner must not get a quality-only week from the overzealous booking rule');
+  assert.ok(report.lastState.easyProgression!.approvedMetersPer7Days>28000,
+    'normal verified training must eventually earn a conservative volume review');
 });
