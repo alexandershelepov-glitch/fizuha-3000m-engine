@@ -38,7 +38,7 @@ import type {SafetyData} from '../application/engineGateway.ts';
 import {isEngineErrorCode} from '../application/errorContract.ts';
 import type {UiError} from '../application/errorContract.ts';
 import type {KeyValueStorage} from '../application/storage.ts';
-import {guardRoute, routeToPath} from './routes.ts';
+import {deploymentPath, guardRoute, routeToPath} from './routes.ts';
 import type {Route} from './routes.ts';
 import {navigate, useRoute} from './useRouter.ts';
 import {useCycleStore, useStorageProbe} from './useCycleStore.ts';
@@ -105,7 +105,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
   const hasCycle = store.load.kind === 'READY';
   const guarded = guardRoute(route, {hasCycle, onboardingInProgress: store.onboardingInProgress});
   const effective = guarded.route;
-  const effectivePath = routeToPath(effective);
+  const effectivePath = deploymentPath(routeToPath(effective), import.meta.env.BASE_URL);
 
   // Keep the URL in step with the screen the guard actually allows, so a reload lands correctly.
   // `route` is part of the dependencies because a navigation to a protected URL may resolve to the
