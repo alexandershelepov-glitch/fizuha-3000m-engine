@@ -182,4 +182,12 @@ test('AUDIT-N1/N2 simulated normal preparation retains easy days and earns a ver
     'a trained runner must not get a quality-only week from the overzealous booking rule');
   assert.ok(report.lastState.easyProgression!.approvedMetersPer7Days>28000,
     'normal verified training must eventually earn a conservative volume review');
+
+  const novice=simulateScenario(SCENARIOS.find(s=>s.id==='01-beginner-normal-10w')!);
+  const noviceRuns=novice.events.filter(e=>e.action==='WORKOUT_RESULT' &&
+    e.workoutType!=='REST' && e.workoutType!==null);
+  assert.ok(noviceRuns.length>=18,
+    'two habitual weekly runs must not collapse to one from unrelated rolling windows');
+  assert.ok(noviceRuns.filter(e=>e.workoutType==='EASY'||e.workoutType==='LONG_EASY').length>=10,
+    'the beginner must keep regular easy running rather than quality-only weeks');
 });
