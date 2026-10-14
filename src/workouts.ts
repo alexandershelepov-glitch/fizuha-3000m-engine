@@ -22,7 +22,9 @@ export function initialDose(s: EngineState, type: WorkoutType): Dose {
   const runsPerWeek = s.profile.actualRunsPerWeek;
   const approvedMeters = s.easyProgression?.approvedMetersPer7Days ??
     (s.profile.averageWeeklyKm4Weeks * 1000);
-  const ordinary = runsPerWeek > 0 ? approvedMeters / runsPerWeek : 0;
+  // A zero-history starter has one introductory slot. Once repeated completion
+  // earns a small approved increase, that single slot must actually grow.
+  const ordinary = runsPerWeek > 0 ? approvedMeters / runsPerWeek : approvedMeters;
   return {unit: 'METERS', value: type === 'LONG_EASY' ? s.profile.longestUsualRunKm * 1000 : ordinary > 0 ? ordinary : 1000};
 }
 export function prescribe(s: EngineState, type: WorkoutType, date: string, id: string, factor = 1): Workout {
