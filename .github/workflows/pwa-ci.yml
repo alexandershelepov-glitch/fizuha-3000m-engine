@@ -27,6 +27,8 @@ jobs:
         run: |
           npm run build:web
           node scripts/prepare-pages.mjs
+      - name: Verify Layero root-site build
+        run: npm run build:layero
         env:
           PWA_BASE: /fizuha-3000m-engine/
       - uses: actions/upload-artifact@v4
