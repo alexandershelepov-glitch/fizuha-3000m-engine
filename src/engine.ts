@@ -278,9 +278,9 @@ export function resolveDiagnostic(state: EngineState, safety: SafetyData, now: s
 }
 export function updateTrainingData(state: EngineState, data: Partial<Omit<Profile, 'performance' | 'breaks' | 'safety'>>, now: string): EngineState {
   const s = copy(state);
-  // An expired training cycle stays expired, even if the caller also attempts a
-  // prohibited field edit: the event-date boundary takes precedence.
-  validateEventDate(s.profile, now);
+  // The date boundary outranks a prohibited field edit. An explicitly postponed
+  // event is allowed if the NEW race date is still in the future (existing PWA behaviour).
+  validateEventDate({...s.profile, raceDate:data.raceDate ?? s.profile.raceDate}, now);
   const before = s.profile.canRun3Km;
   // Runtime callers cannot bypass the dedicated performance/safety/break transitions.
   // Mileage and habitual frequency define the locked baseline for the running cycle.
