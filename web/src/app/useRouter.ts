@@ -1,10 +1,10 @@
 /** React bindings for the router. Navigation is History-API based, so reload keeps the screen. */
 import {useCallback, useEffect, useState} from 'react';
-import {parseRoute, routeToPath} from './routes.ts';
+import {appPath, deploymentPath, parseRoute, routeToPath} from './routes.ts';
 import type {Route} from './routes.ts';
 
 export function navigate(route: Route, options: {replace?: boolean} = {}): void {
-  const path = routeToPath(route);
+  const path = deploymentPath(routeToPath(route), import.meta.env.BASE_URL);
   const current = `${window.location.pathname}${window.location.search}`;
   if (current === path) return;
   if (options.replace) window.history.replaceState(null, '', path);
@@ -13,7 +13,7 @@ export function navigate(route: Route, options: {replace?: boolean} = {}): void 
 }
 
 export function useRoute(): Route {
-  const read = useCallback((): Route => parseRoute(window.location.pathname, window.location.search), []);
+  const read = useCallback((): Route => parseRoute(appPath(window.location.pathname, import.meta.env.BASE_URL), window.location.search), []);
   const [route, setRoute] = useState<Route>(read);
 
   useEffect(() => {
