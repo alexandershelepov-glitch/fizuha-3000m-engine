@@ -10,24 +10,24 @@ import {copyForError} from '../copy/errors.ts';
 import {questionnaire, common} from '../copy/text.ts';
 import type {UiError} from '../../application/errorContract.ts';
 
-export function SafetyRecheck({initial, submit, onCancel}: {
+export function SafetyRecheck({initial, submit, onCancel, onSaved}: {
   initial: SafetyData;
   submit: (safety: SafetyData, confirmed: boolean) => {ok: true; stillHold: boolean} | {ok: false; error: UiError};
   onCancel: () => void;
+  onSaved: (stillHold: boolean) => void;
 }): ReactNode {
   const [safety, setSafety] = useState<SafetyData>({...initial});
   const [showDetails, setShowDetails] = useState(true);
   const [review, setReview] = useState(false);
   const [error, setError] = useState<UiError | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const save = (): void => {
     if (busy) return;
     setBusy(true);
     const outcome = submit(safety, review);
     if (outcome.ok) {
-      setStatus(outcome.stillHold ? questionnaire.recovery.resultStillHold : questionnaire.recovery.resultReady);
       setError(null);
+      onSaved(outcome.stillHold);
     } else {setError(outcome.error);}
     setBusy(false);
   };
@@ -36,7 +36,6 @@ export function SafetyRecheck({initial, submit, onCancel}: {
       <header className="appbar"><h1 className="appbar__title">{questionnaire.recovery.title}</h1></header>
       <p className="lede">{questionnaire.recovery.intro}</p>
       <Notice tone="warn">{questionnaire.recovery.notice}</Notice>
-      {status ? <Notice tone="info">{status}</Notice> : null}
       <Card>
         <Button variant="secondary" onClick={() => {setSafety(healthySafety()); setShowDetails(false);}}>{questionnaire.safetyQuick.action.replace(' — продолжить', '')}</Button>
         <Button variant="ghost" onClick={() => setShowDetails(true)}>{questionnaire.safetyQuick.details}</Button>
@@ -49,7 +48,7 @@ export function SafetyRecheck({initial, submit, onCancel}: {
       {error ? <Notice tone="danger" title={copyForError(error).title}>{copyForError(error).text(error.params)}</Notice> : null}
       <div className="actions">
         <Button onClick={save} disabled={!review || busy}>{questionnaire.recovery.submit}</Button>
-        <Button variant="ghost" onClick={onCancel}>{status ? common.understood : common.cancel}</Button>
+        <Button variant="ghost" onClick={onCancel}>{common.cancel}</Button>
       </div>
     </div>
   );

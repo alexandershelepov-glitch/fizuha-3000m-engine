@@ -3,6 +3,8 @@
  * into strings and back, and never derives a training pace, load or verdict.
  */
 
+import {virtualToday} from './testClock.ts';
+
 const pad = (value: number): string => String(value).padStart(2, '0');
 
 /** Seconds → `ММ:СС` (or `Ч:ММ:СС` beyond an hour). */
@@ -55,10 +57,21 @@ export function parseTime(raw: string): TimeParseResult {
 
 /** Today's calendar date on the user's device, as `YYYY-MM-DD` (the engine works in plain dates). */
 export function deviceToday(now: Date = new Date()): string {
+  // Only the explicit test bundle substitutes a date when no explicit Date was supplied.
+  if (arguments.length === 0) {
+    const testDate=virtualToday();
+    if (testDate !== null) return testDate;
+  }
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
 export function deviceTimestamp(now: Date = new Date()): string {
+  if (arguments.length === 0) {
+    const testDate=virtualToday();
+    // Stable test-only event time. The date and time of real actions are not forged
+    // in production, where virtualToday() is always null.
+    if (testDate !== null) return `${testDate}T12:00:00.000Z`;
+  }
   return now.toISOString();
 }
 

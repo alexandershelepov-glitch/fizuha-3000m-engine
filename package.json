@@ -16,6 +16,8 @@
     "build": "tsc -p tsconfig.build.json",
     "build:web": "vite build",
     "build:layero": "npm run build:web && node scripts/prepare-layero.mjs",
+    "build:testing": "VITE_TEST_MODE=1 npm run build:layero",
+    "test:e2e:testing": "playwright test -c playwright.testing.config.ts",
     "dev:web": "vite",
     "preview:web": "vite preview",
     "lint": "eslint src tests web/src e2e",

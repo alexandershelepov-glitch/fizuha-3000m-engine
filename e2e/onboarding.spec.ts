@@ -316,9 +316,11 @@ test('a paused plan explains why it contains only rest and can recover without a
   await page.getByRole('button', {name: 'Жалоб и ограничений нет'}).click();
   await page.getByLabel(/Если медицинская оценка требовалась/).check();
   await page.getByRole('button', {name: 'Сохранить состояние'}).click();
+  await expect(page).toHaveURL(/\/today$/);
+  await expect(page.getByText('Состояние сохранено')).toBeVisible();
   await expect(page.getByText(/Ответы сохранены, дальнейший план обновлён/)).toBeVisible();
   await page.getByRole('button', {name: 'Понятно'}).click();
-  await expect(page).toHaveURL(/\/today$/);
+  await expect(page.getByText('Состояние сохранено')).toHaveCount(0);
   await expect(page.getByText('Обычные тренировки приостановлены')).toHaveCount(0);
 
   const after = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
