@@ -191,7 +191,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     return {ok: true};
   }, [repo, store]);
 
-  const handleMove = useCallback((workoutId: string, toDate: string): MoveSubmitOutcome => {
+  const handleMove = useCallback((workoutId: string, toDate: string, stayOnPlan = false): MoveSubmitOutcome => {
     if (repo === null || store.appState === null || store.engineState === null) return {ok: false, error: {code: 'STORAGE_UNAVAILABLE'}};
     setBusy(true);
     const outcome = moveScheduledWorkout({
@@ -202,7 +202,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     if (!outcome.ok) return {ok: false, error: {code: outcome.error.code, params: outcome.error.params}};
     store.replaceActiveState({appState: outcome.done.appState, engineState: outcome.done.engineState});
     // The session keeps its identity, so its details now show the new date.
-    navigate({name: 'WORKOUT', id: workoutId});
+    if (!stayOnPlan) navigate({name: 'WORKOUT', id: workoutId});
     return {ok: true};
   }, [repo, store]);
 
@@ -389,7 +389,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
       case 'PLAN':
         if (store.engineState?.finalResultRecorded) return renderSummary(store.appState!.cycle.cycleId);
         return store.engineState === null ? null : (
-          <Plan engineState={store.engineState} today={store.today} onNavigate={goTo} onRefreshPlan={handleRefreshPlan} refreshing={refreshing} />
+          <Plan engineState={store.engineState} appState={store.appState!} storage={storage} today={store.today} onNavigate={goTo} onRefreshPlan={handleRefreshPlan} onMove={(id, date) => handleMove(id, date, true)} refreshing={refreshing} />
         );
       case 'CONTINUOUS_3K':
         if (!store.engineState || !store.appState) return null;
