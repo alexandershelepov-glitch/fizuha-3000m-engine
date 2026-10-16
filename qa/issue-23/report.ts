@@ -29,6 +29,8 @@ function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((f) => { const p = join(dir, f); return statSync(p).isDirectory() ? walk(p) : [p]; });
 }
 const shots = walk(SHOTS).filter((f) => f.endsWith('.png'));
+// full set (before curation for the repository) — optional, else the journals' own screenshot counters are used
+const takenShots = process.env.QA_SHOTS_FULL_DIR ? walk(process.env.QA_SHOTS_FULL_DIR).filter((f) => f.endsWith('.png')).length : null;
 
 // ---- Playwright results
 interface PwTest {title: string; status: string; expectedStatus: string; results: {status: string; duration: number}[]}
@@ -90,7 +92,7 @@ const summary = {
     plannedInQueueAtSomePoint: sessionsPlanned, recorded: sum(full, 'workoutsRecorded'), skipped: sum(full, 'workoutsSkipped'), moved: sum(full, 'workoutsMoved'),
     incomplete: sum(full, 'incompleteSessions'), withSymptoms: sum(full, 'symptomReports'), byEvaluation: evalTotals, byType: typeTotals,
   },
-  other: {checkpoints: sum(full, 'checkpoints'), examDateChanges: sum(full, 'examDateChanges'), reloads: sum(journals, 'reloads'), expectedBlocks: sum(journals, 'expectedBlocks'), uiTransitions: sum(journals, 'uiTransitions'), screenshotFiles: shots.length, finalResults: full.filter((j) => j.meta.finalSeconds !== null && j.meta.finalSeconds !== undefined).length},
+  other: {checkpoints: sum(full, 'checkpoints'), examDateChanges: sum(full, 'examDateChanges'), reloads: sum(journals, 'reloads'), expectedBlocks: sum(journals, 'expectedBlocks'), uiTransitions: sum(journals, 'uiTransitions'), screenshotsTaken: takenShots ?? sum(journals, 'screenshots'), screenshotFilesInRepo: shots.length, finalResults: full.filter((j) => j.meta.finalSeconds !== null && j.meta.finalSeconds !== undefined).length},
   checks: {...byVerdict, total: allChecks.length},
   playwright: {...pw, tests: undefined},
   uncataloguedKnownFails: uncatalogued,
@@ -145,7 +147,7 @@ md += `| Вердикты движка по внесённым | ${Object.entrie
 md += `| Типы внесённых | ${Object.entries(typeTotals).map(([k, v]) => `${k}: ${v}`).join(', ')} |\n`;
 md += `| Контрольных результатов / смен даты экзамена / итоговых результатов | ${sum(full, 'checkpoints')} / ${sum(full, 'examDateChanges')} / ${summary.other.finalResults} |\n`;
 md += `| Перезагрузок страницы с проверкой хранилища | ${sum(journals, 'reloads')} |\n| Ожидаемых блокировок (STOP, INV-1, порядок, перенос) | ${sum(journals, 'expectedBlocks')} |\n| Переходов по экранам (UI) | ${sum(journals, 'uiTransitions')} |\n`;
-md += `| Проверок (checks) всего | ${allChecks.length}: PASS ${byVerdict.PASS}, KNOWN_FAIL ${byVerdict.KNOWN_FAIL}, FAIL ${byVerdict.FAIL} |\n| Скриншотов (файлов) | ${shots.length} |\n\n`;
+md += `| Проверок (checks) всего | ${allChecks.length}: PASS ${byVerdict.PASS}, KNOWN_FAIL ${byVerdict.KNOWN_FAIL}, FAIL ${byVerdict.FAIL} |\n| Скриншотов снято в прогоне / ключевых файлов в репозитории | ${takenShots ?? sum(journals, 'screenshots')} / ${shots.length} (полный набор — артефакт CI; в репозиторий кладутся ключевые экраны в уменьшенной палитре PNG) |\n\n`;
 md += `Пояснение: «внесено результатов» = реальные нажатия «Сохранить результат» через UI. «Пропущено» — нажатия «Я её не выполнял»/отказ заранее. Тренировки со служебным типом REST в счёт не идут.\n\n`;
 md += `## Профили\n\n| Профиль | Seed | Недель | Дней | Внесено | Пропущено | Перенос | Контроль | EASY / quality (в журнале) | Итог | Старт |\n|---|---|---|---|---|---|---|---|---|---|---|\n`;
 for (const j of full) {

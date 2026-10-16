@@ -1,0 +1,2 @@
+﻿profile_id,seed,workout_id,assignment,purpose,planned_load,planned_reserved_m,entered_result,engine_evaluation,change_reason,phase,safety,warnings,date,week,day_index,event
+cross-double-advance,20261014,,,,,,2026-10-12 → 2026-10-14,,dblclick «+1 день»,DEVELOPMENT,OK,,2026-10-14,1,2,DOUBLE_CLICK_ADVANCE

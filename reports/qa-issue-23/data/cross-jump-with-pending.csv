@@ -1,0 +1,2 @@
+﻿profile_id,seed,workout_id,assignment,purpose,planned_load,planned_reserved_m,entered_result,engine_evaluation,change_reason,phase,safety,warnings,date,week,day_index,event
+cross-jump-with-pending,20261014,,,,,,2026-10-12 → 2026-10-19,,"очередь до: 3, после: 3",DEVELOPMENT,OK,,2026-10-19,1,7,PLUS7_WITH_PENDING

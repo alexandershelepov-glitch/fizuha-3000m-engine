@@ -1,0 +1,37 @@
+{
+  "profileId": "cross-early-final",
+  "seed": 20261014,
+  "meta": {},
+  "counters": {
+    "virtualDays": 0,
+    "weeksSpanned": 0,
+    "workoutsPlannedTotal": 0,
+    "workoutsRecorded": 0,
+    "workoutsSkipped": 0,
+    "workoutsMoved": 0,
+    "incompleteSessions": 0,
+    "symptomReports": 0,
+    "checkpoints": 0,
+    "examDateChanges": 0,
+    "reloads": 0,
+    "expectedBlocks": 1,
+    "uiTransitions": 12,
+    "screenshots": 1,
+    "byEvaluation": {},
+    "byType": {}
+  },
+  "weekly": [],
+  "trace": [],
+  "rows": [],
+  "checks": [
+    {
+      "profile_id": "cross-early-final",
+      "seed": 20261014,
+      "id": "EARLY_FINAL_REFUSED",
+      "description": "Итоговый результат до дня старта не принимается и цикл не архивируется",
+      "verdict": "PASS",
+      "detail": "finalResultRecorded=false; архив=нет; url=/final-result",
+      "date": "2026-10-12"
+    }
+  ]
+}

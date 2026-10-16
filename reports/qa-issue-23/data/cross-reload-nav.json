@@ -1,0 +1,169 @@
+{
+  "profileId": "cross-reload-nav",
+  "seed": 20261014,
+  "meta": {},
+  "counters": {
+    "virtualDays": 0,
+    "weeksSpanned": 0,
+    "workoutsPlannedTotal": 0,
+    "workoutsRecorded": 1,
+    "workoutsSkipped": 0,
+    "workoutsMoved": 0,
+    "incompleteSessions": 0,
+    "symptomReports": 0,
+    "checkpoints": 0,
+    "examDateChanges": 0,
+    "reloads": 4,
+    "expectedBlocks": 0,
+    "uiTransitions": 13,
+    "screenshots": 1,
+    "byEvaluation": {
+      "GREEN": 1
+    },
+    "byType": {
+      "INTRO_QUALITY": 1
+    }
+  },
+  "weekly": [],
+  "trace": [],
+  "rows": [
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "workout_id": "slot-2026-10-12",
+      "assignment": "INTRO_QUALITY",
+      "purpose": "QUALITY_ADAPTATION",
+      "planned_load": "разминка 10 мин | основной блок 4 мин (4×? м, отдых 90 с) | заминка 10 мин | RPE 5–6",
+      "planned_reserved_m": "4098",
+      "entered_result": "ON_PLAN: выполнено 100%, RPE 5",
+      "engine_evaluation": "GREEN",
+      "change_reason": "TARGET_GATE_CLOSED,LOW_QUALITY_EXPERIENCE,SECOND_QUALITY_NOT_ALLOWED",
+      "phase": "DEVELOPMENT",
+      "safety": "OK",
+      "warnings": "",
+      "date": "2026-10-12",
+      "week": 1,
+      "day_index": 0,
+      "event": "WORKOUT_RECORDED"
+    }
+  ],
+  "checks": [
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "HISTORY_GROWS_BY_ONE_PER_SUBMIT",
+      "description": "Одна отправка результата (в т.ч. при двойном нажатии) добавляет ровно одну запись истории",
+      "verdict": "PASS",
+      "detail": "до=0, после=1",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "VERDICT_FOLLOWS_MODEL",
+      "description": "Вердикт движка соответствует модели поведения (ON_PLAN)",
+      "verdict": "PASS",
+      "detail": "INTRO_QUALITY 2026-10-12: получен GREEN, допустимо GREEN/GREEN_PLUS; модель: Полное выполнение, усилие и темп внутри плановых диапазонов, симптомов нет: вердикт не может быть YELLOW/RED.",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "RELOAD_STORAGE_INTACT",
+      "description": "Перезагрузка страницы не меняет сохранённый цикл (байт в байт)",
+      "verdict": "PASS",
+      "detail": "маршрут /today: длина до=5627, после=5627",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "RELOAD_VIRTUAL_DATE_KEPT",
+      "description": "Виртуальная дата сохраняется после перезагрузки",
+      "verdict": "PASS",
+      "detail": "маршрут /today",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "RELOAD_STORAGE_INTACT",
+      "description": "Перезагрузка страницы не меняет сохранённый цикл (байт в байт)",
+      "verdict": "PASS",
+      "detail": "маршрут /plan: длина до=5627, после=5627",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "RELOAD_VIRTUAL_DATE_KEPT",
+      "description": "Виртуальная дата сохраняется после перезагрузки",
+      "verdict": "PASS",
+      "detail": "маршрут /plan",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "RELOAD_STORAGE_INTACT",
+      "description": "Перезагрузка страницы не меняет сохранённый цикл (байт в байт)",
+      "verdict": "PASS",
+      "detail": "маршрут /history: длина до=5627, после=5627",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "RELOAD_VIRTUAL_DATE_KEPT",
+      "description": "Виртуальная дата сохраняется после перезагрузки",
+      "verdict": "PASS",
+      "detail": "маршрут /history",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "RELOAD_STORAGE_INTACT",
+      "description": "Перезагрузка страницы не меняет сохранённый цикл (байт в байт)",
+      "verdict": "PASS",
+      "detail": "маршрут /profile: длина до=5627, после=5627",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "RELOAD_VIRTUAL_DATE_KEPT",
+      "description": "Виртуальная дата сохраняется после перезагрузки",
+      "verdict": "PASS",
+      "detail": "маршрут /profile",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "BACK_FORWARD_NO_RESUBMIT",
+      "description": "Назад/вперёд по истории браузера не создаёт повторную запись результата",
+      "verdict": "PASS",
+      "detail": "history=1",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "BACK_FORWARD_STORAGE_SAME",
+      "description": "Назад/вперёд не меняет сохранённый цикл",
+      "verdict": "PASS",
+      "detail": "сравнение строки хранилища",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "cross-reload-nav",
+      "seed": 20261014,
+      "id": "COMPLETED_WORKOUT_RESULT_URL_SAFE",
+      "description": "Прямой URL формы результата уже внесённой тренировки не даёт засчитать её второй раз",
+      "verdict": "PASS",
+      "detail": "history=1; экран: Эта тренировка уже закрыта Результат этой тренировки уже внесён. Откройте историю или текущий план. К плану Сегодня",
+      "date": "2026-10-12"
+    }
+  ]
+}

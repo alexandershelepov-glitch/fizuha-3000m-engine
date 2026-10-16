@@ -1,0 +1,66 @@
+{
+  "profileId": "cross-double-advance",
+  "seed": 20261014,
+  "meta": {},
+  "counters": {
+    "virtualDays": 0,
+    "weeksSpanned": 0,
+    "workoutsPlannedTotal": 0,
+    "workoutsRecorded": 0,
+    "workoutsSkipped": 0,
+    "workoutsMoved": 0,
+    "incompleteSessions": 0,
+    "symptomReports": 0,
+    "checkpoints": 0,
+    "examDateChanges": 0,
+    "reloads": 0,
+    "expectedBlocks": 0,
+    "uiTransitions": 12,
+    "screenshots": 0,
+    "byEvaluation": {},
+    "byType": {}
+  },
+  "weekly": [],
+  "trace": [],
+  "rows": [
+    {
+      "profile_id": "cross-double-advance",
+      "seed": 20261014,
+      "workout_id": "",
+      "assignment": "",
+      "purpose": "",
+      "planned_load": "",
+      "planned_reserved_m": "",
+      "entered_result": "2026-10-12 → 2026-10-14",
+      "engine_evaluation": "",
+      "change_reason": "dblclick «+1 день»",
+      "phase": "DEVELOPMENT",
+      "safety": "OK",
+      "warnings": "",
+      "date": "2026-10-14",
+      "week": 1,
+      "day_index": 2,
+      "event": "DOUBLE_CLICK_ADVANCE"
+    }
+  ],
+  "checks": [
+    {
+      "profile_id": "cross-double-advance",
+      "seed": 20261014,
+      "id": "DOUBLE_ADVANCE_BOUNDED",
+      "description": "Двойное нажатие «+1 день» сдвигает дату не более чем на 2 дня",
+      "verdict": "PASS",
+      "detail": "2026-10-12 → 2026-10-14 (2 дн.)",
+      "date": "2026-10-14"
+    },
+    {
+      "profile_id": "cross-double-advance",
+      "seed": 20261014,
+      "id": "DOUBLE_ADVANCE_NO_CREDIT",
+      "description": "Сдвиг календаря не создаёт записей в истории",
+      "verdict": "PASS",
+      "detail": "history=0",
+      "date": "2026-10-14"
+    }
+  ]
+}
