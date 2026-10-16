@@ -214,8 +214,11 @@ export function paceRangeText(pace: readonly [number, number] | null): string | 
 export function treadmillSpeedText(workout: Workout): string | null {
   const pace = prescribedPace(workout);
   if (pace === null) return null;
-  const speedLow = (3600 / pace[1]).toFixed(1).replace('.', ',');
-  const speedHigh = (3600 / pace[0]).toFixed(1).replace('.', ',');
+  // On EASY, show conservative tenths: treadmill rounding must never tell the
+  // runner to exceed the fast edge of the pace prescription.
+  const easy = workout.type === 'EASY' || workout.type === 'LONG_EASY';
+  const speedLow = (easy ? Math.ceil((3600 / pace[1]) * 10) / 10 : 3600 / pace[1]).toFixed(1).replace('.', ',');
+  const speedHigh = (easy ? Math.floor((3600 / pace[0]) * 10) / 10 : 3600 / pace[0]).toFixed(1).replace('.', ',');
   return speedLow === speedHigh ? `${speedLow} км/ч` : `${speedLow}–${speedHigh} км/ч`;
 }
 
@@ -230,6 +233,16 @@ export function estimatedTimeRepeatDistance(workout: Workout): string | null {
   const lower = Math.floor((1000 * intervals.perRepeatSeconds / pace[1]) / 10) * 10;
   const upper = Math.ceil((1000 * intervals.perRepeatSeconds / pace[0]) / 10) * 10;
   return lower === upper ? `около ${lower} м` : `примерно ${lower}–${upper} м`;
+}
+
+/** Predicted time follows the assigned distance and pace; it is never an actual result. */
+export function estimatedEasyTimeText(workout: Workout): string | null {
+  if ((workout.type !== 'EASY' && workout.type !== 'LONG_EASY') ||
+      workout.main.mode !== 'CONTINUOUS' || workout.main.dose.unit !== 'METERS') return null;
+  const pace = prescribedPace(workout);
+  if (pace === null) return null;
+  const km = workout.main.dose.value / 1000;
+  return `${shortTime(Math.round(pace[0] * km))}–${shortTime(Math.round(pace[1] * km))}`;
 }
 
 /** The nearest word the existing effort scale already has for this range. Ties pick the harder one. */
@@ -381,6 +394,19 @@ function continuousSteps(workout: Workout, paceText: string | null): string[] {
       steps.push(copy.continuousByEffort(what));
       steps.push(copy.noteNoPace);
     }
+    return steps;
+  }
+
+  if (workout.type === 'EASY' || workout.type === 'LONG_EASY') {
+    steps.push(copy.easyAssigned(distanceText(dose.value), paceText));
+    const speed = treadmillSpeedText(workout);
+    if (speed !== null) steps.push(copy.easyTreadmill(speed));
+    const expected = estimatedEasyTimeText(workout);
+    if (expected !== null) steps.push(copy.easyExpectedTime(expected));
+    const pace = prescribedPace(workout)!;
+    steps.push(copy.easySpeedLimit(shortTime(pace[0])));
+    steps.push(copy.easyOutdoorCheck);
+    steps.push(copy.easySlowDown);
     return steps;
   }
 

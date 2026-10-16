@@ -7,6 +7,7 @@ import { EngineError } from './errors.ts';
 import { generateQueue, guardWeeklyLoad, qualityDoseCeiling } from './workouts.ts';
 import {withinRollingWeekBudget} from './weeklyLoad.ts';
 import {LAST_RUN_WALK_STAGE} from './runWalk.ts';
+import {initialEasyPace} from './easyPace.ts';
 function copy(s: EngineState): EngineState { return structuredClone(s); }
 /**
  * Remove a workout from the plan. Approved decision 2: a missed session is deleted from the
@@ -360,6 +361,22 @@ export function deserialize(json: string): EngineState {
       throw new EngineError('INVALID_PROGRESSION_STATE');
   }
   s.decision = decide(s, s.asOf);
+  // Backward-compatible enrichment of the existing committed queue: a new UI build
+  // must show numeric EASY targets for old saved cycles without resetting dates,
+  // doses, skipped sessions, progress, or historical results. Never overwrite a
+  // target already committed by this or a future engine.
+  const easyPace = initialEasyPace(s.profile.performance?.timeSeconds ?? null,
+    s.profile.canRun3Km, s.decision.confidence, s.decision.capacity);
+  if (easyPace.paceRangeSecondsPerKm !== null) {
+    for (const workout of s.queue) {
+      if ((workout.type !== 'EASY' && workout.type !== 'LONG_EASY') ||
+          workout.main.mode !== 'CONTINUOUS' ||
+          workout.paceRangeSecondsPerKm !== null || workout.speedRangeMps !== null) continue;
+      workout.paceRangeSecondsPerKm = [...easyPace.paceRangeSecondsPerKm];
+      workout.speedRangeMps = [...easyPace.speedRangeMps!];
+      workout.anchor = 'CURRENT';
+    }
+  }
   return s;
 }
 /** Moving preserves the dose and rejects density/weekly limit violations. */

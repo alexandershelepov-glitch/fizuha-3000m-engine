@@ -65,9 +65,11 @@ export interface ResultProblem {
   readonly kind: 'EMPTY' | 'FORMAT' | 'IMPOSSIBLE' | 'NOT_A_NUMBER' | 'NEGATIVE' | 'CONFLICT';
 }
 
-/** The B1 trigger: a prescribed pace range is what makes an empty repeats block cost accuracy. */
+/** B1 needs repeat splits for paced QUALITY work, not a paced continuous EASY run.
+ * EASY/LONG_EASY are verified from the optional measured total distance + duration.
+ */
 export function repeatsAffectEvaluation(workout: Workout): boolean {
-  return workout.speedRangeMps !== null;
+  return workout.speedRangeMps !== null && workout.type !== 'EASY' && workout.type !== 'LONG_EASY';
 }
 
 /** Whether the repeats block must be open and prominent instead of tucked away. */

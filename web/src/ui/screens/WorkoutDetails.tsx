@@ -6,7 +6,7 @@ import type {Workout} from '../../application/engineGateway.ts';
 import {anchorText, effortCueText, mainModeText, workoutGoalText, workoutTypeText} from '../copy/values.ts';
 import {common, instruction as instructionText, today as todayText} from '../copy/text.ts';
 import {workoutIntervalsText, workoutMainDose, workoutPaceRange, workoutRest, workoutSpeedRange} from '../display.ts';
-import {workoutInstruction} from '../workoutInstructions.ts';
+import {estimatedEasyTimeText, workoutInstruction} from '../workoutInstructions.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, EmptyState, KeyValue, Notice} from '../components/Layout.tsx';
 import {copyForError} from '../copy/errors.ts';
@@ -122,6 +122,7 @@ export function WorkoutDetails({workout, resultAvailability, moveAvailability, o
         {rest ? <KeyValue label={todayText.workout.rest} value={rest.replace('отдых ', '')} /> : null}
         {pace ? <KeyValue label={todayText.workout.pace} value={pace} /> : null}
         {speed ? <KeyValue label={instructionText.treadmillSpeedLabel} value={speed} /> : null}
+        {estimatedEasyTimeText(workout) ? <KeyValue label="Ожидаемое время (по плану)" value={estimatedEasyTimeText(workout)!} /> : null}
         {workout.main.mode === 'INTERVALS' && workout.main.dose.unit === 'MINUTES' ? (
           <KeyValue label={instructionText.distanceLabel} value={plan.estimatedDistanceText === null
             ? instructionText.distanceNotAssigned
