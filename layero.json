@@ -1,5 +1,5 @@
 {
   "$schema": "https://layero.ru/schema/layero-v2.json",
-  "buildCommand": "npm run build:layero",
+  "buildCommand": "npm run build:testing",
   "outputDirectory": "web/dist"
 }
