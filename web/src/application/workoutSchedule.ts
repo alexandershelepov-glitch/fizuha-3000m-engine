@@ -12,6 +12,7 @@ import type {PlanChange} from './planDiff.ts';
 import type {CycleRepository} from './storage.ts';
 import {applyEngineTransition} from './transition.ts';
 import type {UiError} from './errorContract.ts';
+import {toUiErrorFromUnknown} from './errorContract.ts';
 
 /** The user could not do this session, as opposed to discovering afterwards that it was missed. */
 /** Taken from the event schema itself, so the log and the operation cannot drift apart. */
@@ -109,4 +110,16 @@ export function moveScheduledWorkout(request: MoveWorkoutRequest): ScheduleOutco
     },
   });
   return outcome;
+}
+
+
+/** Read-only engine verdict for the calendar; no event or storage write is performed. */
+export function previewScheduledMove(engineState: EngineState, workoutId: string, date: string, deviceToday: string): {ok: true} | {ok: false; error: UiError} {
+  try {
+    assertWorkoutActionAllowed(engineState, workoutId, deviceToday, 'MOVE');
+    moveWorkout(engineState, workoutId, date);
+    return {ok: true};
+  } catch (error) {
+    return {ok: false, error: toUiErrorFromUnknown(error)};
+  }
 }
