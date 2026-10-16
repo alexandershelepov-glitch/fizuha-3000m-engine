@@ -4,6 +4,7 @@ import { addDays, day } from './validation.ts';
 import { EngineError } from './errors.ts';
 import { RUN_WALK_STAGES, LAST_RUN_WALK_STAGE } from './runWalk.ts';
 import {approvedWeekMeters,reservedMetres} from './weeklyLoad.ts';
+import {initialEasyPace} from './easyPace.ts';
 const QUALITY: WorkoutType[] = ['INTRO_QUALITY', 'THRESHOLD', 'VO2', 'SPECIFIC_3K', 'CONTROL'];
 
 /** Provisional conservative v1 ceilings for the 3000m module, not evidence of a
@@ -66,6 +67,12 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
   if (type === 'INTRO_QUALITY' || type === 'STRIDES') rpe = [5, 6];
   if (type === 'CONTROL') { rpe = [8, 9]; anchor = 'NONE'; }
   if (type === 'REST') { rpe = [0, 0]; anchor = 'NONE'; }
+  if (type === 'EASY' || type === 'LONG_EASY') {
+    const baseline = initialEasyPace(s.profile.performance?.timeSeconds ?? null,
+      s.profile.canRun3Km, d.confidence, d.capacity);
+    range = baseline.speedRangeMps;
+    if (range !== null) anchor = 'CURRENT';
+  }
   const interval = ['INTRO_QUALITY', 'VO2', 'SPECIFIC_3K', 'STRIDES'].includes(type);
   const repeatMeters = type === 'SPECIFIC_3K' ? 600 : type === 'STRIDES' ? 100 : null;
   const repeats = repeatMeters ? Math.ceil(dose.value / repeatMeters) : interval ? 4 : 1;
