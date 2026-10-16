@@ -23,6 +23,18 @@ export function formatTime(totalSeconds: number): string {
   return hours > 0 ? `${hours}:${pad(minutes)}:${pad(rest)}` : `${pad(minutes)}:${pad(rest)}`;
 }
 
+/**
+ * Let an iPhone number pad enter a 3 km result without typing ':' (which it does not have).
+ * '1430' -> '14:30' while typing. A three-digit time '930' becomes '9:30' on blur.
+ * Pre-existing colon-separated text and invalid punctuation stay intact for parseTime validation.
+ * This is only a UI input convenience, not a new sport/time validation rule.
+ */
+export function formatNumericTimeInput(raw: string, onBlur = false): string {
+  if (/^\\d{4}$/.test(raw)) return `${raw.slice(0, 2)}:${raw.slice(2)}`;
+  if (onBlur && /^\\d{3}$/.test(raw)) return `${raw.slice(0, 1)}:${raw.slice(1)}`;
+  return raw;
+}
+
 export type TimeParseError = 'EMPTY' | 'FORMAT' | 'IMPOSSIBLE';
 export type TimeParseResult = {ok: true; seconds: number} | {ok: false; error: TimeParseError};
 
