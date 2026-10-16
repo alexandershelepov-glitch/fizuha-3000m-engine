@@ -37,12 +37,12 @@ jobs:
               echo "No JavaScript entry script found"
               continue
             fi
-            if curl -fsS -L --max-time 25 "https://${host}${asset}" -o /tmp/layero-app && grep -q 'calendar-screen' /tmp/layero-app && grep -q 'home-overview' /tmp/layero-app; then
+            if curl -fsS -L --max-time 25 "https://${host}${asset}" -o /tmp/layero-app && grep -q 'calendar-screen' /tmp/layero-app && grep -q 'home-overview' /tmp/layero-app && grep -q 'Не беги быстрее' /tmp/layero-app; then
               echo "VERIFIED CALENDAR PREVIEW: https://${host}/"
-              echo "Verified calendar AND unified home UI in deployed JavaScript"
+              echo "Verified calendar, unified UI, and numeric EASY instruction in deployed JavaScript"
               exit 0
             fi
-            echo "Host is not yet serving the unified design build"
+            echo "Host is not yet serving the numeric EASY build"
           done
           echo "::error::Layero calendar preview not verified. Check project environment builds in Layero dashboard."
           exit 1
