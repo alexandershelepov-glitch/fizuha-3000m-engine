@@ -28,7 +28,9 @@ import type {PlanChange} from '../application/planDiff.ts';
 import {clearResultDraft} from '../application/draft.ts';
 import type {WorkoutResult} from '../application/engineGateway.ts';
 import {newCycleId} from '../application/draft.ts';
-import {deviceTimestamp} from '../application/format.ts';
+import {addDays, deviceTimestamp} from '../application/format.ts';
+import {IS_TEST_BUILD, setVirtualToday} from '../application/testClock.ts';
+import {TestClockPanel} from '../ui/components/TestClockPanel.tsx';
 import {clearDraft} from '../application/draft.ts';
 import {createRepository} from '../application/storage.ts';
 import {resetActiveCycle} from '../application/resetCycle.ts';
@@ -155,6 +157,26 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     else setPlanError(result.error);
     setRefreshing(false);
   }, [repo, store]);
+
+  /** Experimental build only: advance the visible calendar without manufacturing results.
+   * The ordinary clock guard still blocks replanning if skipped/unfinished sessions exist. */
+  const handleTestAdvance = useCallback((days: number): void => {
+    if (!IS_TEST_BUILD || (days !== 1 && days !== 7)) return;
+    const next = addDays(store.today, days);
+    if (!setVirtualToday(next)) return;
+    if (repo !== null && store.appState !== null && store.engineState !== null &&
+        !store.engineState.finalResultRecorded) {
+      const outcome=refreshPlan({
+        repo, appState:store.appState, engineState:store.engineState, deviceToday:next,
+      });
+      if (outcome.ok) store.replaceActiveState({
+        appState:outcome.appState,engineState:outcome.engineState,
+      });
+      // PENDING_RESULT_BLOCKED is expected when the tester jumps over planned days.
+      // The user must record or skip each past session; we never auto-award GREEN.
+    }
+    navigate({name:'TODAY'});
+  }, [repo,store]);
 
   const handleSubmitResult = useCallback((workoutId: string, result: WorkoutResult): SubmitOutcome => {
     if (repo === null || store.appState === null || store.engineState === null) {
@@ -324,6 +346,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
         </div>
       ) : null}
 
+      {IS_TEST_BUILD ? <TestClockPanel today={store.today} onAdvance={handleTestAdvance}/> : null}
       <main className="app__main">
         {renderScreen()}
       </main>
