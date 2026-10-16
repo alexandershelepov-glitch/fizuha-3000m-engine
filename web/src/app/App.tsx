@@ -553,6 +553,7 @@ function BottomNav({active, onNavigate}: {active: Route; onNavigate: (route: Rou
   ];
   return (
     <nav className="bottom-nav" aria-label="Основные разделы">
+      <span className="bottom-nav__brand" aria-hidden="true">↗ ФИЗУХА</span>
       {items.map((item) => {
         const current = item.match.includes(active.name);
         return (
