@@ -91,6 +91,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
   const draftStore = useDraft(storage, store.today);
   const [refreshing, setRefreshing] = useState(false);
   const [planError, setPlanError] = useState<UiError | null>(null);
+  const [safetyFeedback, setSafetyFeedback] = useState<string | null>(null);
   const [engineError, setEngineError] = useState<{error: UiError; step: QuestionnaireStep} | null>(null);
   /**
    * Observable changes of the last recorded result. They live in the session only: after a reload the
@@ -347,6 +348,14 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
       ) : null}
 
       {IS_TEST_BUILD ? <TestClockPanel today={store.today} onAdvance={handleTestAdvance}/> : null}
+      {safetyFeedback ? (
+        <div className="app__banner" role="status">
+          <Notice tone="info" title="Состояние сохранено">
+            <p>{safetyFeedback}</p>
+            <Button variant="ghost" onClick={() => setSafetyFeedback(null)}>{common.understood}</Button>
+          </Notice>
+        </div>
+      ) : null}
       <main className="app__main">
         {renderScreen()}
       </main>
@@ -426,6 +435,12 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
           key={store.appState!.cycle.cycleId}
           initial={store.engineState.profile.safety}
           submit={handleSafetyRecheck}
+          onSaved={(stillHold) => {
+            setSafetyFeedback(stillHold
+              ? 'Ограничения сохраняются. Беговые тренировки пока не назначаются.'
+              : 'Ответы сохранены, дальнейший план обновлён по правилам приложения.');
+            goTo({name: 'TODAY'});
+          }}
           onCancel={() => goTo({name: 'TODAY'})}
         />;
       case 'PARAMETERS':
