@@ -406,6 +406,7 @@ function continuousSteps(workout: Workout, paceText: string | null): string[] {
     const pace = prescribedPace(workout)!;
     steps.push(copy.easySpeedLimit(shortTime(pace[0])));
     steps.push(copy.easyOutdoorCheck);
+    steps.push(copy.easySlowDown);
     return steps;
   }
 
