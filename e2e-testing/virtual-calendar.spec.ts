@@ -43,5 +43,6 @@ test('fast-forward leaves unfinished workouts PENDING and never auto-awards GREE
   await expect(page.getByText('Предыдущая тренировка ещё не закрыта')).toBeVisible();
   const after=await page.evaluate(()=>JSON.parse(JSON.parse(localStorage.getItem('fizuha.activeCycle')!).cycle.engineState));
   expect(after.history).toHaveLength(0);
-  expect(after.queue.some(w=>w.scheduledDate<localStorage.getItem('fizuha.test.virtualDate.v1'))).toBe(true);
+  const simulatedDate=await page.getByTestId('test-date').getAttribute('dateTime');
+  expect(after.queue.some(w=>w.scheduledDate<simulatedDate!)).toBe(true);
 });
