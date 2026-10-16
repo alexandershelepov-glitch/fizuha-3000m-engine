@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - feature/issue-24-calendar
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
