@@ -665,3 +665,39 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
   .bottom-nav__item--active { background: #e6f3ef; }
 }
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+
+/* Home follows the same composition as the calendar summary, without fake progress graphs. */
+.home-overview {
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 18px; border-radius: 15px; border: 1px solid #dce7e9;
+  background: #fff; box-shadow: 0 3px 16px #243d4b09;
+}
+.home-overview__label {
+  display: flex; justify-content: space-between; gap: 10px;
+  align-items: flex-start; flex-wrap: wrap;
+}
+.home-overview__label strong { font-size: 15px; font-weight: 770; }
+.home-overview__label span { color: #137569; background: #e6f4ef; border-radius: 7px; padding: 5px 8px; font-size: 11px; font-weight: 750; }
+.home-overview__metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+.home-overview__metrics > div { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.home-overview__metrics span { font-size: 11px; color: #6a8190; }
+.home-overview__metrics strong { font-size: clamp(16px,3.8vw,22px); letter-spacing: -.025em; font-weight: 800; line-height: 1.25; }
+.home-overview__metrics .home-overview__date { font-size: clamp(12px,3vw,15px); line-height: 1.35; }
+.home-week {
+  display: flex; flex-wrap: wrap; gap: 7px 15px;
+  padding-top: 14px; border-top: 1px solid #e8edef;
+  color: #617786; font-size: 12px;
+}
+.home-week b { font-size: 15px; color: #173d49; margin-right: 3px; }
+.home-actions { display: flex; }
+.home-actions > .btn { width: 100%; }
+/* On a phone keep the overview as a compact, readable 3-column block. */
+@media(max-width:365px) {
+  .home-overview { padding: 14px; }
+  .home-overview__metrics { gap: 6px; }
+  .home-overview__metrics strong { font-size: 16px; }
+}
+@media(min-width:760px) {
+  .home-overview__metrics strong { font-size: 24px; }
+  .home-actions > .btn { width: auto; min-width: 220px; }
+}
