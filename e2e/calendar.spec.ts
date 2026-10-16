@@ -49,7 +49,7 @@ test('calendar: an unavailable shift is persisted without changing the engine pl
 test('calendar: inline move uses persisted engine transition and survives reload', async ({page}) => {
   await openCalendar(page);
   const state = await readEngineState(page);
-  const original = state.queue.find(item => item.type !== 'REST' && item.movable);
+  const original = state.queue.find(item => item.type !== 'REST' && (item as typeof item & {movable?: boolean}).movable);
   expect(original).toBeTruthy();
   const label = new Intl.DateTimeFormat('ru-RU', {day:'numeric',month:'long',year:'numeric',timeZone:'UTC'})
     .format(new Date(original!.scheduledDate + 'T00:00:00Z'));
