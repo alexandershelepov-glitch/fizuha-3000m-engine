@@ -22,12 +22,12 @@ import type {MoveSubmitOutcome} from './MoveWorkout.tsx';
 
 interface Props {
   readonly engineState: EngineState;
-  readonly appState: AppStateV1;
-  readonly storage: KeyValueStorage | null;
+  readonly appState?: AppStateV1;
+  readonly storage?: KeyValueStorage | null;
   readonly today: string;
   readonly onNavigate: (route: Route) => void;
   readonly onRefreshPlan: () => void;
-  readonly onMove: (workoutId: string, date: string) => MoveSubmitOutcome;
+  readonly onMove?: (workoutId: string, date: string) => MoveSubmitOutcome;
   readonly refreshing: boolean;
 }
 
@@ -72,12 +72,14 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
   const [moveTo, setMoveTo] = useState<string | null>(null);
   const [moveError, setMoveError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [busyDates, setBusyDates] = useState<string[]>(() => readBusy(storage, appState.cycle.cycleId));
+  const cycleId = appState?.cycle.cycleId ?? null;
+  const [busyDates, setBusyDates] = useState<string[]>(() => cycleId ? readBusy(storage ?? null, cycleId) : []);
   const [busyError, setBusyError] = useState(false);
   const busySet = useMemo(() => new Set(busyDates), [busyDates]);
-  const movedIds = useMemo(() => new Set(appState.events
-    .filter(event => event.type === 'WORKOUT_MOVED')
-    .map(event => event.workoutId)), [appState.events]);
+  const movedIds = useMemo(() => new Set([
+    ...(appState?.events.filter(event => event.type === 'WORKOUT_MOVED').map(event => event.workoutId) ?? []),
+    ...engineState.movedWorkouts.map(item => item.id),
+  ]), [appState?.events, engineState.movedWorkouts]);
   const dates = mode === 'week' ? weekDates(viewDate) : monthDates(viewDate);
   const days = dates.map(date => calendarDay(engineState, today, date, movedIds));
   const selected = calendarDay(engineState, today, selectedDate, movedIds);
@@ -86,7 +88,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
   const pending = hasPendingResults(engineState, today);
   const hold = isSafetyHold(engineState);
   const taperStart = addDays(profile.raceDate, -taperDaysFor(decision.capacity, decision.quality));
-  const canMove = selected.workout !== null && selected.status !== 'completed' &&
+  const canMove = onMove !== undefined && selected.workout !== null && selected.status !== 'completed' &&
     selected.status !== 'skipped' && selected.workout.movable &&
     actionAvailability(engineState, selected.workout.id, today, 'MOVE') === 'AVAILABLE';
   const moveCandidates = selected.workout && canMove
@@ -103,8 +105,8 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
     const next = busySet.has(selectedDate) ? busyDates.filter(date => date !== selectedDate)
       : [...busyDates, selectedDate].slice(-366);
     try {
-      if (!storage) throw new Error('storage unavailable');
-      storage.setItem(BUSY_PREFIX + appState.cycle.cycleId, JSON.stringify(next));
+      if (!storage || !cycleId) throw new Error('storage unavailable');
+      storage.setItem(BUSY_PREFIX + cycleId, JSON.stringify(next));
       setBusyDates(next);
       setBusyError(false);
       setNotice('Отметка сохранена. Существующие назначения не перенесены.');
@@ -125,7 +127,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
     chooseDate(next);
   };
   const performMove = (): void => {
-    if (!selected.workout || !moveTo || !moveCandidates.some(item => item.date === moveTo && item.allowed)) return;
+    if (!onMove || !selected.workout || !moveTo || !moveCandidates.some(item => item.date === moveTo && item.allowed)) return;
     const outcome = onMove(selected.workout.id, moveTo);
     if (outcome.ok) {
       setMoving(false);
@@ -271,7 +273,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
         </div>
 
         <div className="calendar-footer">
-          <Card title="Ближайшие назначения">
+          <Card title={plan.horizon}>
             {queue.filter(item => item.type !== 'REST').length ? (
               <ul className="timeline">{queue.filter(item => item.type !== 'REST').map(item => (
                 <li key={item.id} className="timeline__item">
