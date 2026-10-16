@@ -202,14 +202,14 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
               {days.map((day, index) => {
                 const label = dayName(day, busySet.has(day.date));
                 const outside = mode === 'month' && day.date.slice(0,7) !== viewDate.slice(0,7);
-                return <button type="button" key={day.date} className={`calendar-day calendar-day--${day.status}${selectedDate === day.date ? ' calendar-day--selected' : ''}${outside ? ' calendar-day--outside' : ''}`}
+                return <button type="button" key={day.date} className={`calendar-day calendar-day--${day.status}${day.workout?.countsAsQuality ? ' calendar-day--quality' : ''}${day.date === today ? ' calendar-day--today' : ''}${selectedDate === day.date ? ' calendar-day--selected' : ''}${outside ? ' calendar-day--outside' : ''}`}
                   aria-pressed={day.date === selectedDate}
                   aria-label={`${formatDateLong(day.date)}: ${day.workout ? workoutTitle(day.workout) + ', ' : ''}${label}${busySet.has(day.date) ? ', рабочая смена или занят' : ''}`}
                   onClick={() => chooseDate(day.date)}>
                   <span className="calendar-day-top"><small>{WEEKDAY[index % 7]}</small><strong>{Number(day.date.slice(-2))}</strong></span>
                   <span className="calendar-day-label">{day.workout ? workoutTitle(day.workout) : label}</span>
                   {day.workout ? <span className="calendar-day-volume">{workoutVolume(day.workout)}</span> : null}
-                  <span className="calendar-day-status">{day.workout ? label : (day.status === 'unformed' ? 'Ещё нет назначений' : '')}</span>
+                  <span className="calendar-day-status">{day.date === today ? 'Сегодня · ' + label : day.workout ? label : (day.status === 'unformed' ? 'Ещё нет назначений' : '')}</span>
                   {busySet.has(day.date) ? <span className="calendar-day-busy">Смена / занят</span> : null}
                 </button>;
               })}
