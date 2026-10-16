@@ -127,6 +127,11 @@ function reviewEasyProgression(s: EngineState, now: string): void {
 }
 function rebuildQueue(s: EngineState, now: string, preserve: Workout[] | null): EngineState {
   if (day(now) - day(s.lastAssessmentDate) >= 21 || s.profile.performanceMismatch === 'CLEAR') s.checkpointRequired = true;
+  // A checkpoint is a 3000 m time trial: `recordCheckpoint` refuses it (CHECKPOINT_NOT_PERMITTED) until continuous
+  // 3 km is confirmed, and `createEngine` already starts with `!performance && canRun3Km`. Demanding an unavailable
+  // checkpoint left such users in a dead end (QA issue #23, DEF-002). The due-rules above are unchanged: once the
+  // ability is confirmed, the same rules set the flag again on the next replan.
+  if (!s.profile.canRun3Km) s.checkpointRequired = false;
   reviewEasyProgression(s, now);
   s.decision = decide(s, now);
   const generated = generateQueue(s, now);
