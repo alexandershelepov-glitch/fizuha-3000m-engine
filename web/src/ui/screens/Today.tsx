@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {formatDateLong, formatTime} from '../../application/format.ts';
+import {calendarDay, weekDates, weekSummary} from '../../application/calendarModel.ts';
 import type {EngineState, Workout} from '../../application/engineGateway.ts';
 import {deriveToday} from '../../application/uiState.ts';
 import {phaseText, safetyStatusText} from '../copy/values.ts';
@@ -23,9 +24,11 @@ interface Props {
 export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing, onSkipPending, busy}: Props): ReactNode {
   const view = deriveToday(engineState, today);
   const {decision, profile} = engineState;
+  const week = weekSummary(weekDates(today).map(date => calendarDay(engineState, today, date)));
+  const confirmed = profile.performance === null ? null : formatTime(profile.performance.timeSeconds);
 
   return (
-    <div className="screen">
+    <div className="screen screen--home">
       <header className="appbar">
         <div>
           <h1 className="appbar__title">{todayText.title}</h1>
@@ -42,6 +45,27 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
           <p className="hint">{todayText.hold.note}</p>
           <Button onClick={() => onNavigate({name: 'SAFETY_RECHECK'})}>{todayText.hold.recheck}</Button>
         </Notice>
+      ) : null}
+
+      {decision.safety === 'OK' && !engineState.diagnosticHold && !engineState.relatedYellow ? (
+        <>
+          <section className="home-overview" aria-label="Ваша подготовка">
+            <div className="home-overview__label"><strong>Подготовка к 3000 м</strong><span>{todayText.raceCountdown(Math.max(0, view.daysToRace))}</span></div>
+            <div className="home-overview__metrics">
+              <div><span>Текущий результат</span><strong>{confirmed ?? 'Нет замера'}</strong></div>
+              <div><span>Цель</span><strong>{formatTime(profile.targetTimeSeconds)}</strong></div>
+              <div><span>Дата норматива</span><strong className="home-overview__date">{formatDateLong(profile.raceDate)}</strong></div>
+            </div>
+            <div className="home-week" aria-label="Факты текущей недели">
+              <span><b>{week.assigned}</b> назначено</span>
+              <span><b>{week.completed}</b> выполнено</span>
+              <span><b>{week.skipped}</b> пропущено</span>
+            </div>
+          </section>
+          <div className="home-actions">
+            <Button variant="secondary" onClick={() => onNavigate({name: 'PLAN'})}>Открыть календарь</Button>
+          </div>
+        </>
       ) : null}
 
       {!profile.canRun3Km && !engineState.finalResultRecorded &&
