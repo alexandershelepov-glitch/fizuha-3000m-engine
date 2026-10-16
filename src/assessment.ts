@@ -39,7 +39,13 @@ export function assessFeasibility(gap: number | null, weeks: number, t: Capacity
   // Approved decision 2: at most two available sessions step Goal Feasibility down one level, so
   // one available session can never be rated more favourably than two on otherwise equal data.
   if (gap > 0.03 + 1e-12) index += Number(!trained) + Number(q === 'Q0') + Number(available <= 2);
-  return scale[Math.min(2, index)]!;
+  // An achievable-scale improvement over a full two-month cycle is not automatically
+  // LOW_PROBABILITY solely because the runner has a modest base or no interval experience.
+  // A confirmed continuous 3 km and at least two available weekly sessions are required.
+  // This affects only the goal's explanatory assessment, never workload or safety gates.
+  const moderateTwoMonthGoal = gap <= 0.05 + 1e-12 && weeks >= 8 &&
+    t !== 'T0' && available >= 2;
+  return scale[Math.min(moderateTwoMonthGoal ? 1 : 2, index)]!;
 }
 export function taperDays(t: Capacity, q: QualityExperience): number { return t === 'T3' && q === 'Q2' ? 10 : t === 'T2' || t === 'T3' ? 7 : 5; }
 export function decide(s: EngineState, now: string): Decision {
