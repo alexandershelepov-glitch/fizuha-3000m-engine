@@ -37,12 +37,12 @@ jobs:
               echo "No JavaScript entry script found"
               continue
             fi
-            if curl -fsS -L --max-time 25 "https://${host}${asset}" -o /tmp/layero-app && grep -q 'calendar-screen' /tmp/layero-app; then
+            if curl -fsS -L --max-time 25 "https://${host}${asset}" -o /tmp/layero-app && grep -q 'calendar-screen' /tmp/layero-app && grep -q 'Введите цифры 1430' /tmp/layero-app; then
               echo "VERIFIED CALENDAR PREVIEW: https://${host}/"
-              echo "Verified presence of calendar implementation in deployed JavaScript"
+              echo "Verified calendar and updated numeric-only time entry in deployed JavaScript"
               exit 0
             fi
             echo "Host is not serving the calendar build"
           done
-          echo "::error::Layero preview not verified. Check project environment builds in Layero dashboard."
+          echo "::error::Layero calendar and iPhone numeric-time update not verified. Check project environment builds in Layero dashboard."
           exit 1
