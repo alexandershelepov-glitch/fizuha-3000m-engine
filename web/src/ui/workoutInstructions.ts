@@ -232,6 +232,16 @@ export function estimatedTimeRepeatDistance(workout: Workout): string | null {
   return lower === upper ? `около ${lower} м` : `примерно ${lower}–${upper} м`;
 }
 
+/** Predicted time follows the assigned distance and pace; it is never an actual result. */
+export function estimatedEasyTimeText(workout: Workout): string | null {
+  if ((workout.type !== 'EASY' && workout.type !== 'LONG_EASY') ||
+      workout.main.mode !== 'CONTINUOUS' || workout.main.dose.unit !== 'METERS') return null;
+  const pace = prescribedPace(workout);
+  if (pace === null) return null;
+  const km = workout.main.dose.value / 1000;
+  return `${shortTime(Math.round(pace[0] * km))}–${shortTime(Math.round(pace[1] * km))}`;
+}
+
 /** The nearest word the existing effort scale already has for this range. Ties pick the harder one. */
 export function effortFor(workout: Workout): string {
   const points = Object.keys(scaleLabels).map(Number).sort((a, b) => a - b);
@@ -381,6 +391,18 @@ function continuousSteps(workout: Workout, paceText: string | null): string[] {
       steps.push(copy.continuousByEffort(what));
       steps.push(copy.noteNoPace);
     }
+    return steps;
+  }
+
+  if (workout.type === 'EASY' || workout.type === 'LONG_EASY') {
+    steps.push(copy.easyAssigned(distanceText(dose.value), paceText));
+    const speed = treadmillSpeedText(workout);
+    if (speed !== null) steps.push(copy.easyTreadmill(speed));
+    const expected = estimatedEasyTimeText(workout);
+    if (expected !== null) steps.push(copy.easyExpectedTime(expected));
+    const pace = prescribedPace(workout)!;
+    steps.push(copy.easySpeedLimit(shortTime(pace[0])));
+    steps.push(copy.easyOutdoorCheck);
     return steps;
   }
 
