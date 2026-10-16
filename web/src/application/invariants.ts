@@ -9,11 +9,22 @@ import {ApplicationError} from './appError.ts';
 import type {EngineState, Workout} from './engineGateway.ts';
 
 /**
+ * A service day: the engine puts a zero-dose `REST` entry on the calendar (for example while a safety
+ * hold is active, or the day before the race). There is nothing to run, nothing to report and nothing
+ * to miss, so it is never an unresolved result and must not be turned into a "skipped workout"
+ * (QA issue #23, DEF-001). Real sessions are unaffected.
+ */
+export function isServiceDay(workout: Workout): boolean {
+  return workout.type === 'REST';
+}
+
+/**
  * Sessions the engine still holds for past dates: recorded and skipped ones have already left the
- * queue, so whatever remains is an unresolved result.
+ * queue, so whatever remains is an unresolved result. Past service days (REST) are not results; the
+ * engine drops them on the next replan.
  */
 export function pendingResults(engineState: EngineState, today: string): Workout[] {
-  return engineState.queue.filter((workout) => workout.scheduledDate < today);
+  return engineState.queue.filter((workout) => workout.scheduledDate < today && !isServiceDay(workout));
 }
 
 export function hasPendingResults(engineState: EngineState, today: string): boolean {
