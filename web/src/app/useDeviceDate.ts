@@ -11,6 +11,7 @@
  */
 import {useEffect, useState} from 'react';
 import {deviceToday} from '../application/format.ts';
+import {IS_TEST_BUILD, TEST_DATE_EVENT} from '../application/testClock.ts';
 
 /** Milliseconds until the next local midnight, with a one-second margin so the date has certainly changed. */
 export function msUntilNextLocalMidnight(now: Date = new Date()): number {
@@ -41,6 +42,7 @@ export function useDeviceDate(): string {
       }, msUntilNextLocalMidnight());
     };
 
+    if (IS_TEST_BUILD) window.addEventListener(TEST_DATE_EVENT,sync);
     document.addEventListener('visibilitychange', sync);
     window.addEventListener('focus', sync);
     // `pageshow` also covers a restore from the back/forward cache.
@@ -49,6 +51,7 @@ export function useDeviceDate(): string {
 
     return () => {
       if (timer !== undefined) clearTimeout(timer);
+      if (IS_TEST_BUILD) window.removeEventListener(TEST_DATE_EVENT,sync);
       document.removeEventListener('visibilitychange', sync);
       window.removeEventListener('focus', sync);
       window.removeEventListener('pageshow', sync);
