@@ -1,0 +1,14 @@
+{
+ "source": "journals of the run in before-fix/ (PR #26 state)",
+ "nonPassByDefect": {
+  "DEF-004": 17,
+  "DEF-003": 35,
+  "DEF-001": 7,
+  "OBS-001": 2,
+  "DEF-002": 1
+ },
+ "checks": {
+  "PASS": 2944,
+  "KNOWN_FAIL": 62
+ }
+}

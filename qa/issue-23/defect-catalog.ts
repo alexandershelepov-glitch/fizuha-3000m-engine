@@ -15,6 +15,8 @@ export interface CatalogEntry {
   reproTest?: string;
   codeRefs: string[];
   note?: string;
+  status: 'FIXED' | 'OPEN';
+  fix?: {commit: string; summary: string; tests: string[]};
 }
 
 export const CATALOG: readonly CatalogEntry[] = [
@@ -28,6 +30,8 @@ export const CATALOG: readonly CatalogEntry[] = [
     reproTest: 'qa/issue-23/defects.spec.ts › DEF-001',
     codeRefs: ['web/src/application/uiState.ts:69-70 (PENDING_RESULT проверяется раньше TRAINING_HOLD)', 'src/workouts.ts: при safety≠OK/diagnosticHold в очередь ставятся REST-слоты'],
     note: 'Корректное поведение допускает два решения (не считать REST «незакрытым» либо показывать карточку паузы выше). Решение за владельцем продукта; методика не менялась.',
+    status: 'FIXED',
+    fix: {commit: 'cf85c74', summary: 'REST — служебный день: он больше не считается незакрытой тренировкой (web/src/application/invariants.ts › pendingResults/isServiceDay) и движок не регистрирует по нему пропуск (src/engine.ts › pastDue/registerMiss). Реально пропущенные занятия обрабатываются как раньше.', tests: ['tests/qa23-def001-rest-service-days.test.ts', 'tests/app-safety-recheck.test.ts › RECOVERY-04 / RECOVERY-04b', 'qa/issue-23/defects.spec.ts › DEF-001', 'проверки полного цикла HOLD_TODAY_SHOWS_RECHECK_NOT_PENDING, HOLD_NO_FICTITIOUS_SKIPS']},
   },
   {
     id: 'DEF-002', kind: 'DEFECT', severity: 'medium',
@@ -38,6 +42,8 @@ export const CATALOG: readonly CatalogEntry[] = [
     checkIds: ['CHECKPOINT_ACCEPTED_WHEN_REQUIRED'],
     reproTest: 'qa/issue-23/defects.spec.ts › DEF-002',
     codeRefs: ['src/engine.ts:126', 'src/engine.ts:234', 'web/src/application/uiState.ts (CHECKPOINT_REQUIRED)'],
+    status: 'FIXED',
+    fix: {commit: 'b043d14', summary: 'Контрольный результат не требуется, пока canRun3Km=false (src/engine.ts › rebuildQueue). Правила срока 21 день и т.д. не менялись: после подтверждения 3 км флаг выставляется теми же правилами.', tests: ['tests/qa23-def002-checkpoint-requires-3k.test.ts', 'qa/issue-23/defects.spec.ts › DEF-002', 'инвариант INV_CHECKPOINT_ONLY_WHEN_AVAILABLE на каждом дне полного цикла']},
   },
   {
     id: 'DEF-003', kind: 'DEFECT', severity: 'low',
@@ -49,6 +55,8 @@ export const CATALOG: readonly CatalogEntry[] = [
     reproTest: 'qa/issue-23/defects.spec.ts › DEF-003',
     codeRefs: ['web/src/ui/screens/ResultOutcome.tsx', 'web/src/ui/screens (форма результата)'],
     note: 'Синтетический dblclick Playwright быстрее реального человека; реальную частоту не оценивали.',
+    status: 'FIXED',
+    fix: {commit: '765ce24', summary: 'Кнопка принимает опцию ignoreRepeatedClicks: второй клик двойного нажатия игнорируется; включено для «Продолжить»/«К плану» на экране итога и для кнопок предупреждения о неполных отрезках (web/src/ui/components/Button.tsx, ResultForm.tsx, ResultOutcome.tsx). Защита от дублей записи (inFlight) уже была и не менялась.', tests: ['web/src/ui/components/Button.test.tsx', 'qa/issue-23/defects.spec.ts › DEF-003', 'проверки DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN и DOUBLE_CLICK_WARNING_NOT_DISMISSED в полном цикле']},
   },
   {
     id: 'DEF-004', kind: 'DEFECT', severity: 'low',
@@ -59,6 +67,8 @@ export const CATALOG: readonly CatalogEntry[] = [
     checkIds: ['GRAMMAR_REPEATS_PLURAL'],
     reproTest: 'qa/issue-23/defects.spec.ts › DEF-004',
     codeRefs: ['web/src/ui/copy/text.ts:487 (шаблон «По плану: ${count} отрезков» без склонения)'],
+    status: 'FIXED',
+    fix: {commit: '765ce24', summary: 'Подпись использует существующее склонение counts.repeats (web/src/ui/copy/text.ts:487).', tests: ['tests/qa23-def004-plural-repeats.test.ts', 'qa/issue-23/defects.spec.ts › DEF-004', 'проверка GRAMMAR_REPEATS_PLURAL']},
   },
   {
     id: 'OBS-001', kind: 'OBSERVATION', severity: 'info',
@@ -69,6 +79,7 @@ export const CATALOG: readonly CatalogEntry[] = [
     checkIds: ['PLAUSIBLE_QUALITY_SHARE'],
     codeRefs: ['src/assessment.ts:73'],
     note: 'Порог 40 % — эвристика QA; методика не менялась.',
+    status: 'OPEN',
   },
 ];
 

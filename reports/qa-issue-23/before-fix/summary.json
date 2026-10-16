@@ -1,0 +1,167 @@
+{
+  "generatedAtMsk": "2026-10-16 19:29:37 MSK",
+  "startDate": "2026-10-12",
+  "scenarios": {
+    "fullCycleProfiles": 5,
+    "crossCuttingScenarios": 7,
+    "knownDefectRepros": 4
+  },
+  "weeks": {
+    "p1-novice-no3k": {
+      "weeksSpanned": 11,
+      "virtualDays": 77,
+      "raceDate": "2026-12-28"
+    },
+    "p2-18min-5-10km": {
+      "weeksSpanned": 11,
+      "virtualDays": 77,
+      "raceDate": "2026-12-28"
+    },
+    "p3-15-30-12-18km": {
+      "weeksSpanned": 9,
+      "virtualDays": 63,
+      "raceDate": "2026-12-14"
+    },
+    "p4-14-30-25-30km": {
+      "weeksSpanned": 11,
+      "virtualDays": 77,
+      "raceDate": "2026-12-28"
+    },
+    "p5-strong-high-base": {
+      "weeksSpanned": 11,
+      "virtualDays": 77,
+      "raceDate": "2026-12-28"
+    }
+  },
+  "sessions": {
+    "plannedInQueueAtSomePoint": 165,
+    "recorded": 153,
+    "skipped": 18,
+    "moved": 4,
+    "incomplete": 5,
+    "withSymptoms": 5,
+    "byEvaluation": {
+      "GREEN": 138,
+      "YELLOW": 10,
+      "RED": 5
+    },
+    "byType": {
+      "EASY": 100,
+      "INTRO_QUALITY": 17,
+      "THRESHOLD": 17,
+      "VO2": 10,
+      "SPECIFIC_3K": 9
+    }
+  },
+  "other": {
+    "checkpoints": 13,
+    "examDateChanges": 5,
+    "reloads": 33,
+    "expectedBlocks": 42,
+    "uiTransitions": 752,
+    "screenshotsTaken": 241,
+    "screenshotFilesInRepo": 141,
+    "finalResults": 5
+  },
+  "checks": {
+    "PASS": 2944,
+    "FAIL": 0,
+    "KNOWN_FAIL": 62,
+    "total": 3006
+  },
+  "playwright": {
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "expectedFailures": 4,
+    "unexpectedPasses": 0,
+    "total": 16,
+    "durationMs": 274226,
+    "version": "1.63.0",
+    "raw": true
+  },
+  "uncataloguedKnownFails": [],
+  "playwrightTests": [
+    {
+      "title": "cross · double-click on «Сохранить результат» creates exactly one history entry",
+      "outcome": "passed",
+      "ms": 3165
+    },
+    {
+      "title": "cross · double-click on «Я её не выполнял» skips once and never credits anything",
+      "outcome": "passed",
+      "ms": 1765
+    },
+    {
+      "title": "cross · double-click on «+1 день» moves the virtual calendar by the clicks made and credits nothing",
+      "outcome": "passed",
+      "ms": 1481
+    },
+    {
+      "title": "cross · «+7 дней» with an unclosed workout: no auto-credit, workout stays pending, plan is not refreshed behind the user",
+      "outcome": "passed",
+      "ms": 1753
+    },
+    {
+      "title": "cross · reload on every route and back/forward keep storage byte-identical and never re-submit a result",
+      "outcome": "passed",
+      "ms": 2808
+    },
+    {
+      "title": "cross · damaged localStorage does not crash the app and does not silently erase data",
+      "outcome": "passed",
+      "ms": 2013
+    },
+    {
+      "title": "cross · final result before the race day is refused (expected block), nothing is archived",
+      "outcome": "passed",
+      "ms": 1682
+    },
+    {
+      "title": "DEF-001 · REST placeholder after a STOP is shown as an unclosed workout and hides the hold message · p3 · seed 20261014",
+      "outcome": "expected-failure",
+      "ms": 15476
+    },
+    {
+      "title": "DEF-002 · «Нужен контрольный результат» is shown to a novice who cannot run 3 km, but the result is refused · p1 · seed 20261012",
+      "outcome": "expected-failure",
+      "ms": 3880
+    },
+    {
+      "title": "DEF-003 · double-click on «Сохранить результат» skips the outcome screen (2nd click hits «Продолжить») · p3 · seed 20261014",
+      "outcome": "expected-failure",
+      "ms": 2758
+    },
+    {
+      "title": "DEF-004 · «По плану: 1 отрезков» on the result form · p2 · seed 20261013",
+      "outcome": "expected-failure",
+      "ms": 3804
+    },
+    {
+      "title": "full cycle · p1-novice-no3k · 12 недель · seed 20261012",
+      "outcome": "passed",
+      "ms": 33195
+    },
+    {
+      "title": "full cycle · p2-18min-5-10km · 10 недель · seed 20261013",
+      "outcome": "passed",
+      "ms": 38040
+    },
+    {
+      "title": "full cycle · p3-15-30-12-18km · 8 недель · seed 20261014",
+      "outcome": "passed",
+      "ms": 38585
+    },
+    {
+      "title": "full cycle · p4-14-30-25-30km · 10 недель · seed 20261015",
+      "outcome": "passed",
+      "ms": 53453
+    },
+    {
+      "title": "full cycle · p5-strong-high-base · 12 недель · seed 20261016",
+      "outcome": "passed",
+      "ms": 67253
+    }
+  ]
+}

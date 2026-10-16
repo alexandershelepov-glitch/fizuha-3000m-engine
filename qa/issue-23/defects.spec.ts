@@ -1,7 +1,7 @@
 /**
- * Short, deterministic reproductions of the defects found by the full-cycle runs (reports/qa-issue-23/defect-log.md).
- * Each test asserts the CORRECT behaviour and is annotated `test.fail()`: it is reported as an *expected failure*
- * (not hidden, not green-washed). When a defect gets fixed, the test will "unexpectedly pass" — remove `test.fail`.
+ * Short, deterministic regression tests for the defects found by the full-cycle runs (reports/qa-issue-23/defect-log.md).
+ * They assert the CORRECT behaviour. Before the fixes they were annotated `test.fail()` and reported as expected
+ * failures (see reports/qa-issue-23/before-fix/); DEF-001..DEF-004 are fixed, so they are ordinary tests now.
  */
 import {test, expect} from '@playwright/test';
 import {deriveToday} from '../../web/src/application/uiState.ts';
@@ -44,10 +44,9 @@ async function walk(s: Session, seed: number, opts: {checkpoints?: boolean; maxD
   throw new Error(`walk: limit reached; today=${await s.today()} state=${deriveToday(st, await s.today()).state} queue=${st.queue.map((w) => w.scheduledDate + ':' + w.type).join(' ')} hist=${st.history.length}`);
 }
 
-test.describe('known defects (expected failures)', () => {
+test.describe('regression of fixed defects DEF-001..DEF-004', () => {
   test('DEF-001 · REST placeholder after a STOP is shown as an unclosed workout and hides the hold message · p3 · seed 20261014',
     async ({page}) => {
-      test.fail(!process.env.QA_DEFECT_RAW, 'DEF-001: см. reports/qa-issue-23/defect-log.md');
       const pr = profile('p3-15-30-12-18km');
       const s = new Session(page, pr, new Journal(pr.id, pr.seed));
       await s.fresh(); await s.onboard();
@@ -60,11 +59,14 @@ test.describe('known defects (expected failures)', () => {
       await s.shot('def001-today-under-stop');
       await expect(page.getByText('Предыдущая тренировка ещё не закрыта')).toHaveCount(0);
       await expect(page.getByRole('button', {name: 'Повторно проверить состояние'})).toBeVisible();
+      // no fictitious skips for the REST service days, and the recheck is possible straight away
+      expect((await s.engine()).skippedWorkouts).toHaveLength(0);
+      const rc = await s.recheckSafety({healthy: true, clearance: true});
+      expect(rc.saved && rc.stillHold === false).toBe(true);
     });
 
   test('DEF-002 · «Нужен контрольный результат» is shown to a novice who cannot run 3 km, but the result is refused · p1 · seed 20261012',
     async ({page}) => {
-      test.fail(!process.env.QA_DEFECT_RAW, 'DEF-002: см. reports/qa-issue-23/defect-log.md');
       const pr = profile('p1-novice-no3k');
       const s = new Session(page, pr, new Journal(pr.id, pr.seed));
       await s.fresh(); await s.onboard();
@@ -76,7 +78,6 @@ test.describe('known defects (expected failures)', () => {
 
   test('DEF-003 · double-click on «Сохранить результат» skips the outcome screen (2nd click hits «Продолжить») · p3 · seed 20261014',
     async ({page}) => {
-      test.fail(!process.env.QA_DEFECT_RAW, 'DEF-003: см. reports/qa-issue-23/defect-log.md');
       const pr = profile('p3-15-30-12-18km');
       const journal = new Journal(pr.id, pr.seed);
       const s = new Session(page, pr, journal);
@@ -90,7 +91,6 @@ test.describe('known defects (expected failures)', () => {
 
   test('DEF-004 · «По плану: 1 отрезков» on the result form · p2 · seed 20261013',
     async ({page}) => {
-      test.fail(!process.env.QA_DEFECT_RAW, 'DEF-004: см. reports/qa-issue-23/defect-log.md');
       const pr = profile('p2-18min-5-10km');
       const s = new Session(page, pr, new Journal(pr.id, pr.seed));
       await s.fresh(); await s.onboard();
