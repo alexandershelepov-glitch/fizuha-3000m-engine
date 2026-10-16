@@ -214,8 +214,11 @@ export function paceRangeText(pace: readonly [number, number] | null): string | 
 export function treadmillSpeedText(workout: Workout): string | null {
   const pace = prescribedPace(workout);
   if (pace === null) return null;
-  const speedLow = (3600 / pace[1]).toFixed(1).replace('.', ',');
-  const speedHigh = (3600 / pace[0]).toFixed(1).replace('.', ',');
+  // On EASY, show conservative tenths: treadmill rounding must never tell the
+  // runner to exceed the fast edge of the pace prescription.
+  const easy = workout.type === 'EASY' || workout.type === 'LONG_EASY';
+  const speedLow = (easy ? Math.ceil((3600 / pace[1]) * 10) / 10 : 3600 / pace[1]).toFixed(1).replace('.', ',');
+  const speedHigh = (easy ? Math.floor((3600 / pace[0]) * 10) / 10 : 3600 / pace[0]).toFixed(1).replace('.', ',');
   return speedLow === speedHigh ? `${speedLow} км/ч` : `${speedLow}–${speedHigh} км/ч`;
 }
 
