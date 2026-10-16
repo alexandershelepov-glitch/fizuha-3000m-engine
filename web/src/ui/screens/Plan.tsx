@@ -86,6 +86,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
   const summaryDate = mode === 'week' ? viewDate : selectedDate;
   const summary = weekSummary(weekDates(summaryDate).map(date => calendarDay(engineState, today, date, movedIds)));
   const pending = hasPendingResults(engineState, today);
+  const todayWorkout = queue.find(item => item.scheduledDate === today && item.type !== 'REST') ?? null;
   const hold = isSafetyHold(engineState);
   const taperStart = addDays(profile.raceDate, -taperDaysFor(decision.capacity, decision.quality));
   const canMove = onMove !== undefined && selected.workout !== null && selected.status !== 'completed' &&
@@ -174,6 +175,8 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
           <p>Время на 3000 м пока неизвестно. Скоростные задания не назначаются без измеренного результата.</p>
           <Button variant="secondary" onClick={() => onNavigate({name:'CHECKPOINT'})}>Внести измеренный результат</Button>
         </Notice> : null}
+
+        {todayWorkout ? <div className="calendar-today-action"><Button onClick={() => onNavigate({name:'WORKOUT', id: todayWorkout.id})}>{plan.openToday}</Button></div> : null}
 
         <section className="calendar-summary" aria-label="Итоги выбранной недели">
           <div className="calendar-summary-title"><strong>Итоги недели</strong><span>{formatDateLong(mondayOf(summaryDate))} — {formatDateLong(addDays(mondayOf(summaryDate), 6))}</span></div>
