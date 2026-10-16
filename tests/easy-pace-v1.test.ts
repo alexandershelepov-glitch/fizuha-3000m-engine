@@ -1,7 +1,7 @@
 /** Issue #30: numeric EASY/LONG_EASY targets are individual and persisted. */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {createEngine, deserialize, prescribe, serialize} from '../src/index.ts';
+import {classify, createEngine, deserialize, prescribe, serialize} from '../src/index.ts';
 import {initialEasyPace} from '../src/easyPace.ts';
 import {estimatedEasyTimeText, treadmillSpeedText, workoutInstruction} from '../web/src/ui/workoutInstructions.ts';
 import {NOW, dateAfter, profile} from './helpers.ts';
@@ -107,4 +107,35 @@ test('PACE-09: legacy unpaced RUN_WALK, quality work, REST are not assigned an E
     s.queue=[w];
     assert.deepEqual(deserialize(serialize(s)).queue,[w]);
   }
+});
+
+test('PACE-10: measured EASY pace inside range passes; too fast and too slow are detected',()=>{
+  const w=prescribe(t1(),'EASY',NOW,'measured-5k');
+  const result=(minutes: number)=>({
+    date:NOW, completionFraction:1, sessionRpe:3,
+    safety:{pain:0,painIncreasing:false,alteredMovement:false,painWalkingOrRest:false,swelling:false,acuteIllness:false,otherStop:false,needsAssessment:false},
+    durationMinutes:minutes,distanceMeters:5000,repeats:[],restSeconds:[],
+    conditions:{heat:false,wind:false},unexpectedFatigue:false,feedbackConfirmed:true,
+  });
+  const inRange=classify(w,result(36));
+  assert.equal(inRange.evaluation,'GREEN');
+  assert.equal(inRange.inRangeFraction,1);
+  const tooFast=classify(w,result(30));
+  assert.equal(tooFast.evaluation,'YELLOW');
+  assert.equal(tooFast.yellowReason,'EXECUTION');
+  assert.equal(tooFast.inRangeFraction,0);
+  const tooSlow=classify(w,result(40));
+  assert.equal(tooSlow.evaluation,'YELLOW');
+  assert.equal(tooSlow.inRangeFraction,0);
+});
+
+test('PACE-11: missing actual pace measurement does not invent failed splits',()=>{
+  const w=prescribe(t1(),'EASY',NOW,'unmeasured-5k');
+  const r={
+    date:NOW, completionFraction:1, sessionRpe:3,
+    safety:{pain:0,painIncreasing:false,alteredMovement:false,painWalkingOrRest:false,swelling:false,acuteIllness:false,otherStop:false,needsAssessment:false},
+    durationMinutes:0,distanceMeters:0,repeats:[],restSeconds:[],
+    conditions:{heat:false,wind:false},unexpectedFatigue:false,
+  };
+  assert.equal(classify(w,r).inRangeFraction,1,'unknown is neither a pace success nor a failure');
 });
