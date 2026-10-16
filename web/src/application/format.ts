@@ -30,8 +30,8 @@ export function formatTime(totalSeconds: number): string {
  * This is only a UI input convenience, not a new sport/time validation rule.
  */
 export function formatNumericTimeInput(raw: string, onBlur = false): string {
-  if (/^\\d{4}$/.test(raw)) return `${raw.slice(0, 2)}:${raw.slice(2)}`;
-  if (onBlur && /^\\d{3}$/.test(raw)) return `${raw.slice(0, 1)}:${raw.slice(1)}`;
+  if (/^\d{4}$/.test(raw)) return `${raw.slice(0, 2)}:${raw.slice(2)}`;
+  if (onBlur && /^\d{3}$/.test(raw)) return `${raw.slice(0, 1)}:${raw.slice(1)}`;
   return raw;
 }
 
