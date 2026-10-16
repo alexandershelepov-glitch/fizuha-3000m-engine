@@ -234,7 +234,7 @@ export class Session {
       for (const flag of report.safety.flags) await p.locator(`#result-safety-${flag}`).getByRole('button', {name: 'Да', exact: true}).click();
     }
     if (opts.shot) await this.shot(`${opts.shot}-result-form`);
-    const plannedLabel = (await p.getByText(/^По плану: \d+ отрезк/).count()) > 0 ? await p.getByText(/^По плану: \d+ отрезк/).first().innerText() : '';
+    const plannedLabel = (await p.getByText(/^По плану: \d+ отрез/).count()) > 0 ? await p.getByText(/^По плану: \d+ отрез/).first().innerText() : '';
     if (plannedLabel) {
       const n = Number(/\d+/.exec(plannedLabel)![0]);
       const word = n % 10 === 1 && n % 100 !== 11 ? 'отрезок' : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? 'отрезка' : 'отрезков';
