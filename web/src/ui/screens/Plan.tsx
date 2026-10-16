@@ -2,7 +2,8 @@ import '../../calendar.css';
 import {useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
 import {addDays, formatDateLong, formatTime, daysBetween} from '../../application/format.ts';
-import {taperDaysFor, moveWorkout as previewEngineMove, viewEngineError} from '../../application/engineGateway.ts';
+import {taperDaysFor} from '../../application/engineGateway.ts';
+import {previewScheduledMove} from '../../application/workoutSchedule.ts';
 import type {EngineState} from '../../application/engineGateway.ts';
 import type {AppStateV1} from '../../application/appState.ts';
 import type {KeyValueStorage} from '../../application/storage.ts';
@@ -80,7 +81,8 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
   const dates = mode === 'week' ? weekDates(viewDate) : monthDates(viewDate);
   const days = dates.map(date => calendarDay(engineState, today, date, movedIds));
   const selected = calendarDay(engineState, today, selectedDate, movedIds);
-  const summary = weekSummary(weekDates(viewDate).map(date => calendarDay(engineState, today, date, movedIds)));
+  const summaryDate = mode === 'week' ? viewDate : selectedDate;
+  const summary = weekSummary(weekDates(summaryDate).map(date => calendarDay(engineState, today, date, movedIds)));
   const pending = hasPendingResults(engineState, today);
   const hold = isSafetyHold(engineState);
   const taperStart = addDays(profile.raceDate, -taperDaysFor(decision.capacity, decision.quality));
@@ -91,14 +93,9 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
     ? Array.from({length: 7}, (_, i) => addDays(engineState.asOf, i))
       .filter(date => date !== selected.workout!.scheduledDate && date >= today && date < profile.raceDate && !busySet.has(date))
       .map(date => {
-        try {
-          previewEngineMove(engineState, selected.workout!.id, date);
-          return {date, allowed: true, reason: ''};
-        } catch (error) {
-          const details = viewEngineError(error);
-          const copy = copyForError({code: details.code, params: details.params ?? {}, fromEngine: details.fromEngine, retry: false});
-          return {date, allowed: false, reason: copy.text(details.params ?? {})};
-        }
+        const verdict = previewScheduledMove(engineState, selected.workout!.id, date, today);
+        const reason = verdict.ok ? '' : copyForError(verdict.error).text(verdict.error.params);
+        return {date, allowed: verdict.ok, reason};
       })
     : [];
   const allowedCandidates = moveCandidates.filter(item => item.allowed);
@@ -177,7 +174,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
         </Notice> : null}
 
         <section className="calendar-summary" aria-label="Итоги выбранной недели">
-          <div className="calendar-summary-title"><strong>Итоги недели</strong><span>{formatDateLong(mondayOf(viewDate))} — {formatDateLong(addDays(mondayOf(viewDate), 6))}</span></div>
+          <div className="calendar-summary-title"><strong>Итоги недели</strong><span>{formatDateLong(mondayOf(summaryDate))} — {formatDateLong(addDays(mondayOf(summaryDate), 6))}</span></div>
           <div className="calendar-stats">
             <div><strong>{summary.assigned}</strong><span>Назначено</span></div>
             <div><strong>{summary.completed}</strong><span>Выполнено</span></div>
