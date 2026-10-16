@@ -109,7 +109,7 @@ function ResultStep({draft, update, error}: StepProps): ReactNode {
       {draft.hasResult ? (
         <>
           <Field id="resultTime" label={questionnaire.fields.resultTime.label} hint={questionnaire.fields.resultTime.hint} error={error('resultTime')}>
-            <TextInput id="resultTime" value={draft.resultTime} onChange={(value) => update({resultTime: value})} inputMode="numeric" numericTime placeholder="14:30" />
+            <TextInput id="resultTime" value={draft.resultTime} onChange={(value) => update({resultTime: value})} inputMode="text" placeholder="14:30" />
           </Field>
           <Field id="resultDate" label={questionnaire.fields.resultDate.label} error={error('resultDate')}>
             <TextInput id="resultDate" type="date" value={draft.resultDate} onChange={(value) => update({resultDate: value})} />
@@ -275,7 +275,7 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
 function GoalStep({draft, update, error}: StepProps): ReactNode {
   return (
     <Field id="targetTime" label={questionnaire.fields.targetTime.label} hint={questionnaire.fields.targetTime.hint} error={error('targetTime')}>
-      <TextInput id="targetTime" value={draft.targetTime} onChange={(value) => update({targetTime: value})} inputMode="numeric" numericTime placeholder="14:00" />
+      <TextInput id="targetTime" value={draft.targetTime} onChange={(value) => update({targetTime: value})} inputMode="text" placeholder="14:00" />
     </Field>
   );
 }
