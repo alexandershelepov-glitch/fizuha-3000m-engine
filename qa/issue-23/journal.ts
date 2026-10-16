@@ -1,6 +1,7 @@
 /** Collects everything one QA run observed and writes machine-readable artefacts (JSON + CSV). */
 import {mkdirSync, writeFileSync} from 'node:fs';
 import {join} from 'node:path';
+import {toCsv} from './csv.ts';
 
 export interface Row {
   profile_id: string; seed: number; week: number; date: string; day_index: number;
@@ -54,14 +55,4 @@ export class Journal {
     writeFileSync(join(dir, `${this.profileId}.json`), JSON.stringify({profileId: this.profileId, seed: this.seed, meta: this.meta, counters: this.counters, weekly: this.weekly, trace: this.trace, rows: this.rows, checks: this.checks}, null, 2));
     writeFileSync(join(dir, `${this.profileId}.csv`), toCsv(this.rows));
   }
-}
-
-export function toCsv(rows: readonly object[]): string {
-  if (rows.length === 0) return '';
-  const cols = Object.keys(rows[0]!);
-  const esc = (v: unknown): string => {
-    const s = v === null || v === undefined ? '' : String(v);
-    return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  };
-  return '\uFEFF' + [cols.join(','), ...rows.map((r) => cols.map((c) => esc((r as Record<string, unknown>)[c])).join(','))].join('\n') + '\n';
 }

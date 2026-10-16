@@ -7,7 +7,7 @@
  */
 import {existsSync, readdirSync, readFileSync, statSync, writeFileSync} from 'node:fs';
 import {join} from 'node:path';
-import {toCsv} from './journal.ts';
+import {toCsv} from './csv.ts';
 import {CATALOG, EXTRA_OBSERVATIONS, RETRACTED} from './defect-catalog.ts';
 import {PROFILES, QA_START_DATE} from './profiles.ts';
 
