@@ -58,6 +58,7 @@ jobs:
           path: |
             test-results/**/calendar-*.png
             test-results/**/unified-*.png
+            test-results/**/issue-30-*.png
           if-no-files-found: warn
       # GitHub Pages is currently disabled and not the selected host.
       # Its separate nested-base browser suite remains runnable manually.
