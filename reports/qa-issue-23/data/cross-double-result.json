@@ -16,7 +16,7 @@
     "reloads": 0,
     "expectedBlocks": 0,
     "uiTransitions": 13,
-    "screenshots": 2,
+    "screenshots": 3,
     "byEvaluation": {
       "GREEN": 1
     },
@@ -66,10 +66,9 @@
       "seed": 20261014,
       "id": "DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN",
       "description": "Двойное нажатие «Сохранить результат» не перескакивает экран с итогом тренировки (второй клик не попадает в «Продолжить»)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "INTRO_QUALITY 2026-10-12: после dblclick открыт /today",
-      "date": "2026-10-12",
-      "defect": "DEF-003"
+      "verdict": "PASS",
+      "detail": "INTRO_QUALITY 2026-10-12: после dblclick открыт /workout/slot-2026-10-12/outcome",
+      "date": "2026-10-12"
     },
     {
       "profile_id": "cross-double-result",
