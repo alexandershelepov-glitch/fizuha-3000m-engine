@@ -137,7 +137,7 @@ export const questionnaire = {
     },
   },
   fields: {
-    resultTime: {label: 'Ваш результат', hint: 'Введите цифры 1430 — получится 14:30 (ММ:СС)'},
+    resultTime: {label: 'Ваш результат', hint: 'Формат ММ:СС, например 14:30'},
     resultDate: {label: 'Дата результата'},
     resultSource: {label: 'Откуда результат'},
     canRun3Km: {label: 'Можете ли вы непрерывно пробежать 3 км без остановки?'},
@@ -184,7 +184,7 @@ export const questionnaire = {
     },
     availableRunsPerWeek: {label: 'Сколько тренировок в неделю вы можете выполнять'},
     performanceMismatch: {label: 'Последний результат на 3000 м примерно соответствует тому, как вы бегаете сейчас?'},
-    targetTime: {label: 'Желаемый результат на 3000 м', hint: 'Введите цифры 1400 — получится 14:00 (ММ:СС)'},
+    targetTime: {label: 'Желаемый результат на 3000 м', hint: 'Формат ММ:СС, например 14:00'},
     raceDate: {label: 'Дата итогового забега'},
   },
   safety: {
