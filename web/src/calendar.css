@@ -131,3 +131,8 @@
   .calendar-days--month .calendar-day { min-height: 72px; }
   .calendar-days--month .calendar-day-label { display: block; }
 }
+
+/* A quality day must remain distinguishable even without reading its title. */
+.calendar-day--quality .calendar-day-label { color: #b87532; }
+.calendar-days--month .calendar-day--quality::after { content: '●'; color: #c68a3e; font-size: 9px; position: absolute; bottom: 2px; left: 8px; }
+.calendar-day--today:not(.calendar-day--selected) { border-color: #8bb9b0; }
