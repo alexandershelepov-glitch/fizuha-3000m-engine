@@ -7,7 +7,7 @@
  * The test site's localStorage and user sessions must be hosted on a separate
  * Layero domain. This module does not alter any engine training decisions.
  */
-export const IS_TEST_BUILD = import.meta.env?.VITE_TEST_MODE === '1';
+export const IS_TEST_BUILD = (import.meta as ImportMeta & {env?: {VITE_TEST_MODE?: string}}).env?.VITE_TEST_MODE === '1';
 export const TEST_DATE_KEY = 'fizuha.test.virtualDate.v1';
 export const TEST_DATE_EVENT = 'fizuha:test-date-changed';
 
