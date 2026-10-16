@@ -338,6 +338,7 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
             <div className="actions">
               <Button
                 autoFocus
+                ignoreRepeatedClicks
                 onClick={() => {
                   setWarnOpen(false);
                   setPending(null);
@@ -352,6 +353,7 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
               </Button>
               <Button
                 variant="ghost"
+                ignoreRepeatedClicks
                 onClick={() => {
                   const result = pending;
                   setWarnOpen(false);

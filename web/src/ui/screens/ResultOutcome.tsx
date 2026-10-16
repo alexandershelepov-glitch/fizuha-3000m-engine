@@ -104,8 +104,8 @@ export function ResultOutcome({entry, engineState, nextWorkout, changes, onConti
       </Card>
 
       <div className="actions">
-        <Button onClick={onContinue}>{copy.continue}</Button>
-        <Button variant="ghost" onClick={onOpenPlan}>{copy.openPlan}</Button>
+        <Button ignoreRepeatedClicks onClick={onContinue}>{copy.continue}</Button>
+        <Button variant="ghost" ignoreRepeatedClicks onClick={onOpenPlan}>{copy.openPlan}</Button>
       </div>
     </div>
   );
