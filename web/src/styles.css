@@ -1,3 +1,27 @@
+/* Experimental testing controls appear only in a build made for the test host. */
+.test-clock {
+  margin: 8px 12px;
+  padding: 12px;
+  border: 2px solid #f7b955;
+  border-radius: 12px;
+  background: #3b2d18;
+  color: #fcecd1;
+  font-size: 13px;
+}
+.test-clock__headline {display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between}
+.test-clock__headline strong {color: #ffcc74}
+.test-clock__actions {display: flex; gap: 8px; margin: 8px 0}
+.test-clock button {
+  background: #ffd18a;
+  color: #211705;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 16px;
+  min-height: 44px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
 /* Design tokens and the minimal component set for the mobile shell (360–430 px first). */
 :root {
   --space-1: 4px;
