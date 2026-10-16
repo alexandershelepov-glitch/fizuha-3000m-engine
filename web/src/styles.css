@@ -635,6 +635,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
 .sign__glyph { background: #e8f4f0; border-color: #d2e5df; color: #126f63; font-weight: 750; }
 .empty { background: #fff; padding: 22px; border: 1px solid var(--border); border-radius: 14px; }
 .bottom-nav { background: rgba(255,255,255,.97); border-color: var(--border); box-shadow: 0 -2px 20px #243d4b0a; }
+.bottom-nav__brand { display: none; }
 .bottom-nav__item { font-size: 12px; font-weight: 600; }
 .bottom-nav__item--active { color: #127366; border-color: #127366; background: #f0f8f6; font-weight: 800; }
 .screen .card__toggle { background: transparent; border: 0; color: #177e74; font-weight: 750; text-align: left; padding: 10px 0; }
@@ -661,6 +662,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible {
     padding: 95px 12px 24px; width: 183px; max-width: 183px;
     box-shadow: none; border-top: 0; border-right: 1px solid var(--border);
   }
+  .bottom-nav__brand { display: block; position: absolute; top: 28px; left: 25px; font-size: 15px; font-weight: 800; color: #173948; letter-spacing: .03em; }
   .bottom-nav__item { min-height: 46px; flex: 0 0 46px; text-align: left; padding: 0 13px; border: 0; border-radius: 9px; }
   .bottom-nav__item--active { background: #e6f3ef; }
 }
