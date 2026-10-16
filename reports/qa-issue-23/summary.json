@@ -1,5 +1,5 @@
 {
-  "generatedAtMsk": "2026-10-16 20:15:51 MSK",
+  "generatedAtMsk": "2026-10-16 20:21:53 MSK",
   "startDate": "2026-10-12",
   "scenarios": {
     "fullCycleProfiles": 5,
@@ -64,10 +64,10 @@
     "finalResults": 5
   },
   "checks": {
-    "PASS": 3013,
+    "PASS": 3030,
     "FAIL": 0,
     "KNOWN_FAIL": 2,
-    "total": 3015
+    "total": 3032
   },
   "playwright": {
     "passed": 16,
@@ -77,7 +77,7 @@
     "expectedFailures": 0,
     "unexpectedPasses": 0,
     "total": 16,
-    "durationMs": 243430,
+    "durationMs": 246944,
     "version": "1.63.0",
     "raw": true
   },
@@ -86,82 +86,82 @@
     {
       "title": "cross · double-click on «Сохранить результат» creates exactly one history entry",
       "outcome": "passed",
-      "ms": 3060
+      "ms": 3007
     },
     {
       "title": "cross · double-click on «Я её не выполнял» skips once and never credits anything",
       "outcome": "passed",
-      "ms": 1605
+      "ms": 1677
     },
     {
       "title": "cross · double-click on «+1 день» moves the virtual calendar by the clicks made and credits nothing",
       "outcome": "passed",
-      "ms": 1418
+      "ms": 1374
     },
     {
       "title": "cross · «+7 дней» with an unclosed workout: no auto-credit, workout stays pending, plan is not refreshed behind the user",
       "outcome": "passed",
-      "ms": 1663
+      "ms": 1634
     },
     {
       "title": "cross · reload on every route and back/forward keep storage byte-identical and never re-submit a result",
       "outcome": "passed",
-      "ms": 2629
+      "ms": 2595
     },
     {
       "title": "cross · damaged localStorage does not crash the app and does not silently erase data",
       "outcome": "passed",
-      "ms": 1887
+      "ms": 1886
     },
     {
       "title": "cross · final result before the race day is refused (expected block), nothing is archived",
       "outcome": "passed",
-      "ms": 1546
+      "ms": 1524
     },
     {
       "title": "DEF-001 · REST placeholder after a STOP is shown as an unclosed workout and hides the hold message · p3 · seed 20261014",
       "outcome": "passed",
-      "ms": 3379
+      "ms": 3253
     },
     {
       "title": "DEF-002 · no mandatory checkpoint for a novice who cannot run 3 km; after confirming 3 km the checkpoint is available and accepted · p1 · seed 20261012",
       "outcome": "passed",
-      "ms": 6485
+      "ms": 6315
     },
     {
       "title": "DEF-003 · double-click on «Сохранить результат» skips the outcome screen (2nd click hits «Продолжить») · p3 · seed 20261014",
       "outcome": "passed",
-      "ms": 2816
+      "ms": 2765
     },
     {
       "title": "DEF-004 · «По плану: 1 отрезок» is declined correctly on the result form · p2 · seed 20261013",
       "outcome": "passed",
-      "ms": 3487
+      "ms": 3513
     },
     {
       "title": "full cycle · p1-novice-no3k · 12 недель · seed 20261012",
       "outcome": "passed",
-      "ms": 29275
+      "ms": 29310
     },
     {
       "title": "full cycle · p2-18min-5-10km · 10 недель · seed 20261013",
       "outcome": "passed",
-      "ms": 35375
+      "ms": 35308
     },
     {
       "title": "full cycle · p3-15-30-12-18km · 8 недель · seed 20261014",
       "outcome": "passed",
-      "ms": 35089
+      "ms": 35578
     },
     {
       "title": "full cycle · p4-14-30-25-30km · 10 недель · seed 20261015",
       "outcome": "passed",
-      "ms": 48630
+      "ms": 50313
     },
     {
       "title": "full cycle · p5-strong-high-base · 12 недель · seed 20261016",
       "outcome": "passed",
-      "ms": 63251
+      "ms": 63940
     }
   ]
 }

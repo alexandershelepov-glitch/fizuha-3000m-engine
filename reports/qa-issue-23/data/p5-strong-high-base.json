@@ -3517,6 +3517,15 @@
     {
       "profile_id": "p5-strong-high-base",
       "seed": 20261016,
+      "id": "GRAMMAR_REPEATS_PLURAL",
+      "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-10-12: «По плану: 1 отрезок», ожидалось «…отрезок»",
+      "date": "2026-10-12"
+    },
+    {
+      "profile_id": "p5-strong-high-base",
+      "seed": 20261016,
       "id": "HISTORY_GROWS_BY_ONE_PER_SUBMIT",
       "description": "Одна отправка результата (в т.ч. при двойном нажатии) добавляет ровно одну запись истории",
       "verdict": "PASS",
@@ -4123,7 +4132,7 @@
       "id": "MOVE_EVENT_LOGGED",
       "description": "Перенос записан в журнал событий",
       "verdict": "PASS",
-      "detail": "[{\"type\":\"CYCLE_CREATED\",\"at\":\"2026-10-12T12:00:00.000Z\",\"cycleId\":\"bf99d2a0-569b-42f4-b71c-d17192080ec4\"},{\"type\":\"WORKOUT_MOVED\",\"at\":\"2026-10-19T12:00:00.000Z\",\"workoutId\":\"slot-2026-10-20\",\"fromDate\":\"2026-10-20\",\"toDate\":\"2026-10-25\"}]",
+      "detail": "[{\"type\":\"CYCLE_CREATED\",\"at\":\"2026-10-12T12:00:00.000Z\",\"cycleId\":\"da689936-784a-440c-8465-f6c51c355c41\"},{\"type\":\"WORKOUT_MOVED\",\"at\":\"2026-10-19T12:00:00.000Z\",\"workoutId\":\"slot-2026-10-20\",\"fromDate\":\"2026-10-20\",\"toDate\":\"2026-10-25\"}]",
       "date": "2026-10-19"
     },
     {
@@ -4340,6 +4349,15 @@
       "description": "Экран «Сегодня» соответствует состоянию движка",
       "verdict": "PASS",
       "detail": "before THRESHOLD 2026-10-21: state=WORKOUT_TODAY",
+      "date": "2026-10-21"
+    },
+    {
+      "profile_id": "p5-strong-high-base",
+      "seed": 20261016,
+      "id": "GRAMMAR_REPEATS_PLURAL",
+      "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-10-21: «По плану: 1 отрезок», ожидалось «…отрезок»",
       "date": "2026-10-21"
     },
     {
@@ -6037,6 +6055,15 @@
     {
       "profile_id": "p5-strong-high-base",
       "seed": 20261016,
+      "id": "GRAMMAR_REPEATS_PLURAL",
+      "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-11-09: «По плану: 1 отрезок», ожидалось «…отрезок»",
+      "date": "2026-11-09"
+    },
+    {
+      "profile_id": "p5-strong-high-base",
+      "seed": 20261016,
       "id": "HISTORY_GROWS_BY_ONE_PER_SUBMIT",
       "description": "Одна отправка результата (в т.ч. при двойном нажатии) добавляет ровно одну запись истории",
       "verdict": "PASS",
@@ -6703,6 +6730,15 @@
     {
       "profile_id": "p5-strong-high-base",
       "seed": 20261016,
+      "id": "GRAMMAR_REPEATS_PLURAL",
+      "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-11-16: «По плану: 1 отрезок», ожидалось «…отрезок»",
+      "date": "2026-11-16"
+    },
+    {
+      "profile_id": "p5-strong-high-base",
+      "seed": 20261016,
       "id": "HISTORY_GROWS_BY_ONE_PER_SUBMIT",
       "description": "Одна отправка результата (в т.ч. при двойном нажатии) добавляет ровно одну запись истории",
       "verdict": "PASS",
@@ -7351,6 +7387,15 @@
     {
       "profile_id": "p5-strong-high-base",
       "seed": 20261016,
+      "id": "GRAMMAR_REPEATS_PLURAL",
+      "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-11-23: «По плану: 1 отрезок», ожидалось «…отрезок»",
+      "date": "2026-11-23"
+    },
+    {
+      "profile_id": "p5-strong-high-base",
+      "seed": 20261016,
       "id": "HISTORY_GROWS_BY_ONE_PER_SUBMIT",
       "description": "Одна отправка результата (в т.ч. при двойном нажатии) добавляет ровно одну запись истории",
       "verdict": "PASS",
@@ -7985,6 +8030,15 @@
       "description": "Экран «Сегодня» соответствует состоянию движка",
       "verdict": "PASS",
       "detail": "before THRESHOLD 2026-11-30: state=WORKOUT_TODAY",
+      "date": "2026-11-30"
+    },
+    {
+      "profile_id": "p5-strong-high-base",
+      "seed": 20261016,
+      "id": "GRAMMAR_REPEATS_PLURAL",
+      "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-11-30: «По плану: 1 отрезок», ожидалось «…отрезок»",
       "date": "2026-11-30"
     },
     {
@@ -8777,6 +8831,15 @@
       "description": "Экран «Сегодня» соответствует состоянию движка",
       "verdict": "PASS",
       "detail": "before THRESHOLD 2026-12-09: state=WORKOUT_TODAY",
+      "date": "2026-12-09"
+    },
+    {
+      "profile_id": "p5-strong-high-base",
+      "seed": 20261016,
+      "id": "GRAMMAR_REPEATS_PLURAL",
+      "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-12-09: «По плану: 1 отрезок», ожидалось «…отрезок»",
       "date": "2026-12-09"
     },
     {

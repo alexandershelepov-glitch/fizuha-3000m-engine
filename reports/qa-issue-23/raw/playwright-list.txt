@@ -5,24 +5,24 @@
 
 Running 16 tests using 1 worker
 
-(node:370179) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:377518) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-  ✓   1 [qa-mobile-chrome] › qa/issue-23/cross-cutting.spec.ts:28:1 › cross · double-click on «Сохранить результат» creates exactly one history entry (3.1s)
-  ✓   2 [qa-mobile-chrome] › qa/issue-23/cross-cutting.spec.ts:43:1 › cross · double-click on «Я её не выполнял» skips once and never credits anything (1.6s)
+  ✓   1 [qa-mobile-chrome] › qa/issue-23/cross-cutting.spec.ts:28:1 › cross · double-click on «Сохранить результат» creates exactly one history entry (3.0s)
+  ✓   2 [qa-mobile-chrome] › qa/issue-23/cross-cutting.spec.ts:43:1 › cross · double-click on «Я её не выполнял» skips once and never credits anything (1.7s)
   ✓   3 [qa-mobile-chrome] › qa/issue-23/cross-cutting.spec.ts:63:1 › cross · double-click on «+1 день» moves the virtual calendar by the clicks made and credits nothing (1.4s)
-  ✓   4 [qa-mobile-chrome] › qa/issue-23/cross-cutting.spec.ts:80:1 › cross · «+7 дней» with an unclosed workout: no auto-credit, workout stays pending, plan is not refreshed behind the user (1.7s)
+  ✓   4 [qa-mobile-chrome] › qa/issue-23/cross-cutting.spec.ts:80:1 › cross · «+7 дней» with an unclosed workout: no auto-credit, workout stays pending, plan is not refreshed behind the user (1.6s)
   ✓   5 [qa-mobile-chrome] › qa/issue-23/cross-cutting.spec.ts:99:1 › cross · reload on every route and back/forward keep storage byte-identical and never re-submit a result (2.6s)
   ✓   6 [qa-mobile-chrome] › qa/issue-23/cross-cutting.spec.ts:127:1 › cross · damaged localStorage does not crash the app and does not silently erase data (1.9s)
   ✓   7 [qa-mobile-chrome] › qa/issue-23/cross-cutting.spec.ts:149:1 › cross · final result before the race day is refused (expected block), nothing is archived (1.5s)
-  ✓   8 [qa-mobile-chrome] › qa/issue-23/defects.spec.ts:48:3 › regression of fixed defects DEF-001..DEF-004 › DEF-001 · REST placeholder after a STOP is shown as an unclosed workout and hides the hold message · p3 · seed 20261014 (3.4s)
-  ✓   9 [qa-mobile-chrome] › qa/issue-23/defects.spec.ts:68:3 › regression of fixed defects DEF-001..DEF-004 › DEF-002 · no mandatory checkpoint for a novice who cannot run 3 km; after confirming 3 km the checkpoint is available and accepted · p1 · seed 20261012 (6.5s)
+  ✓   8 [qa-mobile-chrome] › qa/issue-23/defects.spec.ts:48:3 › regression of fixed defects DEF-001..DEF-004 › DEF-001 · REST placeholder after a STOP is shown as an unclosed workout and hides the hold message · p3 · seed 20261014 (3.3s)
+  ✓   9 [qa-mobile-chrome] › qa/issue-23/defects.spec.ts:68:3 › regression of fixed defects DEF-001..DEF-004 › DEF-002 · no mandatory checkpoint for a novice who cannot run 3 km; after confirming 3 km the checkpoint is available and accepted · p1 · seed 20261012 (6.3s)
   ✓  10 [qa-mobile-chrome] › qa/issue-23/defects.spec.ts:93:3 › regression of fixed defects DEF-001..DEF-004 › DEF-003 · double-click on «Сохранить результат» skips the outcome screen (2nd click hits «Продолжить») · p3 · seed 20261014 (2.8s)
   ✓  11 [qa-mobile-chrome] › qa/issue-23/defects.spec.ts:106:3 › regression of fixed defects DEF-001..DEF-004 › DEF-004 · «По плану: 1 отрезок» is declined correctly on the result form · p2 · seed 20261013 (3.5s)
   ✓  12 [qa-mobile-chrome] › qa/issue-23/full-cycle.spec.ts:17:3 › full cycle · p1-novice-no3k · 12 недель · seed 20261012 (29.3s)
-  ✓  13 [qa-mobile-chrome] › qa/issue-23/full-cycle.spec.ts:17:3 › full cycle · p2-18min-5-10km · 10 недель · seed 20261013 (35.4s)
-  ✓  14 [qa-mobile-chrome] › qa/issue-23/full-cycle.spec.ts:17:3 › full cycle · p3-15-30-12-18km · 8 недель · seed 20261014 (35.1s)
-  ✓  15 [qa-mobile-chrome] › qa/issue-23/full-cycle.spec.ts:17:3 › full cycle · p4-14-30-25-30km · 10 недель · seed 20261015 (48.6s)
+  ✓  13 [qa-mobile-chrome] › qa/issue-23/full-cycle.spec.ts:17:3 › full cycle · p2-18min-5-10km · 10 недель · seed 20261013 (35.3s)
+  ✓  14 [qa-mobile-chrome] › qa/issue-23/full-cycle.spec.ts:17:3 › full cycle · p3-15-30-12-18km · 8 недель · seed 20261014 (35.6s)
+  ✓  15 [qa-mobile-chrome] › qa/issue-23/full-cycle.spec.ts:17:3 › full cycle · p4-14-30-25-30km · 10 недель · seed 20261015 (50.3s)
   ✓  16 [qa-mobile-chrome] › qa/issue-23/full-cycle.spec.ts:17:3 › full cycle · p5-strong-high-base · 12 недель · seed 20261016 (1.1m)
 
   16 passed (4.1m)
-report written: reports/qa-issue-23/report.md · tests 16 (passed 16, failed 0, expected-fail 0) · checks 3015
+report written: reports/qa-issue-23/report.md · tests 16 (passed 16, failed 0, expected-fail 0) · checks 3032

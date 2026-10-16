@@ -2582,7 +2582,7 @@
       "id": "MOVE_EVENT_LOGGED",
       "description": "Перенос записан в журнал событий",
       "verdict": "PASS",
-      "detail": "[{\"type\":\"CYCLE_CREATED\",\"at\":\"2026-10-12T12:00:00.000Z\",\"cycleId\":\"2ec0bfdb-5b7b-49d4-8e60-99a81c44166a\"},{\"type\":\"WORKOUT_MOVED\",\"at\":\"2026-10-19T12:00:00.000Z\",\"workoutId\":\"slot-2026-10-22\",\"fromDate\":\"2026-10-22\",\"toDate\":\"2026-10-23\"}]",
+      "detail": "[{\"type\":\"CYCLE_CREATED\",\"at\":\"2026-10-12T12:00:00.000Z\",\"cycleId\":\"bead11d9-5a49-4a26-9501-0617cdcd2fd3\"},{\"type\":\"WORKOUT_MOVED\",\"at\":\"2026-10-19T12:00:00.000Z\",\"workoutId\":\"slot-2026-10-22\",\"fromDate\":\"2026-10-22\",\"toDate\":\"2026-10-23\"}]",
       "date": "2026-10-19"
     },
     {
@@ -3060,6 +3060,15 @@
       "description": "Экран «Сегодня» соответствует состоянию движка",
       "verdict": "PASS",
       "detail": "before THRESHOLD 2026-10-26: state=WORKOUT_TODAY",
+      "date": "2026-10-26"
+    },
+    {
+      "profile_id": "p2-18min-5-10km",
+      "seed": 20261013,
+      "id": "GRAMMAR_REPEATS_PLURAL",
+      "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-10-26: «По плану: 1 отрезок», ожидалось «…отрезок»",
       "date": "2026-10-26"
     },
     {
@@ -6030,6 +6039,15 @@
       "description": "Экран «Сегодня» соответствует состоянию движка",
       "verdict": "PASS",
       "detail": "before THRESHOLD 2026-12-14: state=WORKOUT_TODAY",
+      "date": "2026-12-14"
+    },
+    {
+      "profile_id": "p2-18min-5-10km",
+      "seed": 20261013,
+      "id": "GRAMMAR_REPEATS_PLURAL",
+      "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-12-14: «По плану: 1 отрезок», ожидалось «…отрезок»",
       "date": "2026-12-14"
     },
     {
