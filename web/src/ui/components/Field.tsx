@@ -1,5 +1,6 @@
 import {Children, cloneElement, isValidElement} from 'react';
 import type {ReactElement, ReactNode} from 'react';
+import {formatNumericTimeInput} from '../../application/format.ts';
 
 interface Labellable {
   readonly labelledBy?: string | undefined;
@@ -41,9 +42,11 @@ interface TextInputProps {
   readonly describedBy?: string | undefined;
   readonly labelledBy?: string | undefined;
   readonly autoFocus?: boolean;
+  /** Formats 1430 → 14:30 on number-only mobile keyboards, without changing validation. */
+  readonly numericTime?: boolean;
 }
 
-export function TextInput({id, value, onChange, inputMode = 'text', type = 'text', placeholder, describedBy, labelledBy, autoFocus}: TextInputProps): ReactNode {
+export function TextInput({id, value, onChange, inputMode = 'text', type = 'text', placeholder, describedBy, labelledBy, autoFocus, numericTime = false}: TextInputProps): ReactNode {
   return (
     <input
       id={id}
@@ -55,7 +58,11 @@ export function TextInput({id, value, onChange, inputMode = 'text', type = 'text
       aria-describedby={describedBy}
       aria-labelledby={labelledBy}
       autoFocus={autoFocus}
-      onChange={(event) => onChange(event.target.value)}
+      onChange={(event) => onChange(numericTime ? formatNumericTimeInput(event.target.value) : event.target.value)}
+      onBlur={numericTime ? (event) => {
+        const formatted = formatNumericTimeInput(event.target.value, true);
+        if (formatted !== event.target.value) onChange(formatted);
+      } : undefined}
     />
   );
 }
