@@ -10,7 +10,7 @@ test('unified mobile visual system: introduction, questionnaire, Today and Histo
     surface: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim(),
     accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
   }));
-  expect(theme).toEqual({bg:'#f4f7f9',surface:'#ffffff',accent:'#177e74'});
+  expect(theme).toEqual({bg:'#f4f7f9',surface:'#fff',accent:'#177e74'});
   await page.screenshot({path:info.outputPath('unified-first-run-390.png'),fullPage:true});
   await page.getByRole('button',{name:'Начать подготовку'}).click();
   await expect(page.getByRole('heading', {name:/результат/i})).toBeVisible();
