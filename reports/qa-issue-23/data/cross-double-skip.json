@@ -1,0 +1,66 @@
+{
+  "profileId": "cross-double-skip",
+  "seed": 20261014,
+  "meta": {},
+  "counters": {
+    "virtualDays": 1,
+    "weeksSpanned": 0,
+    "workoutsPlannedTotal": 0,
+    "workoutsRecorded": 0,
+    "workoutsSkipped": 0,
+    "workoutsMoved": 0,
+    "incompleteSessions": 0,
+    "symptomReports": 0,
+    "checkpoints": 0,
+    "examDateChanges": 0,
+    "reloads": 0,
+    "expectedBlocks": 0,
+    "uiTransitions": 13,
+    "screenshots": 1,
+    "byEvaluation": {},
+    "byType": {}
+  },
+  "weekly": [],
+  "trace": [],
+  "rows": [
+    {
+      "profile_id": "cross-double-skip",
+      "seed": 20261014,
+      "workout_id": "",
+      "assignment": "",
+      "purpose": "",
+      "planned_load": "",
+      "planned_reserved_m": "",
+      "entered_result": "dblclick «Я её не выполнял»",
+      "engine_evaluation": "",
+      "change_reason": "URL после: /plan",
+      "phase": "DEVELOPMENT",
+      "safety": "OK",
+      "warnings": "",
+      "date": "2026-10-13",
+      "week": 1,
+      "day_index": 1,
+      "event": "DOUBLE_CLICK_SKIP"
+    }
+  ],
+  "checks": [
+    {
+      "profile_id": "cross-double-skip",
+      "seed": 20261014,
+      "id": "DOUBLE_SKIP_ONE_SKIP",
+      "description": "Двойное нажатие «Я её не выполнял» даёт ровно один пропуск",
+      "verdict": "PASS",
+      "detail": "до=0, после=1",
+      "date": "2026-10-13"
+    },
+    {
+      "profile_id": "cross-double-skip",
+      "seed": 20261014,
+      "id": "DOUBLE_SKIP_NO_CREDIT",
+      "description": "Двойное нажатие не создаёт записей в истории",
+      "verdict": "PASS",
+      "detail": "history=0",
+      "date": "2026-10-13"
+    }
+  ]
+}

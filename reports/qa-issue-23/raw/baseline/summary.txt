@@ -1,0 +1,8 @@
+test exit=0 seconds=5
+test:ui exit=0 seconds=12
+audit:training exit=0 seconds=1
+typecheck exit=0 seconds=7
+lint exit=0 seconds=2
+test:e2e exit=0 seconds=29
+test:e2e:testing exit=0 seconds=4
+done

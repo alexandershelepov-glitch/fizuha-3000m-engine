@@ -1,0 +1,66 @@
+{
+  "profileId": "cross-jump-with-pending",
+  "seed": 20261014,
+  "meta": {},
+  "counters": {
+    "virtualDays": 0,
+    "weeksSpanned": 0,
+    "workoutsPlannedTotal": 0,
+    "workoutsRecorded": 0,
+    "workoutsSkipped": 0,
+    "workoutsMoved": 0,
+    "incompleteSessions": 0,
+    "symptomReports": 0,
+    "checkpoints": 0,
+    "examDateChanges": 0,
+    "reloads": 0,
+    "expectedBlocks": 0,
+    "uiTransitions": 12,
+    "screenshots": 1,
+    "byEvaluation": {},
+    "byType": {}
+  },
+  "weekly": [],
+  "trace": [],
+  "rows": [
+    {
+      "profile_id": "cross-jump-with-pending",
+      "seed": 20261014,
+      "workout_id": "",
+      "assignment": "",
+      "purpose": "",
+      "planned_load": "",
+      "planned_reserved_m": "",
+      "entered_result": "2026-10-12 → 2026-10-19",
+      "engine_evaluation": "",
+      "change_reason": "очередь до: 3, после: 3",
+      "phase": "DEVELOPMENT",
+      "safety": "OK",
+      "warnings": "",
+      "date": "2026-10-19",
+      "week": 1,
+      "day_index": 7,
+      "event": "PLUS7_WITH_PENDING"
+    }
+  ],
+  "checks": [
+    {
+      "profile_id": "cross-jump-with-pending",
+      "seed": 20261014,
+      "id": "PLUS7_NO_AUTOCREDIT",
+      "description": "«+7 дней» не засчитывает и не пропускает тренировку сам",
+      "verdict": "PASS",
+      "detail": "history=0, skipped=0",
+      "date": "2026-10-19"
+    },
+    {
+      "profile_id": "cross-jump-with-pending",
+      "seed": 20261014,
+      "id": "PLUS7_PENDING_VISIBLE",
+      "description": "После «+7 дней» незакрытая тренировка остаётся в очереди и видна пользователю",
+      "verdict": "PASS",
+      "detail": "дата 2026-10-12 → 2026-10-19; в очереди: 2026-10-12:INTRO_QUALITY 2026-10-14:EASY 2026-10-16:LONG_EASY",
+      "date": "2026-10-19"
+    }
+  ]
+}

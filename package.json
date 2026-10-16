@@ -20,9 +20,12 @@
     "test:e2e:testing": "playwright test -c playwright.testing.config.ts",
     "dev:web": "vite",
     "preview:web": "vite preview",
-    "lint": "eslint src tests web/src e2e",
+    "lint": "eslint src tests web/src e2e qa",
     "demo": "node --experimental-strip-types examples/demo.ts",
-    "audit:training": "node --experimental-strip-types audit/run.ts"
+    "audit:training": "node --experimental-strip-types audit/run.ts",
+    "qa:issue23": "playwright test -c playwright.qa.config.ts",
+    "qa:report": "node --experimental-strip-types qa/issue-23/report.ts",
+    "qa:issue23:ci": "playwright test -c playwright.qa.config.ts; status=$?; node --experimental-strip-types qa/issue-23/report.ts; exit $status"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

@@ -54,3 +54,28 @@ jobs:
       - run: npm run test:e2e:testing
       # GitHub Pages is currently disabled and not the selected host.
       # Its separate nested-base browser suite remains runnable manually.
+
+  # Issue #23: autonomous 8–12 week full-cycle QA in a real browser against the isolated test build.
+  # Fictional data only; findings are logged (reports/qa-issue-23/defect-log.md), methodology is never changed.
+  qa-autonomous:
+    runs-on: ubuntu-latest
+    needs: checks
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chrome
+      - run: mkdir -p reports/qa-issue-23/raw
+      - name: Run autonomous QA (build:testing + Playwright + report)
+        run: npm run qa:issue23:ci 2>&1 | tee reports/qa-issue-23/raw/playwright-list.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-issue-23-report
+          path: |
+            reports/qa-issue-23/**
+            !reports/qa-issue-23/raw/test-results/**/*.webm
+          if-no-files-found: warn

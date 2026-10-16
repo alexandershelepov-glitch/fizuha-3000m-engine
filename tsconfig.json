@@ -15,6 +15,7 @@
     "src/**/*.ts",
     "tests/**/*.ts",
     "examples/**/*.ts",
-    "audit/**/*.ts"
+    "audit/**/*.ts",
+    "qa/**/*.ts"
   ]
 }

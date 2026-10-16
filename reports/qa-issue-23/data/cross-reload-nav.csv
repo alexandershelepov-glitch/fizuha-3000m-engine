@@ -1,0 +1,2 @@
+﻿profile_id,seed,workout_id,assignment,purpose,planned_load,planned_reserved_m,entered_result,engine_evaluation,change_reason,phase,safety,warnings,date,week,day_index,event
+cross-reload-nav,20261014,slot-2026-10-12,INTRO_QUALITY,QUALITY_ADAPTATION,"разминка 10 мин | основной блок 4 мин (4×? м, отдых 90 с) | заминка 10 мин | RPE 5–6",4098,"ON_PLAN: выполнено 100%, RPE 5",GREEN,"TARGET_GATE_CLOSED,LOW_QUALITY_EXPERIENCE,SECOND_QUALITY_NOT_ALLOWED",DEVELOPMENT,OK,,2026-10-12,1,0,WORKOUT_RECORDED

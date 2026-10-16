@@ -1,0 +1,2 @@
+﻿profile_id,seed,workout_id,assignment,purpose,planned_load,planned_reserved_m,entered_result,engine_evaluation,change_reason,phase,safety,warnings,date,week,day_index,event
+cross-double-skip,20261014,,,,,,dblclick «Я её не выполнял»,,URL после: /plan,DEVELOPMENT,OK,,2026-10-13,1,1,DOUBLE_CLICK_SKIP
