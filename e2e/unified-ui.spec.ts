@@ -3,8 +3,10 @@ import {expect, test} from '@playwright/test';
 import {reset, fillQuestionnaire, createCycleAndReachToday} from './app.ts';
 
 test('unified mobile visual system: introduction, questionnaire, Today and History', async ({page}, info) => {
-  await page.setViewportSize({width:390,height:844});
+  await page.setViewportSize({width:360,height:780});
   await reset(page);
+  await page.screenshot({path:info.outputPath('unified-first-run-360.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});
   const theme = await page.evaluate(() => ({
     bg: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),
     surface: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim(),
@@ -29,10 +31,12 @@ test('unified mobile visual system: introduction, questionnaire, Today and Histo
 });
 
 test('unified desktop visual system: same left rail and readable home cards', async ({page}, info) => {
-  await page.setViewportSize({width:1280,height:900});
+  await page.setViewportSize({width:768,height:900});
   await reset(page);
   await fillQuestionnaire(page);
   await createCycleAndReachToday(page);
+  await page.screenshot({path:info.outputPath('unified-today-768.png'),fullPage:true});
+  await page.setViewportSize({width:1280,height:900});
   const rail = page.getByRole('navigation',{name:'Основные разделы'});
   await expect(rail).toHaveCSS('position','fixed');
   await expect(page.getByRole('region',{name:'Ваша подготовка'})).toBeVisible();
