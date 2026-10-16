@@ -29,7 +29,7 @@ export function ParametersForm({engineState, submit, onCancel}: {
     <h1>{lifecycle.edit}</h1>
     {copy ? <Notice tone="danger" title={copy.title}><p>{copy.text(error!.params)}</p></Notice> : null}
     <Card>
-      <Field id="goal-time" label={lifecycle.goal} hint="ММ:СС" error={problem ?? undefined}><TextInput id="goal-time" value={time} onChange={setTime} /></Field>
+      <Field id="goal-time" label={lifecycle.goal} hint="ММ:СС" error={problem ?? undefined}><TextInput id="goal-time" value={time} onChange={setTime} inputMode="numeric" numericTime /></Field>
       <Field id="race-date" label={lifecycle.date}><TextInput id="race-date" type="date" value={date} onChange={setDate} /></Field>
     </Card>
     <Button disabled={busy} onClick={save}>{lifecycle.saveParameters}</Button>
