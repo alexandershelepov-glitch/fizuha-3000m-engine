@@ -60,6 +60,9 @@ export function checkState(state: EngineState, today: string): Violation[] {
     if (inWindow > limit) out.push({id: 'INV_QUALITY_PER_7_DAYS_DECISION', detail: `${inWindow} > maximumQualityPerWeek(${iso})=${limit}`});
   }
 
+  // 3b. a mandatory checkpoint is a 3000 m time trial: it may only be required when it can be recorded (DEF-002)
+  if (state.checkpointRequired && !state.profile.canRun3Km) out.push({id: 'INV_CHECKPOINT_ONLY_WHEN_AVAILABLE', detail: 'checkpointRequired при canRun3Km=false'});
+
   // 4. at least 48 h between quality sessions
   for (let i = 1; i < quality.length; i += 1) {
     if (quality[i]! - quality[i - 1]! < 2) out.push({id: 'INV_QUALITY_RECOVERY_48H', detail: `${addDaysIso('1970-01-01', quality[i - 1]!)} → ${addDaysIso('1970-01-01', quality[i]!)}`});

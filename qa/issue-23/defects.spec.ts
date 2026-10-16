@@ -1,12 +1,12 @@
 /**
- * Short, deterministic reproductions of the defects found by the full-cycle runs (reports/qa-issue-23/defect-log.md).
- * Each test asserts the CORRECT behaviour and is annotated `test.fail()`: it is reported as an *expected failure*
- * (not hidden, not green-washed). When a defect gets fixed, the test will "unexpectedly pass" — remove `test.fail`.
+ * Short, deterministic regression tests for the defects found by the full-cycle runs (reports/qa-issue-23/defect-log.md).
+ * They assert the CORRECT behaviour. Before the fixes they were annotated `test.fail()` and reported as expected
+ * failures (see reports/qa-issue-23/before-fix/); DEF-001..DEF-004 are fixed, so they are ordinary tests now.
  */
 import {test, expect} from '@playwright/test';
 import {deriveToday} from '../../web/src/application/uiState.ts';
 import {PROFILES} from './profiles.ts';
-import {Session} from './driver.ts';
+import {Session, confirmContinuous3k} from './driver.ts';
 import {Journal} from './journal.ts';
 import {isSafetyHold} from './invariants.ts';
 import {makeRng, planReport} from './model.ts';
@@ -44,10 +44,9 @@ async function walk(s: Session, seed: number, opts: {checkpoints?: boolean; maxD
   throw new Error(`walk: limit reached; today=${await s.today()} state=${deriveToday(st, await s.today()).state} queue=${st.queue.map((w) => w.scheduledDate + ':' + w.type).join(' ')} hist=${st.history.length}`);
 }
 
-test.describe('known defects (expected failures)', () => {
+test.describe('regression of fixed defects DEF-001..DEF-004', () => {
   test('DEF-001 · REST placeholder after a STOP is shown as an unclosed workout and hides the hold message · p3 · seed 20261014',
     async ({page}) => {
-      test.fail(!process.env.QA_DEFECT_RAW, 'DEF-001: см. reports/qa-issue-23/defect-log.md');
       const pr = profile('p3-15-30-12-18km');
       const s = new Session(page, pr, new Journal(pr.id, pr.seed));
       await s.fresh(); await s.onboard();
@@ -60,23 +59,39 @@ test.describe('known defects (expected failures)', () => {
       await s.shot('def001-today-under-stop');
       await expect(page.getByText('Предыдущая тренировка ещё не закрыта')).toHaveCount(0);
       await expect(page.getByRole('button', {name: 'Повторно проверить состояние'})).toBeVisible();
+      // no fictitious skips for the REST service days, and the recheck is possible straight away
+      expect((await s.engine()).skippedWorkouts).toHaveLength(0);
+      const rc = await s.recheckSafety({healthy: true, clearance: true});
+      expect(rc.saved && rc.stillHold === false).toBe(true);
     });
 
-  test('DEF-002 · «Нужен контрольный результат» is shown to a novice who cannot run 3 km, but the result is refused · p1 · seed 20261012',
+  test('DEF-002 · no mandatory checkpoint for a novice who cannot run 3 km; after confirming 3 km the checkpoint is available and accepted · p1 · seed 20261012',
     async ({page}) => {
-      test.fail(!process.env.QA_DEFECT_RAW, 'DEF-002: см. reports/qa-issue-23/defect-log.md');
       const pr = profile('p1-novice-no3k');
       const s = new Session(page, pr, new Journal(pr.id, pr.seed));
       await s.fresh(); await s.onboard();
       await s.captureBaseline();
-      await walk(s, pr.seed, {maxDays: 40, modeFor: () => 'ON_PLAN', stop: async () => deriveToday(await s.engine(), await s.today()).state === 'CHECKPOINT_REQUIRED'});
-      const res = await s.checkpoint(1170, 'today');
+      const start = await s.today();
+      let seenRequired = '';
+      // six weeks (well past the 21-day mark) of on-plan sessions; the checkpoint screen must never be demanded
+      const reached = await walk(s, pr.seed, {checkpoints: false, maxDays: 60, modeFor: () => 'ON_PLAN', stop: async (today) => {
+        const st = await s.engine();
+        if (st.checkpointRequired || deriveToday(st, today).state === 'CHECKPOINT_REQUIRED') seenRequired = today;
+        return (Date.parse(today) - Date.parse(start)) / 86_400_000 >= 42;
+      }});
+      expect(seenRequired, `«Нужен контрольный результат» показан новичку без 3 км: ${seenRequired}`).toBe('');
+      expect((await s.engine()).profile.canRun3Km).toBe(false);
+      const confirmed = await confirmContinuous3k(s);
+      expect(confirmed.ok, confirmed.note).toBe(true);
+      // existing rules apply again: more than 21 days since the last assessment → checkpoint is due and the result is accepted
+      const st = await s.engine();
+      expect(st.checkpointRequired).toBe(true);
+      const res = await s.checkpoint(1170, deriveToday(st, reached).state === 'CHECKPOINT_REQUIRED' ? 'today' : 'direct');
       expect(res.ok, `экран ответил: ${res.outcome}`).toBe(true);
     });
 
   test('DEF-003 · double-click on «Сохранить результат» skips the outcome screen (2nd click hits «Продолжить») · p3 · seed 20261014',
     async ({page}) => {
-      test.fail(!process.env.QA_DEFECT_RAW, 'DEF-003: см. reports/qa-issue-23/defect-log.md');
       const pr = profile('p3-15-30-12-18km');
       const journal = new Journal(pr.id, pr.seed);
       const s = new Session(page, pr, journal);
@@ -88,16 +103,15 @@ test.describe('known defects (expected failures)', () => {
       expect(check?.verdict, check?.detail).toBe('PASS');
     });
 
-  test('DEF-004 · «По плану: 1 отрезков» on the result form · p2 · seed 20261013',
+  test('DEF-004 · «По плану: 1 отрезок» is declined correctly on the result form · p2 · seed 20261013',
     async ({page}) => {
-      test.fail(!process.env.QA_DEFECT_RAW, 'DEF-004: см. reports/qa-issue-23/defect-log.md');
       const pr = profile('p2-18min-5-10km');
       const s = new Session(page, pr, new Journal(pr.id, pr.seed));
       await s.fresh(); await s.onboard();
       await walk(s, pr.seed, {maxDays: 40, modeFor: () => 'ON_PLAN', stop: async () => deriveToday(await s.engine(), await s.today()).workout?.type === 'THRESHOLD'});
       const w = deriveToday(await s.engine(), await s.today()).workout!;
       await page.goto(`/workout/${w.id}/result`);
-      const label = await page.getByText(/^По плану: \d+ отрезк/).first().innerText();
+      const label = await page.getByText(/^По плану: \d+ отрез/).first().innerText();
       await s.shot('def004-result-form');
       expect(label.trim()).toMatch(/^По плану: 1 отрезок$/);
     });

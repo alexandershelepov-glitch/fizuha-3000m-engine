@@ -53,7 +53,7 @@
     "weeksSpanned": 11,
     "workoutsPlannedTotal": 43,
     "workoutsRecorded": 40,
-    "workoutsSkipped": 5,
+    "workoutsSkipped": 3,
     "workoutsMoved": 1,
     "incompleteSessions": 1,
     "symptomReports": 1,
@@ -61,8 +61,8 @@
     "examDateChanges": 1,
     "reloads": 6,
     "expectedBlocks": 6,
-    "uiTransitions": 143,
-    "screenshots": 44,
+    "uiTransitions": 141,
+    "screenshots": 41,
     "byEvaluation": {
       "GREEN": 37,
       "YELLOW": 2,
@@ -855,7 +855,7 @@
       "diagnosticHold": true,
       "relatedYellow": false,
       "history": 14,
-      "queue": "2026-11-11:REST 2026-11-13:REST 2026-11-14:REST 2026-11-16:REST",
+      "queue": "2026-11-11:REST 2026-11-13:REST 2026-11-14:REST 2026-11-16:REST 2026-11-17:REST",
       "reasons": "SAFETY_STOP,TARGET_GATE_CLOSED,SECOND_QUALITY_NOT_ALLOWED,PROGRESSION_BLOCKED",
       "approvedM": 28000
     },
@@ -2151,44 +2151,6 @@
     {
       "profile_id": "p4-14-30-25-30km",
       "seed": 20261015,
-      "workout_id": "slot-2026-11-10",
-      "assignment": "REST",
-      "purpose": "RECOVERY",
-      "planned_load": "разминка 0 мин | основной блок 0 мин | заминка 0 мин | RPE 0–0",
-      "planned_reserved_m": "0",
-      "entered_result": "не выполнено (отмечено пользователем)",
-      "engine_evaluation": "",
-      "change_reason": "PAST_DUE: пропущенный объём не переносится",
-      "phase": "HOLD_DIAGNOSTIC",
-      "safety": "STOP",
-      "warnings": "",
-      "date": "2026-11-10",
-      "week": 5,
-      "day_index": 29,
-      "event": "WORKOUT_SKIPPED"
-    },
-    {
-      "profile_id": "p4-14-30-25-30km",
-      "seed": 20261015,
-      "workout_id": "slot-2026-11-11",
-      "assignment": "REST",
-      "purpose": "RECOVERY",
-      "planned_load": "разминка 0 мин | основной блок 0 мин | заминка 0 мин | RPE 0–0",
-      "planned_reserved_m": "0",
-      "entered_result": "не выполнено (отмечено пользователем)",
-      "engine_evaluation": "",
-      "change_reason": "PAST_DUE: пропущенный объём не переносится",
-      "phase": "HOLD_DIAGNOSTIC",
-      "safety": "STOP",
-      "warnings": "",
-      "date": "2026-11-11",
-      "week": 5,
-      "day_index": 30,
-      "event": "WORKOUT_SKIPPED"
-    },
-    {
-      "profile_id": "p4-14-30-25-30km",
-      "seed": 20261015,
       "workout_id": "",
       "assignment": "",
       "purpose": "",
@@ -2872,10 +2834,9 @@
       "seed": 20261015,
       "id": "GRAMMAR_REPEATS_PLURAL",
       "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "THRESHOLD 2026-10-12: «По плану: 1 отрезков», ожидалось «…отрезок»",
-      "date": "2026-10-12",
-      "defect": "DEF-004"
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-10-12: «По плану: 1 отрезок», ожидалось «…отрезок»",
+      "date": "2026-10-12"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -3098,10 +3059,9 @@
       "seed": 20261015,
       "id": "DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN",
       "description": "Двойное нажатие «Сохранить результат» не перескакивает экран с итогом тренировки (второй клик не попадает в «Продолжить»)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "VO2 2026-10-15: после dblclick открыт /today",
-      "date": "2026-10-15",
-      "defect": "DEF-003"
+      "verdict": "PASS",
+      "detail": "VO2 2026-10-15: после dblclick открыт /workout/slot-2026-10-15/outcome",
+      "date": "2026-10-15"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -3379,7 +3339,7 @@
       "id": "MOVE_EVENT_LOGGED",
       "description": "Перенос записан в журнал событий",
       "verdict": "PASS",
-      "detail": "[{\"type\":\"CYCLE_CREATED\",\"at\":\"2026-10-12T12:00:00.000Z\",\"cycleId\":\"064432e6-10d1-4ba1-9830-6ed4c11034a0\"},{\"type\":\"WORKOUT_MOVED\",\"at\":\"2026-10-19T12:00:00.000Z\",\"workoutId\":\"slot-2026-10-20\",\"fromDate\":\"2026-10-20\",\"toDate\":\"2026-10-21\"}]",
+      "detail": "[{\"type\":\"CYCLE_CREATED\",\"at\":\"2026-10-12T12:00:00.000Z\",\"cycleId\":\"b229fc1b-ef77-4cbc-ad38-135e1e6957bb\"},{\"type\":\"WORKOUT_MOVED\",\"at\":\"2026-10-19T12:00:00.000Z\",\"workoutId\":\"slot-2026-10-20\",\"fromDate\":\"2026-10-20\",\"toDate\":\"2026-10-21\"}]",
       "date": "2026-10-19"
     },
     {
@@ -3693,10 +3653,9 @@
       "seed": 20261015,
       "id": "GRAMMAR_REPEATS_PLURAL",
       "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "THRESHOLD 2026-10-22: «По плану: 1 отрезков», ожидалось «…отрезок»",
-      "date": "2026-10-22",
-      "defect": "DEF-004"
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-10-22: «По плану: 1 отрезок», ожидалось «…отрезок»",
+      "date": "2026-10-22"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -3829,10 +3788,9 @@
       "seed": 20261015,
       "id": "DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN",
       "description": "Двойное нажатие «Сохранить результат» не перескакивает экран с итогом тренировки (второй клик не попадает в «Продолжить»)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "EASY 2026-10-24: после dblclick открыт /today",
-      "date": "2026-10-24",
-      "defect": "DEF-003"
+      "verdict": "PASS",
+      "detail": "EASY 2026-10-24: после dblclick открыт /workout/slot-2026-10-24/outcome",
+      "date": "2026-10-24"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -3981,22 +3939,11 @@
     {
       "profile_id": "p4-14-30-25-30km",
       "seed": 20261015,
-      "id": "DOUBLE_CLICK_WARNING_NOT_DISMISSED",
-      "description": "После двойного нажатия «Сохранить результат» экран либо отправил результат, либо оставил предупреждение о неполных отрезках",
-      "verdict": "KNOWN_FAIL",
-      "detail": "SPECIFIC_3K 2026-10-26: форма осталась открытой без предупреждения (url /workout/slot-2026-10-26/result)",
-      "date": "2026-10-26",
-      "defect": "DEF-003"
-    },
-    {
-      "profile_id": "p4-14-30-25-30km",
-      "seed": 20261015,
       "id": "DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN",
       "description": "Двойное нажатие «Сохранить результат» не перескакивает экран с итогом тренировки (второй клик не попадает в «Продолжить»)",
       "verdict": "PASS",
       "detail": "SPECIFIC_3K 2026-10-26: после dblclick открыт /workout/slot-2026-10-26/outcome",
-      "date": "2026-10-26",
-      "defect": "DEF-003"
+      "date": "2026-10-26"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -4840,10 +4787,9 @@
       "seed": 20261015,
       "id": "DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN",
       "description": "Двойное нажатие «Сохранить результат» не перескакивает экран с итогом тренировки (второй клик не попадает в «Продолжить»)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "EASY 2026-11-07: после dblclick открыт /today",
-      "date": "2026-11-07",
-      "defect": "DEF-003"
+      "verdict": "PASS",
+      "detail": "EASY 2026-11-07: после dblclick открыт /workout/slot-2026-11-07/outcome",
+      "date": "2026-11-07"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -4994,10 +4940,9 @@
       "seed": 20261015,
       "id": "GRAMMAR_REPEATS_PLURAL",
       "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "THRESHOLD 2026-11-09: «По плану: 1 отрезков», ожидалось «…отрезок»",
-      "date": "2026-11-09",
-      "defect": "DEF-004"
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-11-09: «По плану: 1 отрезок», ожидалось «…отрезок»",
+      "date": "2026-11-09"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -5033,6 +4978,24 @@
       "description": "После симптомов в очереди нет беговых тренировок",
       "verdict": "PASS",
       "detail": "в очереди: REST 2026-11-10, REST 2026-11-11, REST 2026-11-13, REST 2026-11-14",
+      "date": "2026-11-09"
+    },
+    {
+      "profile_id": "p4-14-30-25-30km",
+      "seed": 20261015,
+      "id": "HOLD_TODAY_SHOWS_RECHECK_NOT_PENDING",
+      "description": "Во время паузы «Сегодня» показывает карточку паузы с повторной проверкой, а не «Предыдущая тренировка ещё не закрыта»",
+      "verdict": "PASS",
+      "detail": "2026-11-09: Сегодня 9 ноября 2026 г. Этап: Пауза в нагрузке Обычные тренировки приостановлены Обычная нагрузка остановлена Приложение не назначает обычн",
+      "date": "2026-11-09"
+    },
+    {
+      "profile_id": "p4-14-30-25-30km",
+      "seed": 20261015,
+      "id": "HOLD_NO_FICTITIOUS_SKIPS",
+      "description": "Дни отдыха во время паузы не создают пропусков",
+      "verdict": "PASS",
+      "detail": "2026-11-09: пропусков 3, до паузы 3",
       "date": "2026-11-09"
     },
     {
@@ -5074,6 +5037,24 @@
     {
       "profile_id": "p4-14-30-25-30km",
       "seed": 20261015,
+      "id": "HOLD_TODAY_SHOWS_RECHECK_NOT_PENDING",
+      "description": "Во время паузы «Сегодня» показывает карточку паузы с повторной проверкой, а не «Предыдущая тренировка ещё не закрыта»",
+      "verdict": "PASS",
+      "detail": "2026-11-10: Сегодня 10 ноября 2026 г. Этап: Пауза в нагрузке Обычные тренировки приостановлены Обычная нагрузка остановлена Приложение не назначает обыч",
+      "date": "2026-11-10"
+    },
+    {
+      "profile_id": "p4-14-30-25-30km",
+      "seed": 20261015,
+      "id": "HOLD_NO_FICTITIOUS_SKIPS",
+      "description": "Дни отдыха во время паузы не создают пропусков",
+      "verdict": "PASS",
+      "detail": "2026-11-10: пропусков 3, до паузы 3",
+      "date": "2026-11-10"
+    },
+    {
+      "profile_id": "p4-14-30-25-30km",
+      "seed": 20261015,
       "id": "INVARIANTS_HOLD",
       "description": "Все независимые инварианты методики выполняются в этот день",
       "verdict": "PASS",
@@ -5110,29 +5091,19 @@
     {
       "profile_id": "p4-14-30-25-30km",
       "seed": 20261015,
-      "id": "REST_PLACEHOLDER_NOT_PENDING",
-      "description": "Служебные дни отдыха (REST) при остановке нагрузки не превращаются в «незакрытые тренировки»",
-      "verdict": "KNOWN_FAIL",
-      "detail": "2026-11-11: safety=STOP diagnosticHold=true; незакрыто: 2026-11-10:REST",
-      "date": "2026-11-11",
-      "defect": "DEF-001"
-    },
-    {
-      "profile_id": "p4-14-30-25-30km",
-      "seed": 20261015,
-      "id": "SKIP_NOT_CREDITED",
-      "description": "Пропуск не создаёт запись выполнения и не засчитывается",
+      "id": "HOLD_TODAY_SHOWS_RECHECK_NOT_PENDING",
+      "description": "Во время паузы «Сегодня» показывает карточку паузы с повторной проверкой, а не «Предыдущая тренировка ещё не закрыта»",
       "verdict": "PASS",
-      "detail": "slot-2026-11-10",
+      "detail": "2026-11-11: Сегодня 11 ноября 2026 г. Этап: Пауза в нагрузке Обычные тренировки приостановлены Обычная нагрузка остановлена Приложение не назначает обыч",
       "date": "2026-11-11"
     },
     {
       "profile_id": "p4-14-30-25-30km",
       "seed": 20261015,
-      "id": "SKIP_EVENT_LOGGED_PAST_DUE",
-      "description": "Пропуск записан в журнал приложения с причиной PAST_DUE",
+      "id": "HOLD_NO_FICTITIOUS_SKIPS",
+      "description": "Дни отдыха во время паузы не создают пропусков",
       "verdict": "PASS",
-      "detail": "[{\"type\":\"WORKOUT_SKIPPED\",\"at\":\"2026-11-11T12:00:00.000Z\",\"workoutId\":\"slot-2026-11-10\",\"scheduledDate\":\"2026-11-10\",\"workoutType\":\"REST\",\"cause\":\"PAST_DUE\"}]",
+      "detail": "2026-11-11: пропусков 3, до паузы 3",
       "date": "2026-11-11"
     },
     {
@@ -5159,7 +5130,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-11: skippedIds=6, UI skips=4; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-11: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-11"
     },
     {
@@ -5174,29 +5145,19 @@
     {
       "profile_id": "p4-14-30-25-30km",
       "seed": 20261015,
-      "id": "REST_PLACEHOLDER_NOT_PENDING",
-      "description": "Служебные дни отдыха (REST) при остановке нагрузки не превращаются в «незакрытые тренировки»",
-      "verdict": "KNOWN_FAIL",
-      "detail": "2026-11-12: safety=STOP diagnosticHold=true; незакрыто: 2026-11-11:REST",
-      "date": "2026-11-12",
-      "defect": "DEF-001"
-    },
-    {
-      "profile_id": "p4-14-30-25-30km",
-      "seed": 20261015,
-      "id": "SKIP_NOT_CREDITED",
-      "description": "Пропуск не создаёт запись выполнения и не засчитывается",
+      "id": "HOLD_TODAY_SHOWS_RECHECK_NOT_PENDING",
+      "description": "Во время паузы «Сегодня» показывает карточку паузы с повторной проверкой, а не «Предыдущая тренировка ещё не закрыта»",
       "verdict": "PASS",
-      "detail": "slot-2026-11-11",
+      "detail": "2026-11-12: Сегодня 12 ноября 2026 г. Этап: Пауза в нагрузке Обычные тренировки приостановлены Обычная нагрузка остановлена Приложение не назначает обыч",
       "date": "2026-11-12"
     },
     {
       "profile_id": "p4-14-30-25-30km",
       "seed": 20261015,
-      "id": "SKIP_EVENT_LOGGED_PAST_DUE",
-      "description": "Пропуск записан в журнал приложения с причиной PAST_DUE",
+      "id": "HOLD_NO_FICTITIOUS_SKIPS",
+      "description": "Дни отдыха во время паузы не создают пропусков",
       "verdict": "PASS",
-      "detail": "[{\"type\":\"WORKOUT_SKIPPED\",\"at\":\"2026-11-12T12:00:00.000Z\",\"workoutId\":\"slot-2026-11-11\",\"scheduledDate\":\"2026-11-11\",\"workoutType\":\"REST\",\"cause\":\"PAST_DUE\"}]",
+      "detail": "2026-11-12: пропусков 3, до паузы 3",
       "date": "2026-11-12"
     },
     {
@@ -5250,7 +5211,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "after recovery: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "after recovery: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-12"
     },
     {
@@ -5286,7 +5247,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-11-12: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-11-12: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-12"
     },
     {
@@ -5340,7 +5301,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-12: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-12: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-12"
     },
     {
@@ -5376,7 +5337,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-13: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-13: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-13"
     },
     {
@@ -5412,7 +5373,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-11-14: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-11-14: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-14"
     },
     {
@@ -5466,7 +5427,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-14: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-14: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-14"
     },
     {
@@ -5502,7 +5463,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-15: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-15: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-15"
     },
     {
@@ -5538,7 +5499,7 @@
       "id": "RELOAD_STORAGE_INTACT",
       "description": "Перезагрузка страницы не меняет сохранённый цикл (байт в байт)",
       "verdict": "PASS",
-      "detail": "week 6: длина до=36582, после=36582",
+      "detail": "week 6: длина до=34714, после=34714",
       "date": "2026-11-16"
     },
     {
@@ -5574,7 +5535,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before THRESHOLD 2026-11-16: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before THRESHOLD 2026-11-16: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-16"
     },
     {
@@ -5591,10 +5552,9 @@
       "seed": 20261015,
       "id": "GRAMMAR_REPEATS_PLURAL",
       "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "THRESHOLD 2026-11-16: «По плану: 1 отрезков», ожидалось «…отрезок»",
-      "date": "2026-11-16",
-      "defect": "DEF-004"
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-11-16: «По плану: 1 отрезок», ожидалось «…отрезок»",
+      "date": "2026-11-16"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -5638,7 +5598,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-16: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-16: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-16"
     },
     {
@@ -5674,7 +5634,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-11-17: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-11-17: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-17"
     },
     {
@@ -5691,10 +5651,9 @@
       "seed": 20261015,
       "id": "DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN",
       "description": "Двойное нажатие «Сохранить результат» не перескакивает экран с итогом тренировки (второй клик не попадает в «Продолжить»)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "EASY 2026-11-17: после dblclick открыт /today",
-      "date": "2026-11-17",
-      "defect": "DEF-003"
+      "verdict": "PASS",
+      "detail": "EASY 2026-11-17: после dblclick открыт /workout/slot-2026-11-17/outcome",
+      "date": "2026-11-17"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -5738,7 +5697,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-17: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-17: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-17"
     },
     {
@@ -5774,7 +5733,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-18: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-18: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-18"
     },
     {
@@ -5810,7 +5769,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before THRESHOLD 2026-11-19: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before THRESHOLD 2026-11-19: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-19"
     },
     {
@@ -5827,10 +5786,9 @@
       "seed": 20261015,
       "id": "GRAMMAR_REPEATS_PLURAL",
       "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "THRESHOLD 2026-11-19: «По плану: 1 отрезков», ожидалось «…отрезок»",
-      "date": "2026-11-19",
-      "defect": "DEF-004"
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-11-19: «По плану: 1 отрезок», ожидалось «…отрезок»",
+      "date": "2026-11-19"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -5874,7 +5832,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-19: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-19: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-19"
     },
     {
@@ -5910,7 +5868,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-20: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-20: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-20"
     },
     {
@@ -5946,7 +5904,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-11-21: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-11-21: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-21"
     },
     {
@@ -6000,7 +5958,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-21: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-21: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-21"
     },
     {
@@ -6036,7 +5994,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-22: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-22: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-22"
     },
     {
@@ -6099,7 +6057,7 @@
       "id": "EXAM_DATE_EVENT_LOGGED",
       "description": "Смена параметров записана в журнал событий",
       "verdict": "PASS",
-      "detail": "CYCLE_CREATED,WORKOUT_MOVED,WORKOUT_SKIPPED,WORKOUT_SKIPPED,WORKOUT_SKIPPED,CHECKPOINT_RECORDED,WORKOUT_SKIPPED,WORKOUT_SKIPPED,SAFETY_REASSESSED,SAFETY_REASSESSED,TRAINING_PARAMETERS_CHANGED",
+      "detail": "CYCLE_CREATED,WORKOUT_MOVED,WORKOUT_SKIPPED,WORKOUT_SKIPPED,WORKOUT_SKIPPED,CHECKPOINT_RECORDED,SAFETY_REASSESSED,SAFETY_REASSESSED,TRAINING_PARAMETERS_CHANGED",
       "date": "2026-11-23"
     },
     {
@@ -6135,7 +6093,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before VO2 2026-11-23: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before VO2 2026-11-23: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-23"
     },
     {
@@ -6189,7 +6147,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-23: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-23: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-23"
     },
     {
@@ -6225,7 +6183,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-11-24: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-11-24: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-24"
     },
     {
@@ -6279,7 +6237,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-24: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-24: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-24"
     },
     {
@@ -6315,7 +6273,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-25: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-25: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-25"
     },
     {
@@ -6351,7 +6309,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before SPECIFIC_3K 2026-11-26: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before SPECIFIC_3K 2026-11-26: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-26"
     },
     {
@@ -6368,10 +6326,9 @@
       "seed": 20261015,
       "id": "DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN",
       "description": "Двойное нажатие «Сохранить результат» не перескакивает экран с итогом тренировки (второй клик не попадает в «Продолжить»)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "SPECIFIC_3K 2026-11-26: после dblclick открыт /today",
-      "date": "2026-11-26",
-      "defect": "DEF-003"
+      "verdict": "PASS",
+      "detail": "SPECIFIC_3K 2026-11-26: после dblclick открыт /workout/slot-2026-11-26/outcome",
+      "date": "2026-11-26"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -6415,7 +6372,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-26: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-26: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-26"
     },
     {
@@ -6469,7 +6426,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-27: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-27: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-27"
     },
     {
@@ -6505,7 +6462,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-11-28: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-11-28: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-28"
     },
     {
@@ -6559,7 +6516,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-28: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-28: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-28"
     },
     {
@@ -6595,7 +6552,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-29: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-29: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-29"
     },
     {
@@ -6631,7 +6588,7 @@
       "id": "RELOAD_STORAGE_INTACT",
       "description": "Перезагрузка страницы не меняет сохранённый цикл (байт в байт)",
       "verdict": "PASS",
-      "detail": "week 8: длина до=48793, после=48793",
+      "detail": "week 8: длина до=46925, после=46925",
       "date": "2026-11-30"
     },
     {
@@ -6667,7 +6624,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before THRESHOLD 2026-11-30: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before THRESHOLD 2026-11-30: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-30"
     },
     {
@@ -6684,10 +6641,9 @@
       "seed": 20261015,
       "id": "GRAMMAR_REPEATS_PLURAL",
       "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "THRESHOLD 2026-11-30: «По плану: 1 отрезков», ожидалось «…отрезок»",
-      "date": "2026-11-30",
-      "defect": "DEF-004"
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-11-30: «По плану: 1 отрезок», ожидалось «…отрезок»",
+      "date": "2026-11-30"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -6731,7 +6687,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-11-30: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-11-30: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-11-30"
     },
     {
@@ -6767,7 +6723,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-12-01: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-12-01: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-01"
     },
     {
@@ -6821,7 +6777,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-01: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-01: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-01"
     },
     {
@@ -6857,7 +6813,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-02: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-02: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-02"
     },
     {
@@ -6893,7 +6849,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before VO2 2026-12-03: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before VO2 2026-12-03: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-03"
     },
     {
@@ -6947,7 +6903,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-03: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-03: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-03"
     },
     {
@@ -6983,7 +6939,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-04: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-04: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-04"
     },
     {
@@ -7019,7 +6975,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-12-05: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-12-05: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-05"
     },
     {
@@ -7036,10 +6992,9 @@
       "seed": 20261015,
       "id": "DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN",
       "description": "Двойное нажатие «Сохранить результат» не перескакивает экран с итогом тренировки (второй клик не попадает в «Продолжить»)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "EASY 2026-12-05: после dblclick открыт /today",
-      "date": "2026-12-05",
-      "defect": "DEF-003"
+      "verdict": "PASS",
+      "detail": "EASY 2026-12-05: после dblclick открыт /workout/slot-2026-12-05/outcome",
+      "date": "2026-12-05"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -7083,7 +7038,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-05: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-05: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-05"
     },
     {
@@ -7119,7 +7074,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-06: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-06: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-06"
     },
     {
@@ -7173,7 +7128,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before SPECIFIC_3K 2026-12-07: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before SPECIFIC_3K 2026-12-07: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-07"
     },
     {
@@ -7227,7 +7182,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-07: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-07: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-07"
     },
     {
@@ -7263,7 +7218,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-12-08: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-12-08: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-08"
     },
     {
@@ -7317,7 +7272,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-08: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-08: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-08"
     },
     {
@@ -7353,7 +7308,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-09: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-09: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-09"
     },
     {
@@ -7389,7 +7344,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before THRESHOLD 2026-12-10: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before THRESHOLD 2026-12-10: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-10"
     },
     {
@@ -7406,10 +7361,9 @@
       "seed": 20261015,
       "id": "GRAMMAR_REPEATS_PLURAL",
       "description": "Подпись «По плану: N …» на форме результата согласована по числу (1 отрезок, 2–4 отрезка, 5 отрезков)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "THRESHOLD 2026-12-10: «По плану: 1 отрезков», ожидалось «…отрезок»",
-      "date": "2026-12-10",
-      "defect": "DEF-004"
+      "verdict": "PASS",
+      "detail": "THRESHOLD 2026-12-10: «По плану: 1 отрезок», ожидалось «…отрезок»",
+      "date": "2026-12-10"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -7453,7 +7407,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-10: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-10: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-10"
     },
     {
@@ -7489,7 +7443,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-11: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-11: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-11"
     },
     {
@@ -7525,7 +7479,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-12-12: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-12-12: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-12"
     },
     {
@@ -7579,7 +7533,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-12: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-12: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-12"
     },
     {
@@ -7615,7 +7569,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-13: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-13: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-13"
     },
     {
@@ -7651,7 +7605,7 @@
       "id": "RELOAD_STORAGE_INTACT",
       "description": "Перезагрузка страницы не меняет сохранённый цикл (байт в байт)",
       "verdict": "PASS",
-      "detail": "week 10: длина до=60649, после=60649",
+      "detail": "week 10: длина до=58781, после=58781",
       "date": "2026-12-14"
     },
     {
@@ -7687,7 +7641,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before SPECIFIC_3K 2026-12-14: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before SPECIFIC_3K 2026-12-14: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-14"
     },
     {
@@ -7704,10 +7658,9 @@
       "seed": 20261015,
       "id": "DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN",
       "description": "Двойное нажатие «Сохранить результат» не перескакивает экран с итогом тренировки (второй клик не попадает в «Продолжить»)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "SPECIFIC_3K 2026-12-14: после dblclick открыт /today",
-      "date": "2026-12-14",
-      "defect": "DEF-003"
+      "verdict": "PASS",
+      "detail": "SPECIFIC_3K 2026-12-14: после dblclick открыт /workout/slot-2026-12-14/outcome",
+      "date": "2026-12-14"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -7751,7 +7704,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-14: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-14: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-14"
     },
     {
@@ -7787,7 +7740,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-12-15: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-12-15: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-15"
     },
     {
@@ -7841,7 +7794,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-15: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-15: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-15"
     },
     {
@@ -7877,7 +7830,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-16: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-16: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-16"
     },
     {
@@ -7913,7 +7866,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before VO2 2026-12-17: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before VO2 2026-12-17: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-17"
     },
     {
@@ -7967,7 +7920,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-17: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-17: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-17"
     },
     {
@@ -8021,7 +7974,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-18: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-18: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-18"
     },
     {
@@ -8057,7 +8010,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-12-19: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-12-19: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-19"
     },
     {
@@ -8111,7 +8064,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-19: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-19: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-19"
     },
     {
@@ -8147,7 +8100,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-20: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-20: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-20"
     },
     {
@@ -8201,7 +8154,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-12-21: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-12-21: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-21"
     },
     {
@@ -8255,7 +8208,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-21: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-21: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-21"
     },
     {
@@ -8291,7 +8244,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-12-22: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-12-22: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-22"
     },
     {
@@ -8308,10 +8261,9 @@
       "seed": 20261015,
       "id": "DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN",
       "description": "Двойное нажатие «Сохранить результат» не перескакивает экран с итогом тренировки (второй клик не попадает в «Продолжить»)",
-      "verdict": "KNOWN_FAIL",
-      "detail": "EASY 2026-12-22: после dblclick открыт /today",
-      "date": "2026-12-22",
-      "defect": "DEF-003"
+      "verdict": "PASS",
+      "detail": "EASY 2026-12-22: после dblclick открыт /workout/slot-2026-12-22/outcome",
+      "date": "2026-12-22"
     },
     {
       "profile_id": "p4-14-30-25-30km",
@@ -8355,7 +8307,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-22: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-22: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-22"
     },
     {
@@ -8391,7 +8343,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-23: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-23: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-23"
     },
     {
@@ -8427,7 +8379,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before INTRO_QUALITY 2026-12-24: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before INTRO_QUALITY 2026-12-24: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-24"
     },
     {
@@ -8481,7 +8433,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-24: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-24: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-24"
     },
     {
@@ -8517,7 +8469,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-25: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-25: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-25"
     },
     {
@@ -8553,7 +8505,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "before EASY 2026-12-26: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "before EASY 2026-12-26: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-26"
     },
     {
@@ -8607,7 +8559,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-26: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-26: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-26"
     },
     {
@@ -8643,7 +8595,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "end of 2026-12-27: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "end of 2026-12-27: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-27"
     },
     {
@@ -8679,7 +8631,7 @@
       "id": "RELOAD_STORAGE_INTACT",
       "description": "Перезагрузка страницы не меняет сохранённый цикл (байт в байт)",
       "verdict": "PASS",
-      "detail": "week 12: длина до=69440, после=69440",
+      "detail": "week 12: длина до=67572, после=67572",
       "date": "2026-12-28"
     },
     {
@@ -8715,7 +8667,7 @@
       "id": "NO_HIDDEN_AUTOCREDIT_SKIPS",
       "description": "Число пропусков в движке равно числу явных пропусков через UI",
       "verdict": "PASS",
-      "detail": "race day: skippedIds=7, UI skips=5; все записи истории имеют feedbackConfirmed=true: true",
+      "detail": "race day: skippedIds=5, UI skips=3; все записи истории имеют feedbackConfirmed=true: true",
       "date": "2026-12-28"
     },
     {

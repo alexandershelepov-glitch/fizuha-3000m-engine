@@ -12,7 +12,7 @@ npm run qa:issue23:ci        # сборка тестового билда + вс
 npm run qa:issue23           # только Playwright (поднимает `build:testing` и vite preview на :4176 сам)
 npm run qa:report            # собрать report.md / defect-log.md / CSV из уже сохранённых результатов
 npx playwright test -c playwright.qa.config.ts -g "p3-"     # один профиль
-QA_DEFECT_RAW=1 npx playwright test -c playwright.qa.config.ts defects.spec.ts   # повторы дефектов как обычные тесты (покажут реальный отказ)
+
 QA_VERBOSE=1 ...             # построчный прогресс по виртуальным дням
 ```
 
@@ -32,7 +32,7 @@ QA_VERBOSE=1 ...             # построчный прогресс по вир
 | `analysis.ts` | таблица недель (разминка/основная/заминка, EASY/quality, резерв), проверки правдоподобия |
 | `full-cycle.spec.ts` | по тесту на профиль: полный цикл |
 | `cross-cutting.spec.ts` | двойные клики, +7 дней с незакрытой, перезагрузки/назад-вперёд, повреждённое хранилище, ранний итог |
-| `defects.spec.ts` | короткие повторы найденных дефектов (`test.fail` → «ожидаемый отказ») |
+| `defects.spec.ts` | регрессионные тесты исправленных DEF-001…004 (до исправления были `test.fail`) |
 | `known-defects.ts`, `defect-catalog.ts` | сопоставление проверок и дефектов, описание дефектов |
 | `report.ts` | агрегатор: `report.md`, `defect-log.md`, `summary.json`, `all-profiles.csv`, `weekly-load.csv`, `checks.csv` |
 

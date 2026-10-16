@@ -1,15 +1,10 @@
 /**
- * Defects found by this QA run (see reports/qa-issue-23/defect-log.md). A failing check whose id is listed
- * here is recorded as KNOWN_FAIL (never hidden: it is counted and listed in the report), so the long
- * full-cycle runs can keep going and reach the final result. Each defect also has a short, dedicated
- * reproduction test marked `test.fail()` in defects.spec.ts: when the defect is fixed that test starts
- * "unexpectedly passing" and must be switched to a normal test.
+ * Findings of the QA runs that are NOT fixed (see reports/qa-issue-23/defect-log.md). A failing check whose id is
+ * listed here is recorded as KNOWN_FAIL (never hidden: counted and listed in the report). DEF-001..DEF-004 were fixed
+ * on branch fix/issue-23-defects-001-004; their checks are ordinary checks again, so a failure is a regression (FAIL).
  */
 export const KNOWN_DEFECTS: Readonly<Record<string, string>> = {
-  REST_PLACEHOLDER_NOT_PENDING: 'DEF-001',
-  CHECKPOINT_ACCEPTED_WHEN_REQUIRED: 'DEF-002',
-  DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN: 'DEF-003',
-  DOUBLE_CLICK_WARNING_NOT_DISMISSED: 'DEF-003',
-  GRAMMAR_REPEATS_PLURAL: 'DEF-004',
+  // DEF-001..DEF-004 are fixed (PR "fix/issue-23-defects-001-004"): their checks are ordinary checks again and a
+  // failure is a regression (FAIL), not a KNOWN_FAIL. Only methodology observations stay mapped.
   PLAUSIBLE_QUALITY_SHARE: 'OBS-001',
 };

@@ -1,0 +1,9 @@
+test exit=0 seconds=5
+test:ui exit=0 seconds=10
+audit:training exit=0 seconds=1
+typecheck exit=0 seconds=6
+lint exit=0 seconds=3
+test:e2e exit=0 seconds=25
+test:e2e:testing exit=0 seconds=5
+done
+(npm test: 626 pass / 0 fail; test:ui: 105 passed; audit:training: 9 scenarios, errors=0 in every scenario; test:e2e: 32 passed; test:e2e:testing: 2 passed; typecheck/lint: exit 0)

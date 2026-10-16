@@ -102,12 +102,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3165,
+                  "duration": 3007,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:21:11.841Z",
+                  "startTime": "2026-10-16T17:16:33.560Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -154,12 +154,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1765,
+                  "duration": 1677,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:21:15.401Z",
+                  "startTime": "2026-10-16T17:16:36.892Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -206,12 +206,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1481,
+                  "duration": 1374,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:21:17.173Z",
+                  "startTime": "2026-10-16T17:16:38.577Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -258,12 +258,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1753,
+                  "duration": 1634,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:21:18.661Z",
+                  "startTime": "2026-10-16T17:16:39.958Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -310,12 +310,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2808,
+                  "duration": 2595,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:21:20.424Z",
+                  "startTime": "2026-10-16T17:16:41.599Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -362,12 +362,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2013,
+                  "duration": 1886,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:21:23.244Z",
+                  "startTime": "2026-10-16T17:16:44.203Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -414,12 +414,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1682,
+                  "duration": 1524,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:21:25.265Z",
+                  "startTime": "2026-10-16T17:16:46.097Z",
                   "annotations": [
                     {
                       "type": "serial",
@@ -451,7 +451,7 @@
       "specs": [],
       "suites": [
         {
-          "title": "known defects (expected failures)",
+          "title": "regression of fixed defects DEF-001..DEF-004",
           "file": "defects.spec.ts",
           "line": 47,
           "column": 6,
@@ -463,165 +463,65 @@
               "tests": [
                 {
                   "timeout": 900000,
-                  "annotations": [
-                    {
-                      "type": "fail",
-                      "description": "DEF-001: см. reports/qa-issue-23/defect-log.md",
-                      "location": {
-                        "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                        "line": 50,
-                        "column": 12
-                      }
-                    }
-                  ],
-                  "expectedStatus": "failed",
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "qa-mobile-chrome",
                   "projectName": "qa-mobile-chrome",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 15476,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByText('Предыдущая тренировка ещё не закрыта')\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  12000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" getByText('Предыдущая тренировка ещё не закрыта') with timeout 12000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Предыдущая тренировка ещё не закрыта')\u001b[22m\n\u001b[2m    28 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByText('Предыдущая тренировка ещё не закрыта')\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  12000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" getByText('Предыдущая тренировка ещё не закрыта') with timeout 12000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Предыдущая тренировка ещё не закрыта')\u001b[22m\n\u001b[2m    28 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n\n    at /workspace/fizuha/qa/issue-23/defects.spec.ts:61:76",
-                        "location": {
-                          "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                          "column": 76,
-                          "line": 61
-                        },
-                        "snippet": "  59 |       await page.goto('/today');\n  60 |       await s.shot('def001-today-under-stop');\n> 61 |       await expect(page.getByText('Предыдущая тренировка ещё не закрыта')).toHaveCount(0);\n     |                                                                            ^\n  62 |       await expect(page.getByRole('button', {name: 'Повторно проверить состояние'})).toBeVisible();\n  63 |     });\n  64 |"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                            "column": 76,
-                            "line": 61
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByText('Предыдущая тренировка ещё не закрыта')\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  12000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" getByText('Предыдущая тренировка ещё не закрыта') with timeout 12000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Предыдущая тренировка ещё не закрыта')\u001b[22m\n\u001b[2m    28 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n\n\n  59 |       await page.goto('/today');\n  60 |       await s.shot('def001-today-under-stop');\n> 61 |       await expect(page.getByText('Предыдущая тренировка ещё не закрыта')).toHaveCount(0);\n     |                                                                            ^\n  62 |       await expect(page.getByRole('button', {name: 'Повторно проверить состояние'})).toBeVisible();\n  63 |     });\n  64 |\n    at /workspace/fizuha/qa/issue-23/defects.spec.ts:61:76"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 3253,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-16T16:21:26.965Z",
-                      "annotations": [
-                        {
-                          "type": "fail",
-                          "description": "DEF-001: см. reports/qa-issue-23/defect-log.md",
-                          "location": {
-                            "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                            "line": 50,
-                            "column": 12
-                          }
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/workspace/fizuha/reports/qa-issue-23/raw/test-results/defects-known-defects-expe-cdda2-essage-·-p3-·-seed-20261014-qa-mobile-chrome/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                        "column": 76,
-                        "line": 61
-                      }
+                      "startTime": "2026-10-16T17:16:47.633Z",
+                      "annotations": [],
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "5cc8e42835e54f421100-51e46ae8783b5bdba5c3",
+              "id": "5cc8e42835e54f421100-6acf7df6ab4d54e33c52",
               "file": "defects.spec.ts",
               "line": 48,
               "column": 3
             },
             {
-              "title": "DEF-002 · «Нужен контрольный результат» is shown to a novice who cannot run 3 km, but the result is refused · p1 · seed 20261012",
+              "title": "DEF-002 · no mandatory checkpoint for a novice who cannot run 3 km; after confirming 3 km the checkpoint is available and accepted · p1 · seed 20261012",
               "ok": true,
               "tags": [],
               "tests": [
                 {
                   "timeout": 900000,
-                  "annotations": [
-                    {
-                      "type": "fail",
-                      "description": "DEF-002: см. reports/qa-issue-23/defect-log.md",
-                      "location": {
-                        "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                        "line": 67,
-                        "column": 12
-                      }
-                    }
-                  ],
-                  "expectedStatus": "failed",
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "qa-mobile-chrome",
                   "projectName": "qa-mobile-chrome",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 3880,
-                      "error": {
-                        "message": "Error: экран ответил: Контрольный забег сейчас недоступен Результат контрольного забега можно внести, когда нет ограничений: завершены облегчённые тренировки после перерыва и состояние позволяет нагрузку.\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
-                        "stack": "Error: экран ответил: Контрольный забег сейчас недоступен Результат контрольного забега можно внести, когда нет ограничений: завершены облегчённые тренировки после перерыва и состояние позволяет нагрузку.\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at /workspace/fizuha/qa/issue-23/defects.spec.ts:74:55",
-                        "location": {
-                          "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                          "column": 55,
-                          "line": 74
-                        },
-                        "snippet": "  72 |       await walk(s, pr.seed, {maxDays: 40, modeFor: () => 'ON_PLAN', stop: async () => deriveToday(await s.engine(), await s.today()).state === 'CHECKPOINT_REQUIRED'});\n  73 |       const res = await s.checkpoint(1170, 'today');\n> 74 |       expect(res.ok, `экран ответил: ${res.outcome}`).toBe(true);\n     |                                                       ^\n  75 |     });\n  76 |\n  77 |   test('DEF-003 · double-click on «Сохранить результат» skips the outcome screen (2nd click hits «Продолжить») · p3 · seed 20261014',"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                            "column": 55,
-                            "line": 74
-                          },
-                          "message": "Error: экран ответил: Контрольный забег сейчас недоступен Результат контрольного забега можно внести, когда нет ограничений: завершены облегчённые тренировки после перерыва и состояние позволяет нагрузку.\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  72 |       await walk(s, pr.seed, {maxDays: 40, modeFor: () => 'ON_PLAN', stop: async () => deriveToday(await s.engine(), await s.today()).state === 'CHECKPOINT_REQUIRED'});\n  73 |       const res = await s.checkpoint(1170, 'today');\n> 74 |       expect(res.ok, `экран ответил: ${res.outcome}`).toBe(true);\n     |                                                       ^\n  75 |     });\n  76 |\n  77 |   test('DEF-003 · double-click on «Сохранить результат» skips the outcome screen (2nd click hits «Продолжить») · p3 · seed 20261014',\n    at /workspace/fizuha/qa/issue-23/defects.spec.ts:74:55"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 6315,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-16T16:21:42.458Z",
-                      "annotations": [
-                        {
-                          "type": "fail",
-                          "description": "DEF-002: см. reports/qa-issue-23/defect-log.md",
-                          "location": {
-                            "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                            "line": 67,
-                            "column": 12
-                          }
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/workspace/fizuha/reports/qa-issue-23/raw/test-results/defects-known-defects-expe-cb5fc-efused-·-p1-·-seed-20261012-qa-mobile-chrome/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                        "column": 55,
-                        "line": 74
-                      }
+                      "startTime": "2026-10-16T17:16:50.892Z",
+                      "annotations": [],
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "5cc8e42835e54f421100-b6bd99e27fedbdba4a00",
+              "id": "5cc8e42835e54f421100-275966965b0a2439c6b5",
               "file": "defects.spec.ts",
-              "line": 65,
+              "line": 68,
               "column": 3
             },
             {
@@ -631,165 +531,65 @@
               "tests": [
                 {
                   "timeout": 900000,
-                  "annotations": [
-                    {
-                      "type": "fail",
-                      "description": "DEF-003: см. reports/qa-issue-23/defect-log.md",
-                      "location": {
-                        "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                        "line": 79,
-                        "column": 12
-                      }
-                    }
-                  ],
-                  "expectedStatus": "failed",
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "qa-mobile-chrome",
                   "projectName": "qa-mobile-chrome",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 2758,
-                      "error": {
-                        "message": "Error: INTRO_QUALITY 2026-10-12: после dblclick открыт /today\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"PASS\"\u001b[39m\nReceived: \u001b[31m\"KNOWN_FAIL\"\u001b[39m",
-                        "stack": "Error: INTRO_QUALITY 2026-10-12: после dblclick открыт /today\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"PASS\"\u001b[39m\nReceived: \u001b[31m\"KNOWN_FAIL\"\u001b[39m\n    at /workspace/fizuha/qa/issue-23/defects.spec.ts:88:45",
-                        "location": {
-                          "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                          "column": 45,
-                          "line": 88
-                        },
-                        "snippet": "  86 |       expect((await s.engine()).history).toHaveLength(1); // nothing is credited twice — this part is fine\n  87 |       const check = journal.checks.find((c) => c.id === 'DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN');\n> 88 |       expect(check?.verdict, check?.detail).toBe('PASS');\n     |                                             ^\n  89 |     });\n  90 |\n  91 |   test('DEF-004 · «По плану: 1 отрезков» on the result form · p2 · seed 20261013',"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                            "column": 45,
-                            "line": 88
-                          },
-                          "message": "Error: INTRO_QUALITY 2026-10-12: после dblclick открыт /today\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"PASS\"\u001b[39m\nReceived: \u001b[31m\"KNOWN_FAIL\"\u001b[39m\n\n  86 |       expect((await s.engine()).history).toHaveLength(1); // nothing is credited twice — this part is fine\n  87 |       const check = journal.checks.find((c) => c.id === 'DOUBLE_CLICK_KEEPS_OUTCOME_SCREEN');\n> 88 |       expect(check?.verdict, check?.detail).toBe('PASS');\n     |                                             ^\n  89 |     });\n  90 |\n  91 |   test('DEF-004 · «По плану: 1 отрезков» on the result form · p2 · seed 20261013',\n    at /workspace/fizuha/qa/issue-23/defects.spec.ts:88:45"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 2765,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-16T16:21:46.353Z",
-                      "annotations": [
-                        {
-                          "type": "fail",
-                          "description": "DEF-003: см. reports/qa-issue-23/defect-log.md",
-                          "location": {
-                            "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                            "line": 79,
-                            "column": 12
-                          }
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/workspace/fizuha/reports/qa-issue-23/raw/test-results/defects-known-defects-expe-af66c-лжить»-·-p3-·-seed-20261014-qa-mobile-chrome/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                        "column": 45,
-                        "line": 88
-                      }
+                      "startTime": "2026-10-16T17:16:57.214Z",
+                      "annotations": [],
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "5cc8e42835e54f421100-6b67cf93a990dc529ea9",
+              "id": "5cc8e42835e54f421100-c8d2a09ed62b1ae5310e",
               "file": "defects.spec.ts",
-              "line": 77,
+              "line": 93,
               "column": 3
             },
             {
-              "title": "DEF-004 · «По плану: 1 отрезков» on the result form · p2 · seed 20261013",
+              "title": "DEF-004 · «По плану: 1 отрезок» is declined correctly on the result form · p2 · seed 20261013",
               "ok": true,
               "tags": [],
               "tests": [
                 {
                   "timeout": 900000,
-                  "annotations": [
-                    {
-                      "type": "fail",
-                      "description": "DEF-004: см. reports/qa-issue-23/defect-log.md",
-                      "location": {
-                        "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                        "line": 93,
-                        "column": 12
-                      }
-                    }
-                  ],
-                  "expectedStatus": "failed",
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "qa-mobile-chrome",
                   "projectName": "qa-mobile-chrome",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 3804,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/^По плану: 1 отрезок$/\u001b[39m\nReceived string:  \u001b[31m\"По плану: 1 отрезков\"\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/^По плану: 1 отрезок$/\u001b[39m\nReceived string:  \u001b[31m\"По плану: 1 отрезков\"\u001b[39m\n    at /workspace/fizuha/qa/issue-23/defects.spec.ts:102:28",
-                        "location": {
-                          "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                          "column": 28,
-                          "line": 102
-                        },
-                        "snippet": "  100 |       const label = await page.getByText(/^По плану: \\d+ отрезк/).first().innerText();\n  101 |       await s.shot('def004-result-form');\n> 102 |       expect(label.trim()).toMatch(/^По плану: 1 отрезок$/);\n      |                            ^\n  103 |     });\n  104 | });\n  105 |"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                            "column": 28,
-                            "line": 102
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoMatch\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected pattern: \u001b[32m/^По плану: 1 отрезок$/\u001b[39m\nReceived string:  \u001b[31m\"По плану: 1 отрезков\"\u001b[39m\n\n  100 |       const label = await page.getByText(/^По плану: \\d+ отрезк/).first().innerText();\n  101 |       await s.shot('def004-result-form');\n> 102 |       expect(label.trim()).toMatch(/^По плану: 1 отрезок$/);\n      |                            ^\n  103 |     });\n  104 | });\n  105 |\n    at /workspace/fizuha/qa/issue-23/defects.spec.ts:102:28"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 3513,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-16T16:21:49.119Z",
-                      "annotations": [
-                        {
-                          "type": "fail",
-                          "description": "DEF-004: см. reports/qa-issue-23/defect-log.md",
-                          "location": {
-                            "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                            "line": 93,
-                            "column": 12
-                          }
-                        }
-                      ],
-                      "attachments": [
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/workspace/fizuha/reports/qa-issue-23/raw/test-results/defects-known-defects-expe-75acf-t-form-·-p2-·-seed-20261013-qa-mobile-chrome/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/workspace/fizuha/qa/issue-23/defects.spec.ts",
-                        "column": 28,
-                        "line": 102
-                      }
+                      "startTime": "2026-10-16T17:16:59.986Z",
+                      "annotations": [],
+                      "attachments": []
                     }
                   ],
                   "status": "expected"
                 }
               ],
-              "id": "5cc8e42835e54f421100-919ab6d4142200e624a2",
+              "id": "5cc8e42835e54f421100-d68396c6d8ac9705ff54",
               "file": "defects.spec.ts",
-              "line": 91,
+              "line": 106,
               "column": 3
             }
           ]
@@ -818,12 +618,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 33195,
+                  "duration": 29310,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:21:52.940Z",
+                  "startTime": "2026-10-16T17:17:03.521Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -852,12 +652,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 38040,
+                  "duration": 35308,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:22:26.143Z",
+                  "startTime": "2026-10-16T17:17:32.838Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -886,12 +686,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 38585,
+                  "duration": 35578,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:23:04.190Z",
+                  "startTime": "2026-10-16T17:18:08.154Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -920,12 +720,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 53453,
+                  "duration": 50313,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:23:42.784Z",
+                  "startTime": "2026-10-16T17:18:43.738Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -954,12 +754,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 67253,
+                  "duration": 63940,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-10-16T16:24:36.245Z",
+                  "startTime": "2026-10-16T17:19:34.058Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -977,8 +777,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-16T16:21:09.402Z",
-    "duration": 274225.839,
+    "startTime": "2026-10-16T17:16:31.152Z",
+    "duration": 246943.67,
     "expected": 16,
     "skipped": 0,
     "unexpected": 0,

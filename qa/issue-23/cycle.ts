@@ -47,6 +47,8 @@ export async function runCycle(s: Session, profile: ProfileFixture, d: Directive
   const observations: string[] = [];
   const flags = {shift: false, partial: false, skipPhase: 'idle' as 'idle' | 'running' | 'done', skipRemaining: 0, skipStart: '', health: 'idle' as 'idle' | 'hold' | 'recovered', tooHard: false, confirm3k: false, measure: false, exam: false, planChecked: new Set<number>(), reloaded: new Set<number>(), refreshedToday: ''};
   let healthHoldDays = 0;
+  let holdSkipBaseline = -1;
+  const holdChecked = new Set<string>();
   let measuredFactor: number | null = null;
   let checkpointBlocked = false;
   let lastMeasured: number | null = profile.answers.resultTime === null ? null : parseTime(profile.answers.resultTime);
@@ -139,6 +141,16 @@ export async function runCycle(s: Session, profile: ProfileFixture, d: Directive
 
       // ---------------- hold handling (health scenario)
       if (view.state === 'TRAINING_HOLD') {
+        if (!holdChecked.has(today)) {
+          // DEF-001 regression guard: on every hold day Today shows the hold card with the recheck button, never a
+          // "previous workout is not closed" card, and no skips are manufactured for the REST service days.
+          holdChecked.add(today);
+          await p.goto('/today');
+          const body = await p.locator('.screen').first().innerText();
+          s.verify('HOLD_TODAY_SHOWS_RECHECK_NOT_PENDING', 'Во время паузы «Сегодня» показывает карточку паузы с повторной проверкой, а не «Предыдущая тренировка ещё не закрыта»',
+            !body.includes('Предыдущая тренировка ещё не закрыта') && (await p.getByRole('button', {name: 'Повторно проверить состояние'}).count()) > 0, `${today}: ${body.replace(/\s+/g, ' ').slice(0, 140)}`, today);
+          if (holdSkipBaseline >= 0) s.verify('HOLD_NO_FICTITIOUS_SKIPS', 'Дни отдыха во время паузы не создают пропусков', st.skippedWorkouts.length === holdSkipBaseline, `${today}: пропусков ${st.skippedWorkouts.length}, до паузы ${holdSkipBaseline}`, today);
+        }
         if (flags.health === 'hold') {
           if (healthHoldDays < 3) break; // wait 3 virtual days with symptoms present, nothing may be assigned
           await recoverFromHold(s, st, today);
@@ -238,7 +250,7 @@ export async function runCycle(s: Session, profile: ProfileFixture, d: Directive
         ledger.set(w.id, {w, disposition: 'RECORDED', evaluation: res.evaluation, mode, reserved: ledger.get(w.id)?.reserved ?? null});
         const after = await s.engine();
         if (mode === 'SYMPTOMS') {
-          flags.health = 'hold'; healthHoldDays = 0;
+          flags.health = 'hold'; healthHoldDays = 0; holdSkipBaseline = after.skippedWorkouts.length;
           s.verify('HEALTH_STOPS_LOAD', 'Сообщение о боли со сменой техники останавливает обычные тренировки (STOP/HOLD)', isSafetyHold(after), `safety=${after.decision.safety}, diagnosticHold=${after.diagnosticHold}, relatedYellow=${after.relatedYellow}`, today);
           s.verify('HEALTH_NO_RUNS_QUEUED', 'После симптомов в очереди нет беговых тренировок', after.queue.filter((q) => q.type !== 'REST').length === 0, `в очереди: ${after.queue.map((q) => q.type + ' ' + q.scheduledDate).join(', ') || 'пусто'}`, today);
           await p.goto('/today'); await s.shot('hold-today');

@@ -62,6 +62,13 @@ if (existsSync(RAW)) {
   for (const s of j.suites ?? []) visit(s, '');
 }
 
+// ---- state before the DEF-001..004 fixes (copied from PR #26 into before-fix/), for the before/after table
+interface Before {playwright?: {total: number; passed: number; failed: number; skipped: number; expectedFailures: number; unexpectedPasses: number; durationMs: number}; checks?: {PASS: number; FAIL: number; KNOWN_FAIL: number; total: number};
+  sessions?: {recorded: number; skipped: number; moved: number}; other?: {checkpoints: number; expectedBlocks: number; reloads: number}; weeks?: Record<string, {weeksSpanned: number; virtualDays: number}>}
+const beforeDir = join(ROOT, 'before-fix');
+const before: Before | null = existsSync(join(beforeDir, 'summary.json')) ? readJson<Before>(join(beforeDir, 'summary.json')) : null;
+const beforeCounts: Record<string, number> = existsSync(join(beforeDir, 'known-fail-counts.json')) ? (readJson<{nonPassByDefect: Record<string, number>}>(join(beforeDir, 'known-fail-counts.json'))).nonPassByDefect : {};
+
 // ---- aggregate
 const sum = (js: Journal[], k: string): number => js.reduce((a, j) => a + (Number(j.counters[k]) || 0), 0);
 const allChecks = journals.flatMap((j) => j.checks);
@@ -107,17 +114,19 @@ writeFileSync(join(DATA, 'checks.csv'), toCsv(allChecks.filter((c) => c.id !== '
 // ---- defect log
 const occurrences = (checkIds: string[]): Check[] => allChecks.filter((c) => c.verdict !== 'PASS' && checkIds.includes(c.id));
 let dl = `# Журнал дефектов и наблюдений — QA issue #23\n\nСгенерировано \`npm run qa:report\` (${summary.generatedAtMsk}) из реальных прогонов. Методика, health-проверки и STOP не менялись. Данные вымышленные.\n\n`;
-dl += `Короткие повторы дефектов — \`qa/issue-23/defects.spec.ts\` (Playwright \`test.fail\`: в отчёте это «ожидаемый отказ», не зелёный тест). \`QA_DEFECT_RAW=1\` запускает их как обычные и показывает реальный отказ.\n\n`;
-dl += `| ID | Тип | Важность | Суть | Наблюдений в прогонах |\n|---|---|---|---|---|\n`;
-for (const d of CATALOG) dl += `| ${d.id} | ${d.kind === 'DEFECT' ? 'дефект' : 'наблюдение'} | ${d.severity} | ${d.title} | ${occurrences(d.checkIds).length} |\n`;
+dl += `Дефекты DEF-001…DEF-004 исправлены (ветка fix/issue-23-defects-001-004). Их короткие тесты в \`qa/issue-23/defects.spec.ts\` теперь обычные (без \`test.fail\`), а проверки полного цикла — обычные проверки: отказ = регрессия (FAIL), не KNOWN_FAIL. Состояние до исправлений сохранено в \`before-fix/\`.\n\n`;
+dl += `| ID | Тип | Важность | Статус | Суть | Отказов проверок до исправления → в этом прогоне |\n|---|---|---|---|---|---|\n`;
+for (const d of CATALOG) dl += `| ${d.id} | ${d.kind === 'DEFECT' ? 'дефект' : 'наблюдение'} | ${d.severity} | ${d.status === 'FIXED' ? `исправлено (${d.fix?.commit})` : 'открыто'} | ${d.title} | ${beforeCounts[d.id] ?? '—'} → ${occurrences(d.checkIds).length} |\n`;
 dl += '\n';
 for (const d of CATALOG) {
   const occ = occurrences(d.checkIds);
-  dl += `## ${d.id} — ${d.title}\n\n- **Тип / важность:** ${d.kind === 'DEFECT' ? 'дефект' : 'наблюдение'} / ${d.severity}\n- **Сценарий и seed:** ${d.scenario}\n- **Ожидалось:** ${d.expected}\n- **Фактически:** ${d.actual}\n- **Код:** ${d.codeRefs.join('; ')}\n`;
-  if (d.reproTest) dl += `- **Короткий повтор:** \`${d.reproTest}\`\n`;
+  dl += `## ${d.id} — ${d.title}\n\n- **Статус:** ${d.status === 'FIXED' ? `ИСПРАВЛЕНО, коммит ${d.fix?.commit}` : 'открыто (решение за владельцем методики)'}\n- **Тип / важность:** ${d.kind === 'DEFECT' ? 'дефект' : 'наблюдение'} / ${d.severity}\n- **Сценарий и seed:** ${d.scenario}\n- **Ожидалось:** ${d.expected}\n- **Фактически:** ${d.actual}\n- **Код:** ${d.codeRefs.join('; ')}\n`;
+  if (d.reproTest) dl += `- **Короткий повтор (теперь обычный тест):** \`${d.reproTest}\`\n`;
+  if (d.fix) dl += `- **Что исправлено:** ${d.fix.summary}\n- **Тесты:** ${d.fix.tests.join('; ')}\n`;
   if (d.note) dl += `- **Примечание:** ${d.note}\n`;
-  dl += `- **Где проявилось в этом прогоне (${occ.length}):**\n`;
-  if (occ.length === 0) dl += `  - не воспроизвелось в этом прогоне (проверьте, не исправлено ли)\n`;
+  dl += `- **${d.status === 'FIXED' ? 'Регрессия в этом прогоне' : 'Где проявилось в этом прогоне'} (${occ.length}; до исправления: ${beforeCounts[d.id] ?? '—'}):**\n`;
+  if (occ.length === 0) dl += `  - ${d.status === 'FIXED' ? 'не воспроизвелось — исправление работает' : 'не воспроизвелось в этом прогоне (проверьте, не исправлено ли)'}\n`;
+  if (occ.length > 0 && d.status === 'FIXED') dl += `  - **РЕГРЕССИЯ: исправленный дефект проявился снова**\n`;
   for (const o of occ) dl += `  - \`${o.profile_id}\` seed ${o.seed}, ${o.date}: ${o.detail.replace(/\n/g, ' ').slice(0, 260)}\n`;
   dl += '\n';
 }
@@ -137,7 +146,7 @@ md += `Сгенерировано ${summary.generatedAtMsk}. Все числа �
 md += `## Что запускалось\n\n- Тестовая сборка (\`VITE_TEST_MODE=1\`, \`npm run build:testing\`), локальный \`vite preview\` на :4176; боевой сайт и реальный localStorage не затрагивались.\n- Реальный браузер: Playwright ${pw.version || ''}, Chrome, мобильный профиль Pixel 7. Виртуальная дата — панель «Тестовый календарь» (+1 день / +7 дней).\n- Старт цикла ${QA_START_DATE} (понедельник); у каждого профиля свой seed (см. \`qa/issue-23/README.md\`).\n\n`;
 md += `## Результаты прогона\n\n`;
 md += `| Показатель | Значение |\n|---|---|\n`;
-md += `| Сценариев полного цикла (профилей) | ${full.length} |\n| Сквозных сценариев (двойные клики, перезагрузки, +7 дней, повреждённое хранилище, ранний итог) | ${cross.length} |\n| Коротких повторов известных дефектов | ${summary.scenarios.knownDefectRepros} |\n`;
+md += `| Сценариев полного цикла (профилей) | ${full.length} |\n| Сквозных сценариев (двойные клики, перезагрузки, +7 дней, повреждённое хранилище, ранний итог) | ${cross.length} |\n| Регрессионных тестов исправленных DEF-001…004 | ${summary.scenarios.knownDefectRepros} |\n`;
 md += `| Playwright-тестов всего | ${pw.total} (пройдено ${pw.passed}, упало ${pw.failed}, пропущено ${pw.skipped}, нестабильных ${pw.flaky}, **ожидаемых отказов** ${pw.expectedFailures}, неожиданно прошло ${pw.unexpectedPasses}) |\n`;
 md += `| Длительность Playwright | ${(pw.durationMs / 1000).toFixed(0)} с |\n`;
 md += `| Виртуальных дней / недель в полных циклах | ${sum(full, 'virtualDays')} дн. / ${full.map((j) => j.counters.weeksSpanned).join('+')} = ${sum(full, 'weeksSpanned')} нед. |\n`;
@@ -148,6 +157,15 @@ md += `| Типы внесённых | ${Object.entries(typeTotals).map(([k, v])
 md += `| Контрольных результатов / смен даты экзамена / итоговых результатов | ${sum(full, 'checkpoints')} / ${sum(full, 'examDateChanges')} / ${summary.other.finalResults} |\n`;
 md += `| Перезагрузок страницы с проверкой хранилища | ${sum(journals, 'reloads')} |\n| Ожидаемых блокировок (STOP, INV-1, порядок, перенос) | ${sum(journals, 'expectedBlocks')} |\n| Переходов по экранам (UI) | ${sum(journals, 'uiTransitions')} |\n`;
 md += `| Проверок (checks) всего | ${allChecks.length}: PASS ${byVerdict.PASS}, KNOWN_FAIL ${byVerdict.KNOWN_FAIL}, FAIL ${byVerdict.FAIL} |\n| Скриншотов снято в прогоне / ключевых файлов в репозитории | ${takenShots ?? sum(journals, 'screenshots')} / ${shots.length} (полный набор — артефакт CI; в репозиторий кладутся ключевые экраны в уменьшенной палитре PNG) |\n\n`;
+if (before) {
+  const bp = before.playwright, bc = before.checks;
+  md += `### До и после исправлений DEF-001…004\n\n| Показатель | До (PR #26, \`before-fix/\`) | После (этот прогон) |\n|---|---|---|\n`;
+  if (bp) md += `| Playwright-тестов | ${bp.total}: passed ${bp.passed}, failed ${bp.failed}, skipped ${bp.skipped}, ожидаемых отказов ${bp.expectedFailures} | ${pw.total}: passed ${pw.passed}, failed ${pw.failed}, skipped ${pw.skipped}, ожидаемых отказов ${pw.expectedFailures} |\n`;
+  if (bc) md += `| Проверки | ${bc.total}: PASS ${bc.PASS}, KNOWN_FAIL ${bc.KNOWN_FAIL}, FAIL ${bc.FAIL} | ${allChecks.length}: PASS ${byVerdict.PASS}, KNOWN_FAIL ${byVerdict.KNOWN_FAIL}, FAIL ${byVerdict.FAIL} |\n`;
+  if (before.sessions) md += `| Внесено / пропущено / перенесено | ${before.sessions.recorded} / ${before.sessions.skipped} / ${before.sessions.moved} | ${sum(full, 'workoutsRecorded')} / ${sum(full, 'workoutsSkipped')} / ${sum(full, 'workoutsMoved')} |\n`;
+  if (before.weeks) md += `| Недель в полных циклах | ${Object.values(before.weeks).map((w) => w.weeksSpanned).join('+')} | ${full.map((j) => j.counters.weeksSpanned).join('+')} |\n`;
+  md += `\nРазличия в числах тренировок/пропусков вытекают из исправлений (например, дни отдыха при паузе больше не требуют ручного «не выполнял» и не считаются пропусками), а не из изменения методики.\n\n`;
+}
 md += `Пояснение: «внесено результатов» = реальные нажатия «Сохранить результат» через UI. «Пропущено» — нажатия «Я её не выполнял»/отказ заранее. Тренировки со служебным типом REST в счёт не идут.\n\n`;
 md += `## Профили\n\n| Профиль | Seed | Недель | Дней | Внесено | Пропущено | Перенос | Контроль | EASY / quality (в журнале) | Итог | Старт |\n|---|---|---|---|---|---|---|---|---|---|---|\n`;
 for (const j of full) {
@@ -160,8 +178,8 @@ const hide = new Set(['INVARIANTS_HOLD']);
 for (const [id, e] of [...checkTable.entries()].sort()) if (!hide.has(id)) md += `| ${id}${e.defect ? ` (${e.defect})` : ''} | ${e.pass} | ${e.known} | ${e.fail} |\n`;
 const inv = checkTable.get('INVARIANTS_HOLD'); if (inv) md += `| INVARIANTS_HOLD (все независимые инварианты за день) | ${inv.pass} | ${inv.known} | ${inv.fail} |\n`;
 md += `\nИнварианты (\`invariants.ts\`) считаются независимо от движка по сохранённому состоянию: один бег в день; нет бега в день старта и позже; ≤2 quality за 7 дней и ≤ лимита решения на дату слота; 48 ч между quality; нет бега при STOP/паузе; суммарная нагрузка скользящих 7 дней ≤ утверждённой; пропущенные не попадают в историю/очередь; уникальные id.\n\n`;
-md += `## Найденные проблемы\n\n`;
-for (const d of CATALOG) md += `- **${d.id}** (${d.kind === 'DEFECT' ? 'дефект' : 'наблюдение'}, ${d.severity}): ${d.title} — наблюдений в прогонах: ${occurrences(d.checkIds).length}.\n`;
+md += `## Найденные проблемы и их статус\n\n`;
+for (const d of CATALOG) md += `- **${d.id}** (${d.kind === 'DEFECT' ? 'дефект' : 'наблюдение'}, ${d.severity}, **${d.status === 'FIXED' ? 'исправлено ' + d.fix?.commit : 'открыто'}**): ${d.title} — отказов проверок до исправления: ${beforeCounts[d.id] ?? '—'}, в этом прогоне: ${occurrences(d.checkIds).length}.\n`;
 md += `\nПолное описание (сценарий, seed, ожидалось/фактически): \`defect-log.md\`.\n\n`;
 md += `## Ограничения проверки\n\n`;
 for (const l of [
@@ -175,6 +193,6 @@ for (const l of [
   'Для запуска на машине использовался Node 22 (на машине был 20); проект требует ≥22.18.',
   'Не проверялись: боевой сайт, реальный localStorage, push/офлайн-режим PWA, несколько вкладок одновременно, GPS/реальное время.',
 ]) md += `- ${l}\n`;
-md += `\n## Файлы\n\n- Данные: \`reports/qa-issue-23/data/<профиль>.json|.csv\` (по строке на событие: неделя, дата, назначение, плановая нагрузка, введённый результат, вердикт, причина изменения, предупреждения), \`all-profiles.csv\`, \`weekly-load.csv\` (разминка/основная/заминка по неделям), \`checks.csv\`.\n- Скриншоты: \`reports/qa-issue-23/screenshots/<профиль>/NN-имя.png\`.\n- Сырой вывод Playwright: \`reports/qa-issue-23/raw/playwright-results.json\` (+ \`playwright-list.txt\`).\n- Журнал дефектов: \`reports/qa-issue-23/defect-log.md\`; аудит покрытия: \`docs/qa-issue-23-coverage-audit.md\`.\n`;
+md += `\n## Файлы\n\n- Данные: \`reports/qa-issue-23/data/<профиль>.json|.csv\` (по строке на событие: неделя, дата, назначение, плановая нагрузка, введённый результат, вердикт, причина изменения, предупреждения), \`all-profiles.csv\`, \`weekly-load.csv\` (разминка/основная/заминка по неделям), \`checks.csv\`.\n- Скриншоты: \`reports/qa-issue-23/screenshots/<профиль>/NN-имя.png\`.\n- Сырой вывод Playwright: \`reports/qa-issue-23/raw/playwright-results.json\` (+ \`playwright-list.txt\`); состояние до исправлений — \`before-fix/\`.\n- Журнал дефектов: \`reports/qa-issue-23/defect-log.md\`; аудит покрытия: \`docs/qa-issue-23-coverage-audit.md\`.\n`;
 writeFileSync(join(ROOT, 'report.md'), md);
 console.log(`report written: ${join(ROOT, 'report.md')} · tests ${pw.total} (passed ${pw.passed}, failed ${pw.failed}, expected-fail ${pw.expectedFailures}) · checks ${allChecks.length}`);
