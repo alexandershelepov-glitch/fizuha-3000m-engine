@@ -6,7 +6,7 @@
 import {test, expect} from '@playwright/test';
 import {deriveToday} from '../../web/src/application/uiState.ts';
 import {PROFILES} from './profiles.ts';
-import {Session} from './driver.ts';
+import {Session, confirmContinuous3k} from './driver.ts';
 import {Journal} from './journal.ts';
 import {isSafetyHold} from './invariants.ts';
 import {makeRng, planReport} from './model.ts';
@@ -65,14 +65,28 @@ test.describe('regression of fixed defects DEF-001..DEF-004', () => {
       expect(rc.saved && rc.stillHold === false).toBe(true);
     });
 
-  test('DEF-002 · «Нужен контрольный результат» is shown to a novice who cannot run 3 km, but the result is refused · p1 · seed 20261012',
+  test('DEF-002 · no mandatory checkpoint for a novice who cannot run 3 km; after confirming 3 km the checkpoint is available and accepted · p1 · seed 20261012',
     async ({page}) => {
       const pr = profile('p1-novice-no3k');
       const s = new Session(page, pr, new Journal(pr.id, pr.seed));
       await s.fresh(); await s.onboard();
       await s.captureBaseline();
-      await walk(s, pr.seed, {maxDays: 40, modeFor: () => 'ON_PLAN', stop: async () => deriveToday(await s.engine(), await s.today()).state === 'CHECKPOINT_REQUIRED'});
-      const res = await s.checkpoint(1170, 'today');
+      const start = await s.today();
+      let seenRequired = '';
+      // six weeks (well past the 21-day mark) of on-plan sessions; the checkpoint screen must never be demanded
+      const reached = await walk(s, pr.seed, {checkpoints: false, maxDays: 60, modeFor: () => 'ON_PLAN', stop: async (today) => {
+        const st = await s.engine();
+        if (st.checkpointRequired || deriveToday(st, today).state === 'CHECKPOINT_REQUIRED') seenRequired = today;
+        return (Date.parse(today) - Date.parse(start)) / 86_400_000 >= 42;
+      }});
+      expect(seenRequired, `«Нужен контрольный результат» показан новичку без 3 км: ${seenRequired}`).toBe('');
+      expect((await s.engine()).profile.canRun3Km).toBe(false);
+      const confirmed = await confirmContinuous3k(s);
+      expect(confirmed.ok, confirmed.note).toBe(true);
+      // existing rules apply again: more than 21 days since the last assessment → checkpoint is due and the result is accepted
+      const st = await s.engine();
+      expect(st.checkpointRequired).toBe(true);
+      const res = await s.checkpoint(1170, deriveToday(st, reached).state === 'CHECKPOINT_REQUIRED' ? 'today' : 'direct');
       expect(res.ok, `экран ответил: ${res.outcome}`).toBe(true);
     });
 
@@ -89,7 +103,7 @@ test.describe('regression of fixed defects DEF-001..DEF-004', () => {
       expect(check?.verdict, check?.detail).toBe('PASS');
     });
 
-  test('DEF-004 · «По плану: 1 отрезков» on the result form · p2 · seed 20261013',
+  test('DEF-004 · «По плану: 1 отрезок» is declined correctly on the result form · p2 · seed 20261013',
     async ({page}) => {
       const pr = profile('p2-18min-5-10km');
       const s = new Session(page, pr, new Journal(pr.id, pr.seed));
@@ -97,7 +111,7 @@ test.describe('regression of fixed defects DEF-001..DEF-004', () => {
       await walk(s, pr.seed, {maxDays: 40, modeFor: () => 'ON_PLAN', stop: async () => deriveToday(await s.engine(), await s.today()).workout?.type === 'THRESHOLD'});
       const w = deriveToday(await s.engine(), await s.today()).workout!;
       await page.goto(`/workout/${w.id}/result`);
-      const label = await page.getByText(/^По плану: \d+ отрезк/).first().innerText();
+      const label = await page.getByText(/^По плану: \d+ отрез/).first().innerText();
       await s.shot('def004-result-form');
       expect(label.trim()).toMatch(/^По плану: 1 отрезок$/);
     });
