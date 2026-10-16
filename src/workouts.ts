@@ -59,6 +59,7 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
   const dose = {...((s.reentry && QUALITY.includes(type) ? s.confirmedDoses[type] : s.doses[type]) ?? initialDose(s, type))};
   dose.value=Math.min(dose.value,qualityDoseCeiling(s,type))*factor;
   let range: [number, number] | null = null;
+  let easyPace: ReturnType<typeof initialEasyPace> | null = null;
   let anchor: Workout['anchor'] = 'EFFORT';
   let rpe: [number, number] = type === 'EASY' || type === 'LONG_EASY' ? [2, 4] : [2, 3];
   if (type === 'THRESHOLD') { rpe = [6, 7]; if (d.currentSpeedMps) range = [d.currentSpeedMps * .90, d.currentSpeedMps * .94]; anchor = 'CURRENT'; }
@@ -68,9 +69,9 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
   if (type === 'CONTROL') { rpe = [8, 9]; anchor = 'NONE'; }
   if (type === 'REST') { rpe = [0, 0]; anchor = 'NONE'; }
   if (type === 'EASY' || type === 'LONG_EASY') {
-    const baseline = initialEasyPace(s.profile.performance?.timeSeconds ?? null,
+    easyPace = initialEasyPace(s.profile.performance?.timeSeconds ?? null,
       s.profile.canRun3Km, d.confidence, d.capacity);
-    range = baseline.speedRangeMps;
+    range = easyPace.speedRangeMps;
     if (range !== null) anchor = 'CURRENT';
   }
   const interval = ['INTRO_QUALITY', 'VO2', 'SPECIFIC_3K', 'STRIDES'].includes(type);
@@ -85,7 +86,7 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
     countsAsQuality, warmupMinutes: countsAsQuality ? 10 : mode === 'RUN_WALK' ? 5 : 0, cooldownMinutes: countsAsQuality ? 10 : mode === 'RUN_WALK' ? 5 : 0,
     main: {mode, dose, repeats, repeatMeters, finalRepeatMeters: repeatMeters ? dose.value - repeatMeters * (repeats - 1) : null,
       ...(mode === 'RUN_WALK' ? {runWalk:{stage, ...RUN_WALK_STAGES[stage]!}} : {})},
-    targetRpe: rpe, effortCues: type === 'EASY' || type === 'LONG_EASY' ? ['FULL_SENTENCES', 'CONTROLLED_BREATHING'] : [], speedRangeMps: range, paceRangeSecondsPerKm: range ? [1000 / range[1], 1000 / range[0]] : null,
+    targetRpe: rpe, effortCues: type === 'EASY' || type === 'LONG_EASY' ? ['FULL_SENTENCES', 'CONTROLLED_BREATHING'] : [], speedRangeMps: range, paceRangeSecondsPerKm: easyPace?.paceRangeSecondsPerKm ?? (range ? [1000 / range[1], 1000 / range[0]] : null),
     anchor, gateAtPrescription: d.gate, restSeconds: interval ? 90 : 0,
     minimumRecoveryHoursBeforeQuality: countsAsQuality ? 48 : 0,
     requiredFeedback: ['completionFraction', 'sessionRpe', 'safety', 'durationMinutes', 'distanceMeters', 'repeats', 'restSeconds', 'conditions', 'unexpectedFatigue'],
