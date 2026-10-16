@@ -129,7 +129,9 @@ test('COPY-06 the documented repeats rule matches how the engine actually classi
   const result = (w: Workout, withRepeats: boolean) => {
     const target = (w.targetRpe[0] + w.targetRpe[1]) / 2;
     const speed = w.speedRangeMps ? (w.speedRangeMps[0] + w.speedRangeMps[1]) / 2 : 3;
-    return {date: w.scheduledDate, completionFraction: 1, sessionRpe: target, safety: healthy(), durationMinutes: 35,
+    const easyPaced = (w.type === 'EASY' || w.type === 'LONG_EASY') && w.speedRangeMps !== null;
+    return {date: w.scheduledDate, completionFraction: 1, sessionRpe: target, safety: healthy(),
+      durationMinutes: easyPaced ? 5000 / speed / 60 : 35,
       distanceMeters: 5000, restSeconds: [w.restSeconds], conditions: {}, unexpectedFatigue: false,
       repeats: withRepeats && w.speedRangeMps ? Array.from({length: 5}, () => ({distanceMeters: 600, seconds: 600 / speed})) : []};
   };
@@ -156,11 +158,14 @@ test('COPY-06 the documented repeats rule matches how the engine actually classi
   for (const [type, w] of samples) {
     const empty = classify(w, result(w, false)).evaluation;
     const filled = classify(w, result(w, true)).evaluation;
-    if (w.speedRangeMps) {
-      assert.equal(empty, 'YELLOW', `${type}: the documented rule claims empty repeats cost accuracy for paced work`);
-      assert.equal(filled, 'GREEN', `${type}: filling repeats must restore a normal evaluation`);
+    if ((w.type === 'EASY' || w.type === 'LONG_EASY') && w.speedRangeMps) {
+      assert.equal(empty,'GREEN',`${type}: measured total distance + time is enough to verify continuous pace`);
+      assert.equal(filled,'GREEN',`${type}: split data are optional for continuous EASY`);
+    } else if (w.speedRangeMps) {
+      assert.equal(empty, 'YELLOW', `${type}: paced quality without splits remains unverified`);
+      assert.equal(filled, 'GREEN', `${type}: filling quality splits restores a normal evaluation`);
     } else {
-      assert.equal(empty, filled, `${type}: without a pace range, empty repeats must not change the evaluation`);
+      assert.equal(empty, filled, `${type}: without a numeric pace, repeats must not change the evaluation`);
     }
     const documented = DOC.includes(`\`${type}\``);
     assert.ok(documented, `${type} appears in a real queue but has no copy row`);
