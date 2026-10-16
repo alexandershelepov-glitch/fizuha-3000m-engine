@@ -1,3 +1,4 @@
+import '../../calendar.css';
 import {useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
 import {addDays, formatDateLong, formatTime, daysBetween} from '../../application/format.ts';
