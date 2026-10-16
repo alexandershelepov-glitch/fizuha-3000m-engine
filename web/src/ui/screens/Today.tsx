@@ -6,6 +6,7 @@ import {deriveToday} from '../../application/uiState.ts';
 import {phaseText, safetyStatusText} from '../copy/values.ts';
 import {common, skip as skipText, today as todayText, lifecycle} from '../copy/text.ts';
 import {workoutPaceRange, workoutSpeedRange, workoutTitle, workoutVolume} from '../display.ts';
+import {estimatedEasyTimeText} from '../workoutInstructions.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, KeyValue, Notice} from '../components/Layout.tsx';
 import type {Route} from '../../app/routes.ts';
@@ -190,6 +191,7 @@ function WorkoutCard({workout, onOpen, onEnterResult}: {workout: Workout; onOpen
       <KeyValue label={todayText.workout.volume} value={workoutVolume(workout)} />
       {pace ? <KeyValue label={todayText.workout.pace} value={pace} /> : null}
       {speed ? <KeyValue label={todayText.workout.treadmillSpeed} value={speed} /> : null}
+      {estimatedEasyTimeText(workout) ? <KeyValue label="Ожидаемое время (по плану)" value={estimatedEasyTimeText(workout)!} /> : null}
       <Button onClick={onOpen}>{todayText.workout.open}</Button>
       <Button variant="secondary" onClick={onEnterResult}>{todayText.workout.enterResult}</Button>
     </Card>
