@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import {prescribe} from '../src/index.ts';
 import type {Workout, WorkoutType} from '../src/index.ts';
 import {appCycle} from './helpers-app.ts';
-import {compactDuration, effortFor, estimatedTimeRepeatDistance, intervalStructure, prescribedPace, repeatStructure, splitSeconds, treadmillSpeedText, workoutInstruction, workoutIntervals, workoutRepeats} from '../web/src/ui/workoutInstructions.ts';
+import {compactDuration, effortFor, estimatedEasyTimeText, estimatedTimeRepeatDistance, intervalStructure, prescribedPace, repeatStructure, splitSeconds, treadmillSpeedText, workoutInstruction, workoutIntervals, workoutRepeats} from '../web/src/ui/workoutInstructions.ts';
 import {workoutIntervalsText, workoutMainDose, workoutSummaryText, workoutVolume} from '../web/src/ui/display.ts';
 import {formatDateShort} from '../web/src/application/format.ts';
 import {workoutTypeText} from '../web/src/ui/copy/values.ts';
@@ -49,28 +49,31 @@ test('INSTR-01 the split of a repeat is pace times distance, rounded to whole se
   assert.deepEqual(splitSeconds([298, 316], 200), [60, 63]);
 });
 
-test('INSTR-02 an easy run keeps the engine distance and never invents a pace', () => {
+test('INSTR-02 EASY contains a numeric, engine-assigned pace, treadmill speed and projected time', () => {
   const workout = ordered('EASY');
   const plan = workoutInstruction(workout);
-
-  assert.equal(workout.paceRangeSecondsPerKm, null, 'the fixture must have no prescribed pace');
-  assert.equal(plan.paceText, null, 'no pace may appear when the engine prescribed none');
-  assert.equal(plan.splits.length, 0);
+  assert.ok(workout.paceRangeSecondsPerKm !== null, 'current 3 km performance should yield a target');
+  assert.ok(workout.speedRangeMps !== null);
+  assert.deepEqual(workout.targetRpe,[2,4]);
   assert.match(plan.headline, /^Сегодня: спокойный бег /);
-  assert.ok(plan.steps[0]!.includes('удобном спокойном темпе'), plan.steps[0]);
-  assert.ok(plan.guidance.length > 0, 'the feeling takes the place of a pace');
-  assert.ok(plan.steps.some((step) => step.includes('замедлись')));
-  // The engine prescribed no warm-up or cool-down for an easy run, so the card must not add one.
-  assert.equal(plan.steps.some((step) => step.startsWith('Разминка')), false);
-  assert.equal(plan.steps.some((step) => step.startsWith('Заминка')), false);
+  assert.match(plan.paceText!,/\\d+:\\d+–\\d+:\\d+ мин\\/км/);
+  assert.ok(plan.steps.some(step=>step.includes('Держи темп') && step.includes(plan.paceText!)));
+  assert.ok(plan.steps.some(step=>step.includes('На дорожке установи скорость') && step.includes('км/ч')));
+  assert.ok(plan.steps.some(step=>step.includes('Ожидаемое время') && step.includes(estimatedEasyTimeText(workout)!)));
+  assert.ok(plan.steps.some(step=>step.includes('Не беги быстрее')));
+  assert.equal(plan.splits.length,0);
+  assert.equal(plan.steps.some(step=>step.startsWith('Разминка')),false);
+  assert.equal(plan.steps.some(step=>step.startsWith('Заминка')),false);
 });
 
-test('INSTR-03 a long easy run is described the same way, with its own distance', () => {
+test('INSTR-03 long easy run has an individual numeric pace with its own distance/time', () => {
   const workout = ordered('LONG_EASY');
   const plan = workoutInstruction(workout);
-  assert.equal(plan.paceText, null);
+  assert.ok(plan.paceText !== null);
   assert.match(plan.headline, /^Сегодня: длинный спокойный бег /);
   assert.ok(plan.headline.includes(String(Math.round(workout.main.dose.value) / 1000)), plan.headline);
+  assert.ok(plan.steps.some(step=>step.includes(estimatedEasyTimeText(workout)!)));
+  assert.ok(workout.speedRangeMps !== null);
 });
 
 test('INSTR-04 continuous work with a pace states the pace as the engine ordered it', () => {
