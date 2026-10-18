@@ -1,0 +1,4065 @@
+
+> adaptive-3000m-core@1.0.0 test
+> node --experimental-strip-types --test tests/*.test.ts
+
+TAP version 13
+# Subtest: B01 Target Pace Gate boundary exactly at 8% Goal Gap
+ok 1 - B01 Target Pace Gate boundary exactly at 8% Goal Gap
+  ---
+  duration_ms: 11.123749
+  type: 'test'
+  ...
+# Subtest: B02 Goal Feasibility boundaries exactly at 3/6/10/15%
+ok 2 - B02 Goal Feasibility boundaries exactly at 3/6/10/15%
+  ---
+  duration_ms: 2.720231
+  type: 'test'
+  ...
+# Subtest: B03 modifiers apply only above 3%, scale caps at LOW_PROBABILITY, LONG_TERM never steps down
+ok 3 - B03 modifiers apply only above 3%, scale caps at LOW_PROBABILITY, LONG_TERM never steps down
+  ---
+  duration_ms: 0.122471
+  type: 'test'
+  ...
+# Subtest: B04 performance age boundaries 21/22 and 42/43 days
+ok 4 - B04 performance age boundaries 21/22 and 42/43 days
+  ---
+  duration_ms: 0.153976
+  type: 'test'
+  ...
+# Subtest: B05 no 3 km result yields UNKNOWN, never LOW (approved decision, spec 6)
+ok 5 - B05 no 3 km result yields UNKNOWN, never LOW (approved decision, spec 6)
+  ---
+  duration_ms: 0.483671
+  type: 'test'
+  ...
+# Subtest: B06 healthy break boundaries 3/4 and 14/15 days
+ok 6 - B06 healthy break boundaries 3/4 and 14/15 days
+  ---
+  duration_ms: 0.223675
+  type: 'test'
+  ...
+# Subtest: B07 RE_ENTRY boundary 7/8 days plus the 1-3 / 4-7 / 8-14 / >14 branches
+ok 7 - B07 RE_ENTRY boundary 7/8 days plus the 1-3 / 4-7 / 8-14 / >14 branches
+  ---
+  duration_ms: 7.487524
+  type: 'test'
+  ...
+# Subtest: B08 Training Capacity: exact thresholds qualify, one step below does not
+ok 8 - B08 Training Capacity: exact thresholds qualify, one step below does not
+  ---
+  duration_ms: 0.58808
+  type: 'test'
+  ...
+# Subtest: B09 Quality Experience boundaries: 2/3 sessions and 5/6 weeks
+ok 9 - B09 Quality Experience boundaries: 2/3 sessions and 5/6 weeks
+  ---
+  duration_ms: 0.240661
+  type: 'test'
+  ...
+# Subtest: B10 completion boundary 94.9% / 95%
+ok 10 - B10 completion boundary 94.9% / 95%
+  ---
+  duration_ms: 1.018976
+  type: 'test'
+  ...
+# Subtest: B11 repetitions-in-range boundary 80% (79.9% is not representable with discrete repeats)
+ok 11 - B11 repetitions-in-range boundary 80% (79.9% is not representable with discrete repeats)
+  ---
+  duration_ms: 0.669831
+  type: 'test'
+  ...
+# Subtest: B12 pace-fade boundary 4.9% / 5% / just above 5%
+ok 12 - B12 pace-fade boundary 4.9% / 5% / just above 5%
+  ---
+  duration_ms: 0.624138
+  type: 'test'
+  ...
+# Subtest: B13 pain boundaries 1 / 2 / 3 / 4 without explicit stop flags
+ok 13 - B13 pain boundaries 1 / 2 / 3 / 4 without explicit stop flags
+  ---
+  duration_ms: 0.486264
+  type: 'test'
+  ...
+# Subtest: B14 RPE boundary between GREEN, GREEN_PLUS and YELLOW
+ok 14 - B14 RPE boundary between GREEN, GREEN_PLUS and YELLOW
+  ---
+  duration_ms: 0.499266
+  type: 'test'
+  ...
+# Subtest: B15 RED always wins over every other feedback signal
+ok 15 - B15 RED always wins over every other feedback signal
+  ---
+  duration_ms: 0.794358
+  type: 'test'
+  ...
+# Subtest: B16 taper length by capacity and quality
+ok 16 - B16 taper length by capacity and quality
+  ---
+  duration_ms: 0.093219
+  type: 'test'
+  ...
+# Subtest: F01 identical inputs and identical event streams give byte-identical states
+ok 17 - F01 identical inputs and identical event streams give byte-identical states
+  ---
+  duration_ms: 19.216839
+  type: 'test'
+  ...
+# Subtest: F02 repeating the same decision fifty times never drifts
+ok 18 - F02 repeating the same decision fifty times never drifts
+  ---
+  duration_ms: 20.28541
+  type: 'test'
+  ...
+# Subtest: F03 the source never reads a clock or a random source
+ok 19 - F03 the source never reads a clock or a random source
+  ---
+  duration_ms: 1.181522
+  type: 'test'
+  ...
+# Subtest: F04 no public operation mutates its arguments
+ok 20 - F04 no public operation mutates its arguments
+  ---
+  duration_ms: 3.00793
+  type: 'test'
+  ...
+# Subtest: F05 serialisation round trip is exact, idempotent and still validated
+ok 21 - F05 serialisation round trip is exact, idempotent and still validated
+  ---
+  duration_ms: 3.393768
+  type: 'test'
+  ...
+# Subtest: F06 calendar arithmetic is pure UTC and survives DST and leap boundaries
+ok 22 - F06 calendar arithmetic is pure UTC and survives DST and leap boundaries
+  ---
+  duration_ms: 0.283081
+  type: 'test'
+  ...
+# Subtest: F07 results must be submitted in chronological order
+ok 23 - F07 results must be submitted in chronological order
+  ---
+  duration_ms: 1.317004
+  type: 'test'
+  ...
+# Subtest: F08 working doses never fall below the last confirmed dose and reasons agree
+ok 24 - F08 working doses never fall below the last confirmed dose and reasons agree
+  ---
+  duration_ms: 7.359103
+  type: 'test'
+  ...
+# Subtest: F09 an explicit skip never changes the following prescription
+ok 25 - F09 an explicit skip never changes the following prescription
+  ---
+  duration_ms: 3.389852
+  type: 'test'
+  ...
+# Subtest: F09b an explicit skip and an automatic past-due miss produce the same state (approved decision 2)
+ok 26 - F09b an explicit skip and an automatic past-due miss produce the same state (approved decision 2)
+  ---
+  duration_ms: 3.068992
+  type: 'test'
+  ...
+# Subtest: F10 quality sessions queued in the future never exceed the session budget for their own date
+ok 27 - F10 quality sessions queued in the future never exceed the session budget for their own date
+  ---
+  duration_ms: 0.51415
+  type: 'test'
+  ...
+# Subtest: E01 rejected profile numbers
+ok 28 - E01 rejected profile numbers
+  ---
+  duration_ms: 2.040088
+  type: 'test'
+  ...
+# Subtest: E02 rejected dates and calendar values
+ok 29 - E02 rejected dates and calendar values
+  ---
+  duration_ms: 0.491521
+  type: 'test'
+  ...
+# Subtest: E03 rejected safety data
+ok 30 - E03 rejected safety data
+  ---
+  duration_ms: 0.432041
+  type: 'test'
+  ...
+# Subtest: E04 rejected workout results
+ok 31 - E04 rejected workout results
+  ---
+  duration_ms: 3.834876
+  type: 'test'
+  ...
+# Subtest: E05 rejected lifecycle operations
+ok 32 - E05 rejected lifecycle operations
+  ---
+  duration_ms: 2.679095
+  type: 'test'
+  ...
+# Subtest: E06 contradictory profile data are accepted, but LONG_EASY load is now constrained
+ok 33 - E06 contradictory profile data are accepted, but LONG_EASY load is now constrained
+  ---
+  duration_ms: 1.453481
+  type: 'test'
+  ...
+# Subtest: E07 a race date in the past is rejected with EVENT_DATE_PASSED (approved decision 1)
+ok 34 - E07 a race date in the past is rejected with EVENT_DATE_PASSED (approved decision 1)
+  ---
+  duration_ms: 0.334474
+  type: 'test'
+  ...
+# Subtest: E08 feasibility is monotonic in the number of available sessions (approved decision 2)
+ok 35 - E08 feasibility is monotonic in the number of available sessions (approved decision 2)
+  ---
+  duration_ms: 0.399687
+  type: 'test'
+  ...
+# Subtest: E09 no scenario or persona identifiers drive the engine logic
+ok 36 - E09 no scenario or persona identifiers drive the engine logic
+  ---
+  duration_ms: 2.703386
+  type: 'test'
+  ...
+# Subtest: C01 Safety STOP outranks an imminent start (TAPER)
+ok 37 - C01 Safety STOP outranks an imminent start (TAPER)
+  ---
+  duration_ms: 2.667592
+  type: 'test'
+  ...
+# Subtest: C02 Safety HOLD outranks an imminent start and offers only REST
+ok 38 - C02 Safety HOLD outranks an imminent start and offers only REST
+  ---
+  duration_ms: 0.419349
+  type: 'test'
+  ...
+# Subtest: C03 significant healthy break outranks an imminent start (RE_ENTRY before TAPER)
+ok 39 - C03 significant healthy break outranks an imminent start (RE_ENTRY before TAPER)
+  ---
+  duration_ms: 2.381535
+  type: 'test'
+  ...
+# Subtest: C04 LONG_TERM plus a fresh result still never trains off the target pace
+ok 40 - C04 LONG_TERM plus a fresh result still never trains off the target pace
+  ---
+  duration_ms: 1.026282
+  type: 'test'
+  ...
+# Subtest: C05 LOW confidence outranks SPECIFIC eligibility
+ok 41 - C05 LOW confidence outranks SPECIFIC eligibility
+  ---
+  duration_ms: 0.84453
+  type: 'test'
+  ...
+# Subtest: C06 T0 outranks an imminent start (FOUNDATION before TAPER)
+ok 42 - C06 T0 outranks an imminent start (FOUNDATION before TAPER)
+  ---
+  duration_ms: 0.265758
+  type: 'test'
+  ...
+# Subtest: C07 RED cancels quality already planned into the future, including moved workouts
+ok 43 - C07 RED cancels quality already planned into the future, including moved workouts
+  ---
+  duration_ms: 2.666327
+  type: 'test'
+  ...
+# Subtest: C08 two related YELLOW outrank an approaching start
+ok 44 - C08 two related YELLOW outrank an approaching start
+  ---
+  duration_ms: 2.124782
+  type: 'test'
+  ...
+# Subtest: C09 an OPEN gate is closed again by a long healthy break
+ok 45 - C09 an OPEN gate is closed again by a long healthy break
+  ---
+  duration_ms: 7.039613
+  type: 'test'
+  ...
+# Subtest: C10 an OPEN gate is closed again by a new YELLOW
+ok 46 - C10 an OPEN gate is closed again by a new YELLOW
+  ---
+  duration_ms: 5.163547
+  type: 'test'
+  ...
+# Subtest: C11 an OPEN gate is closed again by RED, with no quality left anywhere
+ok 47 - C11 an OPEN gate is closed again by RED, with no quality left anywhere
+  ---
+  duration_ms: 4.111293
+  type: 'test'
+  ...
+# Subtest: C12 TAPER suppresses the diagnostic CONTROL workout without losing the checkpoint request
+ok 48 - C12 TAPER suppresses the diagnostic CONTROL workout without losing the checkpoint request
+  ---
+  duration_ms: 0.437158
+  type: 'test'
+  ...
+# Subtest: C13 RED outranks the diagnostic-hold release path: an ordinary GREEN REST cannot clear it
+ok 49 - C13 RED outranks the diagnostic-hold release path: an ordinary GREEN REST cannot clear it
+  ---
+  duration_ms: 2.270487
+  type: 'test'
+  ...
+# Subtest: A01 every workout the queue produces must be recordable
+ok 50 - A01 every workout the queue produces must be recordable
+  ---
+  duration_ms: 10.354811
+  type: 'test'
+  ...
+# Subtest: A02 a RED safety report must never be rejected by an administrative limit
+ok 51 - A02 a RED safety report must never be rejected by an administrative limit
+  ---
+  duration_ms: 6.469518
+  type: 'test'
+  ...
+# Subtest: A03 queue authorisation and recorder acceptance use the same decision date
+ok 52 - A03 queue authorisation and recorder acceptance use the same decision date
+  ---
+  duration_ms: 2.96126
+  type: 'test'
+  ...
+# Subtest: A04 swept queue is always recordable (GREEN and RED) across profiles and dates
+ok 53 - A04 swept queue is always recordable (GREEN and RED) across profiles and dates
+  ---
+  duration_ms: 1262.70666
+  type: 'test'
+  ...
+# Subtest: A05 moved workouts remain recordable at their new date
+ok 54 - A05 moved workouts remain recordable at their new date
+  ---
+  duration_ms: 2.011561
+  type: 'test'
+  ...
+# Subtest: A06 rolling seven-day quality window never exceeds two and always keeps 48h
+ok 55 - A06 rolling seven-day quality window never exceeds two and always keeps 48h
+  ---
+  duration_ms: 224.973102
+  type: 'test'
+  ...
+# Subtest: A07 no workout is ever queued for a date where the recorder would refuse it
+ok 56 - A07 no workout is ever queued for a date where the recorder would refuse it
+  ---
+  duration_ms: 1.626929
+  type: 'test'
+  ...
+# Subtest: D01 GREEN then GREEN progresses exactly one volume step and nothing else
+ok 57 - D01 GREEN then GREEN progresses exactly one volume step and nothing else
+  ---
+  duration_ms: 8.721959
+  type: 'test'
+  ...
+# Subtest: D02 a success in one workout type never progresses a different type
+ok 58 - D02 a success in one workout type never progresses a different type
+  ---
+  duration_ms: 3.766616
+  type: 'test'
+  ...
+# Subtest: D03 GREEN_PLUS then GREEN_PLUS requests a checkpoint and never rewrites performance
+ok 59 - D03 GREEN_PLUS then GREEN_PLUS requests a checkpoint and never rewrites performance
+  ---
+  duration_ms: 2.281734
+  type: 'test'
+  ...
+# Subtest: D04 YELLOW then GREEN clears isolated fatigue and restores the level without growth
+ok 60 - D04 YELLOW then GREEN clears isolated fatigue and restores the level without growth
+  ---
+  duration_ms: 10.621345
+  type: 'test'
+  ...
+# Subtest: D05 YELLOW then YELLOW with the same family becomes a related pair and rolls the dose back
+ok 61 - D05 YELLOW then YELLOW with the same family becomes a related pair and rolls the dose back
+  ---
+  duration_ms: 4.905683
+  type: 'test'
+  ...
+# Subtest: D06 YELLOW then YELLOW with unrelated reasons stays unrelated
+ok 62 - D06 YELLOW then YELLOW with unrelated reasons stays unrelated
+  ---
+  duration_ms: 2.113242
+  type: 'test'
+  ...
+# Subtest: D07 RE_ENTRY runs two easy sessions, then a reduced quality, then normal training
+ok 63 - D07 RE_ENTRY runs two easy sessions, then a reduced quality, then normal training
+  ---
+  duration_ms: 8.771288
+  type: 'test'
+  ...
+# Subtest: D08 PARTIAL becomes OPEN only after two successful SPECIFIC_3K sessions at PARTIAL
+ok 64 - D08 PARTIAL becomes OPEN only after two successful SPECIFIC_3K sessions at PARTIAL
+  ---
+  duration_ms: 3.727692
+  type: 'test'
+  ...
+# Subtest: D09 RED blocks progression and cannot be cleared by time, skip or a healthy break
+ok 65 - D09 RED blocks progression and cannot be cleared by time, skip or a healthy break
+  ---
+  duration_ms: 6.876526
+  type: 'test'
+  ...
+# Subtest: D10 CONTROL feedback alone never becomes a new Current Performance
+ok 66 - D10 CONTROL feedback alone never becomes a new Current Performance
+  ---
+  duration_ms: 1.517217
+  type: 'test'
+  ...
+# Subtest: D11 a new valid 3 km test updates performance, replans and keeps T/Q
+ok 67 - D11 a new valid 3 km test updates performance, replans and keeps T/Q
+  ---
+  duration_ms: 0.881171
+  type: 'test'
+  ...
+# Subtest: D12 SPECIFIC then TAPER by date, and the event date itself stays in TAPER
+ok 68 - D12 SPECIFIC then TAPER by date, and the event date itself stays in TAPER
+  ---
+  duration_ms: 3.684665
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_DATE_FORMAT is raised as EngineError with a stable code and the original message
+ok 69 - API-01 INVALID_DATE_FORMAT is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 1.497853
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_CALENDAR_DATE is raised as EngineError with a stable code and the original message
+ok 70 - API-01 INVALID_CALENDAR_DATE is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.322661
+  type: 'test'
+  ...
+# Subtest: API-01 NUMBER_OUT_OF_RANGE is raised as EngineError with a stable code and the original message
+ok 71 - API-01 NUMBER_OUT_OF_RANGE is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.310611
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_SAFETY_FLAG is raised as EngineError with a stable code and the original message
+ok 72 - API-01 INVALID_SAFETY_FLAG is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.110045
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_PROFILE_FLAG is raised as EngineError with a stable code and the original message
+ok 73 - API-01 INVALID_PROFILE_FLAG is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.14021
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_QUALITY_WEEKS is raised as EngineError with a stable code and the original message
+ok 74 - API-01 INVALID_QUALITY_WEEKS is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.083988
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_MISMATCH is raised as EngineError with a stable code and the original message
+ok 75 - API-01 INVALID_MISMATCH is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.122116
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_PERFORMANCE_SOURCE is raised as EngineError with a stable code and the original message
+ok 76 - API-01 INVALID_PERFORMANCE_SOURCE is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.086085
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_BREAK_REASON is raised as EngineError with a stable code and the original message
+ok 77 - API-01 INVALID_BREAK_REASON is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.292749
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_BREAK is raised as EngineError with a stable code and the original message
+ok 78 - API-01 INVALID_BREAK is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.279048
+  type: 'test'
+  ...
+# Subtest: API-01 FUTURE_PERFORMANCE is raised as EngineError with a stable code and the original message
+ok 79 - API-01 FUTURE_PERFORMANCE is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.137518
+  type: 'test'
+  ...
+# Subtest: API-01 AVAILABILITY_NOT_INTEGER is raised as EngineError with a stable code and the original message
+ok 80 - API-01 AVAILABILITY_NOT_INTEGER is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.079363
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_YELLOW_REASON is raised as EngineError with a stable code and the original message
+ok 81 - API-01 INVALID_YELLOW_REASON is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.1361
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_FATIGUE_FLAG is raised as EngineError with a stable code and the original message
+ok 82 - API-01 INVALID_FATIGUE_FLAG is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.050085
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_FEEDBACK_CONFIRMATION is raised as EngineError with a stable code and the original message
+ok 83 - API-01 INVALID_FEEDBACK_CONFIRMATION is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.043715
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_PROGRESSION_STATE is raised as EngineError with a stable code and the original message
+ok 84 - API-01 INVALID_PROGRESSION_STATE is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 2.706799
+  type: 'test'
+  ...
+# Subtest: API-01 RESULT_DISTANCE_CONFLICT is raised as EngineError with a stable code and the original message
+ok 85 - API-01 RESULT_DISTANCE_CONFLICT is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.085302
+  type: 'test'
+  ...
+# Subtest: API-01 EVENT_DATE_PASSED is raised as EngineError with a stable code and the original message
+ok 86 - API-01 EVENT_DATE_PASSED is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.151358
+  type: 'test'
+  ...
+# Subtest: API-01 CLOCK_BACKWARDS is raised as EngineError with a stable code and the original message
+ok 87 - API-01 CLOCK_BACKWARDS is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 1.004412
+  type: 'test'
+  ...
+# Subtest: API-01 UNSUPPORTED_STATE_VERSION is raised as EngineError with a stable code and the original message
+ok 88 - API-01 UNSUPPORTED_STATE_VERSION is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.868968
+  type: 'test'
+  ...
+# Subtest: API-01 WORKOUT_BLOCKED_BY_PHASE_OR_SAFETY is raised as EngineError with a stable code and the original message
+ok 89 - API-01 WORKOUT_BLOCKED_BY_PHASE_OR_SAFETY is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.428975
+  type: 'test'
+  ...
+# Subtest: API-01 UNKNOWN_WORKOUT is raised as EngineError with a stable code and the original message
+ok 90 - API-01 UNKNOWN_WORKOUT is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.649453
+  type: 'test'
+  ...
+# Subtest: API-01 UNKNOWN_OR_COMPLETED_WORKOUT is raised as EngineError with a stable code and the original message
+ok 91 - API-01 UNKNOWN_OR_COMPLETED_WORKOUT is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.668578
+  type: 'test'
+  ...
+# Subtest: API-01 RESULT_PRECEDES_STATE is raised as EngineError with a stable code and the original message
+ok 92 - API-01 RESULT_PRECEDES_STATE is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.620851
+  type: 'test'
+  ...
+# Subtest: API-01 RECOVERY_OR_QUALITY_LIMIT is raised as EngineError with a stable code and the original message
+ok 93 - API-01 RECOVERY_OR_QUALITY_LIMIT is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 2.028628
+  type: 'test'
+  ...
+# Subtest: API-01 PROTECTED_FIELD is raised as EngineError with a stable code and the original message
+ok 94 - API-01 PROTECTED_FIELD is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.620279
+  type: 'test'
+  ...
+# Subtest: API-01 CHECKPOINT_NOT_PERMITTED is raised as EngineError with a stable code and the original message
+ok 95 - API-01 CHECKPOINT_NOT_PERMITTED is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.570553
+  type: 'test'
+  ...
+# Subtest: API-01 INVALID_CHECKPOINT_DATE is raised as EngineError with a stable code and the original message
+ok 96 - API-01 INVALID_CHECKPOINT_DATE is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.466091
+  type: 'test'
+  ...
+# Subtest: API-01 FINAL_RESULT_NOT_ON_EVENT_DATE is raised as EngineError with a stable code and the original message
+ok 97 - API-01 FINAL_RESULT_NOT_ON_EVENT_DATE is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.531166
+  type: 'test'
+  ...
+# Subtest: API-01 FINAL_RESULT_BEFORE_EVENT is raised as EngineError with a stable code and the original message
+ok 98 - API-01 FINAL_RESULT_BEFORE_EVENT is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.45943
+  type: 'test'
+  ...
+# Subtest: API-01 MOVE_OUTSIDE_HORIZON is raised as EngineError with a stable code and the original message
+ok 99 - API-01 MOVE_OUTSIDE_HORIZON is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 1.173076
+  type: 'test'
+  ...
+# Subtest: API-01 MOVE_OCCUPIED_DATE is raised as EngineError with a stable code and the original message
+ok 100 - API-01 MOVE_OCCUPIED_DATE is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.648818
+  type: 'test'
+  ...
+# Subtest: API-01 MOVE_RECOVERY_VIOLATION is raised as EngineError with a stable code and the original message
+ok 101 - API-01 MOVE_RECOVERY_VIOLATION is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.703251
+  type: 'test'
+  ...
+# Subtest: API-01 MOVE_QUALITY_LIMIT_VIOLATION is raised as EngineError with a stable code and the original message
+ok 102 - API-01 MOVE_QUALITY_LIMIT_VIOLATION is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 1.578082
+  type: 'test'
+  ...
+# Subtest: API-01 MOVE_WEEKLY_LOAD_LIMIT is raised as EngineError with a stable code and the original message
+ok 103 - API-01 MOVE_WEEKLY_LOAD_LIMIT is raised as EngineError with a stable code and the original message
+  ---
+  duration_ms: 0.677811
+  type: 'test'
+  ...
+# Subtest: API-02 a dynamic error carries its parameters instead of forcing string parsing
+ok 104 - API-02 a dynamic error carries its parameters instead of forcing string parsing
+  ---
+  duration_ms: 0.122801
+  type: 'test'
+  ...
+# Subtest: API-03 an unbounded range reports Infinity rather than dropping the parameter
+ok 105 - API-03 an unbounded range reports Infinity rather than dropping the parameter
+  ---
+  duration_ms: 0.07986
+  type: 'test'
+  ...
+# Subtest: API-04 errors without parameters still expose an (empty) details object
+ok 106 - API-04 errors without parameters still expose an (empty) details object
+  ---
+  duration_ms: 0.428711
+  type: 'test'
+  ...
+# Subtest: API-05 EventDatePassedError stays a distinct class with the same code, message and instanceof chain
+ok 107 - API-05 EventDatePassedError stays a distinct class with the same code, message and instanceof chain
+  ---
+  duration_ms: 0.628163
+  type: 'test'
+  ...
+# Subtest: API-06 existing plain-Error handling keeps working for every code
+ok 108 - API-06 existing plain-Error handling keeps working for every code
+  ---
+  duration_ms: 15.638713
+  type: 'test'
+  ...
+# Subtest: API-07 error codes are unique and every one has a covered public trigger
+ok 109 - API-07 error codes are unique and every one has a covered public trigger
+  ---
+  duration_ms: 0.160179
+  type: 'test'
+  ...
+# Subtest: API-08 every catalog is exported, frozen, non-empty, duplicate-free and made of strings
+ok 110 - API-08 every catalog is exported, frozen, non-empty, duplicate-free and made of strings
+  ---
+  duration_ms: 0.231267
+  type: 'test'
+  ...
+# Subtest: API-09 exhaustive label maps are complete at runtime and verified by the compiler
+ok 111 - API-09 exhaustive label maps are complete at runtime and verified by the compiler
+  ---
+  duration_ms: 0.162793
+  type: 'test'
+  ...
+# Subtest: API-10 the value sets the engine actually emits are members of the published catalogs
+ok 112 - API-10 the value sets the engine actually emits are members of the published catalogs
+  ---
+  duration_ms: 0.868812
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-01 only the engine gateway imports the engine
+ok 113 - BOUNDARY-01 only the engine gateway imports the engine
+  ---
+  duration_ms: 1.62346
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-02 the gateway imports only the public engine API
+ok 114 - BOUNDARY-02 the gateway imports only the public engine API
+  ---
+  duration_ms: 0.233403
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-03 the frontend never calls internal sport functions
+ok 115 - BOUNDARY-03 the frontend never calls internal sport functions
+  ---
+  duration_ms: 2.164996
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-04 the application layer never imports the UI
+ok 116 - BOUNDARY-04 the application layer never imports the UI
+  ---
+  duration_ms: 0.463492
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-05 every sport decision stays in the engine
+ok 117 - BOUNDARY-05 every sport decision stays in the engine
+  ---
+  duration_ms: 3.317042
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-06 the engine clock is advanced only through the guarded operation
+ok 118 - BOUNDARY-06 the engine clock is advanced only through the guarded operation
+  ---
+  duration_ms: 0.588395
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-07 only creating a cycle may open onboarding
+ok 119 - BOUNDARY-07 only creating a cycle may open onboarding
+  ---
+  duration_ms: 0.857226
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-08 a result reaches the engine only through the application operation
+ok 120 - BOUNDARY-08 a result reaches the engine only through the application operation
+  ---
+  duration_ms: 2.219985
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-09 every engine transition stays behind its application operation
+ok 121 - BOUNDARY-09 every engine transition stays behind its application operation
+  ---
+  duration_ms: 1.826305
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-10 a skip cause is derived by the application, never supplied
+ok 122 - BOUNDARY-10 a skip cause is derived by the application, never supplied
+  ---
+  duration_ms: 0.73575
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-11 an overdue session can never be moved
+ok 123 - BOUNDARY-11 an overdue session can never be moved
+  ---
+  duration_ms: 0.320037
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-12 parameter updates only reach the engine through their guarded operation
+ok 124 - BOUNDARY-12 parameter updates only reach the engine through their guarded operation
+  ---
+  duration_ms: 0.479191
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-13 final recording only reaches the engine through the terminal operation
+ok 125 - BOUNDARY-13 final recording only reaches the engine through the terminal operation
+  ---
+  duration_ms: 0.431703
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-14 archive storage preserves opaque state and does not import engine internals
+ok 126 - BOUNDARY-14 archive storage preserves opaque state and does not import engine internals
+  ---
+  duration_ms: 0.216315
+  type: 'test'
+  ...
+# Subtest: BOUNDARY-15 terminal result has no ordinary clock guard
+ok 127 - BOUNDARY-15 terminal result has no ordinary clock guard
+  ---
+  duration_ms: 0.080621
+  type: 'test'
+  ...
+# Subtest: CHECK-01 a required checkpoint can be recorded and it clears the requirement
+ok 128 - CHECK-01 a required checkpoint can be recorded and it clears the requirement
+  ---
+  duration_ms: 10.810856
+  type: 'test'
+  ...
+# Subtest: CHECK-02 the previous Current Performance is kept in the log, not replaced by the baseline
+ok 129 - CHECK-02 the previous Current Performance is kept in the log, not replaced by the baseline
+  ---
+  duration_ms: 5.706611
+  type: 'test'
+  ...
+# Subtest: CHECK-03 the immutable baseline is never rewritten
+ok 130 - CHECK-03 the immutable baseline is never rewritten
+  ---
+  duration_ms: 1.261352
+  type: 'test'
+  ...
+# Subtest: CHECK-04 the new assessment and the plan survive a reload
+ok 131 - CHECK-04 the new assessment and the plan survive a reload
+  ---
+  duration_ms: 2.522555
+  type: 'test'
+  ...
+# Subtest: CHECK-05 an impossible date is refused by the engine and nothing is written
+ok 132 - CHECK-05 an impossible date is refused by the engine and nothing is written
+  ---
+  duration_ms: 0.930037
+  type: 'test'
+  ...
+# Subtest: CHECK-06 a checkpoint the engine does not permit is refused, with no event
+ok 133 - CHECK-06 a checkpoint the engine does not permit is refused, with no event
+  ---
+  duration_ms: 0.743282
+  type: 'test'
+  ...
+# Subtest: CHECK-07 a storage failure leaves the previous assessment active
+ok 134 - CHECK-07 a storage failure leaves the previous assessment active
+  ---
+  duration_ms: 1.330882
+  type: 'test'
+  ...
+# Subtest: CHECK-08 an unresolved past session blocks a checkpoint, because it would advance the clock
+ok 135 - CHECK-08 an unresolved past session blocks a checkpoint, because it would advance the clock
+  ---
+  duration_ms: 0.738955
+  type: 'test'
+  ...
+# Subtest: CHECK-09 the event records the engine verdict after the assessment
+ok 136 - CHECK-09 the event records the engine verdict after the assessment
+  ---
+  duration_ms: 1.51099
+  type: 'test'
+  ...
+# Subtest: CHECK-10 the operation logs nothing else and keeps no copy of the queue
+ok 137 - CHECK-10 the operation logs nothing else and keeps no copy of the queue
+  ---
+  duration_ms: 1.517407
+  type: 'test'
+  ...
+# Subtest: COPY-01 every public value set has Russian text and no extra keys
+ok 138 - COPY-01 every public value set has Russian text and no extra keys
+  ---
+  duration_ms: 1.541162
+  type: 'test'
+  ...
+# Subtest: COPY-02 no text is a bare engine code and nothing is empty
+ok 139 - COPY-02 no text is a bare engine code and nothing is empty
+  ---
+  duration_ms: 0.401203
+  type: 'test'
+  ...
+# Subtest: COPY-03 error texts never leak the technical code and use the parameters
+ok 140 - COPY-03 error texts never leak the technical code and use the parameters
+  ---
+  duration_ms: 0.499632
+  type: 'test'
+  ...
+# Subtest: COPY-04 the retry policy in the copy matches the application contract
+ok 141 - COPY-04 the retry policy in the copy matches the application contract
+  ---
+  duration_ms: 0.10506
+  type: 'test'
+  ...
+# Subtest: APP-01 a valid draft becomes the exact Profile shape the engine expects
+ok 142 - APP-01 a valid draft becomes the exact Profile shape the engine expects
+  ---
+  duration_ms: 2.023643
+  type: 'test'
+  ...
+# Subtest: APP-02 structural problems are reported per field, and the engine keeps the ranges
+ok 143 - APP-02 structural problems are reported per field, and the engine keeps the ranges
+  ---
+  duration_ms: 4.642523
+  type: 'test'
+  ...
+# Subtest: APP-03 every structural field belongs to a questionnaire step
+ok 144 - APP-03 every structural field belongs to a questionnaire step
+  ---
+  duration_ms: 0.287717
+  type: 'test'
+  ...
+# Subtest: APP-04 creating a cycle stores exactly the documented envelope
+ok 145 - APP-04 creating a cycle stores exactly the documented envelope
+  ---
+  duration_ms: 8.212977
+  type: 'test'
+  ...
+# Subtest: APP-05 the baseline is an immutable snapshot of the inputs and the first verdict
+ok 146 - APP-05 the baseline is an immutable snapshot of the inputs and the first verdict
+  ---
+  duration_ms: 1.222457
+  type: 'test'
+  ...
+# Subtest: APP-06 an engine rejection stores nothing and reports a safe error contract
+ok 147 - APP-06 an engine rejection stores nothing and reports a safe error contract
+  ---
+  duration_ms: 0.418601
+  type: 'test'
+  ...
+# Subtest: APP-07 a race date in the past is refused by the public validation API
+ok 148 - APP-07 a race date in the past is refused by the public validation API
+  ---
+  duration_ms: 0.21952
+  type: 'test'
+  ...
+# Subtest: APP-08 a storage failure is reported instead of pretending success
+ok 149 - APP-08 a storage failure is reported instead of pretending success
+  ---
+  duration_ms: 0.986385
+  type: 'test'
+  ...
+# Subtest: APP-09 the event log is append-only and never feeds the engine
+ok 150 - APP-09 the event log is append-only and never feeds the engine
+  ---
+  duration_ms: 0.926136
+  type: 'test'
+  ...
+# Subtest: APP-10 the error contract is code based, with a safe fallback
+ok 151 - APP-10 the error contract is code based, with a safe fallback
+  ---
+  duration_ms: 0.376447
+  type: 'test'
+  ...
+# Subtest: DOCS-01 no document promises a bounded archive
+ok 152 - DOCS-01 no document promises a bounded archive
+  ---
+  duration_ms: 3.189009
+  type: 'test'
+  ...
+# Subtest: DOCS-02 the architecture fixes the decision and names the container
+ok 153 - DOCS-02 the architecture fixes the decision and names the container
+  ---
+  duration_ms: 1.437387
+  type: 'test'
+  ...
+# Subtest: DOCS-03 the lifecycle document describes the same storage
+ok 154 - DOCS-03 the lifecycle document describes the same storage
+  ---
+  duration_ms: 0.196035
+  type: 'test'
+  ...
+# Subtest: DOCS-04 the documented container matches the implementation
+ok 155 - DOCS-04 the documented container matches the implementation
+  ---
+  duration_ms: 0.176545
+  type: 'test'
+  ...
+# Subtest: DOCS-05 the no-limit regression test is still in place
+ok 156 - DOCS-05 the no-limit regression test is still in place
+  ---
+  duration_ms: 0.163493
+  type: 'test'
+  ...
+# Subtest: PARAM target: baseline immutable, changed-only event, persistence and reload
+ok 157 - PARAM target: baseline immutable, changed-only event, persistence and reload
+  ---
+  duration_ms: 22.888528
+  type: 'test'
+  ...
+# Subtest: PARAM date: baseline immutable, changed-only event, persistence and reload
+ok 158 - PARAM date: baseline immutable, changed-only event, persistence and reload
+  ---
+  duration_ms: 1.792852
+  type: 'test'
+  ...
+# Subtest: PARAM both: baseline immutable, changed-only event, persistence and reload
+ok 159 - PARAM both: baseline immutable, changed-only event, persistence and reload
+  ---
+  duration_ms: 1.894421
+  type: 'test'
+  ...
+# Subtest: PARAM no-op leaves object identity, event count and storage writes unchanged
+ok 160 - PARAM no-op leaves object identity, event count and storage writes unchanged
+  ---
+  duration_ms: 0.777832
+  type: 'test'
+  ...
+# Subtest: PARAM INV-1 rejects changes with past unresolved workouts without writing
+ok 161 - PARAM INV-1 rejects changes with past unresolved workouts without writing
+  ---
+  duration_ms: 0.720844
+  type: 'test'
+  ...
+# Subtest: PARAM failed save leaves previous persisted state and baseline intact
+ok 162 - PARAM failed save leaves previous persisted state and baseline intact
+  ---
+  duration_ms: 1.269314
+  type: 'test'
+  ...
+# Subtest: PARAM changing race date enters and exits TAPER exclusively through engine
+ok 163 - PARAM changing race date enters and exits TAPER exclusively through engine
+  ---
+  duration_ms: 1.643787
+  type: 'test'
+  ...
+# Subtest: PARAM postponing start after original race date has no local calendar ban
+ok 164 - PARAM postponing start after original race date has no local calendar ban
+  ---
+  duration_ms: 0.879071
+  type: 'test'
+  ...
+# Subtest: PARAM malformed calendar and passed event expose structured codes
+ok 165 - PARAM malformed calendar and passed event expose structured codes
+  ---
+  duration_ms: 1.441373
+  type: 'test'
+  ...
+# Subtest: FINAL 0 days late: race date fixed, terminal, event, baseline and reload
+ok 166 - FINAL 0 days late: race date fixed, terminal, event, baseline and reload
+  ---
+  duration_ms: 1.615374
+  type: 'test'
+  ...
+# Subtest: FINAL 2 days late: race date fixed, terminal, event, baseline and reload
+ok 167 - FINAL 2 days late: race date fixed, terminal, event, baseline and reload
+  ---
+  duration_ms: 2.955491
+  type: 'test'
+  ...
+# Subtest: FINAL 10 days late: race date fixed, terminal, event, baseline and reload
+ok 168 - FINAL 10 days late: race date fixed, terminal, event, baseline and reload
+  ---
+  duration_ms: 1.047366
+  type: 'test'
+  ...
+# Subtest: FINAL old unresolved workouts cannot block terminal transition
+ok 169 - FINAL old unresolved workouts cannot block terminal transition
+  ---
+  duration_ms: 1.259202
+  type: 'test'
+  ...
+# Subtest: FINAL rejects before-event, bad source and wrong date by code
+ok 170 - FINAL rejects before-event, bad source and wrong date by code
+  ---
+  duration_ms: 1.420232
+  type: 'test'
+  ...
+# Subtest: FINAL storage failure does not expose successful terminal state
+ok 171 - FINAL storage failure does not expose successful terminal state
+  ---
+  duration_ms: 0.626248
+  type: 'test'
+  ...
+# Subtest: FINAL double submission including stale original envelope writes only one event
+ok 172 - FINAL double submission including stale original envelope writes only one event
+  ---
+  duration_ms: 0.907265
+  type: 'test'
+  ...
+# Subtest: ARCHIVE full envelope is durable before active clear; success and retry idempotent
+ok 173 - ARCHIVE full envelope is durable before active clear; success and retry idempotent
+  ---
+  duration_ms: 1.903145
+  type: 'test'
+  ...
+# Subtest: ARCHIVE write failure retains completed active and supports retry
+ok 174 - ARCHIVE write failure retains completed active and supports retry
+  ---
+  duration_ms: 0.845483
+  type: 'test'
+  ...
+# Subtest: ARCHIVE clear failure keeps archive and active; retry cannot duplicate
+ok 175 - ARCHIVE clear failure keeps archive and active; retry cannot duplicate
+  ---
+  duration_ms: 0.790512
+  type: 'test'
+  ...
+# Subtest: ARCHIVE silent lost write or clear is an explicit failure, not success
+ok 176 - ARCHIVE silent lost write or clear is an explicit failure, not success
+  ---
+  duration_ms: 0.730053
+  type: 'test'
+  ...
+# Subtest: ARCHIVE conflicting duplicate never overwrites or clears active
+ok 177 - ARCHIVE conflicting duplicate never overwrites or clears active
+  ---
+  duration_ms: 0.491045
+  type: 'test'
+  ...
+# Subtest: ARCHIVE invalid/unsupported format stays untouched: {
+ok 178 - ARCHIVE invalid/unsupported format stays untouched: {
+  ---
+  duration_ms: 0.191958
+  type: 'test'
+  ...
+# Subtest: ARCHIVE invalid/unsupported format stays untouched: {"formatVersion":999,"cycles":[]}
+ok 179 - ARCHIVE invalid/unsupported format stays untouched: {"formatVersion":999,"cycles":[]}
+  ---
+  duration_ms: 0.059998
+  type: 'test'
+  ...
+# Subtest: ARCHIVE invalid/unsupported format stays untouched: {"formatVersion":1,"cycles":false}
+ok 180 - ARCHIVE invalid/unsupported format stays untouched: {"formatVersion":1,"cycles":false}
+  ---
+  duration_ms: 0.053521
+  type: 'test'
+  ...
+# Subtest: ARCHIVE incomplete cycles are refused and cannot replace active with a new cycle
+ok 181 - ARCHIVE incomplete cycles are refused and cannot replace active with a new cycle
+  ---
+  duration_ms: 0.906683
+  type: 'test'
+  ...
+# Subtest: ARCHIVE all cycles, newest first, independent baseline and no hard limit
+ok 182 - ARCHIVE all cycles, newest first, independent baseline and no hard limit
+  ---
+  duration_ms: 12.16061
+  type: 'test'
+  ...
+# Subtest: SUMMARY derives checkpoints, history and deduplicated skips without a summary snapshot
+ok 183 - SUMMARY derives checkpoints, history and deduplicated skips without a summary snapshot
+  ---
+  duration_ms: 0.612588
+  type: 'test'
+  ...
+# Subtest: TERMINAL normal replan/checkpoint cannot revive completed active or write a post-race plan
+ok 184 - TERMINAL normal replan/checkpoint cannot revive completed active or write a post-race plan
+  ---
+  duration_ms: 3.389807
+  type: 'test'
+  ...
+# Subtest: ROUTES lifecycle roundtrip supports encoded cycle ids and archive-only reload
+ok 185 - ROUTES lifecycle roundtrip supports encoded cycle ids and archive-only reload
+  ---
+  duration_ms: 1.648837
+  type: 'test'
+  ...
+# Subtest: MOVE-01 a session can be moved inside the plan and the engine keeps it
+ok 186 - MOVE-01 a session can be moved inside the plan and the engine keeps it
+  ---
+  duration_ms: 5.691675
+  type: 'test'
+  ...
+# Subtest: MOVE-02 the new date survives a reload
+ok 187 - MOVE-02 the new date survives a reload
+  ---
+  duration_ms: 1.887788
+  type: 'test'
+  ...
+# Subtest: MOVE-03 the log records the action with both dates
+ok 188 - MOVE-03 the log records the action with both dates
+  ---
+  duration_ms: 1.668018
+  type: 'test'
+  ...
+# Subtest: MOVE-04 through MOVE-07 the engine refusal is reported by its own code
+ok 189 - MOVE-04 through MOVE-07 the engine refusal is reported by its own code
+  ---
+  duration_ms: 5.673919
+  type: 'test'
+  ...
+# Subtest: MOVE-08 a storage failure changes nothing
+ok 190 - MOVE-08 a storage failure changes nothing
+  ---
+  duration_ms: 1.142762
+  type: 'test'
+  ...
+# Subtest: MOVE-09 an unresolved past session blocks a move, so INV-1 cannot be bypassed
+ok 191 - MOVE-09 an unresolved past session blocks a move, so INV-1 cannot be bypassed
+  ---
+  duration_ms: 0.946784
+  type: 'test'
+  ...
+# Subtest: MOVE-10 the observable diff describes the new plan from the engine queue
+ok 192 - MOVE-10 the observable diff describes the new plan from the engine queue
+  ---
+  duration_ms: 0.972496
+  type: 'test'
+  ...
+# Subtest: MOVE-11 an overdue session can never be moved into the future
+ok 193 - MOVE-11 an overdue session can never be moved into the future
+  ---
+  duration_ms: 1.021686
+  type: 'test'
+  ...
+# Subtest: MOVE-12 a session scheduled for today or later can still be moved
+ok 194 - MOVE-12 a session scheduled for today or later can still be moved
+  ---
+  duration_ms: 1.762606
+  type: 'test'
+  ...
+# Subtest: MOVE-13 once the overdue sessions are resolved, moving works again
+ok 195 - MOVE-13 once the overdue sessions are resolved, moving works again
+  ---
+  duration_ms: 1.736421
+  type: 'test'
+  ...
+# Subtest: D1-01 a pending result is derived from the queue, and the UI agrees with the guard
+ok 196 - D1-01 a pending result is derived from the queue, and the UI agrees with the guard
+  ---
+  duration_ms: 6.020347
+  type: 'test'
+  ...
+# Subtest: D1-02 replan is refused while a pending result exists, from any caller
+ok 197 - D1-02 replan is refused while a pending result exists, from any caller
+  ---
+  duration_ms: 1.563816
+  type: 'test'
+  ...
+# Subtest: D1-03 a caller cannot get around the guard with a freshly deserialized state
+ok 198 - D1-03 a caller cannot get around the guard with a freshly deserialized state
+  ---
+  duration_ms: 1.13021
+  type: 'test'
+  ...
+# Subtest: D1-04 with nothing pending the same operation does run and is persisted before display
+ok 199 - D1-04 with nothing pending the same operation does run and is persisted before display
+  ---
+  duration_ms: 1.803039
+  type: 'test'
+  ...
+# Subtest: D2-01 reading never removes a damaged record; only an explicit discard does
+ok 200 - D2-01 reading never removes a damaged record; only an explicit discard does
+  ---
+  duration_ms: 0.225724
+  type: 'test'
+  ...
+# Subtest: D3-01 a storage that silently drops the write is reported, not accepted
+ok 201 - D3-01 a storage that silently drops the write is reported, not accepted
+  ---
+  duration_ms: 0.887568
+  type: 'test'
+  ...
+# Subtest: D3-02 creating a cycle fails loudly when the device cannot keep it
+ok 202 - D3-02 creating a cycle fails loudly when the device cannot keep it
+  ---
+  duration_ms: 0.795886
+  type: 'test'
+  ...
+# Subtest: RESET-01 explicit reset clears exactly the active cycle and drafts, never the archive
+ok 203 - RESET-01 explicit reset clears exactly the active cycle and drafts, never the archive
+  ---
+  duration_ms: 4.23522
+  type: 'test'
+  ...
+# Subtest: RESET-02 stale window cannot delete changed persisted plan
+ok 204 - RESET-02 stale window cannot delete changed persisted plan
+  ---
+  duration_ms: 0.912608
+  type: 'test'
+  ...
+# Subtest: RESET-03 a storage read exception is not corrupted state and deletes nothing
+ok 205 - RESET-03 a storage read exception is not corrupted state and deletes nothing
+  ---
+  duration_ms: 0.821061
+  type: 'test'
+  ...
+# Subtest: RESET-04 a draft cleanup error prevents deleting the active plan
+ok 206 - RESET-04 a draft cleanup error prevents deleting the active plan
+  ---
+  duration_ms: 0.661258
+  type: 'test'
+  ...
+# Subtest: RESET-05 a clear failure does not pretend reset succeeded
+ok 207 - RESET-05 a clear failure does not pretend reset succeeded
+  ---
+  duration_ms: 0.925852
+  type: 'test'
+  ...
+# Subtest: RESET-06 silent failure to clear is detected by readback
+ok 208 - RESET-06 silent failure to clear is detected by readback
+  ---
+  duration_ms: 0.621094
+  type: 'test'
+  ...
+# Subtest: RESET-07 completed cycle cannot bypass archiving through reset
+ok 209 - RESET-07 completed cycle cannot bypass archiving through reset
+  ---
+  duration_ms: 0.596089
+  type: 'test'
+  ...
+# Subtest: FORM-01 a started draft comes from the prescription and invents nothing
+ok 210 - FORM-01 a started draft comes from the prescription and invents nothing
+  ---
+  duration_ms: 329.269955
+  type: 'test'
+  ...
+# Subtest: FORM-02 completion presets become fractions, and the exact option an exact share
+ok 211 - FORM-02 completion presets become fractions, and the exact option an exact share
+  ---
+  duration_ms: 131.938708
+  type: 'test'
+  ...
+# Subtest: FORM-03 every structural problem is caught before the engine is asked
+ok 212 - FORM-03 every structural problem is caught before the engine is asked
+  ---
+  duration_ms: 147.296492
+  type: 'test'
+  ...
+# Subtest: FORM-04 the produced result carries exactly the engine contract
+ok 213 - FORM-04 the produced result carries exactly the engine contract
+  ---
+  duration_ms: 133.566923
+  type: 'test'
+  ...
+# Subtest: FORM-05 an unreported repeats row is dropped, not turned into an error
+ok 214 - FORM-05 an unreported repeats row is dropped, not turned into an error
+  ---
+  duration_ms: 125.694027
+  type: 'test'
+  ...
+# Subtest: FORM-06 B1: the block is expanded exactly where the approved rule says so
+ok 215 - FORM-06 B1: the block is expanded exactly where the approved rule says so
+  ---
+  duration_ms: 826.667967
+  type: 'test'
+  ...
+# Subtest: FORM-07 B1: the engine, not the form, decides what an empty repeats block costs
+ok 216 - FORM-07 B1: the engine, not the form, decides what an empty repeats block costs
+  ---
+  duration_ms: 407.501105
+  type: 'test'
+  ...
+# Subtest: FORM-08 the warning path leads to the engine verdict the engine chose
+ok 217 - FORM-08 the warning path leads to the engine verdict the engine chose
+  ---
+  duration_ms: 2.91659
+  type: 'test'
+  ...
+# Subtest: FORM-SAFETY-01 every engine flag is recognised; no choice is pre-confirmed
+ok 218 - FORM-SAFETY-01 every engine flag is recognised; no choice is pre-confirmed
+  ---
+  duration_ms: 104.830345
+  type: 'test'
+  ...
+# Subtest: FORM-SAFETY-02 reported symptoms and unusual fatigue remain separate in engine feedback
+ok 219 - FORM-SAFETY-02 reported symptoms and unusual fatigue remain separate in engine feedback
+  ---
+  duration_ms: 92.980675
+  type: 'test'
+  ...
+# Subtest: ROUTE-01 every screen has a stable path and parses back
+ok 220 - ROUTE-01 every screen has a stable path and parses back
+  ---
+  duration_ms: 1.747617
+  type: 'test'
+  ...
+# Subtest: ROUTE-PAGES project paths survive navigation, reload and deep links
+ok 221 - ROUTE-PAGES project paths survive navigation, reload and deep links
+  ---
+  duration_ms: 0.514404
+  type: 'test'
+  ...
+# Subtest: ROUTE-02 an unknown or missing questionnaire step falls back to the first one
+ok 222 - ROUTE-02 an unknown or missing questionnaire step falls back to the first one
+  ---
+  duration_ms: 0.111879
+  type: 'test'
+  ...
+# Subtest: ROUTE-03 without an active cycle only the onboarding screens are reachable
+ok 223 - ROUTE-03 without an active cycle only the onboarding screens are reachable
+  ---
+  duration_ms: 0.237097
+  type: 'test'
+  ...
+# Subtest: ROUTE-04 with an active cycle the onboarding screens are not revisited
+ok 224 - ROUTE-04 with an active cycle the onboarding screens are not revisited
+  ---
+  duration_ms: 0.133069
+  type: 'test'
+  ...
+# Subtest: RECOVERY-01 a new healthy report is re-assessed by engine, saved and event logged
+ok 225 - RECOVERY-01 a new healthy report is re-assessed by engine, saved and event logged
+  ---
+  duration_ms: 5.759909
+  type: 'test'
+  ...
+# Subtest: RECOVERY-02 continuing symptoms preserve the hold and keep cycle
+ok 226 - RECOVERY-02 continuing symptoms preserve the hold and keep cycle
+  ---
+  duration_ms: 1.201178
+  type: 'test'
+  ...
+# Subtest: RECOVERY-03 missing medical-review affirmation cannot save a changed state
+ok 227 - RECOVERY-03 missing medical-review affirmation cannot save a changed state
+  ---
+  duration_ms: 0.642705
+  type: 'test'
+  ...
+# Subtest: RECOVERY-04 past sessions must be closed before rechecking: no silent misses
+ok 228 - RECOVERY-04 past sessions must be closed before rechecking: no silent misses
+  ---
+  duration_ms: 0.586931
+  type: 'test'
+  ...
+# Subtest: RECOVERY-05 goal preview is exactly the engine verdict, never a second formula
+ok 229 - RECOVERY-05 goal preview is exactly the engine verdict, never a second formula
+  ---
+  duration_ms: 1.145584
+  type: 'test'
+  ...
+# Subtest: SKIP-01 a voluntary skip removes the session from the queue and logs the reason
+ok 230 - SKIP-01 a voluntary skip removes the session from the queue and logs the reason
+  ---
+  duration_ms: 5.682519
+  type: 'test'
+  ...
+# Subtest: SKIP-02 a past-due skip is logged with its own cause
+ok 231 - SKIP-02 a past-due skip is logged with its own cause
+  ---
+  duration_ms: 1.333222
+  type: 'test'
+  ...
+# Subtest: SKIP-03 the cause follows the session date and only the application states it
+ok 232 - SKIP-03 the cause follows the session date and only the application states it
+  ---
+  duration_ms: 1.944825
+  type: 'test'
+  ...
+# Subtest: SKIP-04 only the chosen session is resolved, never the other overdue ones
+ok 233 - SKIP-04 only the chosen session is resolved, never the other overdue ones
+  ---
+  duration_ms: 1.830826
+  type: 'test'
+  ...
+# Subtest: SKIP-05 an older unresolved session blocks a newer one, whatever the cause
+ok 234 - SKIP-05 an older unresolved session blocks a newer one, whatever the cause
+  ---
+  duration_ms: 0.689744
+  type: 'test'
+  ...
+# Subtest: SKIP-06 skipping the same session twice is refused by the engine
+ok 235 - SKIP-06 skipping the same session twice is refused by the engine
+  ---
+  duration_ms: 0.983895
+  type: 'test'
+  ...
+# Subtest: SKIP-07 a storage failure leaves the previous state active and unlogged
+ok 236 - SKIP-07 a storage failure leaves the previous state active and unlogged
+  ---
+  duration_ms: 1.387664
+  type: 'test'
+  ...
+# Subtest: SKIP-08 repeated pending sessions are resolved oldest first
+ok 237 - SKIP-08 repeated pending sessions are resolved oldest first
+  ---
+  duration_ms: 2.158166
+  type: 'test'
+  ...
+# Subtest: SKIP-09 a skip is not a result: the engine history stays empty
+ok 238 - SKIP-09 a skip is not a result: the engine history stays empty
+  ---
+  duration_ms: 1.129068
+  type: 'test'
+  ...
+# Subtest: SKIP-10 a future session is a voluntary decision, never a miss
+ok 239 - SKIP-10 a future session is a voluntary decision, never a miss
+  ---
+  duration_ms: 1.604046
+  type: 'test'
+  ...
+# Subtest: SKIP-11 the cause is derived, so a false reason cannot be written
+ok 240 - SKIP-11 the cause is derived, so a false reason cannot be written
+  ---
+  duration_ms: 1.863662
+  type: 'test'
+  ...
+# Subtest: STORE-01 an empty storage means there is no active cycle
+ok 241 - STORE-01 an empty storage means there is no active cycle
+  ---
+  duration_ms: 1.073767
+  type: 'test'
+  ...
+# Subtest: STORE-02 a stored cycle is restored through the official reader
+ok 242 - STORE-02 a stored cycle is restored through the official reader
+  ---
+  duration_ms: 4.320127
+  type: 'test'
+  ...
+# Subtest: STORE-03 broken JSON is reported as damaged, never repaired
+ok 243 - STORE-03 broken JSON is reported as damaged, never repaired
+  ---
+  duration_ms: 0.153104
+  type: 'test'
+  ...
+# Subtest: STORE-04 a structurally wrong envelope is damaged and kept as is
+ok 244 - STORE-04 a structurally wrong envelope is damaged and kept as is
+  ---
+  duration_ms: 2.439432
+  type: 'test'
+  ...
+# Subtest: STORE-05 a newer envelope version is refused without deleting the data
+ok 245 - STORE-05 a newer envelope version is refused without deleting the data
+  ---
+  duration_ms: 0.683627
+  type: 'test'
+  ...
+# Subtest: STORE-06 a newer engine state version is refused without deleting the data
+ok 246 - STORE-06 a newer engine state version is refused without deleting the data
+  ---
+  duration_ms: 0.751065
+  type: 'test'
+  ...
+# Subtest: STORE-07 an engine state whose clock is past the race date is reported, not guessed
+ok 247 - STORE-07 an engine state whose clock is past the race date is reported, not guessed
+  ---
+  duration_ms: 0.791784
+  type: 'test'
+  ...
+# Subtest: STORE-08 saving writes one record under one documented key
+ok 248 - STORE-08 saving writes one record under one documented key
+  ---
+  duration_ms: 0.844342
+  type: 'test'
+  ...
+# Subtest: UI-01 every engine-driven Today state is reachable through real data
+ok 249 - UI-01 every engine-driven Today state is reachable through real data
+  ---
+  duration_ms: 10.368712
+  type: 'test'
+  ...
+# Subtest: UI-02 the selection order is the documented one
+ok 250 - UI-02 the selection order is the documented one
+  ---
+  duration_ms: 0.981879
+  type: 'test'
+  ...
+# Subtest: UI-03 the view exposes only engine data
+ok 251 - UI-03 the view exposes only engine data
+  ---
+  duration_ms: 0.556707
+  type: 'test'
+  ...
+# Subtest: UI-04 the cycle status follows the architecture, not a stored field
+ok 252 - UI-04 the cycle status follows the architecture, not a stored field
+  ---
+  duration_ms: 2.062012
+  type: 'test'
+  ...
+# Subtest: UI-05 every state has Russian text in the copy layer
+ok 253 - UI-05 every state has Russian text in the copy layer
+  ---
+  duration_ms: 0.129923
+  type: 'test'
+  ...
+# Subtest: RESULT-01 a successful session is classified GREEN by the engine and stored
+ok 254 - RESULT-01 a successful session is classified GREEN by the engine and stored
+  ---
+  duration_ms: 19.671068
+  type: 'test'
+  ...
+# Subtest: RESULT-02 GREEN_PLUS comes from the engine, not from the UI
+ok 255 - RESULT-02 GREEN_PLUS comes from the engine, not from the UI
+  ---
+  duration_ms: 2.053555
+  type: 'test'
+  ...
+# Subtest: RESULT-03 an incomplete session is YELLOW and carries the engine reason
+ok 256 - RESULT-03 an incomplete session is YELLOW and carries the engine reason
+  ---
+  duration_ms: 1.862324
+  type: 'test'
+  ...
+# Subtest: RESULT-04 a safety flag makes the engine stop the usual load
+ok 257 - RESULT-04 a safety flag makes the engine stop the usual load
+  ---
+  duration_ms: 1.932286
+  type: 'test'
+  ...
+# Subtest: RESULT-05 an engine rejection leaves everything as it was
+ok 258 - RESULT-05 an engine rejection leaves everything as it was
+  ---
+  duration_ms: 1.078932
+  type: 'test'
+  ...
+# Subtest: RESULT-06 a storage failure is reported and the previous state stays active
+ok 259 - RESULT-06 a storage failure is reported and the previous state stays active
+  ---
+  duration_ms: 1.48084
+  type: 'test'
+  ...
+# Subtest: RESULT-07 the stored state is a real engine state that reads back
+ok 260 - RESULT-07 the stored state is a real engine state that reads back
+  ---
+  duration_ms: 1.776648
+  type: 'test'
+  ...
+# Subtest: RESULT-08 a pending session can be closed, and then it is no longer pending
+ok 261 - RESULT-08 a pending session can be closed, and then it is no longer pending
+  ---
+  duration_ms: 2.834187
+  type: 'test'
+  ...
+# Subtest: RESULT-08b while another overdue session remains, the state stays PENDING_RESULT
+ok 262 - RESULT-08b while another overdue session remains, the state stays PENDING_RESULT
+  ---
+  duration_ms: 2.256249
+  type: 'test'
+  ...
+# Subtest: RESULT-09 several unresolved sessions are closed in chronological order
+ok 263 - RESULT-09 several unresolved sessions are closed in chronological order
+  ---
+  duration_ms: 1.571996
+  type: 'test'
+  ...
+# Subtest: RESULT-10 the completed workout is not duplicated in the application event log
+ok 264 - RESULT-10 the completed workout is not duplicated in the application event log
+  ---
+  duration_ms: 1.194654
+  type: 'test'
+  ...
+# Subtest: RESULT-11 the diff reports only differences that really exist
+ok 265 - RESULT-11 the diff reports only differences that really exist
+  ---
+  duration_ms: 1.393553
+  type: 'test'
+  ...
+# Subtest: RESULT-11b closing a routine workout is not misreported as next-workout adaptation
+ok 266 - RESULT-11b closing a routine workout is not misreported as next-workout adaptation
+  ---
+  duration_ms: 1.057805
+  type: 'test'
+  ...
+# Subtest: RESULT-12 a second submission of the same workout is refused by the engine
+ok 267 - RESULT-12 a second submission of the same workout is refused by the engine
+  ---
+  duration_ms: 1.10682
+  type: 'test'
+  ...
+# Subtest: FUTURE-01 a result for a session that has not happened yet is refused
+ok 268 - FUTURE-01 a result for a session that has not happened yet is refused
+  ---
+  duration_ms: 0.919378
+  type: 'test'
+  ...
+# Subtest: FUTURE-02 the same session becomes recordable on its own day, in order
+ok 269 - FUTURE-02 the same session becomes recordable on its own day, in order
+  ---
+  duration_ms: 1.79408
+  type: 'test'
+  ...
+# Subtest: FUTURE-03 a session scheduled for today is recordable
+ok 270 - FUTURE-03 a session scheduled for today is recordable
+  ---
+  duration_ms: 0.991914
+  type: 'test'
+  ...
+# Subtest: FUTURE-04 an overdue session is still closed in chronological order, not by date only
+ok 271 - FUTURE-04 an overdue session is still closed in chronological order, not by date only
+  ---
+  duration_ms: 1.508006
+  type: 'test'
+  ...
+# Subtest: FUTURE-05 the guard does not replace the engine check for an unknown session
+ok 272 - FUTURE-05 the guard does not replace the engine check for an unknown session
+  ---
+  duration_ms: 0.551555
+  type: 'test'
+  ...
+# Subtest: FUTURE-06 availability is one decision shared by the guard and the screens
+ok 273 - FUTURE-06 availability is one decision shared by the guard and the screens
+  ---
+  duration_ms: 0.839195
+  type: 'test'
+  ...
+# Subtest: AUD-01 six virtual users keep the exact questionnaire values from the brief; the goal never replaces the current result
+ok 274 - AUD-01 six virtual users keep the exact questionnaire values from the brief; the goal never replaces the current result
+  ---
+  duration_ms: 0.922954
+  type: 'test'
+  ...
+# Subtest: AUD-02 scenario matrix: 6 users x A/B/V plus five explicit sensitivity scenarios; unique ids; behaviours documented
+ok 275 - AUD-02 scenario matrix: 6 users x A/B/V plus five explicit sensitivity scenarios; unique ids; behaviours documented
+  ---
+  duration_ms: 0.831491
+  type: 'test'
+  ...
+# Subtest: AUD-03 every scenario covers 12 weeks, is deterministic and records the final race for users with a result
+ok 276 - AUD-03 every scenario covers 12 weeks, is deterministic and records the final race for users with a result
+  ---
+  duration_ms: 389.546566
+  type: 'test'
+  ...
+# Subtest: AUD-04 no automatic improvement: control and final results equal the last known result outside the explicit S sensitivity scenarios
+ok 277 - AUD-04 no automatic improvement: control and final results equal the last known result outside the explicit S sensitivity scenarios
+  ---
+  duration_ms: 0.411679
+  type: 'test'
+  ...
+# Subtest: AUD-05 synthetic labelling: every event is an operator input, and the report and data files say so
+ok 278 - AUD-05 synthetic labelling: every event is an operator input, and the report and data files say so
+  ---
+  duration_ms: 2.076541
+  type: 'test'
+  ...
+# Subtest: AUD-06 numeric instructions: no workout lacks a number the methodology should give, and pace/speed/arithmetic agree
+ok 279 - AUD-06 numeric instructions: no workout lacks a number the methodology should give, and pace/speed/arithmetic agree
+  ---
+  duration_ms: 0.891535
+  type: 'test'
+  ...
+# Subtest: AUD-07 hard sessions are not adjacent and are limited to two per rolling seven days in every scenario
+ok 280 - AUD-07 hard sessions are not adjacent and are limited to two per rolling seven days in every scenario
+  ---
+  duration_ms: 0.187973
+  type: 'test'
+  ...
+# Subtest: AUD-08 findings are well formed: scenario, week, workout, expected, actual, why, severity and recommendation are all present
+ok 281 - AUD-08 findings are well formed: scenario, week, workout, expected, actual, why, severity and recommendation are all present
+  ---
+  duration_ms: 0.390867
+  type: 'test'
+  ...
+# Subtest: AUD-09 a refused-but-required checkpoint is reported exactly when the simulation saw the engine refuse it
+ok 282 - AUD-09 a refused-but-required checkpoint is reported exactly when the simulation saw the engine refuse it
+  ---
+  duration_ms: 0.455913
+  type: 'test'
+  ...
+# Subtest: AUD-10 weekly summaries cover 12 weeks and reconcile with the workout rows
+ok 283 - AUD-10 weekly summaries cover 12 weeks and reconcile with the workout rows
+  ---
+  duration_ms: 2.495334
+  type: 'test'
+  ...
+# Subtest: AUD-11 reviewer heuristics are declared and the distance estimator is conservative and non-negative
+ok 284 - AUD-11 reviewer heuristics are declared and the distance estimator is conservative and non-negative
+  ---
+  duration_ms: 0.382539
+  type: 'test'
+  ...
+# Subtest: AUDIT-N1 a past and a future quality run outside one shared week must not jointly erase EASY
+ok 285 - AUDIT-N1 a past and a future quality run outside one shared week must not jointly erase EASY
+  ---
+  duration_ms: 6.082331
+  type: 'test'
+  ...
+# Subtest: AUDIT-N2 a fully verified healthy block can be reviewed after pending quality gets confirmed
+ok 286 - AUDIT-N2 a fully verified healthy block can be reviewed after pending quality gets confirmed
+  ---
+  duration_ms: 20.075805
+  type: 'test'
+  ...
+# Subtest: AUDIT-N3 a separately confirmed continuous 3km run escapes the sub-5km progression dead end
+ok 287 - AUDIT-N3 a separately confirmed continuous 3km run escapes the sub-5km progression dead end
+  ---
+  duration_ms: 7.096519
+  type: 'test'
+  ...
+# Subtest: AUDIT-N4 earned novice distance actually reaches the single run/walk prescription
+ok 288 - AUDIT-N4 earned novice distance actually reaches the single run/walk prescription
+  ---
+  duration_ms: 8.829732
+  type: 'test'
+  ...
+# Subtest: AUDIT-N5 last days before race contain no long run, final three contain no quality
+ok 289 - AUDIT-N5 last days before race contain no long run, final three contain no quality
+  ---
+  duration_ms: 3.595896
+  type: 'test'
+  ...
+# Subtest: AUDIT-N6 old or new high-intensity doses cannot bypass per-category v1 ceilings
+ok 290 - AUDIT-N6 old or new high-intensity doses cannot bypass per-category v1 ceilings
+  ---
+  duration_ms: 1.529293
+  type: 'test'
+  ...
+# Subtest: AUDIT-N7 publicly changing historical running mileage cannot break saved cycle validation
+ok 291 - AUDIT-N7 publicly changing historical running mileage cannot break saved cycle validation
+  ---
+  duration_ms: 2.117236
+  type: 'test'
+  ...
+# Subtest: AUDIT-N1/N2 simulated normal preparation retains easy days and earns a verified weekly review
+ok 292 - AUDIT-N1/N2 simulated normal preparation retains easy days and earns a verified weekly review
+  ---
+  duration_ms: 270.738121
+  type: 'test'
+  ...
+# Subtest: AUDIT-LOAD-01 10 km habitual baseline is never inflated to 38 km by seven free days
+ok 293 - AUDIT-LOAD-01 10 km habitual baseline is never inflated to 38 km by seven free days
+  ---
+  duration_ms: 7.447666
+  type: 'test'
+  ...
+# Subtest: AUDIT-LOAD-02 there is at most one LONG_EASY in every rolling seven-day window
+ok 294 - AUDIT-LOAD-02 there is at most one LONG_EASY in every rolling seven-day window
+  ---
+  duration_ms: 5.202826
+  type: 'test'
+  ...
+# Subtest: AUDIT-FEEDBACK-01 easy can be GREEN without any measured duration, distance or intervals
+ok 295 - AUDIT-FEEDBACK-01 easy can be GREEN without any measured duration, distance or intervals
+  ---
+  duration_ms: 0.97788
+  type: 'test'
+  ...
+# Subtest: AUDIT-LOAD-03 first half-completed EASY repeats full distance; the second triggers protective REST
+ok 296 - AUDIT-LOAD-03 first half-completed EASY repeats full distance; the second triggers protective REST
+  ---
+  duration_ms: 2.414364
+  type: 'test'
+  ...
+# Subtest: confidence result age 0 days → HIGH
+ok 297 - confidence result age 0 days → HIGH
+  ---
+  duration_ms: 2.165958
+  type: 'test'
+  ...
+# Subtest: confidence result age 21 days → HIGH
+ok 298 - confidence result age 21 days → HIGH
+  ---
+  duration_ms: 0.1332
+  type: 'test'
+  ...
+# Subtest: confidence result age 22 days → MEDIUM
+ok 299 - confidence result age 22 days → MEDIUM
+  ---
+  duration_ms: 0.085587
+  type: 'test'
+  ...
+# Subtest: confidence result age 42 days → MEDIUM
+ok 300 - confidence result age 42 days → MEDIUM
+  ---
+  duration_ms: 0.083813
+  type: 'test'
+  ...
+# Subtest: confidence result age 43 days → LOW
+ok 301 - confidence result age 43 days → LOW
+  ---
+  duration_ms: 0.151311
+  type: 'test'
+  ...
+# Subtest: confidence healthy break 3 → HIGH
+ok 302 - confidence healthy break 3 → HIGH
+  ---
+  duration_ms: 0.144221
+  type: 'test'
+  ...
+# Subtest: confidence healthy break 4 → MEDIUM
+ok 303 - confidence healthy break 4 → MEDIUM
+  ---
+  duration_ms: 0.129425
+  type: 'test'
+  ...
+# Subtest: confidence healthy break 14 → MEDIUM
+ok 304 - confidence healthy break 14 → MEDIUM
+  ---
+  duration_ms: 0.096533
+  type: 'test'
+  ...
+# Subtest: confidence healthy break 15 → LOW
+ok 305 - confidence healthy break 15 → LOW
+  ---
+  duration_ms: 0.252781
+  type: 'test'
+  ...
+# Subtest: capacity T1: all criteria exactly at boundary
+ok 306 - capacity T1: all criteria exactly at boundary
+  ---
+  duration_ms: 0.42864
+  type: 'test'
+  ...
+# Subtest: capacity T1: regularRunningWeeks below threshold cannot qualify
+ok 307 - capacity T1: regularRunningWeeks below threshold cannot qualify
+  ---
+  duration_ms: 0.196849
+  type: 'test'
+  ...
+# Subtest: capacity T1: actualRunsPerWeek below threshold cannot qualify
+ok 308 - capacity T1: actualRunsPerWeek below threshold cannot qualify
+  ---
+  duration_ms: 0.109126
+  type: 'test'
+  ...
+# Subtest: capacity T1: averageWeeklyKm4Weeks below threshold cannot qualify
+ok 309 - capacity T1: averageWeeklyKm4Weeks below threshold cannot qualify
+  ---
+  duration_ms: 0.054036
+  type: 'test'
+  ...
+# Subtest: capacity T2: all criteria exactly at boundary
+ok 310 - capacity T2: all criteria exactly at boundary
+  ---
+  duration_ms: 0.036361
+  type: 'test'
+  ...
+# Subtest: capacity T2: regularRunningWeeks below threshold cannot qualify
+ok 311 - capacity T2: regularRunningWeeks below threshold cannot qualify
+  ---
+  duration_ms: 0.040864
+  type: 'test'
+  ...
+# Subtest: capacity T2: actualRunsPerWeek below threshold cannot qualify
+ok 312 - capacity T2: actualRunsPerWeek below threshold cannot qualify
+  ---
+  duration_ms: 0.032957
+  type: 'test'
+  ...
+# Subtest: capacity T2: averageWeeklyKm4Weeks below threshold cannot qualify
+ok 313 - capacity T2: averageWeeklyKm4Weeks below threshold cannot qualify
+  ---
+  duration_ms: 0.031811
+  type: 'test'
+  ...
+# Subtest: capacity T2: longestUsualRunKm below threshold cannot qualify
+ok 314 - capacity T2: longestUsualRunKm below threshold cannot qualify
+  ---
+  duration_ms: 0.042153
+  type: 'test'
+  ...
+# Subtest: capacity T3: all criteria exactly at boundary
+ok 315 - capacity T3: all criteria exactly at boundary
+  ---
+  duration_ms: 0.035078
+  type: 'test'
+  ...
+# Subtest: capacity T3: regularRunningWeeks below threshold cannot qualify
+ok 316 - capacity T3: regularRunningWeeks below threshold cannot qualify
+  ---
+  duration_ms: 0.032638
+  type: 'test'
+  ...
+# Subtest: capacity T3: actualRunsPerWeek below threshold cannot qualify
+ok 317 - capacity T3: actualRunsPerWeek below threshold cannot qualify
+  ---
+  duration_ms: 0.031351
+  type: 'test'
+  ...
+# Subtest: capacity T3: averageWeeklyKm4Weeks below threshold cannot qualify
+ok 318 - capacity T3: averageWeeklyKm4Weeks below threshold cannot qualify
+  ---
+  duration_ms: 0.040359
+  type: 'test'
+  ...
+# Subtest: capacity T3: longestUsualRunKm below threshold cannot qualify
+ok 319 - capacity T3: longestUsualRunKm below threshold cannot qualify
+  ---
+  duration_ms: 0.045135
+  type: 'test'
+  ...
+# Subtest: T1 requires ability to continuously run3km
+ok 320 - T1 requires ability to continuously run3km
+  ---
+  duration_ms: 0.071908
+  type: 'test'
+  ...
+# Subtest: quality 2 sessions / 2 weeks / tolerance true → Q0
+ok 321 - quality 2 sessions / 2 weeks / tolerance true → Q0
+  ---
+  duration_ms: 0.08284
+  type: 'test'
+  ...
+# Subtest: quality 3 sessions / 3 weeks / tolerance true → Q1
+ok 322 - quality 3 sessions / 3 weeks / tolerance true → Q1
+  ---
+  duration_ms: 0.039049
+  type: 'test'
+  ...
+# Subtest: quality 7 sessions / 5 weeks / tolerance true → Q1
+ok 323 - quality 7 sessions / 5 weeks / tolerance true → Q1
+  ---
+  duration_ms: 0.038187
+  type: 'test'
+  ...
+# Subtest: quality 8 sessions / 6 weeks / tolerance true → Q2
+ok 324 - quality 8 sessions / 6 weeks / tolerance true → Q2
+  ---
+  duration_ms: 0.035497
+  type: 'test'
+  ...
+# Subtest: quality 8 sessions / 6 weeks / tolerance false → Q1
+ok 325 - quality 8 sessions / 6 weeks / tolerance false → Q1
+  ---
+  duration_ms: 0.036229
+  type: 'test'
+  ...
+# Subtest: quality 12 sessions / 4 weeks / tolerance true → Q1
+ok 326 - quality 12 sessions / 4 weeks / tolerance true → Q1
+  ---
+  duration_ms: 0.04064
+  type: 'test'
+  ...
+# Subtest: Safety STOP by painIncreasing
+ok 327 - Safety STOP by painIncreasing
+  ---
+  duration_ms: 0.068825
+  type: 'test'
+  ...
+# Subtest: Safety STOP by alteredMovement
+ok 328 - Safety STOP by alteredMovement
+  ---
+  duration_ms: 0.03471
+  type: 'test'
+  ...
+# Subtest: Safety STOP by painWalkingOrRest
+ok 329 - Safety STOP by painWalkingOrRest
+  ---
+  duration_ms: 0.035195
+  type: 'test'
+  ...
+# Subtest: Safety STOP by swelling
+ok 330 - Safety STOP by swelling
+  ---
+  duration_ms: 0.038951
+  type: 'test'
+  ...
+# Subtest: Safety STOP by acuteIllness
+ok 331 - Safety STOP by acuteIllness
+  ---
+  duration_ms: 0.094471
+  type: 'test'
+  ...
+# Subtest: Safety STOP by otherStop
+ok 332 - Safety STOP by otherStop
+  ---
+  duration_ms: 0.042952
+  type: 'test'
+  ...
+# Subtest: Safety pain 1 without stop flags → OK
+ok 333 - Safety pain 1 without stop flags → OK
+  ---
+  duration_ms: 0.054263
+  type: 'test'
+  ...
+# Subtest: Safety pain 2 without stop flags → HOLD
+ok 334 - Safety pain 2 without stop flags → HOLD
+  ---
+  duration_ms: 0.073771
+  type: 'test'
+  ...
+# Subtest: Safety pain 3 without stop flags → HOLD
+ok 335 - Safety pain 3 without stop flags → HOLD
+  ---
+  duration_ms: 0.035477
+  type: 'test'
+  ...
+# Subtest: Safety pain 4 without stop flags → HOLD
+ok 336 - Safety pain 4 without stop flags → HOLD
+  ---
+  duration_ms: 0.037176
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.03, weeks 3 → PLAUSIBLE
+ok 337 - feasibility gap 0.03, weeks 3 → PLAUSIBLE
+  ---
+  duration_ms: 0.116567
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.03, weeks 2.99 → AMBITIOUS
+ok 338 - feasibility gap 0.03, weeks 2.99 → AMBITIOUS
+  ---
+  duration_ms: 0.034795
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.030001, weeks 6 → PLAUSIBLE
+ok 339 - feasibility gap 0.030001, weeks 6 → PLAUSIBLE
+  ---
+  duration_ms: 0.034789
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.06, weeks 4 → AMBITIOUS
+ok 340 - feasibility gap 0.06, weeks 4 → AMBITIOUS
+  ---
+  duration_ms: 0.041399
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.060001, weeks 5.99 → LOW_PROBABILITY
+ok 341 - feasibility gap 0.060001, weeks 5.99 → LOW_PROBABILITY
+  ---
+  duration_ms: 0.034552
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.1, weeks 10 → PLAUSIBLE
+ok 342 - feasibility gap 0.1, weeks 10 → PLAUSIBLE
+  ---
+  duration_ms: 0.035091
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.100001, weeks 12 → AMBITIOUS
+ok 343 - feasibility gap 0.100001, weeks 12 → AMBITIOUS
+  ---
+  duration_ms: 0.036571
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.15, weeks 12 → AMBITIOUS
+ok 344 - feasibility gap 0.15, weeks 12 → AMBITIOUS
+  ---
+  duration_ms: 0.032838
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.150001, weeks 100 → LONG_TERM
+ok 345 - feasibility gap 0.150001, weeks 100 → LONG_TERM
+  ---
+  duration_ms: 0.033752
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.04, weeks 5.99 → AMBITIOUS
+ok 346 - feasibility gap 0.04, weeks 5.99 → AMBITIOUS
+  ---
+  duration_ms: 0.038957
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.04, weeks 3.99 → LOW_PROBABILITY
+ok 347 - feasibility gap 0.04, weeks 3.99 → LOW_PROBABILITY
+  ---
+  duration_ms: 0.032674
+  type: 'test'
+  ...
+# Subtest: feasibility gap 0.08, weeks 6 → AMBITIOUS
+ok 348 - feasibility gap 0.08, weeks 6 → AMBITIOUS
+  ---
+  duration_ms: 0.038409
+  type: 'test'
+  ...
+# Subtest: feasibility modifiers apply only gap>3%, cap at LOW_PROBABILITY, preserve LONG_TERM
+ok 349 - feasibility modifiers apply only gap>3%, cap at LOW_PROBABILITY, preserve LONG_TERM
+  ---
+  duration_ms: 0.057447
+  type: 'test'
+  ...
+# Subtest: goal realism: 15:00 → 14:30 over 8 weeks is ambitious, not low-probability, for a modest active runner
+ok 350 - goal realism: 15:00 → 14:30 over 8 weeks is ambitious, not low-probability, for a modest active runner
+  ---
+  duration_ms: 2.649743
+  type: 'test'
+  ...
+# Subtest: two-month goal boundary: 0.035, 8w, T1/Q0, 2 runs -> AMBITIOUS
+ok 351 - two-month goal boundary: 0.035, 8w, T1/Q0, 2 runs -> AMBITIOUS
+  ---
+  duration_ms: 0.076109
+  type: 'test'
+  ...
+# Subtest: two-month goal boundary: 0.05, 8w, T1/Q0, 2 runs -> AMBITIOUS
+ok 352 - two-month goal boundary: 0.05, 8w, T1/Q0, 2 runs -> AMBITIOUS
+  ---
+  duration_ms: 0.041263
+  type: 'test'
+  ...
+# Subtest: two-month goal boundary: 0.035, 8w, T2/Q0, 2 runs -> AMBITIOUS
+ok 353 - two-month goal boundary: 0.035, 8w, T2/Q0, 2 runs -> AMBITIOUS
+  ---
+  duration_ms: 0.037435
+  type: 'test'
+  ...
+# Subtest: two-month goal boundary: 0.035, 8w, T2/Q1, 3 runs -> PLAUSIBLE
+ok 354 - two-month goal boundary: 0.035, 8w, T2/Q1, 3 runs -> PLAUSIBLE
+  ---
+  duration_ms: 0.032187
+  type: 'test'
+  ...
+# Subtest: two-month goal boundary: 0.035, 7.99w, T1/Q0, 2 runs -> LOW_PROBABILITY
+ok 355 - two-month goal boundary: 0.035, 7.99w, T1/Q0, 2 runs -> LOW_PROBABILITY
+  ---
+  duration_ms: 0.03319
+  type: 'test'
+  ...
+# Subtest: two-month goal boundary: 0.035, 8w, T1/Q0, 1 runs -> LOW_PROBABILITY
+ok 356 - two-month goal boundary: 0.035, 8w, T1/Q0, 1 runs -> LOW_PROBABILITY
+  ---
+  duration_ms: 0.03268
+  type: 'test'
+  ...
+# Subtest: two-month goal boundary: 0.035, 8w, T0/Q0, 2 runs -> LOW_PROBABILITY
+ok 357 - two-month goal boundary: 0.035, 8w, T0/Q0, 2 runs -> LOW_PROBABILITY
+  ---
+  duration_ms: 0.033582
+  type: 'test'
+  ...
+# Subtest: two-month goal boundary: 0.050001, 8w, T1/Q0, 2 runs -> LOW_PROBABILITY
+ok 358 - two-month goal boundary: 0.050001, 8w, T1/Q0, 2 runs -> LOW_PROBABILITY
+  ---
+  duration_ms: 0.03738
+  type: 'test'
+  ...
+# Subtest: two-month goal boundary: 0.1, 8w, T1/Q0, 2 runs -> LOW_PROBABILITY
+ok 359 - two-month goal boundary: 0.1, 8w, T1/Q0, 2 runs -> LOW_PROBABILITY
+  ---
+  duration_ms: 0.032105
+  type: 'test'
+  ...
+# Subtest: two-month goal boundary: 0.16, 20w, T3/Q2, 5 runs -> LONG_TERM
+ok 360 - two-month goal boundary: 0.16, 20w, T3/Q2, 5 runs -> LONG_TERM
+  ---
+  duration_ms: 2.251438
+  type: 'test'
+  ...
+# Subtest: completion boundary 0.94999 → YELLOW
+ok 361 - completion boundary 0.94999 → YELLOW
+  ---
+  duration_ms: 1.235745
+  type: 'test'
+  ...
+# Subtest: completion boundary 0.95 → GREEN
+ok 362 - completion boundary 0.95 → GREEN
+  ---
+  duration_ms: 0.817371
+  type: 'test'
+  ...
+# Subtest: completion boundary 1 → GREEN
+ok 363 - completion boundary 1 → GREEN
+  ---
+  duration_ms: 0.562462
+  type: 'test'
+  ...
+# Subtest: repeats in range 0.8
+ok 364 - repeats in range 0.8
+  ---
+  duration_ms: 0.580492
+  type: 'test'
+  ...
+# Subtest: repeats in range 0.6
+ok 365 - repeats in range 0.6
+  ---
+  duration_ms: 0.455882
+  type: 'test'
+  ...
+# Subtest: speed fade boundary 0.05
+ok 366 - speed fade boundary 0.05
+  ---
+  duration_ms: 0.56827
+  type: 'test'
+  ...
+# Subtest: speed fade boundary 0.050001
+ok 367 - speed fade boundary 0.050001
+  ---
+  duration_ms: 0.500865
+  type: 'test'
+  ...
+# Subtest: taper T0/Q0 chooses 5 days within specified range
+ok 368 - taper T0/Q0 chooses 5 days within specified range
+  ---
+  duration_ms: 0.070672
+  type: 'test'
+  ...
+# Subtest: taper T1/Q1 chooses 5 days within specified range
+ok 369 - taper T1/Q1 chooses 5 days within specified range
+  ---
+  duration_ms: 0.041037
+  type: 'test'
+  ...
+# Subtest: taper T2/Q1 chooses 7 days within specified range
+ok 370 - taper T2/Q1 chooses 7 days within specified range
+  ---
+  duration_ms: 0.037176
+  type: 'test'
+  ...
+# Subtest: taper T3/Q1 chooses 7 days within specified range
+ok 371 - taper T3/Q1 chooses 7 days within specified range
+  ---
+  duration_ms: 0.035698
+  type: 'test'
+  ...
+# Subtest: taper T3/Q2 chooses 10 days within specified range
+ok 372 - taper T3/Q2 chooses 10 days within specified range
+  ---
+  duration_ms: 0.033357
+  type: 'test'
+  ...
+# Subtest: Target gate gap boundary 0.08
+ok 373 - Target gate gap boundary 0.08
+  ---
+  duration_ms: 1.216693
+  type: 'test'
+  ...
+# Subtest: Target gate gap boundary 0.080001
+ok 374 - Target gate gap boundary 0.080001
+  ---
+  duration_ms: 0.835963
+  type: 'test'
+  ...
+# Subtest: calendar uses Monday-based local ISO dates, including year boundaries
+ok 375 - calendar uses Monday-based local ISO dates, including year boundaries
+  ---
+  duration_ms: 1.249484
+  type: 'test'
+  ...
+# Subtest: calendar marks unknown future beyond the 7-day issued horizon as unformed, not rest
+ok 376 - calendar marks unknown future beyond the 7-day issued horizon as unformed, not rest
+  ---
+  duration_ms: 2.654346
+  type: 'test'
+  ...
+# Subtest: actual kilometres require actual reported metres; main minutes are never turned into fake distance
+ok 377 - actual kilometres require actual reported metres; main minutes are never turned into fake distance
+  ---
+  duration_ms: 0.903832
+  type: 'test'
+  ...
+# Subtest: REST placeholders and skipped REST are not workouts and never count as missed
+ok 378 - REST placeholders and skipped REST are not workouts and never count as missed
+  ---
+  duration_ms: 1.159687
+  type: 'test'
+  ...
+# Subtest: CAL-01: beginner with 3km continuous ability but no race time receives exactly a measured 2km task
+ok 379 - CAL-01: beginner with 3km continuous ability but no race time receives exactly a measured 2km task
+  ---
+  duration_ms: 3.589282
+  type: 'test'
+  ...
+# Subtest: CAL-02: two confirmed consistent trials generate provisional PERSONAL EASY target and 3km next dose
+ok 380 - CAL-02: two confirmed consistent trials generate provisional PERSONAL EASY target and 3km next dose
+  ---
+  duration_ms: 14.368857
+  type: 'test'
+  ...
+# Subtest: CAL-03: one measured trial is not enough to invent a pace
+ok 381 - CAL-03: one measured trial is not enough to invent a pace
+  ---
+  duration_ms: 0.82739
+  type: 'test'
+  ...
+# Subtest: CAL-04: hard, unconfirmed, incomplete or incompatible trials do not calibrate
+ok 382 - CAL-04: hard, unconfirmed, incomplete or incompatible trials do not calibrate
+  ---
+  duration_ms: 1.483198
+  type: 'test'
+  ...
+# Subtest: CAL-05: first ever runner uses exact RUN_WALK time intervals; walking cannot be mistaken for running pace
+ok 383 - CAL-05: first ever runner uses exact RUN_WALK time intervals; walking cannot be mistaken for running pace
+  ---
+  duration_ms: 0.458041
+  type: 'test'
+  ...
+# Subtest: CAL-06: calibration form requires actual distance and time, never prefills a measured result
+ok 384 - CAL-06: calibration form requires actual distance and time, never prefills a measured result
+  ---
+  duration_ms: 0.780156
+  type: 'test'
+  ...
+# Subtest: CAL-07: calibration flag and assigned distance survive save/reload without changes
+ok 385 - CAL-07: calibration flag and assigned distance survive save/reload without changes
+  ---
+  duration_ms: 1.677723
+  type: 'test'
+  ...
+# Subtest: CAL-08: three confirmed EASY sessions at fast half of assigned pace and RPE 2 tune pace by exactly 5 seconds
+ok 386 - CAL-08: three confirmed EASY sessions at fast half of assigned pace and RPE 2 tune pace by exactly 5 seconds
+  ---
+  duration_ms: 0.865669
+  type: 'test'
+  ...
+# Subtest: CAL-09: RPE 3, missing measurements, one skip, or three overfast sessions do not earn faster speed
+ok 387 - CAL-09: RPE 3, missing measurements, one skip, or three overfast sessions do not earn faster speed
+  ---
+  duration_ms: 1.981575
+  type: 'test'
+  ...
+# Subtest: CAL-11: three EASY successes in one week are not a fortnight of training
+ok 388 - CAL-11: three EASY successes in one week are not a fortnight of training
+  ---
+  duration_ms: 0.583616
+  type: 'test'
+  ...
+# Subtest: CAL-12: benchmark stays on initial measured trials, not following normal EASY workouts
+ok 389 - CAL-12: benchmark stays on initial measured trials, not following normal EASY workouts
+  ---
+  duration_ms: 0.47393
+  type: 'test'
+  ...
+# Subtest: CAL-13: unmeasured inactivity beyond 21 days reopens beginner calibration
+ok 390 - CAL-13: unmeasured inactivity beyond 21 days reopens beginner calibration
+  ---
+  duration_ms: 0.355671
+  type: 'test'
+  ...
+# Subtest: CAL-14: numerical EASY progression never increases prescribed distance on the same day
+ok 391 - CAL-14: numerical EASY progression never increases prescribed distance on the same day
+  ---
+  duration_ms: 0.897599
+  type: 'test'
+  ...
+# Subtest: CAL-10: real recordResult on scheduled calibration session preserves untimed 3km profile
+ok 392 - CAL-10: real recordResult on scheduled calibration session preserves untimed 3km profile
+  ---
+  duration_ms: 1.090918
+  type: 'test'
+  ...
+# Subtest: EASY-ADAPT-01: five starting profiles produce reproducible reference numbers
+ok 393 - EASY-ADAPT-01: five starting profiles produce reproducible reference numbers
+  ---
+  duration_ms: 6.28214
+  type: 'test'
+  ...
+# Subtest: EASY-ADAPT-02: after 3 of prescribed 5 km, next dose and pace respect measured ability
+ok 394 - EASY-ADAPT-02: after 3 of prescribed 5 km, next dose and pace respect measured ability
+  ---
+  duration_ms: 0.749969
+  type: 'test'
+  ...
+# Subtest: EASY-ADAPT-03: full session but RPE 6 is followed by a slower, same-distance task
+ok 395 - EASY-ADAPT-03: full session but RPE 6 is followed by a slower, same-distance task
+  ---
+  duration_ms: 0.398242
+  type: 'test'
+  ...
+# Subtest: EASY-ADAPT-04: fully completed 5 km at target RPE 3 does not auto-accelerate
+ok 396 - EASY-ADAPT-04: fully completed 5 km at target RPE 3 does not auto-accelerate
+  ---
+  duration_ms: 0.478066
+  type: 'test'
+  ...
+# Subtest: EASY-ADAPT-05: unconfirmed, unmeasured or stale reports cannot affect speed
+ok 397 - EASY-ADAPT-05: unconfirmed, unmeasured or stale reports cannot affect speed
+  ---
+  duration_ms: 0.963685
+  type: 'test'
+  ...
+# Subtest: EASY-ADAPT-06: intentional faster EASY never makes the following prescription harder
+ok 398 - EASY-ADAPT-06: intentional faster EASY never makes the following prescription harder
+  ---
+  duration_ms: 0.385868
+  type: 'test'
+  ...
+# Subtest: EASY-ADAPT-07: recordResult triggers revised prescriptions without editing performed history
+ok 399 - EASY-ADAPT-07: recordResult triggers revised prescriptions without editing performed history
+  ---
+  duration_ms: 1.202704
+  type: 'test'
+  ...
+# Subtest: PACE-01: 15:00 current / 14:30 goal: EASY 5 km receives explicit numerical target
+ok 400 - PACE-01: 15:00 current / 14:30 goal: EASY 5 km receives explicit numerical target
+  ---
+  duration_ms: 8.277775
+  type: 'test'
+  ...
+# Subtest: PACE-02: faster current performance gives faster EASY targets at the same T1 capacity
+ok 401 - PACE-02: faster current performance gives faster EASY targets at the same T1 capacity
+  ---
+  duration_ms: 0.13421
+  type: 'test'
+  ...
+# Subtest: PACE-03: training level affects prescription, desired exam result does not
+ok 402 - PACE-03: training level affects prescription, desired exam result does not
+  ---
+  duration_ms: 5.253407
+  type: 'test'
+  ...
+# Subtest: PACE-04: intermediate confidence reduces speed instead of accelerating toward goal
+ok 403 - PACE-04: intermediate confidence reduces speed instead of accelerating toward goal
+  ---
+  duration_ms: 0.111066
+  type: 'test'
+  ...
+# Subtest: PACE-05: no 3 km baseline, stale 3 km or noncontinuous runner never receive fake pace
+ok 404 - PACE-05: no 3 km baseline, stale 3 km or noncontinuous runner never receive fake pace
+  ---
+  duration_ms: 0.55982
+  type: 'test'
+  ...
+# Subtest: PACE-06: LONG_EASY target uses its own assigned distance, not a generic time
+ok 405 - PACE-06: LONG_EASY target uses its own assigned distance, not a generic time
+  ---
+  duration_ms: 0.455791
+  type: 'test'
+  ...
+# Subtest: PACE-07: saving and reopening preserves target and exact schedule
+ok 406 - PACE-07: saving and reopening preserves target and exact schedule
+  ---
+  duration_ms: 0.771659
+  type: 'test'
+  ...
+# Subtest: PACE-08: pre-upgrade stored EASY without pace is enriched, without altering dose or queue history
+ok 407 - PACE-08: pre-upgrade stored EASY without pace is enriched, without altering dose or queue history
+  ---
+  duration_ms: 0.550059
+  type: 'test'
+  ...
+# Subtest: PACE-09: legacy unpaced RUN_WALK, quality work, REST are not assigned an EASY speed
+ok 408 - PACE-09: legacy unpaced RUN_WALK, quality work, REST are not assigned an EASY speed
+  ---
+  duration_ms: 5.02218
+  type: 'test'
+  ...
+# Subtest: PACE-10: measured EASY pace inside range passes; too fast and too slow are detected
+ok 409 - PACE-10: measured EASY pace inside range passes; too fast and too slow are detected
+  ---
+  duration_ms: 1.219672
+  type: 'test'
+  ...
+# Subtest: PACE-11: missing actual pace measurement does not invent failed splits
+ok 410 - PACE-11: missing actual pace measurement does not invent failed splits
+  ---
+  duration_ms: 0.707079
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-01 zero-history athlete has one 1km run/walk session, real timed bouts and easy effort
+ok 411 - FOUNDATION-01 zero-history athlete has one 1km run/walk session, real timed bouts and easy effort
+  ---
+  duration_ms: 4.624285
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-02 verified first fortnight changes only running bouts, not weekly distance
+ok 412 - FOUNDATION-02 verified first fortnight changes only running bouts, not weekly distance
+  ---
+  duration_ms: 5.725564
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-03 second verified fortnight increases zero baseline by at most 10%, never 500m
+ok 413 - FOUNDATION-03 second verified fortnight increases zero baseline by at most 10%, never 500m
+  ---
+  duration_ms: 9.227205
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-04 someone accustomed to 4km gets +200m, alternating with running intervals
+ok 414 - FOUNDATION-04 someone accustomed to 4km gets +200m, alternating with running intervals
+  ---
+  duration_ms: 8.228627
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-05 a confirmed 10km non-continuous runner does not raise bout difficulty and metres simultaneously
+ok 415 - FOUNDATION-05 a confirmed 10km non-continuous runner does not raise bout difficulty and metres simultaneously
+  ---
+  duration_ms: 12.176916
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-06 default/unverified success cannot grant a new stage or more kilometres
+ok 416 - FOUNDATION-06 default/unverified success cannot grant a new stage or more kilometres
+  ---
+  duration_ms: 20.67332
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-07 a skipped running day blocks the entire 14-day stage review
+ok 417 - FOUNDATION-07 a skipped running day blocks the entire 14-day stage review
+  ---
+  duration_ms: 2.737717
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-08 tired/incomplete feedback cannot grant stage advancement
+ok 418 - FOUNDATION-08 tired/incomplete feedback cannot grant stage advancement
+  ---
+  duration_ms: 4.8665
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-09 RED safety/medical stop blocks stage changes and future running
+ok 419 - FOUNDATION-09 RED safety/medical stop blocks stage changes and future running
+  ---
+  duration_ms: 1.954939
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-10 break forces new verified weeks; never a catch-up leap
+ok 420 - FOUNDATION-10 break forces new verified weeks; never a catch-up leap
+  ---
+  duration_ms: 2.304186
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-11 legacy cycles load without retroactive stage credit or changed saved queue
+ok 421 - FOUNDATION-11 legacy cycles load without retroactive stage credit or changed saved queue
+  ---
+  duration_ms: 3.594148
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-12 invalid stored ladder stages fail closed
+ok 422 - FOUNDATION-12 invalid stored ladder stages fail closed
+  ---
+  duration_ms: 1.642165
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-13 12-week successful novice simulation never claims ability to run 3km
+ok 423 - FOUNDATION-13 12-week successful novice simulation never claims ability to run 3km
+  ---
+  duration_ms: 55.928248
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-14 old saved RUN_WALK without pattern does not invent intervals on display
+ok 424 - FOUNDATION-14 old saved RUN_WALK without pattern does not invent intervals on display
+  ---
+  duration_ms: 0.301972
+  type: 'test'
+  ...
+# Subtest: FOUNDATION-15 run-walk stages are finite, monotonic and never labelled a passed 3000m test
+ok 425 - FOUNDATION-15 run-walk stages are finite, monotonic and never labelled a passed 3000m test
+  ---
+  duration_ms: 0.149529
+  type: 'test'
+  ...
+# Subtest: combined: seven free days and 10 km / two habitual runs yield two EASY sessions; RPE 4 remains GREEN
+ok 426 - combined: seven free days and 10 km / two habitual runs yield two EASY sessions; RPE 4 remains GREEN
+  ---
+  duration_ms: 9.329966
+  type: 'test'
+  ...
+# Subtest: combined: normal RPE 4 never overrides an acute illness STOP
+ok 427 - combined: normal RPE 4 never overrides an acute illness STOP
+  ---
+  duration_ms: 2.261476
+  type: 'test'
+  ...
+# Subtest: combined: one habitual run stays EASY, never the sole fast workout
+ok 428 - combined: one habitual run stays EASY, never the sole fast workout
+  ---
+  duration_ms: 0.594382
+  type: 'test'
+  ...
+# Subtest: combined: one available day stays EASY even for a runner with more habitual days
+ok 429 - combined: one available day stays EASY even for a runner with more habitual days
+  ---
+  duration_ms: 0.429566
+  type: 'test'
+  ...
+# Subtest: combined: 4 genuine running days still allow quality sessions for the prepared runner
+ok 430 - combined: 4 genuine running days still allow quality sessions for the prepared runner
+  ---
+  duration_ms: 0.957975
+  type: 'test'
+  ...
+# Subtest: I01 Safety STOP never queues ordinary quality for all availability/capacity/Q combinations
+ok 431 - I01 Safety STOP never queues ordinary quality for all availability/capacity/Q combinations
+  ---
+  duration_ms: 15.555573
+  type: 'test'
+  ...
+# Subtest: I02 CLOSED never anchors specific speed at target
+ok 432 - I02 CLOSED never anchors specific speed at target
+  ---
+  duration_ms: 10.618285
+  type: 'test'
+  ...
+# Subtest: I03 exactly two available sessions never prescribe two quality
+ok 433 - I03 exactly two available sessions never prescribe two quality
+  ---
+  duration_ms: 15.507439
+  type: 'test'
+  ...
+# Subtest: I04 rolling seven-day history + queue never contains over two quality; recovery >=48h
+ok 434 - I04 rolling seven-day history + queue never contains over two quality; recovery >=48h
+  ---
+  duration_ms: 19.900732
+  type: 'test'
+  ...
+# Subtest: I05 skip does not increase next workout in any matrix profile
+ok 435 - I05 skip does not increase next workout in any matrix profile
+  ---
+  duration_ms: 19.072324
+  type: 'test'
+  ...
+# Subtest: I06 one GREEN does not progress
+ok 436 - I06 one GREEN does not progress
+  ---
+  duration_ms: 21.006096
+  type: 'test'
+  ...
+# Subtest: I07 one GREEN_PLUS cannot alter Current Performance
+ok 437 - I07 one GREEN_PLUS cannot alter Current Performance
+  ---
+  duration_ms: 0.788209
+  type: 'test'
+  ...
+# Subtest: I08 two related yellow cannot lower Current Performance
+ok 438 - I08 two related yellow cannot lower Current Performance
+  ---
+  duration_ms: 1.692635
+  type: 'test'
+  ...
+# Subtest: I09 RED overrides approaching race/taper
+ok 439 - I09 RED overrides approaching race/taper
+  ---
+  duration_ms: 0.717944
+  type: 'test'
+  ...
+# Subtest: I10 ordinary result, skip, time advance or healthy break never changes performance
+ok 440 - I10 ordinary result, skip, time advance or healthy break never changes performance
+  ---
+  duration_ms: 2.06537
+  type: 'test'
+  ...
+# Subtest: I11 FOUNDATION never prescribes full SPECIFIC_3K or VO2
+ok 441 - I11 FOUNDATION never prescribes full SPECIFIC_3K or VO2
+  ---
+  duration_ms: 12.766115
+  type: 'test'
+  ...
+# Subtest: I12 every healthy8–14-day reentry closes gate
+ok 442 - I12 every healthy8–14-day reentry closes gate
+  ---
+  duration_ms: 7.87762
+  type: 'test'
+  ...
+# Subtest: I13 LONG_TERM never uses target as anchor, including after confirmations
+ok 443 - I13 LONG_TERM never uses target as anchor, including after confirmations
+  ---
+  duration_ms: 1.270733
+  type: 'test'
+  ...
+# Subtest: I14 equal inputs + event stream produce identical decisions, no clock/random dependencies
+ok 444 - I14 equal inputs + event stream produce identical decisions, no clock/random dependencies
+  ---
+  duration_ms: 99.645889
+  type: 'test'
+  ...
+# Subtest: I15 source has no network/LLM/I/O runtime imports and package has no runtime dependencies
+ok 445 - I15 source has no network/LLM/I/O runtime imports and package has no runtime dependencies
+  ---
+  duration_ms: 1.167907
+  type: 'test'
+  ...
+# Subtest: EASY and LONG_EASY both prescribe RPE 2–4 and classify an otherwise normal RPE 4 as GREEN
+ok 446 - EASY and LONG_EASY both prescribe RPE 2–4 and classify an otherwise normal RPE 4 as GREEN
+  ---
+  duration_ms: 4.421215
+  type: 'test'
+  ...
+# Subtest: two completed EASY workouts at RPE 4 do not trigger a related YELLOW or diagnostic HOLD
+ok 447 - two completed EASY workouts at RPE 4 do not trigger a related YELLOW or diagnostic HOLD
+  ---
+  duration_ms: 1.321662
+  type: 'test'
+  ...
+# Subtest: easy effort adjustment retains fatigue, partial execution and medical safety checks
+ok 448 - easy effort adjustment retains fatigue, partial execution and medical safety checks
+  ---
+  duration_ms: 0.717324
+  type: 'test'
+  ...
+# Subtest: REVIEW-01 stale 3 km result allows the engine prescribed EASY instead of a false medical hold
+ok 449 - REVIEW-01 stale 3 km result allows the engine prescribed EASY instead of a false medical hold
+  ---
+  duration_ms: 3.473346
+  type: 'test'
+  ...
+# Subtest: REVIEW-02 medical flags and diagnostic hold always take precedence over stale performance
+ok 450 - REVIEW-02 medical flags and diagnostic hold always take precedence over stale performance
+  ---
+  duration_ms: 1.737932
+  type: 'test'
+  ...
+# Subtest: REVIEW-03 a new external measured 3 km result restores fresh confidence, not a symptom survey
+ok 451 - REVIEW-03 a new external measured 3 km result restores fresh confidence, not a symptom survey
+  ---
+  duration_ms: 1.852559
+  type: 'test'
+  ...
+# Subtest: REVIEW-04 healthy safety recheck does not falsely claim old performance is fresh
+ok 452 - REVIEW-04 healthy safety recheck does not falsely claim old performance is fresh
+  ---
+  duration_ms: 0.78314
+  type: 'test'
+  ...
+# Subtest: REVIEW-05 date advancement keeps permitted EASY visible during the low-confidence phase
+ok 453 - REVIEW-05 date advancement keeps permitted EASY visible during the low-confidence phase
+  ---
+  duration_ms: 1.021647
+  type: 'test'
+  ...
+# Subtest: DESIGN-01 after 14 successful calendar days the interim guard does not progress the beginner easy budget
+ok 454 - DESIGN-01 after 14 successful calendar days the interim guard does not progress the beginner easy budget
+  ---
+  duration_ms: 23.215443
+  type: 'test'
+  ...
+# Subtest: DESIGN-02 explicit capability update can change T0 to T1 without inventing a 3 km time
+ok 455 - DESIGN-02 explicit capability update can change T0 to T1 without inventing a 3 km time
+  ---
+  duration_ms: 4.668898
+  type: 'test'
+  ...
+# Subtest: DESIGN-03 GREEN without user-entered distances or repeats is currently possible by form defaults
+ok 456 - DESIGN-03 GREEN without user-entered distances or repeats is currently possible by form defaults
+  ---
+  duration_ms: 1.133545
+  type: 'test'
+  ...
+# Subtest: LONG-PROGRESSION T0 10 weeks beginner 10km
+ok 457 - LONG-PROGRESSION T0 10 weeks beginner 10km
+  ---
+  duration_ms: 49.29302
+  type: 'test'
+  ...
+# Subtest: LONG-PROGRESSION T1 8 weeks habit 12km
+ok 458 - LONG-PROGRESSION T1 8 weeks habit 12km
+  ---
+  duration_ms: 40.632635
+  type: 'test'
+  ...
+# Subtest: LONG-PROGRESSION T2 10 weeks trained with skipped runs
+ok 459 - LONG-PROGRESSION T2 10 weeks trained with skipped runs
+  ---
+  duration_ms: 105.247899
+  type: 'test'
+  ...
+# Subtest: LONG-PROGRESSION T3 12 weeks advanced, measured performance unchanged
+ok 460 - LONG-PROGRESSION T3 12 weeks advanced, measured performance unchanged
+  ---
+  duration_ms: 323.413479
+  type: 'test'
+  ...
+# Subtest: LONG-PROGRESSION T1 8 weeks unverified GREEN
+ok 461 - LONG-PROGRESSION T1 8 weeks unverified GREEN
+  ---
+  duration_ms: 44.418184
+  type: 'test'
+  ...
+# Subtest: LONG-PROGRESSION T1 10 weeks repeated exhaustion
+ok 462 - LONG-PROGRESSION T1 10 weeks repeated exhaustion
+  ---
+  duration_ms: 75.525322
+  type: 'test'
+  ...
+# Subtest: AD01 no valid Current Performance keeps FOUNDATION and applies the break as a modifier
+ok 463 - AD01 no valid Current Performance keeps FOUNDATION and applies the break as a modifier
+  ---
+  duration_ms: 12.547774
+  type: 'test'
+  ...
+# Subtest: AD02 cannot run 3 km continuously keeps FOUNDATION after a significant break
+ok 464 - AD02 cannot run 3 km continuously keeps FOUNDATION after a significant break
+  ---
+  duration_ms: 0.788874
+  type: 'test'
+  ...
+# Subtest: AD03 T0 keeps FOUNDATION after a significant break
+ok 465 - AD03 T0 keeps FOUNDATION after a significant break
+  ---
+  duration_ms: 0.692575
+  type: 'test'
+  ...
+# Subtest: AD04 LONG_TERM + T1 + Q0 keeps FOUNDATION after a significant break
+ok 466 - AD04 LONG_TERM + T1 + Q0 keeps FOUNDATION after a significant break
+  ---
+  duration_ms: 0.866622
+  type: 'test'
+  ...
+# Subtest: AD05 RE_ENTRY still applies to a returning prepared runner
+ok 467 - AD05 RE_ENTRY still applies to a returning prepared runner
+  ---
+  duration_ms: 6.760917
+  type: 'test'
+  ...
+# Subtest: AD06 an explicit skip and an automatic past-due miss are the same operation
+ok 468 - AD06 an explicit skip and an automatic past-due miss are the same operation
+  ---
+  duration_ms: 2.168087
+  type: 'test'
+  ...
+# Subtest: AD07 after a miss a new quality session appears only by the standard limit and recovery rules
+ok 469 - AD07 after a miss a new quality session appears only by the standard limit and recovery rules
+  ---
+  duration_ms: 7.424868
+  type: 'test'
+  ...
+# Subtest: AD08 a saved state never resurrects a missed session on load
+ok 470 - AD08 a saved state never resurrects a missed session on load
+  ---
+  duration_ms: 1.970944
+  type: 'test'
+  ...
+# Subtest: AD09 canRun3Km=false forces T0 over mileage, frequency and longest run
+ok 471 - AD09 canRun3Km=false forces T0 over mileage, frequency and longest run
+  ---
+  duration_ms: 0.635774
+  type: 'test'
+  ...
+# Subtest: AD10 canRun3Km=false keeps the runner at T0 even with a fresh valid performance
+ok 472 - AD10 canRun3Km=false keeps the runner at T0 even with a fresh valid performance
+  ---
+  duration_ms: 0.586629
+  type: 'test'
+  ...
+# Subtest: AD11 canRun3Km=true leaves the T1/T2/T3 thresholds exactly as before
+ok 473 - AD11 canRun3Km=true leaves the T1/T2/T3 thresholds exactly as before
+  ---
+  duration_ms: 0.178417
+  type: 'test'
+  ...
+# Subtest: R01 queued quality session is always recordable (baseline 68070ea rejected it)
+ok 474 - R01 queued quality session is always recordable (baseline 68070ea rejected it)
+  ---
+  duration_ms: 9.19601
+  type: 'test'
+  ...
+# Subtest: R02 a RED report is never refused by the quality budget (safety has absolute priority)
+ok 475 - R02 a RED report is never refused by the quality budget (safety has absolute priority)
+  ---
+  duration_ms: 9.793567
+  type: 'test'
+  ...
+# Subtest: R03 zero habitual frequency falls back to the documented 1 km RUN_WALK minimum
+ok 476 - R03 zero habitual frequency falls back to the documented 1 km RUN_WALK minimum
+  ---
+  duration_ms: 0.85955
+  type: 'test'
+  ...
+# Subtest: R04 an easy dose stays consistent with the stated longest usual run (audit profiles)
+ok 477 - R04 an easy dose stays consistent with the stated longest usual run (audit profiles)
+  ---
+  duration_ms: 5.728103
+  type: 'test'
+  ...
+# Subtest: R05 the easy dose formula is unchanged for every non-zero running frequency
+ok 478 - R05 the easy dose formula is unchanged for every non-zero running frequency
+  ---
+  duration_ms: 4.642175
+  type: 'test'
+  ...
+# Subtest: EV01 raceDate = today is accepted and plans normally
+ok 479 - EV01 raceDate = today is accepted and plans normally
+  ---
+  duration_ms: 3.296829
+  type: 'test'
+  ...
+# Subtest: EV02 raceDate = yesterday is rejected with EVENT_DATE_PASSED
+ok 480 - EV02 raceDate = yesterday is rejected with EVENT_DATE_PASSED
+  ---
+  duration_ms: 0.389719
+  type: 'test'
+  ...
+# Subtest: EV03 replan on the race date is allowed, replan after it is EVENT_DATE_PASSED
+ok 481 - EV03 replan on the race date is allowed, replan after it is EVENT_DATE_PASSED
+  ---
+  duration_ms: 1.919235
+  type: 'test'
+  ...
+# Subtest: EV04 every date-advancing entry point rejects a passed race date
+ok 482 - EV04 every date-advancing entry point rejects a passed race date
+  ---
+  duration_ms: 1.94308
+  type: 'test'
+  ...
+# Subtest: EV05 a state whose stored asOf is past the race date cannot be loaded
+ok 483 - EV05 a state whose stored asOf is past the race date cannot be loaded
+  ---
+  duration_ms: 1.128694
+  type: 'test'
+  ...
+# Subtest: EV06 no session is ever queued after the race date across many profiles
+ok 484 - EV06 no session is ever queued after the race date across many profiles
+  ---
+  duration_ms: 46.236224
+  type: 'test'
+  ...
+# Subtest: EV07 a workout cannot be moved past the race date
+ok 485 - EV07 a workout cannot be moved past the race date
+  ---
+  duration_ms: 0.541573
+  type: 'test'
+  ...
+# Subtest: EV08 feasibility is monotonic and identical profiles differ only by availability
+ok 486 - EV08 feasibility is monotonic and identical profiles differ only by availability
+  ---
+  duration_ms: 0.11258
+  type: 'test'
+  ...
+# Subtest: EV09 the same profile with 1, 2 and 3 available sessions stays monotonic through createEngine
+ok 487 - EV09 the same profile with 1, 2 and 3 available sessions stays monotonic through createEngine
+  ---
+  duration_ms: 2.719122
+  type: 'test'
+  ...
+# Subtest: EV10 no feasibility modifier applies at or below a 3% Goal Gap
+ok 488 - EV10 no feasibility modifier applies at or below a 3% Goal Gap
+  ---
+  duration_ms: 0.357233
+  type: 'test'
+  ...
+# Subtest: EV11 validation API is reachable through the public package entry point
+ok 489 - EV11 validation API is reachable through the public package entry point
+  ---
+  duration_ms: 0.601966
+  type: 'test'
+  ...
+# Subtest: EV12 the public validators enforce exactly the internal rules (no duplication)
+ok 490 - EV12 the public validators enforce exactly the internal rules (no duplication)
+  ---
+  duration_ms: 0.697865
+  type: 'test'
+  ...
+# Subtest: PROFILE-01 the same answers still produce exactly the same Profile
+ok 491 - PROFILE-01 the same answers still produce exactly the same Profile
+  ---
+  duration_ms: 1.362824
+  type: 'test'
+  ...
+# Subtest: PROFILE-02 the answers are the only input: no label, hint or option text is read
+ok 492 - PROFILE-02 the answers are the only input: no label, hint or option text is read
+  ---
+  duration_ms: 0.175823
+  type: 'test'
+  ...
+# Subtest: PROFILE-03 every numeric answer is parsed from its own field
+ok 493 - PROFILE-03 every numeric answer is parsed from its own field
+  ---
+  duration_ms: 0.167191
+  type: 'test'
+  ...
+# Subtest: PROFILE-04 recollection without records does not invent confirmed sessions
+ok 494 - PROFILE-04 recollection without records does not invent confirmed sessions
+  ---
+  duration_ms: 0.200247
+  type: 'test'
+  ...
+# Subtest: PROFILE-05 old drafts without a recall selector keep their numeric answers
+ok 495 - PROFILE-05 old drafts without a recall selector keep their numeric answers
+  ---
+  duration_ms: 0.128486
+  type: 'test'
+  ...
+# Subtest: RD01 raceDate = today leaves the ordinary training queue empty
+ok 496 - RD01 raceDate = today leaves the ordinary training queue empty
+  ---
+  duration_ms: 2.541857
+  type: 'test'
+  ...
+# Subtest: RD02 raceDate = tomorrow plans sessions only for today
+ok 497 - RD02 raceDate = tomorrow plans sessions only for today
+  ---
+  duration_ms: 0.739534
+  type: 'test'
+  ...
+# Subtest: RD03 no ordinary session is ever scheduled on or after raceDate
+ok 498 - RD03 no ordinary session is ever scheduled on or after raceDate
+  ---
+  duration_ms: 14.707379
+  type: 'test'
+  ...
+# Subtest: RD04 a workout cannot be moved onto or past the race day
+ok 499 - RD04 a workout cannot be moved onto or past the race day
+  ---
+  duration_ms: 1.105322
+  type: 'test'
+  ...
+# Subtest: RD05 the final result can be recorded on the race day
+ok 500 - RD05 the final result can be recorded on the race day
+  ---
+  duration_ms: 0.718868
+  type: 'test'
+  ...
+# Subtest: RD06 the final result dated on raceDate can be recorded the next day
+ok 501 - RD06 the final result dated on raceDate can be recorded the next day
+  ---
+  duration_ms: 2.497546
+  type: 'test'
+  ...
+# Subtest: RD07 a performance dated after the race date is rejected
+ok 502 - RD07 a performance dated after the race date is rejected
+  ---
+  duration_ms: 0.787322
+  type: 'test'
+  ...
+# Subtest: RD08 an ordinary replan after raceDate is still EVENT_DATE_PASSED
+ok 503 - RD08 an ordinary replan after raceDate is still EVENT_DATE_PASSED
+  ---
+  duration_ms: 4.695263
+  type: 'test'
+  ...
+# Subtest: RD09 saving the final result never creates a queue, and none can be created afterwards
+ok 504 - RD09 saving the final result never creates a queue, and none can be created afterwards
+  ---
+  duration_ms: 5.623462
+  type: 'test'
+  ...
+# Subtest: RD10 the terminal state survives serialisation while active states keep the guard
+ok 505 - RD10 the terminal state survives serialisation while active states keep the guard
+  ---
+  duration_ms: 1.090851
+  type: 'test'
+  ...
+# Subtest: RD11 the final result is rejected for invalid input and never mutates its arguments
+ok 506 - RD11 the final result is rejected for invalid input and never mutates its arguments
+  ---
+  duration_ms: 0.817066
+  type: 'test'
+  ...
+# Subtest: RD12 the final result is a record of the event, and safety still drives the decision
+ok 507 - RD12 the final result is a record of the event, and safety still drives the decision
+  ---
+  duration_ms: 0.415084
+  type: 'test'
+  ...
+# Subtest: RD13 the terminal state never opens the gate towards the target pace
+ok 508 - RD13 the terminal state never opens the gate towards the target pace
+  ---
+  duration_ms: 0.448874
+  type: 'test'
+  ...
+# Subtest: DIST-01 unmeasured total remains blank; zero sentinel is not invented
+ok 509 - DIST-01 unmeasured total remains blank; zero sentinel is not invented
+  ---
+  duration_ms: 4.013085
+  type: 'test'
+  ...
+# Subtest: DIST-02 measured splits become the minimum known distance; never fabricate warmup metres
+ok 510 - DIST-02 measured splits become the minimum known distance; never fabricate warmup metres
+  ---
+  duration_ms: 1.835566
+  type: 'test'
+  ...
+# Subtest: DIST-03 explicit total smaller than split sum is rejected before engine
+ok 511 - DIST-03 explicit total smaller than split sum is rejected before engine
+  ---
+  duration_ms: 0.827811
+  type: 'test'
+  ...
+# Subtest: DIST-04 the public engine itself rejects contradictory splits; GREEN cannot be recorded
+ok 512 - DIST-04 the public engine itself rejects contradictory splits; GREEN cannot be recorded
+  ---
+  duration_ms: 1.012738
+  type: 'test'
+  ...
+# Subtest: DIST-05 old draft 0 is migrated to unknown; splits and safety answers survive
+ok 513 - DIST-05 old draft 0 is migrated to unknown; splits and safety answers survive
+  ---
+  duration_ms: 0.960167
+  type: 'test'
+  ...
+# Subtest: GREEN → GREEN: first holds, second progresses one volume parameter
+ok 514 - GREEN → GREEN: first holds, second progresses one volume parameter
+  ---
+  duration_ms: 6.966977
+  type: 'test'
+  ...
+# Subtest: GREEN_PLUS → GREEN_PLUS requests checkpoint without predicting performance
+ok 515 - GREEN_PLUS → GREEN_PLUS requests checkpoint without predicting performance
+  ---
+  duration_ms: 2.221448
+  type: 'test'
+  ...
+# Subtest: YELLOW → GREEN: easy recovery clears isolated fatigue; no automatic volume growth
+ok 516 - YELLOW → GREEN: easy recovery clears isolated fatigue; no automatic volume growth
+  ---
+  duration_ms: 1.458207
+  type: 'test'
+  ...
+# Subtest: unrelated environment and recovery YELLOW do not merge
+ok 517 - unrelated environment and recovery YELLOW do not merge
+  ---
+  duration_ms: 4.880968
+  type: 'test'
+  ...
+# Subtest: two related yellow roll back last confirmed dose and restrict quality after diagnostic
+ok 518 - two related yellow roll back last confirmed dose and restrict quality after diagnostic
+  ---
+  duration_ms: 4.725815
+  type: 'test'
+  ...
+# Subtest: PARTIAL → OPEN requires two successful specific workouts; no simultaneous speed+volume growth
+ok 519 - PARTIAL → OPEN requires two successful specific workouts; no simultaneous speed+volume growth
+  ---
+  duration_ms: 3.759334
+  type: 'test'
+  ...
+# Subtest: new test updates anchors, replans and retains actual T/Q and distinct experience flags
+ok 520 - new test updates anchors, replans and retains actual T/Q and distinct experience flags
+  ---
+  duration_ms: 0.763034
+  type: 'test'
+  ...
+# Subtest: CONTROL workout feedback alone never changes performance
+ok 521 - CONTROL workout feedback alone never changes performance
+  ---
+  duration_ms: 1.22897
+  type: 'test'
+  ...
+# Subtest: resultless runner becomes able3km → baseline checkpoint → snapshot
+ok 522 - resultless runner becomes able3km → baseline checkpoint → snapshot
+  ---
+  duration_ms: 1.09747
+  type: 'test'
+  ...
+# Subtest: healthy break 1 days has correct return policy
+ok 523 - healthy break 1 days has correct return policy
+  ---
+  duration_ms: 1.421618
+  type: 'test'
+  ...
+# Subtest: healthy break 3 days has correct return policy
+ok 524 - healthy break 3 days has correct return policy
+  ---
+  duration_ms: 1.005534
+  type: 'test'
+  ...
+# Subtest: healthy break 4 days has correct return policy
+ok 525 - healthy break 4 days has correct return policy
+  ---
+  duration_ms: 1.60217
+  type: 'test'
+  ...
+# Subtest: healthy break 7 days has correct return policy
+ok 526 - healthy break 7 days has correct return policy
+  ---
+  duration_ms: 1.096833
+  type: 'test'
+  ...
+# Subtest: healthy break 8 days has correct return policy
+ok 527 - healthy break 8 days has correct return policy
+  ---
+  duration_ms: 5.980743
+  type: 'test'
+  ...
+# Subtest: healthy break 14 days has correct return policy
+ok 528 - healthy break 14 days has correct return policy
+  ---
+  duration_ms: 0.970038
+  type: 'test'
+  ...
+# Subtest: healthy break 15 days has correct return policy
+ok 529 - healthy break 15 days has correct return policy
+  ---
+  duration_ms: 7.90099
+  type: 'test'
+  ...
+# Subtest: healthy break 30 days has correct return policy
+ok 530 - healthy break 30 days has correct return policy
+  ---
+  duration_ms: 1.990707
+  type: 'test'
+  ...
+# Subtest: medical ILLNESS break does not use healthy calendar multipliers
+ok 531 - medical ILLNESS break does not use healthy calendar multipliers
+  ---
+  duration_ms: 0.59967
+  type: 'test'
+  ...
+# Subtest: medical INJURY break does not use healthy calendar multipliers
+ok 532 - medical INJURY break does not use healthy calendar multipliers
+  ---
+  duration_ms: 0.607742
+  type: 'test'
+  ...
+# Subtest: skip removes a workout without debt, replacement quality or changing next prescription
+ok 533 - skip removes a workout without debt, replacement quality or changing next prescription
+  ---
+  duration_ms: 1.662422
+  type: 'test'
+  ...
+# Subtest: taper reduces volume and forbids progression even after two confirmations
+ok 534 - taper reduces volume and forbids progression even after two confirmations
+  ---
+  duration_ms: 0.477988
+  type: 'test'
+  ...
+# Subtest: acute RED blocks and cannot be cleared by an ordinary GREEN REST report
+ok 535 - acute RED blocks and cannot be cleared by an ordinary GREEN REST report
+  ---
+  duration_ms: 0.79712
+  type: 'test'
+  ...
+# Subtest: classification full, within range, lower RPE → GREEN_PLUS; failures → reasoned YELLOW
+ok 536 - classification full, within range, lower RPE → GREEN_PLUS; failures → reasoned YELLOW
+  ---
+  duration_ms: 0.354345
+  type: 'test'
+  ...
+# Subtest: two same-workout submissions cannot fake independent confirmations
+ok 537 - two same-workout submissions cannot fake independent confirmations
+  ---
+  duration_ms: 0.828467
+  type: 'test'
+  ...
+# Subtest: immutable state and JSON roundtrip preserve deterministic queue/history
+ok 538 - immutable state and JSON roundtrip preserve deterministic queue/history
+  ---
+  duration_ms: 1.067193
+  type: 'test'
+  ...
+# Subtest: no invalid future or malformed measurements accepted
+ok 539 - no invalid future or malformed measurements accepted
+  ---
+  duration_ms: 0.640408
+  type: 'test'
+  ...
+# Subtest: move preserves dose, survives replan/serialization and cannot violate recovery
+ok 540 - move preserves dose, survives replan/serialization and cannot violate recovery
+  ---
+  duration_ms: 1.827509
+  type: 'test'
+  ...
+# Subtest: time advance marks overdue quality skipped and does not replace it as debt
+ok 541 - time advance marks overdue quality skipped and does not replace it as debt
+  ---
+  duration_ms: 0.720299
+  type: 'test'
+  ...
+# Subtest: first quality after two reentry easies still uses CLOSED gate and confirmed dose reduction
+ok 542 - first quality after two reentry easies still uses CLOSED gate and confirmed dose reduction
+  ---
+  duration_ms: 1.88693
+  type: 'test'
+  ...
+# Subtest: small break easy reduction is applied once, not repeatedly
+ok 543 - small break easy reduction is applied once, not repeatedly
+  ---
+  duration_ms: 6.571206
+  type: 'test'
+  ...
+# Subtest: Q0 threshold introduction does not leap to Q1 minimum12 minutes
+ok 544 - Q0 threshold introduction does not leap to Q1 minimum12 minutes
+  ---
+  duration_ms: 5.86333
+  type: 'test'
+  ...
+# Subtest: a moved quality is cancelled by RED, not resurrected on replan
+ok 545 - a moved quality is cancelled by RED, not resurrected on replan
+  ---
+  duration_ms: 1.349384
+  type: 'test'
+  ...
+# Subtest: pain health branch cannot be hidden by an explicit environmental yellow reason
+ok 546 - pain health branch cannot be hidden by an explicit environmental yellow reason
+  ---
+  duration_ms: 0.715186
+  type: 'test'
+  ...
+# Subtest: future workouts crossing taper boundary already reduce volume
+ok 547 - future workouts crossing taper boundary already reduce volume
+  ---
+  duration_ms: 0.383727
+  type: 'test'
+  ...
+# Subtest: 01: 15:20 → 14:56; Q0 development, one quality, gate closed
+ok 548 - 01: 15:20 → 14:56; Q0 development, one quality, gate closed
+  ---
+  duration_ms: 3.491091
+  type: 'test'
+  ...
+# Subtest: 02: 17:10 → 14:56 is not simple and does not prescribe target pace
+ok 549 - 02: 17:10 → 14:56 is not simple and does not prescribe target pace
+  ---
+  duration_ms: 0.888113
+  type: 'test'
+  ...
+# Subtest: 03: experienced 14:40 → 13:50 develops then enters specific via gate
+ok 550 - 03: experienced 14:40 → 13:50 develops then enters specific via gate
+  ---
+  duration_ms: 3.766256
+  type: 'test'
+  ...
+# Subtest: 04: advanced 12:30 → 12:10 preserves T3/Q2 and two quality
+ok 551 - 04: advanced 12:30 → 12:10 preserves T3/Q2 and two quality
+  ---
+  duration_ms: 0.633237
+  type: 'test'
+  ...
+# Subtest: 05: no result, only 2km continuously → foundation without VO2/specific
+ok 552 - 05: no result, only 2km continuously → foundation without VO2/specific
+  ---
+  duration_ms: 0.349153
+  type: 'test'
+  ...
+# Subtest: 06: two available sessions → one quality plus aerobic
+ok 553 - 06: two available sessions → one quality plus aerobic
+  ---
+  duration_ms: 0.518635
+  type: 'test'
+  ...
+# Subtest: 07: five sessions → at most two quality, majority easy
+ok 554 - 07: five sessions → at most two quality, majority easy
+  ---
+  duration_ms: 0.797898
+  type: 'test'
+  ...
+# Subtest: 08: three successful weeks → healthy 8-day break → two easy then reduced quality
+ok 555 - 08: three successful weeks → healthy 8-day break → two easy then reduced quality
+  ---
+  duration_ms: 18.46516
+  type: 'test'
+  ...
+# Subtest: 09: RPE10 instead of8 then 70% with tired legs → related yellow hold, performance preserved
+ok 556 - 09: RPE10 instead of8 then 70% with tired legs → related yellow hold, performance preserved
+  ---
+  duration_ms: 2.207634
+  type: 'test'
+  ...
+# Subtest: 10: two easy quality confirmations → checkpoint15:20; T/Q unchanged
+ok 557 - 10: two easy quality confirmations → checkpoint15:20; T/Q unchanged
+  ---
+  duration_ms: 2.598748
+  type: 'test'
+  ...
+# Subtest: 11: 18:20 → 13:30, short horizon → long term and conservative foundation
+ok 558 - 11: 18:20 → 13:30, short horizon → long term and conservative foundation
+  ---
+  duration_ms: 0.46224
+  type: 'test'
+  ...
+# Subtest: 12: pain2 → yellow health; pain4 increasing, altered motion → red blocked
+ok 559 - 12: pain2 → yellow health; pain4 increasing, altered motion → red blocked
+  ---
+  duration_ms: 1.376731
+  type: 'test'
+  ...
+# Subtest: TOTAL-01 every type of prescribed quality reserves warmup, cooldown and timed interval recoveries
+ok 560 - TOTAL-01 every type of prescribed quality reserves warmup, cooldown and timed interval recoveries
+  ---
+  duration_ms: 4.174966
+  type: 'test'
+  ...
+# Subtest: TOTAL-02 known time is booked from current measured speed with a 10% protective buffer, never written as actual metres
+ok 561 - TOTAL-02 known time is booked from current measured speed with a 10% protective buffer, never written as actual metres
+  ---
+  duration_ms: 0.886824
+  type: 'test'
+  ...
+# Subtest: TOTAL-03 one planned week including mixed timed and metered sessions stays within the actual weekly budget
+ok 562 - TOTAL-03 one planned week including mixed timed and metered sessions stays within the actual weekly budget
+  ---
+  duration_ms: 6.608197
+  type: 'test'
+  ...
+# Subtest: TOTAL-04 weekends and previous completed quality are reserved before adding new EASY
+ok 563 - TOTAL-04 weekends and previous completed quality are reserved before adding new EASY
+  ---
+  duration_ms: 40.827712
+  type: 'test'
+  ...
+# Subtest: TOTAL-05 small historical mileage never creates a fabricated tiny intensity workout
+ok 564 - TOTAL-05 small historical mileage never creates a fabricated tiny intensity workout
+  ---
+  duration_ms: 0.4835
+  type: 'test'
+  ...
+# Subtest: TOTAL-06 run-walk warmup and cooldown minutes stay explicit while nonexistent race pace is not fabricated
+ok 565 - TOTAL-06 run-walk warmup and cooldown minutes stay explicit while nonexistent race pace is not fabricated
+  ---
+  duration_ms: 0.332421
+  type: 'test'
+  ...
+# Subtest: TOTAL-07 changed-date rolling check forbids over-budget move and does not mutate input
+ok 566 - TOTAL-07 changed-date rolling check forbids over-budget move and does not mutate input
+  ---
+  duration_ms: 1.238253
+  type: 'test'
+  ...
+# Subtest: TOTAL-08 skipped session never creates extra training debt and cannot enlarge future workload
+ok 567 - TOTAL-08 skipped session never creates extra training debt and cannot enlarge future workload
+  ---
+  duration_ms: 1.46234
+  type: 'test'
+  ...
+# Subtest: SIM-01 nine fixed scenarios with four fitness levels run 8–12 weeks to the final race
+ok 568 - SIM-01 nine fixed scenarios with four fitness levels run 8–12 weeks to the final race
+  ---
+  duration_ms: 903.475629
+  type: 'test'
+  ...
+# Subtest: SIM-02 determinism: matching input reproduces the entire trace byte for byte
+ok 569 - SIM-02 determinism: matching input reproduces the entire trace byte for byte
+  ---
+  duration_ms: 99.751404
+  type: 'test'
+  ...
+# Subtest: SIM-03 audit cannot mutate the athlete profile or prior state
+ok 570 - SIM-03 audit cannot mutate the athlete profile or prior state
+  ---
+  duration_ms: 39.827638
+  type: 'test'
+  ...
+# Subtest: SIM-04 no hypothetical faster checkpoint or final result is silently inferred
+ok 571 - SIM-04 no hypothetical faster checkpoint or final result is silently inferred
+  ---
+  duration_ms: 792.572017
+  type: 'test'
+  ...
+# Subtest: SIM-05 direct engine grades are recorded; future training is decided by engine
+ok 572 - SIM-05 direct engine grades are recorded; future training is decided by engine
+  ---
+  duration_ms: 1.203403
+  type: 'test'
+  ...
+# Subtest: SIM-06 absent employee gets a declared break, not fabricated successful runs
+ok 573 - SIM-06 absent employee gets a declared break, not fabricated successful runs
+  ---
+  duration_ms: 119.165444
+  type: 'test'
+  ...
+# Subtest: SIM-07 RED and later external clearance are distinguishable events
+ok 574 - SIM-07 RED and later external clearance are distinguishable events
+  ---
+  duration_ms: 65.347429
+  type: 'test'
+  ...
+# Subtest: SIM-08 inconsistent measurement is rejected, never persisted, and explicitly corrected
+ok 575 - SIM-08 inconsistent measurement is rejected, never persisted, and explicitly corrected
+  ---
+  duration_ms: 47.768106
+  type: 'test'
+  ...
+# Subtest: SIM-09 healthy safety payload is explicit and complete
+ok 576 - SIM-09 healthy safety payload is explicit and complete
+  ---
+  duration_ms: 0.324966
+  type: 'test'
+  ...
+# Subtest: SIM-10 skipped workouts are not counted as completed history
+ok 577 - SIM-10 skipped workouts are not counted as completed history
+  ---
+  duration_ms: 101.004874
+  type: 'test'
+  ...
+# Subtest: SIM-11 gate changes without prescribed speed do not trigger a false pace warning
+ok 578 - SIM-11 gate changes without prescribed speed do not trigger a false pace warning
+  ---
+  duration_ms: 49.632653
+  type: 'test'
+  ...
+# Subtest: SIM-12 every-third skips use scheduled workout count, not quality counter
+ok 579 - SIM-12 every-third skips use scheduled workout count, not quality counter
+  ---
+  duration_ms: 99.168966
+  type: 'test'
+  ...
+# Subtest: SIM-13 no detected hard safety or calendar violations in the fixed nine scenarios
+ok 580 - SIM-13 no detected hard safety or calendar violations in the fixed nine scenarios
+  ---
+  duration_ms: 770.907921
+  type: 'test'
+  ...
+# Subtest: SIM-14 incomplete synthetic feedback does not contradict measured split distance
+ok 581 - SIM-14 incomplete synthetic feedback does not contradict measured split distance
+  ---
+  duration_ms: 0.45898
+  type: 'test'
+  ...
+# Subtest: SIM-15 synthetic confirmation cannot invent performance gain
+ok 582 - SIM-15 synthetic confirmation cannot invent performance gain
+  ---
+  duration_ms: 35.324307
+  type: 'test'
+  ...
+# Subtest: COPY-01 the document exists and every catalog marker is expected
+ok 583 - COPY-01 the document exists and every catalog marker is expected
+  ---
+  duration_ms: 1.23662
+  type: 'test'
+  ...
+# Subtest: COPY-02 EVALUATIONS: every public value is mapped, and nothing else
+ok 584 - COPY-02 EVALUATIONS: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.28376
+  type: 'test'
+  ...
+# Subtest: COPY-02 YELLOW_REASONS: every public value is mapped, and nothing else
+ok 585 - COPY-02 YELLOW_REASONS: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.165268
+  type: 'test'
+  ...
+# Subtest: COPY-02 REASON_CODES: every public value is mapped, and nothing else
+ok 586 - COPY-02 REASON_CODES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.21154
+  type: 'test'
+  ...
+# Subtest: COPY-02 PHASES: every public value is mapped, and nothing else
+ok 587 - COPY-02 PHASES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.166179
+  type: 'test'
+  ...
+# Subtest: COPY-02 FEASIBILITIES: every public value is mapped, and nothing else
+ok 588 - COPY-02 FEASIBILITIES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.079353
+  type: 'test'
+  ...
+# Subtest: COPY-02 GATES: every public value is mapped, and nothing else
+ok 589 - COPY-02 GATES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.122259
+  type: 'test'
+  ...
+# Subtest: COPY-02 CAPACITIES: every public value is mapped, and nothing else
+ok 590 - COPY-02 CAPACITIES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.066013
+  type: 'test'
+  ...
+# Subtest: COPY-02 QUALITY_LEVELS: every public value is mapped, and nothing else
+ok 591 - COPY-02 QUALITY_LEVELS: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.265533
+  type: 'test'
+  ...
+# Subtest: COPY-02 CONFIDENCES: every public value is mapped, and nothing else
+ok 592 - COPY-02 CONFIDENCES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.238947
+  type: 'test'
+  ...
+# Subtest: COPY-02 SAFETY_STATUSES: every public value is mapped, and nothing else
+ok 593 - COPY-02 SAFETY_STATUSES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.092486
+  type: 'test'
+  ...
+# Subtest: COPY-02 WORKOUT_TYPES: every public value is mapped, and nothing else
+ok 594 - COPY-02 WORKOUT_TYPES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.055612
+  type: 'test'
+  ...
+# Subtest: COPY-02 WORKOUT_GOALS: every public value is mapped, and nothing else
+ok 595 - COPY-02 WORKOUT_GOALS: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.037264
+  type: 'test'
+  ...
+# Subtest: COPY-02 MAIN_MODES: every public value is mapped, and nothing else
+ok 596 - COPY-02 MAIN_MODES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.033947
+  type: 'test'
+  ...
+# Subtest: COPY-02 EFFORT_CUES: every public value is mapped, and nothing else
+ok 597 - COPY-02 EFFORT_CUES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.029753
+  type: 'test'
+  ...
+# Subtest: COPY-02 ANCHORS: every public value is mapped, and nothing else
+ok 598 - COPY-02 ANCHORS: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.031535
+  type: 'test'
+  ...
+# Subtest: COPY-02 DOSE_UNITS: every public value is mapped, and nothing else
+ok 599 - COPY-02 DOSE_UNITS: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.028903
+  type: 'test'
+  ...
+# Subtest: COPY-02 FEEDBACK_FIELDS: every public value is mapped, and nothing else
+ok 600 - COPY-02 FEEDBACK_FIELDS: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.045542
+  type: 'test'
+  ...
+# Subtest: COPY-02 BREAK_REASONS: every public value is mapped, and nothing else
+ok 601 - COPY-02 BREAK_REASONS: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.044972
+  type: 'test'
+  ...
+# Subtest: COPY-02 PERFORMANCE_SOURCES: every public value is mapped, and nothing else
+ok 602 - COPY-02 PERFORMANCE_SOURCES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.042831
+  type: 'test'
+  ...
+# Subtest: COPY-02 PERFORMANCE_MISMATCH_LEVELS: every public value is mapped, and nothing else
+ok 603 - COPY-02 PERFORMANCE_MISMATCH_LEVELS: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.036997
+  type: 'test'
+  ...
+# Subtest: COPY-02 ERROR_CODES: every public value is mapped, and nothing else
+ok 604 - COPY-02 ERROR_CODES: every public value is mapped, and nothing else
+  ---
+  duration_ms: 0.160127
+  type: 'test'
+  ...
+# Subtest: COPY-03 the mandatory sets are split into the required groups
+ok 605 - COPY-03 the mandatory sets are split into the required groups
+  ---
+  duration_ms: 0.111489
+  type: 'test'
+  ...
+# Subtest: COPY-04 a value that the UI must not translate literally says so
+ok 606 - COPY-04 a value that the UI must not translate literally says so
+  ---
+  duration_ms: 0.345372
+  type: 'test'
+  ...
+# Subtest: COPY-05 the B1 repeats rule is documented as non-blocking with a warning
+ok 607 - COPY-05 the B1 repeats rule is documented as non-blocking with a warning
+  ---
+  duration_ms: 0.136017
+  type: 'test'
+  ...
+# Subtest: COPY-06 the documented repeats rule matches how the engine actually classifies
+ok 608 - COPY-06 the documented repeats rule matches how the engine actually classifies
+  ---
+  duration_ms: 132.4962
+  type: 'test'
+  ...
+# Subtest: STEP-01 a verified 10km run-walk beginner first progresses bouts, not weekly distance
+ok 609 - STEP-01 a verified 10km run-walk beginner first progresses bouts, not weekly distance
+  ---
+  duration_ms: 23.709805
+  type: 'test'
+  ...
+# Subtest: STEP-02 alternate full 14-day blocks allow 500m only after the bout step
+ok 610 - STEP-02 alternate full 14-day blocks allow 500m only after the bout step
+  ---
+  duration_ms: 13.059756
+  type: 'test'
+  ...
+# Subtest: STEP-03 defaulted/legacy GREENs may save but never authorize progression
+ok 611 - STEP-03 defaulted/legacy GREENs may save but never authorize progression
+  ---
+  duration_ms: 10.304701
+  type: 'test'
+  ...
+# Subtest: STEP-04 one unconfirmed session disqualifies the entire block
+ok 612 - STEP-04 one unconfirmed session disqualifies the entire block
+  ---
+  duration_ms: 4.221923
+  type: 'test'
+  ...
+# Subtest: STEP-05 a missed workout never earns a 14-day progression credit
+ok 613 - STEP-05 a missed workout never earns a 14-day progression credit
+  ---
+  duration_ms: 4.335558
+  type: 'test'
+  ...
+# Subtest: STEP-06 YELLOW/RED and a diagnostic hold block growth, even with subsequent GREENs
+ok 614 - STEP-06 YELLOW/RED and a diagnostic hold block growth, even with subsequent GREENs
+  ---
+  duration_ms: 5.693809
+  type: 'test'
+  ...
+# Subtest: STEP-07 short baseline gets no arbitrary +500m and 0km still yields introductory run/walk
+ok 615 - STEP-07 short baseline gets no arbitrary +500m and 0km still yields introductory run/walk
+  ---
+  duration_ms: 10.112743
+  type: 'test'
+  ...
+# Subtest: STEP-08 old v1 serialized state loads without bonus retroactive increase
+ok 616 - STEP-08 old v1 serialized state loads without bonus retroactive increase
+  ---
+  duration_ms: 14.625303
+  type: 'test'
+  ...
+# Subtest: STEP-09 a work break blocks increases without deleting already completed history
+ok 617 - STEP-09 a work break blocks increases without deleting already completed history
+  ---
+  duration_ms: 2.772295
+  type: 'test'
+  ...
+# Subtest: STEP-10 near race-day taper never triggers an increase
+ok 618 - STEP-10 near race-day taper never triggers an increase
+  ---
+  duration_ms: 8.241729
+  type: 'test'
+  ...
+# Subtest: STEP-11 confirmation is available only after deliberate completion and effort answers
+ok 619 - STEP-11 confirmation is available only after deliberate completion and effort answers
+  ---
+  duration_ms: 0.772704
+  type: 'test'
+  ...
+# Subtest: STEP-12 explicit T0 capability update stays separate from measured 3000m performance
+ok 620 - STEP-12 explicit T0 capability update stays separate from measured 3000m performance
+  ---
+  duration_ms: 1.234637
+  type: 'test'
+  ...
+# Subtest: STEP-13 twelve-week T0 replay alternates bout and meter increases without inventing 3km ability
+ok 621 - STEP-13 twelve-week T0 replay alternates bout and meter increases without inventing 3km ability
+  ---
+  duration_ms: 63.821041
+  type: 'test'
+  ...
+# Subtest: STEP-14 a missed second week cannot lead to two catch-up increases on a later reopen
+ok 622 - STEP-14 a missed second week cannot lead to two catch-up increases on a later reopen
+  ---
+  duration_ms: 9.81821
+  type: 'test'
+  ...
+# Subtest: STEP-15 eight weeks with a miss every third session do not create catch-up load
+ok 623 - STEP-15 eight weeks with a miss every third session do not create catch-up load
+  ---
+  duration_ms: 23.305956
+  type: 'test'
+  ...
+# Subtest: STEP-16 trained 10-week plan never assumes a faster 3000m result or unverified growth
+ok 624 - STEP-16 trained 10-week plan never assumes a faster 3000m result or unverified growth
+  ---
+  duration_ms: 147.931893
+  type: 'test'
+  ...
+# Subtest: LOAD-GUARD-01 for every calendar availability, low-history athlete never gets more runs than habitual
+ok 625 - LOAD-GUARD-01 for every calendar availability, low-history athlete never gets more runs than habitual
+  ---
+  duration_ms: 19.016855
+  type: 'test'
+  ...
+# Subtest: LOAD-GUARD-02 one rolling week with many free days never exceeds easy-distance baseline
+ok 626 - LOAD-GUARD-02 one rolling week with many free days never exceeds easy-distance baseline
+  ---
+  duration_ms: 31.262701
+  type: 'test'
+  ...
+# Subtest: LOAD-GUARD-03 every available 1–7 profile has at most one long in any rolling seven days, including completed history
+ok 627 - LOAD-GUARD-03 every available 1–7 profile has at most one long in any rolling seven days, including completed history
+  ---
+  duration_ms: 22.768115
+  type: 'test'
+  ...
+# Subtest: LOAD-GUARD-04 a skip does not create extra running days or excessive debt
+ok 628 - LOAD-GUARD-04 a skip does not create extra running days or excessive debt
+  ---
+  duration_ms: 0.799971
+  type: 'test'
+  ...
+# Subtest: LOAD-GUARD-05 a healthy break does not override the baseline frequency and mileage guard
+ok 629 - LOAD-GUARD-05 a healthy break does not override the baseline frequency and mileage guard
+  ---
+  duration_ms: 1.0614
+  type: 'test'
+  ...
+# Subtest: LOAD-GUARD-06 quality-workout recovery and type are not changed by easy-distance guard
+ok 630 - LOAD-GUARD-06 quality-workout recovery and type are not changed by easy-distance guard
+  ---
+  duration_ms: 0.576557
+  type: 'test'
+  ...
+# Subtest: LOAD-GAP-07 a successful T0 athlete cannot advance canRun3Km from training feedback alone
+ok 631 - LOAD-GAP-07 a successful T0 athlete cannot advance canRun3Km from training feedback alone
+  ---
+  duration_ms: 15.527092
+  type: 'test'
+  ...
+# Subtest: WIRE-01 every screen has a unique id and answers the three questions
+ok 632 - WIRE-01 every screen has a unique id and answers the three questions
+  ---
+  duration_ms: 0.922214
+  type: 'test'
+  ...
+# Subtest: WIRE-02 no reference points at a screen or state that does not exist
+ok 633 - WIRE-02 no reference points at a screen or state that does not exist
+  ---
+  duration_ms: 0.45183
+  type: 'test'
+  ...
+# Subtest: WIRE-03 every state of the main screen is defined and reachable
+ok 634 - WIRE-03 every state of the main screen is defined and reachable
+  ---
+  duration_ms: 0.117789
+  type: 'test'
+  ...
+# Subtest: WIRE-04 the bottom navigation is the four required sections with Today as the main one
+ok 635 - WIRE-04 the bottom navigation is the four required sections with Today as the main one
+  ---
+  duration_ms: 0.141698
+  type: 'test'
+  ...
+# Subtest: WIRE-05 the transition map uses the documented cycle states
+ok 636 - WIRE-05 the transition map uses the documented cycle states
+  ---
+  duration_ms: 0.173814
+  type: 'test'
+  ...
+# Subtest: WIRE-06 the inventory lists every screen with entry condition, CTA and next state
+ok 637 - WIRE-06 the inventory lists every screen with entry condition, CTA and next state
+  ---
+  duration_ms: 0.47826
+  type: 'test'
+  ...
+# Subtest: WIRE-07 the twenty-two verification scenarios are present
+ok 638 - WIRE-07 the twenty-two verification scenarios are present
+  ---
+  duration_ms: 1.525594
+  type: 'test'
+  ...
+# Subtest: WIRE-08 B1, B3, INV-1 and raceDate are respected by design
+ok 639 - WIRE-08 B1, B3, INV-1 and raceDate are respected by design
+  ---
+  duration_ms: 0.550216
+  type: 'test'
+  ...
+# Subtest: WIRE-09 accessibility and mobile-first rules are stated
+ok 640 - WIRE-09 accessibility and mobile-first rules are stated
+  ---
+  duration_ms: 0.383297
+  type: 'test'
+  ...
+# Subtest: INSTR-01 the split of a repeat is pace times distance, rounded to whole seconds
+ok 641 - INSTR-01 the split of a repeat is pace times distance, rounded to whole seconds
+  ---
+  duration_ms: 1.408907
+  type: 'test'
+  ...
+# Subtest: INSTR-02 EASY contains a numeric, engine-assigned pace, treadmill speed and projected time
+ok 642 - INSTR-02 EASY contains a numeric, engine-assigned pace, treadmill speed and projected time
+  ---
+  duration_ms: 5.76552
+  type: 'test'
+  ...
+# Subtest: INSTR-03 long easy run has an individual numeric pace with its own distance/time
+ok 643 - INSTR-03 long easy run has an individual numeric pace with its own distance/time
+  ---
+  duration_ms: 1.459646
+  type: 'test'
+  ...
+# Subtest: INSTR-04 continuous work with a pace states the pace as the engine ordered it
+ok 644 - INSTR-04 continuous work with a pace states the pace as the engine ordered it
+  ---
+  duration_ms: 1.895494
+  type: 'test'
+  ...
+# Subtest: INSTR-05 intervals of 400 m show the time of one repeat
+ok 645 - INSTR-05 intervals of 400 m show the time of one repeat
+  ---
+  duration_ms: 1.272234
+  type: 'test'
+  ...
+# Subtest: INSTR-06 a 1000 m repeat is converted with the same rule
+ok 646 - INSTR-06 a 1000 m repeat is converted with the same rule
+  ---
+  duration_ms: 1.001943
+  type: 'test'
+  ...
+# Subtest: INSTR-07 a shorter final repeat is the last of them, not an extra one
+ok 647 - INSTR-07 a shorter final repeat is the last of them, not an extra one
+  ---
+  duration_ms: 1.144097
+  type: 'test'
+  ...
+# Subtest: INSTR-08 a special 3000 m session keeps the engine pace and its own repeat length
+ok 648 - INSTR-08 a special 3000 m session keeps the engine pace and its own repeat length
+  ---
+  duration_ms: 0.973378
+  type: 'test'
+  ...
+# Subtest: INSTR-09 the control run names the real distance and states that no pace is set
+ok 649 - INSTR-09 the control run names the real distance and states that no pace is set
+  ---
+  duration_ms: 1.18506
+  type: 'test'
+  ...
+# Subtest: INSTR-10 run and walk is described with precisely the engine-prescribed bouts and distance
+ok 650 - INSTR-10 run and walk is described with precisely the engine-prescribed bouts and distance
+  ---
+  duration_ms: 1.1406
+  type: 'test'
+  ...
+# Subtest: INSTR-11 strides are described by technique, not by a target time
+ok 651 - INSTR-11 strides are described by technique, not by a target time
+  ---
+  duration_ms: 1.062136
+  type: 'test'
+  ...
+# Subtest: INSTR-12 no warm-up and no cool-down mean no such steps
+ok 652 - INSTR-12 no warm-up and no cool-down mean no such steps
+  ---
+  duration_ms: 1.455186
+  type: 'test'
+  ...
+# Subtest: INSTR-13 a prescribed warm-up and cool-down are part of the sequence
+ok 653 - INSTR-13 a prescribed warm-up and cool-down are part of the sequence
+  ---
+  duration_ms: 1.74935
+  type: 'test'
+  ...
+# Subtest: INSTR-14 intervals with a pace but no distance state the pace instead of inventing a split
+ok 654 - INSTR-14 intervals with a pace but no distance state the pace instead of inventing a split
+  ---
+  duration_ms: 0.778772
+  type: 'test'
+  ...
+# Subtest: INSTR-15 intervals without a pace state only what the engine ordered
+ok 655 - INSTR-15 intervals without a pace state only what the engine ordered
+  ---
+  duration_ms: 0.574543
+  type: 'test'
+  ...
+# Subtest: INSTR-16 a rest day is not dressed up as training
+ok 656 - INSTR-16 a rest day is not dressed up as training
+  ---
+  duration_ms: 0.652231
+  type: 'test'
+  ...
+# Subtest: INSTR-17 the feeling comes from the existing effort scale and keeps the number beside it
+ok 657 - INSTR-17 the feeling comes from the existing effort scale and keeps the number beside it
+  ---
+  duration_ms: 0.718849
+  type: 'test'
+  ...
+# Subtest: INSTR-18 the instruction is derived every time and never stored
+ok 658 - INSTR-18 the instruction is derived every time and never stored
+  ---
+  duration_ms: 0.786229
+  type: 'test'
+  ...
+# Subtest: INSTR-19 a shortened final repeat is rendered as the last of the prescribed repeats
+ok 659 - INSTR-19 a shortened final repeat is rendered as the last of the prescribed repeats
+  ---
+  duration_ms: 0.090085
+  type: 'test'
+  ...
+# Subtest: INSTR-20 an equal final repeat is just a uniform block
+ok 660 - INSTR-20 an equal final repeat is just a uniform block
+  ---
+  duration_ms: 0.063351
+  type: 'test'
+  ...
+# Subtest: INSTR-21 a single repeat carries only its own actual length
+ok 661 - INSTR-21 a single repeat carries only its own actual length
+  ---
+  duration_ms: 1.004955
+  type: 'test'
+  ...
+# Subtest: INSTR-22 a real engine prescription that is not a multiple of the repeat length
+ok 662 - INSTR-22 a real engine prescription that is not a multiple of the repeat length
+  ---
+  duration_ms: 0.718901
+  type: 'test'
+  ...
+# Subtest: INSTR-23 the instruction and the technical block read one and the same structure
+ok 663 - INSTR-23 the instruction and the technical block read one and the same structure
+  ---
+  duration_ms: 14.862219
+  type: 'test'
+  ...
+# Subtest: INSTR-24 the rest is a duration, and the way of resting stays the plan own business
+ok 664 - INSTR-24 the rest is a duration, and the way of resting stays the plan own business
+  ---
+  duration_ms: 0.79149
+  type: 'test'
+  ...
+# Subtest: INSTR-25 a continuous run is never turned into run and walk
+ok 665 - INSTR-25 a continuous run is never turned into run and walk
+  ---
+  duration_ms: 0.782922
+  type: 'test'
+  ...
+# Subtest: INSTR-26 words that would change the prescription never appear
+ok 666 - INSTR-26 words that would change the prescription never appear
+  ---
+  duration_ms: 3.929339
+  type: 'test'
+  ...
+# Subtest: INSTR-27 a distance interval reads the same in the instruction, the rows and the plans
+ok 667 - INSTR-27 a distance interval reads the same in the instruction, the rows and the plans
+  ---
+  duration_ms: 0.82046
+  type: 'test'
+  ...
+# Subtest: INSTR-28 a time interval is split by its own repeat count, never multiplied
+ok 668 - INSTR-28 a time interval is split by its own repeat count, never multiplied
+  ---
+  duration_ms: 1.026214
+  type: 'test'
+  ...
+# Subtest: INSTR-29 a fractional per-repeat time keeps whole seconds
+ok 669 - INSTR-29 a fractional per-repeat time keeps whole seconds
+  ---
+  duration_ms: 1.043594
+  type: 'test'
+  ...
+# Subtest: INSTR-30 a workout that is not made of intervals keeps the plain dose
+ok 670 - INSTR-30 a workout that is not made of intervals keeps the plain dose
+  ---
+  duration_ms: 0.597528
+  type: 'test'
+  ...
+# Subtest: INSTR-31 fractional total minutes show exact main work (not rounded away)
+ok 671 - INSTR-31 fractional total minutes show exact main work (not rounded away)
+  ---
+  duration_ms: 0.640602
+  type: 'test'
+  ...
+# Subtest: INSTR-32 a prescribed pace gives both min/km and equivalent treadmill km/h
+ok 672 - INSTR-32 a prescribed pace gives both min/km and equivalent treadmill km/h
+  ---
+  duration_ms: 0.635341
+  type: 'test'
+  ...
+# Subtest: INSTR-33 when total seconds are not divisible by repeats, rounded split is explicitly approximate
+ok 673 - INSTR-33 when total seconds are not divisible by repeats, rounded split is explicitly approximate
+  ---
+  duration_ms: 0.559153
+  type: 'test'
+  ...
+# Subtest: INSTR-34 prescribed distance stays mandatory and its time uses the engine pace
+ok 674 - INSTR-34 prescribed distance stays mandatory and its time uses the engine pace
+  ---
+  duration_ms: 0.944223
+  type: 'test'
+  ...
+# Subtest: INSTR-35 unpaced acceleration cannot invent pace, speed or a distance estimate
+ok 675 - INSTR-35 unpaced acceleration cannot invent pace, speed or a distance estimate
+  ---
+  duration_ms: 0.700776
+  type: 'test'
+  ...
+1..675
+# tests 675
+# suites 0
+# pass 675
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4987.267878
+exit=0
