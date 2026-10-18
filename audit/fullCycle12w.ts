@@ -134,6 +134,8 @@ export interface DayRow {
 export interface EventRow {date: string; offset: number; week: number; kind: string; detail: string; synthetic: true}
 export interface ScenarioRun {
   scenario: AuditScenario; rows: WorkoutRow[]; days: DayRow[]; events: EventRow[]; engineErrors: {date: string; code: string; detail: string}[];
+  /** The engine's own assessment of the user on day 0 (before any workout). */
+  initial: {capacity: string; quality: string; phase: string; gate: string; feasibility: string | null; goalGap: number | null; confidence: string; maxQuality: number; reasons: string[]};
   finalState: EngineState; finalResultSeconds: number | null; controlSeconds: number[];
 }
 
@@ -214,6 +216,8 @@ export function simulateAudit(scenario: AuditScenario): ScenarioRun {
   const {user, behaviour} = scenario;
   const profile = makeAuditProfile(user);
   let state = createEngine(profile, SIM_START);
+  const d0 = state.decision;
+  const initial = {capacity: d0.capacity, quality: d0.quality, phase: d0.phase, gate: d0.gate, feasibility: d0.feasibility, goalGap: d0.goalGap === null ? null : Math.round(d0.goalGap * 1000) / 1000, confidence: d0.confidence, maxQuality: d0.maximumQualityPerWeek, reasons: [...d0.reasons]};
   const rows: WorkoutRow[] = []; const days: DayRow[] = []; const events: EventRow[] = [];
   const engineErrors: ScenarioRun['engineErrors'] = [];
   const controlSeconds: number[] = [];
@@ -371,7 +375,7 @@ export function simulateAudit(scenario: AuditScenario): ScenarioRun {
     addRow(offset, today, workout, outcome, result, before);
   }
   const lastControl = controlSeconds.at(-1) ?? null;
-  return {scenario, rows, days, events, engineErrors, finalState: state,
+  return {scenario, rows, days, events, engineErrors, initial, finalState: state,
     finalResultSeconds: state.finalResultRecorded ? state.profile.performance?.timeSeconds ?? null : null, controlSeconds: lastControl === null ? [] : controlSeconds};
 }
 
