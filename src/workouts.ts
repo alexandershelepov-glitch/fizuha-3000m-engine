@@ -93,6 +93,18 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
     const adapted = adaptEasyFromRecentResult(s, dose.value, initial);
     dose.value = adapted.doseMeters;
     easyPace = refineAfterEasySuccesses(s, adapted.pace);
+    if (easyPace !== adapted.pace) {
+      // A speed progression and a distance progression must never be booked
+      // on the same session. Keep the most recently completed measured EASY
+      // distance as the cap for this one improvement.
+      const recent = [...s.history].reverse().find(entry =>
+        (entry.workout.type === 'EASY' || entry.workout.type === 'LONG_EASY') &&
+        entry.workout.main.mode === 'CONTINUOUS' &&
+        entry.result.feedbackConfirmed === true &&
+        entry.result.completionFraction >= .95 &&
+        entry.result.distanceMeters >= entry.workout.main.dose.value * .95);
+      if (recent) dose.value = Math.min(dose.value, recent.workout.main.dose.value);
+    }
     range = easyPace.speedRangeMps;
     // Current 3km and a directly measured EASY baseline are distinct anchors.
     if (range !== null) anchor = measured3Km.paceRangeSecondsPerKm !== null ? 'CURRENT' : 'EFFORT';

@@ -112,17 +112,17 @@ test('CAL-08: three confirmed EASY sessions at fast half of assigned pace and RP
   const s=paced(), baseline=prescribe(s,'EASY',NOW,'base');
   assert.deepEqual(baseline.paceRangeSecondsPerKm,[410,455]);
   for(let i=0;i<3;i++){
-    const w=prescribe(s,'EASY',dateAfter(i*3),'success-'+i);
+    const w=prescribe(s,'EASY',dateAfter(i*7),'success-'+i);
     append(s,w,timed(w,5000,35,2)); // 7:00/km, within the faster half
     if(i<2)assert.deepEqual(prescribe(s,'EASY',NOW,'probe-'+i).paceRangeSecondsPerKm,[410,455]);
   }
-  s.asOf=dateAfter(9);
-  const next=prescribe(s,'EASY',dateAfter(9),'advanced');
+  s.asOf=dateAfter(15);
+  const next=prescribe(s,'EASY',dateAfter(15),'advanced');
   assert.deepEqual(next.paceRangeSecondsPerKm,[405,450]);
   assert.deepEqual(next.speedRangeMps,[1000/450,1000/405]);
   assert.equal(next.main.dose.value,5000,'no automatic mileage surge');
   assert.deepEqual(s.history[0]!.workout.paceRangeSecondsPerKm,[410,455]);
-  assert.deepEqual(prescribe(s,'EASY',dateAfter(10),'again').paceRangeSecondsPerKm,[405,450],
+  assert.deepEqual(prescribe(s,'EASY',dateAfter(20),'again').paceRangeSecondsPerKm,[405,450],
     'replanning does not compound speed gains');
 });
 test('CAL-09: RPE 3, missing measurements, one skip, or three overfast sessions do not earn faster speed',()=>{
@@ -140,6 +140,66 @@ test('CAL-09: RPE 3, missing measurements, one skip, or three overfast sessions 
     assert.deepEqual(next.paceRangeSecondsPerKm,[410,455],mode);
   }
 });
+test('CAL-11: three EASY successes in one week are not a fortnight of training',()=>{
+  const s=paced();
+  for (let i=0;i<3;i++) {
+    const w=prescribe(s,'EASY',dateAfter(i*3),'rushed-'+i);
+    append(s,w,timed(w,5000,35,2));
+  }
+  s.asOf=dateAfter(9);
+  const next=prescribe(s,'EASY',dateAfter(9),'too-early');
+  assert.deepEqual(next.paceRangeSecondsPerKm,[410,455],
+    'three fast-habit EASY runs in six days cannot accelerate prescriptions');
+});
+
+test('CAL-12: benchmark stays on initial measured trials, not following normal EASY workouts',()=>{
+  const s=beginner();
+  const first=prescribe(s,'EASY',NOW,'trial-1');
+  append(s,first,timed(first,2000,16,3));
+  const second=prescribe(s,'EASY',dateAfter(3),'trial-2');
+  append(s,second,timed(second,2000,16.5,3));
+  s.asOf=dateAfter(7);
+  const original=beginnerEasyPace(s);
+  assert.deepEqual(original?.paceRangeSecondsPerKm,[510,560]);
+  for (const day of [7,14,21]) {
+    s.asOf=dateAfter(day);
+    const w=prescribe(s,'EASY',dateAfter(day),'normal-'+day);
+    assert.ok(w.paceRangeSecondsPerKm!==null);
+    append(s,w,timed(w,w.main.dose.value,(w.main.dose.value/1000)*8.75,3));
+  }
+  s.asOf=dateAfter(28);
+  assert.deepEqual(beginnerEasyPace(s)?.paceRangeSecondsPerKm,[510,560],
+    'normal timed EASY results must not replace the calibration measurements');
+  assert.equal(s.profile.performance,null,'calibration is not a 3000m race');
+});
+
+test('CAL-13: unmeasured inactivity beyond 21 days reopens beginner calibration',()=>{
+  const s=beginner();
+  const first=prescribe(s,'EASY',NOW,'trial-1');
+  append(s,first,timed(first,2000,16,3));
+  const second=prescribe(s,'EASY',dateAfter(3),'trial-2');
+  append(s,second,timed(second,2000,16.5,3));
+  s.asOf=dateAfter(26);
+  const next=prescribe(s,'EASY',dateAfter(26),'refresh');
+  assert.equal(beginnerEasyPace(s),null);
+  assert.equal(next.main.calibration,true);
+});
+
+test('CAL-14: numerical EASY progression never increases prescribed distance on the same day',()=>{
+  const s=paced();
+  for (const day of [0,7,14]) {
+    const w=prescribe(s,'EASY',dateAfter(day),'success-'+day);
+    append(s,w,timed(w,5000,35,2));
+  }
+  s.asOf=dateAfter(15);
+  // Simulate independently approved weekly mileage increase after a fortnight:
+  // speed +5 s/km may be prescribed, but not on a longer session.
+  s.doses.EASY={unit:'METERS',value:6000};
+  const next=prescribe(s,'EASY',dateAfter(15),'refined-no-volume-spike');
+  assert.deepEqual(next.paceRangeSecondsPerKm,[405,450]);
+  assert.equal(next.main.dose.value,5000);
+});
+
 test('CAL-10: real recordResult on scheduled calibration session preserves untimed 3km profile',()=>{
   const s=beginner(),w=s.queue.find(x=>x.main.calibration === true);
   assert.ok(w);
