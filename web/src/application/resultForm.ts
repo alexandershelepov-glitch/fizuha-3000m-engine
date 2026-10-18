@@ -106,7 +106,7 @@ export function defaultResultDraft(workout: Workout): ResultDraft {
     safety: {pain: 0, painIncreasing: false, alteredMovement: false, painWalkingOrRest: false, swelling: false, acuteIllness: false, otherStop: false, needsAssessment: false},
     safetyResponse: 'UNANSWERED',
     // A scheduled five-minute walk is not evidence of a measured 10-minute session.
-    durationMinutes: workout.main.mode === 'RUN_WALK' ? '0' : String(plannedDuration(workout)),
+    durationMinutes: workout.main.calibration === true ? '' : workout.main.mode === 'RUN_WALK' ? '0' : String(plannedDuration(workout)),
     distanceMeters: '',
     repeats: defaultRepeats(workout),
     restSeconds: String(workout.restSeconds),
@@ -180,6 +180,10 @@ export function buildWorkoutResult(workout: Workout, draft: ResultDraft): BuildR
   const enteredTotalDistance = totalDistanceWasProvided
     ? numberField(draft.distanceMeters, 'distanceMeters', problems)
     : 0;
+  if (workout.main.calibration === true &&
+      (!totalDistanceWasProvided || enteredTotalDistance < 500)) {
+    problems.push({field:'distanceMeters',kind: totalDistanceWasProvided ? 'IMPOSSIBLE' : 'EMPTY'});
+  }
   const rawRest = numberField(draft.restSeconds, 'restSeconds', problems);
 
   const repeats: {distanceMeters: number; seconds: number}[] = [];
