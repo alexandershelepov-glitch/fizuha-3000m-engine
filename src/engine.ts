@@ -1,6 +1,6 @@
 import type { EngineState, PerformanceSnapshot, Profile, SafetyData, TrainingBreak, Workout, WorkoutResult, WorkoutType } from './models.ts';
 import { PERFORMANCE_SOURCES } from './models.ts';
-import { assessSafety, decide, taperDays } from './assessment.ts';
+import { assessConfidence, assessSafety, decide, taperDays } from './assessment.ts';
 import { classify, yellowFamily } from './feedback.ts';
 import { day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
 import { EngineError } from './errors.ts';
@@ -90,8 +90,13 @@ function reviewEasyProgression(s: EngineState, now: string): void {
     h.workout.type !== 'REST' && h.result.feedbackConfirmed === true).length >= count);
   if (!bothWeeksVerified) { state.lastReviewedBlock = completedBlock; return; }
   // A separately increased quality prescription occupies this block's progression step.
-  if (Object.entries(s.doses).some(([type, dose]) =>
-    dose !== undefined && (s.confirmedDoses[type as Workout['type']]?.value ?? dose.value) < dose.value)) return;
+  // An increased introductory dose is no longer pending once a Q0 runner has moved on to THRESHOLD, whose first
+  // dose IS that introductory dose (`initialDose`) and has been confirmed at that value or more: INTRO_QUALITY is not
+  // prescribed again, so it could never be confirmed and would defer the volume step for the rest of the cycle.
+  const pendingQualityIncrease = Object.entries(s.doses).some(([type, dose]) =>
+    dose !== undefined && (s.confirmedDoses[type as Workout['type']]?.value ?? dose.value) < dose.value &&
+    !(type === 'INTRO_QUALITY' && (s.confirmedDoses.THRESHOLD?.value ?? 0) >= dose.value));
+  if (pendingQualityIncrease) return;
   state.lastReviewedBlock = completedBlock;
 
   if (!s.profile.canRun3Km) {
@@ -125,6 +130,11 @@ function reviewEasyProgression(s: EngineState, now: string): void {
 }
 function rebuildQueue(s: EngineState, now: string, preserve: Workout[] | null): EngineState {
   if (day(now) - day(s.lastAssessmentDate) >= 21 || s.profile.performanceMismatch === 'CLEAR') s.checkpointRequired = true;
+  // A checkpoint is a 3000 m time trial: `recordCheckpoint` refuses it (CHECKPOINT_NOT_PERMITTED) until continuous
+  // 3 km is confirmed, and `createEngine` already starts with `!performance && canRun3Km`. Demanding an unavailable
+  // checkpoint left such users in a dead end (QA issue #23 DEF-002, 12-week audit D-01). The due-rules above are
+  // unchanged: once the ability is confirmed (`updateTrainingData`), the same rules set the flag again.
+  if (!s.profile.canRun3Km) s.checkpointRequired = false;
   reviewEasyProgression(s, now);
   s.decision = decide(s, now);
   const generated = generateQueue(s, now);
@@ -230,16 +240,43 @@ export function recordResult(state: EngineState, workoutId: string, result: Work
   // Current performance is intentionally untouched; CONTROL feedback alone is not a valid 3K result.
   return replan(s, result.date);
 }
+/**
+ * Does a new checkpoint continue the same, uninterrupted preparation?
+ *
+ * Evaluated against the state *before* the new result replaces Current Performance. It is true only for a routine
+ * checkpoint: a previous result exists, it is not stale or contradicted (confidence is not LOW), no break of 4+ days
+ * (or any illness/injury break) happened since it, and no re-entry is in progress or just finished. After a break
+ * the earlier confirmations no longer describe the runner, so those cases keep the full restart.
+ */
+function continuesPreparation(s: EngineState, performance: PerformanceSnapshot): boolean {
+  const previous = s.profile.performance;
+  if (!previous || s.reentry) return false;
+  if (assessConfidence(s.profile, performance.date) === 'LOW') return false;
+  return !s.profile.breaks.some(b => day(b.endDate) >= day(previous.date) && b.days >= 4);
+}
 export function recordCheckpoint(state: EngineState, performance: PerformanceSnapshot, now: string): EngineState {
   const s = copy(state);
   if (!PERFORMANCE_SOURCES.includes(performance.source) || !s.profile.canRun3Km || assessSafety(s.profile.safety) !== 'OK' || s.relatedYellow || (s.reentry && s.reentry.easyRemaining > 0)) throw new EngineError('CHECKPOINT_NOT_PERMITTED');
   if (day(performance.date) > day(now) || day(performance.date) < day(s.lastAssessmentDate)) throw new EngineError('INVALID_CHECKPOINT_DATE');
+  const previous = s.profile.performance;
+  const continuous = continuesPreparation(s, performance);
   s.profile.performance = structuredClone(performance); s.profile.performanceMismatch = 'NONE';
   // Breaks ending on the test date have already been evaluated by the valid post-break test.
   s.profile.breaks = s.profile.breaks.filter(b => day(b.endDate) > day(performance.date));
   s.lastAssessmentDate = performance.date; s.checkpointRequired = false; s.greenPlusIds = [];
-  s.successfulSpecificPartial = 0; s.successfulQuality = 0; s.successfulIntro = 0; s.successStreak = {};
   s.diagnosticHold = false; s.progressionBlocked = false; s.reentry = null;
+  if (continuous) {
+    // 12-week audit D-02/D-03. A routine checkpoint refreshes Current Performance; it is not evidence against the
+    // sessions already completed. successfulQuality/successfulIntro/successStreak count confirmed sessions (volume and
+    // experience, independent of the result) and `confirmedDoses` has never been reset, so wiping only the counters
+    // made every 21-day checkpoint restart quality progression, rotation and the gate. Paces, goal gap, confidence,
+    // phase and gate are all derived from the new result by `decide`/`prescribe`, so they are recomputed anyway.
+    // The only counter anchored to a pace is the SPECIFIC_3K evidence for opening the target-pace gate: it is kept
+    // when the result confirms or improves the previous one, and restarted when the runner became slower.
+    if (performance.timeSeconds > previous!.timeSeconds) s.successfulSpecificPartial = 0;
+  } else {
+    s.successfulSpecificPartial = 0; s.successfulQuality = 0; s.successfulIntro = 0; s.successStreak = {};
+  }
   return replan(s, now);
 }
 /**
