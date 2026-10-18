@@ -132,7 +132,8 @@ test('Q0 threshold introduction does not leap to Q1 minimum12 minutes',()=>{
  assert.equal(q.type,'THRESHOLD');assert.ok(q.main.dose.value<=s.confirmedDoses.INTRO_QUALITY!.value+2);
 });
 test('a moved quality is cancelled by RED, not resurrected on replan',async()=>{
- const {moveWorkout}=await import('../src/index.ts');let s=createEngine(profile({...experienced,availableRunsPerWeek:4,actualRunsPerWeek:4}),NOW);
+ const {moveWorkout}=await import('../src/index.ts');// 28 km / longest 9 km: enough weekly budget for two intense sessions AND a long run (with the default 16 km the week holds one intense session)
+ let s=createEngine(profile({...experienced,availableRunsPerWeek:4,actualRunsPerWeek:4,averageWeeklyKm4Weeks:28,longestUsualRunKm:9}),NOW);
  const second=s.queue.find((w,i)=>i>0&&w.countsAsQuality)!;s=moveWorkout(s,second.id,dateAfter(4));
  const first=s.queue[0]!;s=recordResult(s,first.id,feedback(first,'RED'));assert.ok(s.queue.every(w=>!w.countsAsQuality));
  assert.ok(deserialize(serialize(s)).queue.every(w=>!w.countsAsQuality));

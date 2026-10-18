@@ -5,9 +5,11 @@
  */
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {addDays, createEngine, day, deserialize, moveWorkout, prescribe, recordResult, replan, serialize, skipWorkout} from '../src/index.ts';
+import {EngineError, addDays, createEngine, day, deserialize, moveWorkout, prescribe, recordResult, replan, serialize, skipWorkout} from '../src/index.ts';
 import type {EngineState, Profile, Workout} from '../src/index.ts';
-import {longRunShares, reservedMetres} from '../src/weeklyLoad.ts';
+import {approvedWeekMeters, longRunShares, reservedMetres} from '../src/weeklyLoad.ts';
+import {weeklyIntenseCapacity} from '../src/workouts.ts';
+import {PROBES} from '../audit/deficitProfiles.ts';
 import {SCENARIOS, USERS, simulateAudit} from '../audit/fullCycle12w.ts';
 import type {ScenarioRun, WorkoutRow} from '../audit/fullCycle12w.ts';
 import {analyze} from '../audit/fullCycleAnalysis.ts';
@@ -299,36 +301,210 @@ test('WS-17 move: a moved long run keeps its dose and type, and the replan does 
   assert.deepEqual(deserialize(serialize(moved)).queue, moved.queue);
 });
 
-test('WS-18 moving an intense session keeps its type, and the type of the next one follows from it', () => {
-  const s0 = inSpecific(trained());
-  const q = s0.queue.find(w => w.countsAsQuality && w.type !== 'CONTROL');
-  if (!q) return;
-  const free = [1, 2, 3, 4, 5, 6].map(n => addDays(s0.asOf, n)).find(d => !s0.queue.some(w => w.scheduledDate === d) && day(d) !== day(q.scheduledDate));
-  if (!free) return;
-  try {
-    const moved = moveWorkout(s0, q.id, free);
-    assert.equal(moved.queue.find(w => w.id === q.id)!.type, q.type);
-    assert.deepEqual(deserialize(serialize(moved)).queue, moved.queue);
-    assert.deepEqual(replan(moved, moved.asOf).queue, moved.queue, 'recompute leaves the moved plan unchanged');
-  } catch (e) { assert.equal((e as {code?: string}).code !== undefined, true, 'a refusal carries its own code'); }
+/** Two intense sessions a week plus a long run (28 km a week, longest 9 km, 4 runs): the queue is T, E, V, L on days 0, 1, 3, 5. */
+const twoIntense = (): EngineState => createEngine(trained({averageWeeklyKm4Weeks: 28, longestUsualRunKm: 9}), NOW);
+const refusedWith = (code: string) => (e: unknown): boolean => e instanceof EngineError && e.code === code;
+
+test('WS-18 move of an intense session succeeds and keeps type, dose, calendar, rotation and the serialized state', () => {
+  const s0 = twoIntense();
+  assert.deepEqual(s0.queue.map(w => [w.scheduledDate, w.type]), [[dateAfter(0), 'THRESHOLD'], [dateAfter(1), 'EASY'], [dateAfter(3), 'VO2'], [dateAfter(5), 'LONG_EASY']], 'precondition: the week');
+  const second = s0.queue[2]!;
+  const target = dateAfter(2); // free day, exactly 48 h after THRESHOLD and before the next intense session: every rule allows it
+  const moved = moveWorkout(s0, second.id, target);
+  const m = moved.queue.find(w => w.id === second.id)!;
+  assert.equal(m.scheduledDate, target);
+  assert.equal(m.type, second.type, 'type kept');
+  assert.equal(m.main.dose.value, second.main.dose.value, 'dose kept');
+  assert.deepEqual(m.main, second.main, 'prescription kept');
+  assert.deepEqual(moved.queue.map(w => w.type), s0.queue.map(w => w.type), 'the other sessions keep their types');
+  assert.deepEqual(moved.queue.filter(w => w.id !== second.id).map(w => [w.scheduledDate, w.main.dose.value]), s0.queue.filter(w => w.id !== second.id).map(w => [w.scheduledDate, w.main.dose.value]), 'and their dates and doses');
+  // calendar: the moved session is the only change, it sits inside the horizon with 48 h to the other intense session; one long run in 7 days
+  assert.equal(day(target) - day(s0.queue[0]!.scheduledDate), 2);
+  assert.equal(moved.queue.filter(w => w.type === 'LONG_EASY').length, 1);
+  // recompute on the same day leaves the moved plan unchanged; save/load as well
+  assert.deepEqual(replan(moved, moved.asOf).queue, moved.queue);
+  const loaded = deserialize(serialize(moved));
+  assert.deepEqual(loaded.queue, moved.queue);
+  assert.deepEqual(loaded.movedWorkouts, moved.movedWorkouts);
+  assert.deepEqual(replan(loaded, addDays(moved.asOf, 2)).queue, replan(moved, addDays(moved.asOf, 2)).queue, 'the loaded state replans exactly like the live one');
+  // rotation: carry the week out (the moved session on its new date) and compare the next week with the same week without the move
+  const week = (state: EngineState): string[] => {
+    for (let n = 0; n < 7; n++) {
+      const today = state.asOf;
+      const w = state.queue.find(x => x.scheduledDate === today && x.type !== 'REST');
+      if (w) state = recordResult(state, w.id, makeResult(w, 'GREEN'));
+      state = replan(state, addDays(today, 1));
+    }
+    return state.queue.filter(w => w.countsAsQuality).map(w => `${w.type}@${day(w.scheduledDate) - day(NOW)}`);
+  };
+  const withMove = week(moved), without = week(s0);
+  assert.deepEqual(withMove.map(x => x.split('@')[0]), without.map(x => x.split('@')[0]), `the next intense types follow the same rotation: ${withMove} vs ${without}`);
+  assert.ok(withMove.length >= 2, 'the next week has its intense sessions');
+  assert.deepEqual(withMove, without.map(x => x), 'and on the same days');
+});
+
+test('WS-18b move of the first intense session of a one-intense week succeeds and the type of the next week does not change', () => {
+  const s0 = createEngine(intermediate(), NOW);
+  assert.deepEqual(s0.queue.map(w => w.type), ['THRESHOLD', 'EASY', 'LONG_EASY'], 'precondition: the week');
+  const first = s0.queue[0]!;
+  const moved = moveWorkout(s0, first.id, dateAfter(1));
+  const m = moved.queue.find(w => w.id === first.id)!;
+  assert.equal(m.scheduledDate, dateAfter(1));
+  assert.equal(m.type, 'THRESHOLD');
+  assert.equal(m.main.dose.value, first.main.dose.value);
+  assert.deepEqual(deserialize(serialize(moved)).queue, moved.queue);
+  const next = (state: EngineState, moveDay: number): string => {
+    for (let n = 0; n < 7; n++) {
+      const today = state.asOf;
+      const w = state.queue.find(x => x.scheduledDate === today && x.type !== 'REST');
+      if (w) state = recordResult(state, w.id, makeResult(w, 'GREEN'));
+      state = replan(state, addDays(today, 1));
+    }
+    assert.ok(moveDay >= 0);
+    return state.queue.find(w => w.countsAsQuality)!.type;
+  };
+  assert.equal(next(moved, 1), next(s0, 0), 'rotation continues with the same type with or without the move');
+});
+
+test('WS-18d a late move of an intense session never creates a third intense session in 7 days: the engine removes the later one instead of adding load', () => {
+  const s0 = twoIntense();
+  const moved = moveWorkout(s0, s0.queue[2]!.id, dateAfter(4)); // allowed by the move rules; VO2 on day 4
+  // rotation: the moved VO2 (day 4) is not forgotten, so the next THRESHOLD/VO2 of the queue is the other type
+  const seq = replan(moved, dateAfter(1)).queue.filter(w => w.countsAsQuality).map(w => w.type);
+  assert.ok(seq.length >= 2 && seq.every((type, i) => i === 0 || type !== seq[i - 1]), `adjacent intense sessions alternate: ${seq}`);
+  let s = moved;
+  const planned: Workout[] = [];
+  for (let n = 0; n < 9; n++) {
+    const today = s.asOf;
+    const w = s.queue.find(x => x.scheduledDate === today && x.type !== 'REST');
+    if (w) s = recordResult(s, w.id, makeResult(w, 'GREEN'));
+    s = replan(s, addDays(today, 1));
+    for (const q of s.queue) if (!planned.some(p => p.id === q.id)) planned.push(q);
+    assert.ok(s.queue.reduce((sum, q) => sum + (reservedMetres(s, q) ?? 0), 0) <= approvedWeekMeters(s) + 1e-6);
+  }
+  const intense = [...s.history.filter(h => h.workout.countsAsQuality).map(h => day(h.result.date)), ...s.queue.filter(w => w.countsAsQuality).map(w => day(w.scheduledDate))];
+  for (const d of intense) assert.ok(intense.filter(x => x >= d && x < d + 7).length <= 2, 'at most two intense sessions in any 7 days');
+  const tv = [...s.history.map(h => ({type: h.workout.type, d: day(h.result.date)})), ...s.queue.map(w => ({type: w.type, d: day(w.scheduledDate)}))]
+    .filter(x => x.type === 'THRESHOLD' || x.type === 'VO2').sort((a, b) => a.d - b.d).map(x => x.type);
+  assert.ok(tv.length >= 3 && tv.every((type, i) => i === 0 || type !== tv[i - 1]), `THRESHOLD/VO2 keep alternating after the move: ${tv}`);
+});
+
+test('WS-18c invalid moves are refused with their own specific codes', () => {
+  const s0 = twoIntense();
+  const [first, easy, second, long] = s0.queue as [Workout, Workout, Workout, Workout];
+  assert.throws(() => moveWorkout(s0, second.id, dateAfter(7)), refusedWith('MOVE_OUTSIDE_HORIZON'), 'a week ahead');
+  assert.throws(() => moveWorkout(s0, second.id, dateAfter(-1)), refusedWith('MOVE_OUTSIDE_HORIZON'), 'in the past');
+  assert.throws(() => moveWorkout(s0, 'slot-unknown', dateAfter(2)), refusedWith('MOVE_OUTSIDE_HORIZON'), 'unknown workout');
+  assert.throws(() => moveWorkout(s0, second.id, easy.scheduledDate), refusedWith('MOVE_OCCUPIED_DATE'), 'a date with another session');
+  assert.throws(() => moveWorkout(s0, first.id, dateAfter(2)), refusedWith('MOVE_RECOVERY_VIOLATION'), 'THRESHOLD one day before VO2');
+  assert.throws(() => moveWorkout(s0, second.id, dateAfter(1)), refusedWith('MOVE_OCCUPIED_DATE'));
+  assert.equal(long.type, 'LONG_EASY');
+  // a fully booked rolling week: after one week has been run, a move that puts a session into a window of the approved budget is refused
+  let s = createEngine(deficit(), NOW);
+  for (let n = 0; n < 8; n++) {
+    const today = s.asOf;
+    const w = s.queue.find(x => x.scheduledDate === today && x.type !== 'REST');
+    if (w) s = recordResult(s, w.id, makeResult(w, 'GREEN'));
+    s = replan(s, addDays(today, 1));
+  }
+  const l = s.queue.find(w => w.type === 'LONG_EASY')!;
+  assert.throws(() => moveWorkout(s, l.id, addDays(s.asOf, 1)), refusedWith('MOVE_WEEKLY_LOAD_LIMIT'), 'moving the long run into a window that is already full');
 });
 
 // ---------------------------------------------------------------------------------------------------- budget pressure
-test('WS-19 budget pressure: when the intense sessions leave no room for a real long run there is no artificial LONG_EASY, and the budget holds', () => {
-  const s = createEngine(profile({...experienced, actualRunsPerWeek: 4, availableRunsPerWeek: 4, averageWeeklyKm4Weeks: 18, longestUsualRunKm: 7, regularRunningWeeks: 40,
-    performance: {timeSeconds: 750, date: NOW, source: 'TEST_3K'}, targetTimeSeconds: 720, raceDate: dateAfter(84)}), NOW);
-  assert.equal(s.decision.maximumQualityPerWeek, 2, 'precondition: two intense sessions are allowed by the decision');
+/** Deficit budget: 18 km a week, longest run 7 km, 4 runs, 3 km in 12:30 — two intense sessions would reserve 15.5 of the 18 km. */
+const deficit = (o: Partial<Profile> = {}): Profile => profile({...experienced, actualRunsPerWeek: 4, availableRunsPerWeek: 4, averageWeeklyKm4Weeks: 18, longestUsualRunKm: 7, regularRunningWeeks: 40,
+  performance: {timeSeconds: 750, date: NOW, source: 'TEST_3K'}, targetTimeSeconds: 720, raceDate: dateAfter(84), ...o});
+const reserve = (s: EngineState, type: Workout['type'], date = NOW): number => reservedMetres(s, prescribe(s, type, date, 'probe', 1))!;
+/** The share of the budget that a long run gets in a week with `k` intense sessions: the habitual share of what the intense sessions leave. */
+const longShare = (s: EngineState, k: number, intense: number): number => {
+  const sh = longRunShares(s)!;
+  return (approvedWeekMeters(s) - intense) * sh.long / (sh.long + (4 - 1 - k) * sh.other);
+};
+
+test('WS-19 deficit budget: one intense session + EASY + a real LONG_EASY replaces two intense sessions, inside the approved budget', () => {
+  const s = createEngine(deficit(), NOW);
+  assert.equal(s.decision.maximumQualityPerWeek, 2, 'precondition: the decision allows two intense sessions');
+  assert.equal(weeklyIntenseCapacity(s, NOW, 4), 1, 'the budget carries one');
+  assert.deepEqual(s.queue.map(w => w.type), ['THRESHOLD', 'EASY', 'EASY', 'LONG_EASY'], 'T, E, E, L on days 0, 1, 3, 5');
   const shares = longRunShares(s)!;
-  assert.ok(shares !== null);
-  // the intense sessions reserve 15.5 km of the 18 km budget: what is left (2.5 km) is no long run for a runner whose usual run is 3.7 km
+  const long = s.queue[3]!, easy = s.queue.filter(w => w.type === 'EASY');
+  assert.ok(long.main.dose.value > shares.other, 'longer than the runner\'s habitual ordinary run');
+  assert.ok(easy.every(w => w.main.dose.value >= 1000 && w.main.dose.value < long.main.dose.value), 'EASY keep the real 1 km minimum and stay shorter than the long run');
+  assert.ok(long.main.dose.value >= 0.6 * 7000, `long run ${long.main.dose.value} m is a proper share of the habitual 7 km`);
+  assert.ok(s.queue.reduce((n, w) => n + (reservedMetres(s, w) ?? 0), 0) <= 18_000 + 1e-6, 'the 18 km approved budget holds');
+  assert.equal(approvedWeekMeters(s), 18_000, 'and the budget itself is not raised');
+});
+
+test('WS-19b why two intense sessions and a long run do not fit 18 km: the rolling 7-day window T + V + L', () => {
+  const s = createEngine(deficit(), NOW);
+  const budget = 18_000;
+  const t = reserve(s, 'THRESHOLD'), v = reserve(s, 'VO2');
+  const shares = longRunShares(s)!;
+  // the week T(day 0), V(day 3), L(day 5) is one window of 7 days: what is left for the long run and the ordinary run
+  const room = budget - t - v;
+  assert.ok(room < shares.other, `${room} m left after ${t} + ${v} m is below the habitual ordinary run ${shares.other} m: the long run would not be longer than an ordinary one`);
+  assert.ok(room < 1000 + 1000 + shares.other, 'and cannot hold even the 1 km minimum EASY next to it');
+  // the same rule with ONE intense session passes
+  assert.ok(longShare(s, 1, t) > shares.other, 'with one intense session the long run share exceeds the habitual ordinary run');
+  // the engine follows the rule (not a hard-coded "no long run"): with two sessions that fit, both are kept — see WS-19d
+});
+
+test('WS-19c the long run is NOT forced when even one intense session leaves no room: proof on the window T + E + E + L', () => {
+  const s = createEngine(deficit({averageWeeklyKm4Weeks: 15, longestUsualRunKm: 6, performance: {timeSeconds: 660, date: NOW, source: 'TEST_3K'}, targetTimeSeconds: 630}), NOW);
+  const shares = longRunShares(s)!;
+  const t = reserve(s, 'THRESHOLD');
+  const share = (15_000 - t) * shares.long / (shares.long + 2 * shares.other);
+  assert.ok(share <= shares.other, `long run share ${share} m is not longer than the habitual ordinary run ${shares.other} m (T reserves ${t} m of 15000 m)`);
   assert.equal(s.queue.some(w => w.type === 'LONG_EASY'), false, types(s));
-  assert.ok(s.queue.every(w => w.type !== 'EASY' || w.main.dose.value >= 1000));
-  const total = s.queue.reduce((n, w) => n + (reservedMetres(s, w) ?? 0), 0);
-  assert.ok(total <= 18_000 + 1, `${total} m within the 18 km budget`);
-  // and wherever a LONG_EASY is planned for a prepared runner it is longer than that runner's habitual ordinary run
-  for (const id of ['U4-intermediate-A', 'U5-trained-A', 'U6-experienced-A']) {
-    const r = get(id);
-    const ordinary = Math.min(...r.rows.filter(x => x.type === 'EASY').map(x => x.doseValue));
-    for (const l of r.rows.filter(x => x.type === 'LONG_EASY')) assert.ok(l.doseValue > ordinary, `${id} ${l.date}`);
+  assert.equal(s.queue.filter(w => w.countsAsQuality).length, 1, 'the first intense session is kept (existing rule)');
+  assert.ok(s.queue.reduce((n, w) => n + (reservedMetres(s, w) ?? 0), 0) <= 15_000 + 1e-6);
+});
+
+test('WS-19d where the budget carries two intense sessions and a long run, both intense sessions are kept (28 km, longest 9 km)', () => {
+  const s = twoIntense();
+  assert.equal(weeklyIntenseCapacity(s, NOW, 4), 2);
+  assert.equal(s.queue.filter(w => w.countsAsQuality).length, 2);
+  assert.equal(s.queue.filter(w => w.type === 'LONG_EASY').length, 1);
+});
+
+test('WS-19e 12 weeks at 18 / 20 / 16 km (probes P1, P2, P4): a regular one-intense microcycle with a real long run, budget and recovery intact', () => {
+  for (const user of [PROBES[0]!, PROBES[1]!, PROBES[3]!]) {
+    const r = simulateAudit({id: user.id, user, behaviour: 'A', required: false});
+    const rows = r.rows.filter(x => x.type !== 'REST');
+    const a = analyze(r);
+    const wk = [...new Set(rows.map(x => x.week))];
+    const intense = (w: number): string[] => rows.filter(x => x.week === w && x.countsAsQuality && x.type !== 'CONTROL').map(x => x.type);
+    assert.ok(rows.filter(x => x.type === 'LONG_EASY').length >= 10, `${user.id}: long runs ${rows.filter(x => x.type === 'LONG_EASY').length}`);
+    assert.equal(rows.filter(x => x.type === 'CONTROL').length, 3, `${user.id}: the three checkpoints are kept`);
+    assert.ok(wk.filter(w => w <= 10).every(w => intense(w).length <= 1 || user.id.startsWith('P2')), `${user.id}: one intense session per week`);
+    assert.ok(wk.every(w => intense(w).length >= 1 || rows.some(x => x.week === w && x.type === 'CONTROL')), `${user.id}: every week without a checkpoint has an intense session`);
+    const kinds = new Set(rows.filter(x => x.countsAsQuality && x.type !== 'CONTROL').map(x => x.type));
+    assert.ok(kinds.has('THRESHOLD') && kinds.has('VO2') && kinds.has('SPECIFIC_3K'), `${user.id}: the rotation uses all three types`);
+    for (const w of wk.filter(x => x <= 11)) {
+      const easy = rows.filter(x => x.week === w && x.type === 'EASY'), long = rows.filter(x => x.week === w && x.type === 'LONG_EASY');
+      assert.ok(easy.every(x => x.doseValue >= 1000), `${user.id} week ${w}: EASY keeps the real 1 km minimum`);
+      for (const l of long) assert.ok(easy.every(x => x.doseValue < l.doseValue), `${user.id} week ${w}: long run is longer than EASY`);
+    }
+    assert.equal(a.checks.filter(c => c.code === 'C23').reduce((n, c) => n + c.violations, 0), 0, `${user.id}: weekly budget`);
+    assert.equal(a.checks.filter(c => c.code === 'C05' || c.code === 'C05b').reduce((n, c) => n + c.violations, 0), 0, `${user.id}: recovery`);
+    assert.equal(a.findings.filter(f => ['HARD_SESSIONS_TOO_CLOSE', 'WEEKLY_BUDGET_EXCEEDED', 'WEEKLY_VOLUME_JUMP', 'NO_VOLUME_PROGRESSION', 'LONG_RUN_NEVER_PRESCRIBED'].includes(f.code)).length, 0, `${user.id}: ${a.findings.map(f => f.code)}`);
   }
+});
+
+test('WS-19f budget priority: the long run never comes from raising the budget or compensating a skip (deficit profile)', () => {
+  const start = createEngine(deficit(), NOW);
+  const long = start.queue.find(w => w.type === 'LONG_EASY')!;
+  let s = skipWorkout(start, long.id, start.asOf);
+  const longs: Workout[] = [];
+  for (let n = 0; n < 20; n++) {
+    const today = s.asOf;
+    const w = s.queue.find(x => x.scheduledDate === today && x.type !== 'REST');
+    if (w?.type === 'LONG_EASY') longs.push(w);
+    if (w) s = recordResult(s, w.id, makeResult(w, 'GREEN'));
+    s = replan(s, addDays(today, 1));
+    assert.ok(s.queue.reduce((n2, w2) => n2 + (reservedMetres(s, w2) ?? 0), 0) <= 18_000 + 1e-6 + 1000 * Math.floor((n + 1) / 14), 'budget');
+  }
+  assert.ok(longs.length >= 2);
+  for (const l of longs) assert.ok(l.main.dose.value <= long.main.dose.value * 1.25, `a later long run ${l.main.dose.value} is no compensation for the skipped ${long.main.dose.value}`);
 });

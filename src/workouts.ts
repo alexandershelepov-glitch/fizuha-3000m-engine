@@ -152,6 +152,36 @@ function qualityType(s: EngineState, index: number, previous: readonly WorkoutTy
   return (s.qualityRotation + index) % 2 === 0 ? 'THRESHOLD' : 'VO2';
 }
 /**
+ * How many intense sessions a cycle week can hold together with a real long run, derived from state only (never from the day the
+ * plan is rebuilt). Priority inside the weekly budget: the first intense session, then the long run, then a second intense session,
+ * then the ordinary runs. Every 7-day window of the periodic week contains each slot once, so the week is feasible when the reserves of
+ * its intense sessions leave the long run and the ordinary runs their shares of the approved budget (shares of the runner's own
+ * habitual week, ordinary runs at least the engine's 1 km minimum) and the long run stays longer than the runner's habitual
+ * ordinary run. The reserves are the k largest among the types the rotation can assign in the current phase (worst case over the
+ * rotation, because rolling windows straddle two weeks), so the answer does not flip with the rotation. The first intense session is never removed here (existing guard rules apply to it).
+ * Returns `maximumQualityPerWeek` unchanged when there is no long-run slot.
+ */
+export function weeklyIntenseCapacity(s: EngineState, date: string, runs: number): number {
+  const decisionMax = s.decision.maximumQualityPerWeek;
+  const shares = longRunShares(s);
+  if (shares === null || runs < 3 || decisionMax < 2 || !['DEVELOPMENT', 'SPECIFIC'].includes(s.decision.phase)) return decisionMax;
+  const budget = approvedWeekMeters(s);
+  const reserve = (type: WorkoutType): number => reservedMetres(s, prescribe(s, type, date, 'capacity-probe', 1)) ?? Infinity;
+  // Windows that straddle two cycle weeks can hold the intense session of one week next to the long run and the intense session of the
+  // next week, whose types differ (rotation), so the worst case is the k largest reserves among all types the phase can assign.
+  const pool: WorkoutType[] = s.decision.phase === 'SPECIFIC' ? ['THRESHOLD', 'VO2', 'SPECIFIC_3K'] : s.decision.quality === 'Q0' ? ['INTRO_QUALITY', 'THRESHOLD'] : ['THRESHOLD', 'VO2'];
+  const pooled = pool.map(reserve).sort((a, b) => b - a);
+  const reserveOf = (k: number): number => pooled.slice(0, k).reduce((a, b) => a + b, 0);
+  for (let k = decisionMax; k >= 2; k--) {
+    const room = budget - reserveOf(k);
+    const easies = runs - 1 - k;
+    const weight = shares.long + easies * shares.other;
+    const longShare = room * shares.long / weight, easyShare = room * shares.other / weight;
+    if (room > 0 && longShare > shares.other && longShare >= 1000 && (easies === 0 || easyShare >= 1000)) return k;
+  }
+  return 1;
+}
+/**
  * Planning space for a 3000 m checkpoint that is due at the start of the next cycle week (first slot, where the queue
  * places CONTROL) and falls inside the seven days after `date`. Only what the sessions planned for that day do not already
  * reserve is returned. null: no checkpoint is due there, or none can be prescribed.
@@ -255,7 +285,7 @@ export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] 
           longShare = Math.min(longShare, room * longDose / weight);
           easyShare = Math.min(easyShare, room * shares!.other / weight);
         }
-        crowdsOutLong = !(longShare >= 1000 && longShare > easyShare && (easies === 0 || easyShare >= 1000));
+        crowdsOutLong = !(longShare > shares!.other && longShare >= 1000 && (easies === 0 || easyShare >= 1000));
       }
       if (reserved === null || reserved > available + 1e-6 || crowdsOutLong) {
         // If the reserve cannot fit, there is no evidence for extra intense work this week.
@@ -351,7 +381,8 @@ function buildQueue(s: EngineState, now: string, forcedEasy: ReadonlySet<string>
     const preceding = [...s.history.filter(h => h.workout.countsAsQuality && day(h.result.date) <= day(date) && day(h.result.date) > day(date) - 7).map(h => ({date: h.result.date, hours: h.workout.minimumRecoveryHoursBeforeQuality})), ...s.skippedWorkouts.filter(w => w.countsAsQuality && day(w.scheduledDate) <= day(date) && day(w.scheduledDate) > day(date) - 7).map(w => ({date: w.scheduledDate, hours: 0})), ...result.filter(w => w.countsAsQuality).map(w => ({date: w.scheduledDate, hours: w.minimumRecoveryHoursBeforeQuality}))];
     const moved = s.movedWorkouts.filter(w => !completed.has(w.id) && day(w.scheduledDate) >= day(now) && w.countsAsQuality);
     const qualityDates = [...preceding.map(w => day(w.date)), ...moved.map(w => day(w.scheduledDate)), day(date)];
-    const canQuality = qualityDates.every(end => qualityDates.filter(d => d <= end && d > end - 7).length <= planning.decision.maximumQualityPerWeek) && preceding.every(w => (day(date) - day(w.date)) * 24 >= w.hours) && moved.every(w => Math.abs(day(date) - day(w.scheduledDate)) * 24 >= w.minimumRecoveryHoursBeforeQuality);
+    const weeklyIntense = Math.min(planning.decision.maximumQualityPerWeek, weeklyIntenseCapacity(planning, date, offsets.length));
+    const canQuality = qualityDates.every(end => qualityDates.filter(d => d <= end && d > end - 7).length <= weeklyIntense) && preceding.every(w => (day(date) - day(w.date)) * 24 >= w.hours) && moved.every(w => Math.abs(day(date) - day(w.scheduledDate)) * 24 >= w.minimumRecoveryHoursBeforeQuality);
     let type: WorkoutType = 'EASY'; let factor = planning.decision.phase === 'TAPER' ? .6 : 1;
     if (planning.decision.safety !== 'OK' || s.relatedYellow || s.diagnosticHold) type = 'REST';
     else if (pendingEasy > 0) { factor = s.reentry!.easyFactor; pendingEasy--; }

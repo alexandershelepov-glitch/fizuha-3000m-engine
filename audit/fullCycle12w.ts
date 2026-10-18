@@ -265,7 +265,7 @@ export function simulateAudit(scenario: AuditScenario): ScenarioRun {
       reportedRpe: result?.sessionRpe ?? null, completionFraction: completion, reportedMeters: result?.distanceMeters ?? null,
       actualEstMeters: Math.round(est.total * completion),
       approvedWeekMeters: before.easyProgression?.approvedMetersPer7Days ?? null,
-      reservedMeters: (() => { const v = reservedMetres(before, w); return v === null ? null : Math.round(v); })(),
+      reservedMeters: (() => { const v = reservedMetres(before, w); return v === null ? null : Math.round(v * 1000) / 1000; })(),
       stateAfter: snapshot(state),
     });
   };
