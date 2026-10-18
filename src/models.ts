@@ -100,7 +100,9 @@ export interface Workout {
   countsAsQuality: boolean; warmupMinutes: number; cooldownMinutes: number;
   main: { mode: WorkoutMainMode; dose: Dose; repeats: number; repeatMeters: number | null; finalRepeatMeters: number | null;
     /** Engine-approved alternating steps for RUN_WALK; older saved workouts may omit it. */
-    runWalk?: {stage: number; runSeconds: number; walkSeconds: number} };
+    runWalk?: {stage: number; runSeconds: number; walkSeconds: number};
+    /** Numeric EASY pace cannot be inferred yet: execute the short measured calibration task. */
+    calibration?: boolean };
   targetRpe: [number, number]; effortCues: EffortCue[]; speedRangeMps: [number, number] | null; paceRangeSecondsPerKm: [number, number] | null;
   anchor: Anchor; gateAtPrescription: Gate;
   restSeconds: number; minimumRecoveryHoursBeforeQuality: number;

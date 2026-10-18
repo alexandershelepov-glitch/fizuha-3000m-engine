@@ -249,6 +249,7 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
       </Card>
 
       <Card>
+        {workout.main.calibration === true ? <p className="hint">{copy.calibrationHint}</p> : null}
         <Field id="durationMinutes" label={copy.duration.label} hint={copy.duration.hint} error={errorFor('durationMinutes')}>
           <TextInput id="durationMinutes" value={draft.durationMinutes} onChange={(value) => update({durationMinutes: value})} inputMode="numeric" />
         </Field>
