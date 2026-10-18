@@ -1,0 +1,5 @@
+
+> adaptive-3000m-core@1.0.0 lint
+> eslint src tests web/src e2e
+
+exit=0
