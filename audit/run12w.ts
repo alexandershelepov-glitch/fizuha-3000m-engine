@@ -10,7 +10,9 @@ import type {ScenarioRun, WorkoutRow} from './fullCycle12w.ts';
 import {THRESHOLDS, analyze} from './fullCycleAnalysis.ts';
 import type {Analysis, Finding, Severity} from './fullCycleAnalysis.ts';
 
-const OUT = join(dirname(fileURLToPath(import.meta.url)), 'full-cycle-12w');
+// AUDIT_12W_OUT overrides the output directory (used to keep the before/after-fix runs of the same harness side by side).
+const OUT = process.env.AUDIT_12W_OUT ? process.env.AUDIT_12W_OUT : join(dirname(fileURLToPath(import.meta.url)), 'full-cycle-12w');
+const HEADER_NOTE = process.env.AUDIT_12W_NOTE ?? 'Ветка: `audit/3000m-full-cycle-12w` (от `feature/issue-24-calendar`). Движок и методика **не менялись**.';
 const DATA = join(OUT, 'data');
 mkdirSync(DATA, {recursive: true});
 
@@ -75,7 +77,7 @@ const skippedOrDisplaced = (rows: WorkoutRow[]): number => rows.filter(r => r.ou
 
 let md = `# Независимая проверка методики ФИЗУХА · 3000 м на полных 12-недельных циклах
 
-Ветка: \`audit/3000m-full-cycle-12w\` (от \`feature/issue-24-calendar\`). Движок и методика **не менялись**. Всё поведение «пользователей» — **синтетическое**: отчёты о занятиях придуманы сценарием, 3000 м-результат **не улучшается автоматически**.
+${HEADER_NOTE} Всё поведение «пользователей» — **синтетическое**: отчёты о занятиях придуманы сценарием, 3000 м-результат **не улучшается автоматически**.
 
 ## 0. Как читать
 
