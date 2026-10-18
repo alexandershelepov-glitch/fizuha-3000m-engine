@@ -5,7 +5,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {classify, createEngine, deserialize, prescribe, recordResult, serialize} from '../src/index.ts';
 import type {EngineState, Workout, WorkoutResult} from '../src/index.ts';
-import {beginnerEasyPace, refineAfterEasySuccesses} from '../src/easyPace.ts';
+import {beginnerEasyPace} from '../src/easyPace.ts';
 import {NOW, dateAfter, healthy, profile} from './helpers.ts';
 import {defaultResultDraft, buildWorkoutResult} from '../web/src/application/resultForm.ts';
 import {workoutInstruction} from '../web/src/ui/workoutInstructions.ts';
