@@ -10,8 +10,8 @@ test('untimed continuous beginner sees a measured EASY task and a blank real-tim
   await page.getByRole('button',{name:'Продолжить',exact:true}).click();
   await page.getByLabel(/Сколько недель подряд/).fill('8');
   await page.getByLabel(/Сколько раз в неделю/).fill('2');
-  await page.getByLabel(/Сколько километров/).fill('10');
-  await page.getByLabel(/Самая длинная/).fill('4');
+  await page.getByLabel(/Примерно сколько километров/i).fill('10');
+  await page.getByLabel(/самая длинная пробежка/i).fill('4');
   for(let i=0;i<5;i++)await page.getByRole('button',{name:'Продолжить',exact:true}).click();
   await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
   await page.getByRole('button',{name:'Продолжить',exact:true}).click();
