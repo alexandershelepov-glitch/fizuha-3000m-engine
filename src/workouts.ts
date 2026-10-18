@@ -4,7 +4,7 @@ import { addDays, day } from './validation.ts';
 import { EngineError } from './errors.ts';
 import { RUN_WALK_STAGES, LAST_RUN_WALK_STAGE } from './runWalk.ts';
 import {approvedWeekMeters,reservedMetres} from './weeklyLoad.ts';
-import {adaptEasyFromRecentResult, initialEasyPace} from './easyPace.ts';
+import {adaptEasyFromRecentResult, beginnerEasyPace, calibratedBeginnerDose, initialEasyPace, refineAfterEasySuccesses} from './easyPace.ts';
 const QUALITY: WorkoutType[] = ['INTRO_QUALITY', 'THRESHOLD', 'VO2', 'SPECIFIC_3K', 'CONTROL'];
 
 /** Provisional conservative v1 ceilings for the 3000m module, not evidence of a
@@ -68,14 +68,27 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
   if (type === 'INTRO_QUALITY' || type === 'STRIDES') rpe = [5, 6];
   if (type === 'CONTROL') { rpe = [8, 9]; anchor = 'NONE'; }
   if (type === 'REST') { rpe = [0, 0]; anchor = 'NONE'; }
+  let isEasyCalibration = false;
   if (type === 'EASY' || type === 'LONG_EASY') {
-    const initial = initialEasyPace(s.profile.performance?.timeSeconds ?? null,
+    const measured3Km = initialEasyPace(s.profile.performance?.timeSeconds ?? null,
       s.profile.canRun3Km, d.confidence, d.capacity);
+    const beginner = beginnerEasyPace(s);
+    const initial = measured3Km.paceRangeSecondsPerKm !== null ? measured3Km : beginner ?? measured3Km;
+    if (s.profile.performance === null && s.profile.canRun3Km) {
+      if (beginner === null) {
+        // Two short, measured EASY runs teach the engine this runner's actual pace.
+        // An introductory trial must not quietly inherit a 5+ km routine.
+        isEasyCalibration = true;
+        dose.value = Math.min(dose.value,
+          s.profile.averageWeeklyKm4Weeks >= 8 && s.profile.actualRunsPerWeek >= 2 ? 2000 : 1000);
+      } else dose.value = calibratedBeginnerDose(s, dose.value);
+    }
     const adapted = adaptEasyFromRecentResult(s, dose.value, initial);
     dose.value = adapted.doseMeters;
-    easyPace = adapted.pace;
+    easyPace = refineAfterEasySuccesses(s, adapted.pace);
     range = easyPace.speedRangeMps;
-    if (range !== null) anchor = 'CURRENT';
+    // Current 3km and a directly measured EASY baseline are distinct anchors.
+    if (range !== null) anchor = measured3Km.paceRangeSecondsPerKm !== null ? 'CURRENT' : 'EFFORT';
   }
   const interval = ['INTRO_QUALITY', 'VO2', 'SPECIFIC_3K', 'STRIDES'].includes(type);
   const repeatMeters = type === 'SPECIFIC_3K' ? 600 : type === 'STRIDES' ? 100 : null;
@@ -88,7 +101,8 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
     id, scheduledDate: date, type, goal: type === 'CONTROL' ? 'ASSESS_CURRENT_PERFORMANCE' : type === 'EASY' || type === 'LONG_EASY' ? 'AEROBIC_BASE' : type === 'REST' ? 'RECOVERY' : 'QUALITY_ADAPTATION', priority: countsAsQuality ? 1 : 2,
     countsAsQuality, warmupMinutes: countsAsQuality ? 10 : mode === 'RUN_WALK' ? 5 : 0, cooldownMinutes: countsAsQuality ? 10 : mode === 'RUN_WALK' ? 5 : 0,
     main: {mode, dose, repeats, repeatMeters, finalRepeatMeters: repeatMeters ? dose.value - repeatMeters * (repeats - 1) : null,
-      ...(mode === 'RUN_WALK' ? {runWalk:{stage, ...RUN_WALK_STAGES[stage]!}} : {})},
+      ...(mode === 'RUN_WALK' ? {runWalk:{stage, ...RUN_WALK_STAGES[stage]!}} : {}),
+      ...(isEasyCalibration && mode === 'CONTINUOUS' ? {calibration:true} : {})},
     targetRpe: rpe, effortCues: type === 'EASY' || type === 'LONG_EASY' ? ['FULL_SENTENCES', 'CONTROLLED_BREATHING'] : [], speedRangeMps: range, paceRangeSecondsPerKm: easyPace?.paceRangeSecondsPerKm ?? (range ? [1000 / range[1], 1000 / range[0]] : null),
     anchor, gateAtPrescription: d.gate, restSeconds: interval ? 90 : 0,
     minimumRecoveryHoursBeforeQuality: countsAsQuality ? 48 : 0,
