@@ -139,7 +139,11 @@ const mostRecentContinuous = (s: EngineState): EngineState['history'] =>
 export function beginnerEasyPace(s: EngineState):
   Pick<Workout, 'paceRangeSecondsPerKm' | 'speedRangeMps'> | null {
   if (s.profile.performance !== null || !s.profile.canRun3Km) return null;
-  const latest = mostRecentContinuous(s).slice(0, 2);
+  // Freeze the entry benchmark to the actual calibration sessions. Otherwise
+  // later ordinary EASY results silently replace the two trials and cause
+  // the prescribed pace to drift even when the runner obeys the programme.
+  const latest = mostRecentContinuous(s)
+    .filter(entry => entry.workout.main.calibration === true).slice(0, 2);
   if (latest.length !== 2 || latest.some(entry => !measuredEasy(entry) ||
       daysAgo(s.asOf, entry.result.date) < 0 ||
       daysAgo(s.asOf, entry.result.date) > 21)) return null;
@@ -189,6 +193,9 @@ export function refineAfterEasySuccesses(
     return pace < fast - 1e-6 || pace > (fast + slow) / 2 + 1e-6;
   })) return base;
   const earliest = latest[2]!.result.date;
+  // Three runs in three days are NOT a training block. Require at least
+  // fourteen days of actual measured EASY adaptation before any speed step.
+  if (daysAgo(latest[0]!.result.date, earliest) < 14) return base;
   if (s.skippedWorkouts.some(w => w.scheduledDate >= earliest && w.scheduledDate <= s.asOf &&
       (w.type === 'EASY' || w.type === 'LONG_EASY'))) return base;
   // A maximum single 5sec step from THIS baseline: repeated replans cannot
