@@ -4,7 +4,7 @@ import { addDays, day } from './validation.ts';
 import { EngineError } from './errors.ts';
 import { RUN_WALK_STAGES, LAST_RUN_WALK_STAGE } from './runWalk.ts';
 import {approvedWeekMeters,reservedMetres} from './weeklyLoad.ts';
-import {initialEasyPace} from './easyPace.ts';
+import {adaptEasyFromRecentResult, initialEasyPace} from './easyPace.ts';
 const QUALITY: WorkoutType[] = ['INTRO_QUALITY', 'THRESHOLD', 'VO2', 'SPECIFIC_3K', 'CONTROL'];
 
 /** Provisional conservative v1 ceilings for the 3000m module, not evidence of a
@@ -69,8 +69,11 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
   if (type === 'CONTROL') { rpe = [8, 9]; anchor = 'NONE'; }
   if (type === 'REST') { rpe = [0, 0]; anchor = 'NONE'; }
   if (type === 'EASY' || type === 'LONG_EASY') {
-    easyPace = initialEasyPace(s.profile.performance?.timeSeconds ?? null,
+    const initial = initialEasyPace(s.profile.performance?.timeSeconds ?? null,
       s.profile.canRun3Km, d.confidence, d.capacity);
+    const adapted = adaptEasyFromRecentResult(s, dose.value, initial);
+    dose.value = adapted.doseMeters;
+    easyPace = adapted.pace;
     range = easyPace.speedRangeMps;
     if (range !== null) anchor = 'CURRENT';
   }
