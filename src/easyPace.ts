@@ -99,3 +99,100 @@ export function adaptEasyFromRecentResult(
     },
   };
 }
+
+
+/** Convert validated whole-second per-kilometre bounds to the engine's two representations. */
+function paceFromSeconds(fast: number, slow: number):
+  Pick<Workout, 'paceRangeSecondsPerKm' | 'speedRangeMps'> {
+  return {paceRangeSecondsPerKm: [fast, slow], speedRangeMps: [1000 / slow, 1000 / fast]};
+}
+const measuredEasy = (entry: EngineState['history'][number]): boolean => {
+  const {workout: w, result: r} = entry;
+  return (w.type === 'EASY' || w.type === 'LONG_EASY') &&
+    w.main.mode === 'CONTINUOUS' && r.feedbackConfirmed === true &&
+    r.completionFraction >= .95 &&
+    r.distanceMeters >= w.main.dose.value * .95 &&
+    r.durationMinutes >= 3 && Number.isFinite(r.durationMinutes) &&
+    Number.isFinite(r.distanceMeters) && r.distanceMeters >= 950 &&
+    r.sessionRpe >= 2 && r.sessionRpe <= 4 && !r.unexpectedFatigue &&
+    ['GREEN', 'GREEN_PLUS'].includes(entry.classified.evaluation);
+};
+const actualPace = (entry: EngineState['history'][number]): number =>
+  entry.result.durationMinutes * 60000 / entry.result.distanceMeters;
+const daysAgo = (now: string, date: string): number =>
+  (Date.parse(now + 'T00:00:00Z') - Date.parse(date + 'T00:00:00Z')) / 86400000;
+const mostRecentContinuous = (s: EngineState): EngineState['history'] =>
+  s.history.filter(entry =>
+    (entry.workout.type === 'EASY' || entry.workout.type === 'LONG_EASY') &&
+    entry.workout.main.mode === 'CONTINUOUS').sort((a, b) =>
+      b.result.date.localeCompare(a.result.date));
+
+/**
+ * No timed 3 km, but the runner attests they can cover it continuously:
+ * first assign two SHORT, measured EASY calibrations, not fictitious pace data.
+ * Once two consecutive, confirmed, compatible EASY reports exist, derive a
+ * provisional easy ceiling from the slower observed pace with a small margin.
+ *
+ * Never infer continuous-running speed from RUN_WALK total (which contains walking).
+ * A measured EASY does not become a timed 3000m performance.
+ */
+export function beginnerEasyPace(s: EngineState):
+  Pick<Workout, 'paceRangeSecondsPerKm' | 'speedRangeMps'> | null {
+  if (s.profile.performance !== null || !s.profile.canRun3Km) return null;
+  const latest = mostRecentContinuous(s).slice(0, 2);
+  if (latest.length !== 2 || latest.some(entry => !measuredEasy(entry) ||
+      daysAgo(s.asOf, entry.result.date) < 0 ||
+      daysAgo(s.asOf, entry.result.date) > 21)) return null;
+  const paces = latest.map(actualPace);
+  if (paces.some(p => !Number.isFinite(p) || p < 180 || p > 850) ||
+      Math.max(...paces) / Math.min(...paces) > 1.15) return null;
+  // Use the slower observed training pace, not race pace or the fastest sample.
+  const slowestObserved = Math.max(...paces);
+  const faster = Math.ceil(slowestObserved * 1.03 / 5) * 5;
+  const slower = Math.ceil(slowestObserved * 1.13 / 5) * 5;
+  return paceFromSeconds(faster, Math.max(faster + 5, slower));
+}
+
+/**
+ * A calibrated beginner has only proved the distance actually covered.
+ * Increase the next booked EASY by at most 1000m after confirmed easy completion;
+ * weekly-budget checks remain independent. No credit from an unmeasured report.
+ */
+export function calibratedBeginnerDose(s: EngineState, requested: number): number {
+  if (s.profile.performance !== null || !s.profile.canRun3Km) return requested;
+  const latest = mostRecentContinuous(s)[0];
+  if (!latest || !measuredEasy(latest) || daysAgo(s.asOf, latest.result.date) > 21) return requested;
+  return Math.min(requested, Math.ceil((latest.result.distanceMeters + 1000) / 250) * 250);
+}
+
+/**
+ * Three consecutive CONFIRMED, on-target and genuinely easy runs (RPE <= 2)
+ * permit a one-time 5s/km faster target compared with the baseline band.
+ * A second step is NOT accumulated automatically: a new measured 3km assessment
+ * should reset the baseline. The rule is recalculated from history, with no
+ * retrospective changes to completed sessions.
+ */
+export function refineAfterEasySuccesses(
+  s: EngineState,
+  base: Pick<Workout, 'paceRangeSecondsPerKm' | 'speedRangeMps'>,
+): Pick<Workout, 'paceRangeSecondsPerKm' | 'speedRangeMps'> {
+  if (!s.profile.canRun3Km || base.paceRangeSecondsPerKm === null ||
+      base.speedRangeMps === null) return base;
+  const latest = mostRecentContinuous(s).slice(0, 3);
+  if (latest.length !== 3 || latest.some(entry => {
+    if (!measuredEasy(entry) || entry.result.sessionRpe > 2 ||
+        daysAgo(s.asOf, entry.result.date) < 0 ||
+        daysAgo(s.asOf, entry.result.date) > 21 ||
+        entry.workout.paceRangeSecondsPerKm === null) return true;
+    const pace = actualPace(entry);
+    const [fast, slow] = entry.workout.paceRangeSecondsPerKm;
+    return pace < fast - 1e-6 || pace > (fast + slow) / 2 + 1e-6;
+  })) return base;
+  const earliest = latest[2]!.result.date;
+  if (s.skippedWorkouts.some(w => w.scheduledDate >= earliest && w.scheduledDate <= s.asOf &&
+      (w.type === 'EASY' || w.type === 'LONG_EASY'))) return base;
+  // A maximum single 5sec step from THIS baseline: repeated replans cannot
+  // compound it, and an isolated strong run cannot trigger it.
+  const [fast, slow] = base.paceRangeSecondsPerKm;
+  return paceFromSeconds(Math.max(180, fast - 5), Math.max(185, slow - 5));
+}
