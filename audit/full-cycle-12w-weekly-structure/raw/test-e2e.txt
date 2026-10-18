@@ -1,0 +1,52 @@
+
+> adaptive-3000m-core@1.0.0 test:e2e
+> playwright test
+
+
+Running 41 tests using 1 worker
+
+(node:64161) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [mobile-chrome] › e2e/calendar.spec.ts:15:1 › calendar: week/month, factual horizon and responsive screenshots (1.7s)
+  ✓   2 [mobile-chrome] › e2e/calendar.spec.ts:32:1 › calendar: an unavailable shift is persisted without changing the engine plan (1.0s)
+  ✓   3 [mobile-chrome] › e2e/calendar.spec.ts:49:1 › calendar: inline move uses persisted engine transition and survives reload (1.1s)
+  ✓   4 [mobile-chrome] › e2e/calibration.spec.ts:5:1 › untimed continuous beginner sees a measured EASY task and a blank real-time report (1.1s)
+  ✓   5 [mobile-chrome] › e2e/easy-pace.spec.ts:5:1 › EASY session shows concrete running pace, treadmill speed, distance and expected time (1.1s)
+  ✓   6 [mobile-chrome] › e2e/final-lifecycle.spec.ts:23:1 › E2E lifecycle: onboarding → parameter update → plan → reload; baseline unchanged (1.1s)
+  ✓   7 [mobile-chrome] › e2e/final-lifecycle.spec.ts:30:1 › E2E lifecycle: taper → live race day → final result → archived summary reload (622ms)
+  ✓   8 [mobile-chrome] › e2e/final-lifecycle.spec.ts:35:1 › E2E lifecycle: missed race-day entry → +2days awaiting → result → history → new independent cycle (1.3s)
+  ✓   9 [mobile-chrome] › e2e/iphone-numeric-time.spec.ts:5:1 › iPhone: the 3000 m result accepts typed MM:SS through the standard keyboard (349ms)
+  ✓  10 [mobile-chrome] › e2e/iphone-numeric-time.spec.ts:16:1 › an impossible MM:SS time stays invalid and cannot advance the questionnaire (342ms)
+  ✓  11 [mobile-chrome] › e2e/layero.spec.ts:7:1 › Layero root PWA: install cache and nested-route offline reload (375ms)
+  ✓  12 [mobile-chrome] › e2e/layero.spec.ts:44:1 › Layero root PWA: direct deep link loads as SPA and no 404 document (236ms)
+  ✓  13 [mobile-chrome] › e2e/onboarding.spec.ts:41:1 › happy path: first run, questionnaire, review, assessment, ready plan, Today (895ms)
+  ✓  14 [mobile-chrome] › e2e/onboarding.spec.ts:71:1 › the active cycle survives a reload (1.0s)
+  ✓  15 [mobile-chrome] › e2e/onboarding.spec.ts:93:1 › an invalid time is refused locally and never reaches the engine (420ms)
+  ✓  16 [mobile-chrome] › e2e/onboarding.spec.ts:107:1 › an engine rejection is reported by code, not by its English message (720ms)
+  ✓  17 [mobile-chrome] › e2e/onboarding.spec.ts:121:1 › damaged stored data produces an explicit error state instead of a crash (284ms)
+  ✓  18 [mobile-chrome] › e2e/onboarding.spec.ts:129:1 › a direct link to a protected screen without a cycle lands on the first run (299ms)
+  ✓  19 [mobile-chrome] › e2e/onboarding.spec.ts:138:1 › the build is installable and keeps working offline (965ms)
+  ✓  20 [mobile-chrome] › e2e/onboarding.spec.ts:176:1 › INV-1: two days later an unrecorded session blocks the plan refresh (963ms)
+  ✓  21 [mobile-chrome] › e2e/onboarding.spec.ts:199:1 › a damaged record can be discarded, but only after a confirmation (510ms)
+  ✓  22 [mobile-chrome] › e2e/onboarding.spec.ts:223:1 › a user can safely restart onboarding from Profile without losing archived cycles (1.1s)
+  ✓  23 [mobile-chrome] › e2e/onboarding.spec.ts:249:1 › a browser that denies storage is reported instead of silently using memory (278ms)
+  ✓  24 [mobile-chrome] › e2e/onboarding.spec.ts:263:1 › the app crosses midnight without a reload (870ms)
+  ✓  25 [mobile-chrome] › e2e/onboarding.spec.ts:281:1 › a plan refresh does not reopen onboarding (1.2s)
+  ✓  26 [mobile-chrome] › e2e/onboarding.spec.ts:300:1 › a paused plan explains why it contains only rest and can recover without a reset (1.2s)
+  ✓  27 [mobile-chrome] › e2e/schedule-checkpoint.spec.ts:12:1 › a session can be skipped and the plan is rebuilt (1.1s)
+  ✓  28 [mobile-chrome] › e2e/schedule-checkpoint.spec.ts:42:1 › an overdue session can be written off as not done (980ms)
+  ✓  29 [mobile-chrome] › e2e/schedule-checkpoint.spec.ts:64:1 › a session can be moved to another date and the plan follows (1.3s)
+  ✓  30 [mobile-chrome] › e2e/schedule-checkpoint.spec.ts:117:1 › a required checkpoint is recorded and the new form is kept (1.1s)
+  ✓  31 [mobile-chrome] › e2e/schedule-checkpoint.spec.ts:152:1 › an overdue session cannot be moved back into the future (1.1s)
+  ✓  32 [mobile-chrome] › e2e/unified-ui.spec.ts:5:1 › unified mobile visual system: introduction, questionnaire, Today and History (1.4s)
+  ✓  33 [mobile-chrome] › e2e/unified-ui.spec.ts:33:1 › unified desktop visual system: same left rail and readable home cards (1.4s)
+  ✓  34 [mobile-chrome] › e2e/workout-result.spec.ts:12:1 › a full session is closed, reported and persisted (1.2s)
+  ✓  35 [mobile-chrome] › e2e/workout-result.spec.ts:54:1 › an incomplete session is reported as a corrected plan, not as a failure (1.0s)
+  ✓  36 [mobile-chrome] › e2e/workout-result.spec.ts:72:1 › a safety flag stops the usual load and the screen differs (1.1s)
+  ✓  37 [mobile-chrome] › e2e/workout-result.spec.ts:89:1 › an incomplete repeats block warns, then the engine decides (1.2s)
+  ✓  38 [mobile-chrome] › e2e/workout-result.spec.ts:110:1 › the same flow closes an overdue session from the pending state (1.1s)
+  ✓  39 [mobile-chrome] › e2e/workout-result.spec.ts:137:1 › a future session cannot be closed in advance (1.2s)
+  ✓  40 [mobile-chrome] › e2e/workout-result.spec.ts:172:1 › the workout card reads as a sequence of actions (955ms)
+  ✓  41 [mobile-chrome] › e2e/workout-result.spec.ts:203:1 › a normal athlete answers one health question; symptoms reopen full questions without clearing past answers (1.2s)
+
+  41 passed (40.4s)

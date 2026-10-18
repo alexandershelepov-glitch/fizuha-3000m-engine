@@ -1,0 +1,13 @@
+
+> adaptive-3000m-core@1.0.0 test:ui
+> vitest run
+
+
+ RUN  v5.0.3 /workspace/fizuha/web
+
+
+ Test Files  11 passed (11)
+      Tests  105 passed (105)
+   Start at  21:55:46
+   Duration  9.55s (tests 54%, environment 26%, transform 13%, import 4%, setup 3%)
+

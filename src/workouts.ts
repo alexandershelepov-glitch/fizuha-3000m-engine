@@ -3,7 +3,7 @@ import { decide } from './assessment.ts';
 import { addDays, day } from './validation.ts';
 import { EngineError } from './errors.ts';
 import { RUN_WALK_STAGES, LAST_RUN_WALK_STAGE } from './runWalk.ts';
-import {approvedWeekMeters,reservedMetres} from './weeklyLoad.ts';
+import {approvedWeekMeters,longRunShares,reservedMetres} from './weeklyLoad.ts';
 import {adaptEasyFromRecentResult, beginnerEasyPace, calibratedBeginnerDose, initialEasyPace, refineAfterEasySuccesses} from './easyPace.ts';
 const QUALITY: WorkoutType[] = ['INTRO_QUALITY', 'THRESHOLD', 'VO2', 'SPECIFIC_3K', 'CONTROL'];
 
@@ -51,7 +51,9 @@ export function initialDose(s: EngineState, type: WorkoutType): Dose {
   // A zero-history starter has one introductory slot. Once repeated completion
   // earns a small approved increase, that single slot must actually grow.
   const ordinary = runsPerWeek > 0 ? approvedMeters / runsPerWeek : approvedMeters;
-  return {unit: 'METERS', value: type === 'LONG_EASY' ? s.profile.longestUsualRunKm * 1000 : ordinary > 0 ? ordinary : 1000};
+  // LONG_EASY: the habitual long-run share of the approved week (equals the longest usual run until the approved budget grows).
+  const long = longRunShares(s)?.long ?? s.profile.longestUsualRunKm * 1000;
+  return {unit: 'METERS', value: type === 'LONG_EASY' ? long : ordinary > 0 ? ordinary : 1000};
 }
 export function prescribe(s: EngineState, type: WorkoutType, date: string, id: string, factor = 1): Workout {
   const d = s.decision;
@@ -129,12 +131,42 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
     removable: true, movable: true, volumeFactor: factor,
   };
 }
-function qualityType(s: EngineState, index: number): WorkoutType {
+/**
+ * Which intense session a free quality slot receives.
+ *
+ * The rotation is derived from the schedule itself, never from a counter that a replan could restart: `previous` lists
+ * the THRESHOLD / VO2 / SPECIFIC_3K sessions already completed, skipped, moved or planned before this slot, oldest first.
+ * In phase SPECIFIC the sequence is SPECIFIC_3K, then THRESHOLD or VO2 (alternating by the number of completed T/V
+ * sessions), then SPECIFIC_3K again. With two intense slots a week this gives "SPECIFIC_3K + THRESHOLD/VO2" every week,
+ * as before; with one slot a week SPECIFIC_3K alternates with THRESHOLD and VO2 (12-week audit: SPECIFIC_3K was prescribed
+ * every week because the first intense session of every window was always SPECIFIC_3K).
+ */
+function qualityType(s: EngineState, index: number, previous: readonly WorkoutType[] = []): WorkoutType {
   if (s.decision.phase === 'FOUNDATION') return 'INTRO_QUALITY';
   if (s.decision.phase === 'TAPER') return s.successfulSpecificPartial > 0 ? 'SPECIFIC_3K' : 'INTRO_QUALITY';
-  if (s.decision.phase === 'SPECIFIC' && index === 0) return 'SPECIFIC_3K';
+  if (s.decision.phase === 'SPECIFIC') {
+    if (previous.at(-1) !== 'SPECIFIC_3K') return 'SPECIFIC_3K';
+    return s.qualityRotation % 2 === 0 ? 'THRESHOLD' : 'VO2';
+  }
   if (s.decision.quality === 'Q0') return s.successfulIntro >= 2 ? 'THRESHOLD' : 'INTRO_QUALITY';
-  return (s.qualityRotation + index - (s.decision.phase === 'SPECIFIC' ? 1 : 0)) % 2 === 0 ? 'THRESHOLD' : 'VO2';
+  return (s.qualityRotation + index) % 2 === 0 ? 'THRESHOLD' : 'VO2';
+}
+/**
+ * Planning space for a 3000 m checkpoint that is due at the start of the next cycle week (first slot, where the queue
+ * places CONTROL) and falls inside the seven days after `date`. Only what the sessions planned for that day do not already
+ * reserve is returned. null: no checkpoint is due there, or none can be prescribed.
+ */
+function anticipatedCheckpoint(s: EngineState, date: number, later: readonly Workout[]): {day: number; metres: number} | null {
+  const weekStart = date + 7 - (((date - day(s.cycleStartDate)) % 7 + 7) % 7);
+  if (weekStart > date + 6 || weekStart >= day(s.profile.raceDate)) return null;
+  if (!s.checkpointRequired && weekStart - day(s.lastAssessmentDate) < 21) return null;
+  const iso = addDays(s.cycleStartDate, weekStart - day(s.cycleStartDate));
+  const planning = {...s, decision: decide(s, iso)};
+  if (!s.profile.canRun3Km || planning.decision.maximumQualityPerWeek === 0 || planning.decision.phase === 'TAPER') return null;
+  const reserved = reservedMetres(s, prescribe(planning, 'CONTROL', iso, 'anticipated-checkpoint')) ?? 0;
+  const planned = later.filter(other => day(other.scheduledDate) === weekStart && other.countsAsQuality)
+    .reduce((sum, other) => sum + (reservedMetres(s, other) ?? 0), 0);
+  return {day: weekStart, metres: Math.max(0, reserved - planned)};
 }
 /**
  * Conservative total-load guard. A quality session with an actual measured baseline reserves
@@ -148,7 +180,10 @@ export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] 
   const baselineMeters = approvedWeekMeters(s);
   const alreadyDone = s.history.map(h => h.workout);
   const accepted: Workout[] = [];
-  for (const offered of [...proposed].sort((a,b)=>day(a.scheduledDate)-day(b.scheduledDate))) {
+  // Habitual long-run structure (12-week audit D-08); null for runners without an established long run.
+  const shares = longRunShares(s);
+  const ordered = [...proposed].sort((a,b)=>day(a.scheduledDate)-day(b.scheduledDate));
+  for (const [position, offered] of ordered.entries()) {
     let w = structuredClone(offered);
     if(w.countsAsQuality) {
       // Committed/legacy queues must not restore an unbounded older intensity dose.
@@ -165,19 +200,35 @@ export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] 
     // date+6). Do not add all six past days to all six future quality days: those sessions
     // may be up to 12 days apart and never share any actual seven-day window.
     // Preserve space for future quality only in windows that contain BOTH sessions.
-    const futureQuality = w.countsAsQuality ? [] : proposed.filter(other =>
-      other.countsAsQuality && day(other.scheduledDate) > date &&
-      day(other.scheduledDate) <= date + 6);
-    const bookedSessions = [...alreadyDone, ...accepted, ...futureQuality];
+    const later = ordered.slice(position + 1).filter(other => day(other.scheduledDate) > date && day(other.scheduledDate) <= date + 6);
+    const futureQuality = w.countsAsQuality ? [] : later.filter(other => other.countsAsQuality);
+    // A missed session is never made up for (approved decision 2). With a shared long-run budget, space that a skipped session
+    // would have used therefore stays reserved for the sizing of the ordinary and long runs: otherwise it would flow into a longer
+    // long run, which then squeezes the next week (rolling windows overlap). Sessions that are completed or planned count as before.
+    const skippedPlanned = shares !== null && !w.countsAsQuality
+      ? s.skippedWorkouts.filter(other => !alreadyDone.some(done => done.id === other.id)) : [];
+    const bookedSessions = [...alreadyDone, ...accepted, ...futureQuality, ...skippedPlanned];
+    // With a long-run structure the ordinary runs and the long run share the whole budget, so they must leave room for the
+    // 3000 m checkpoint that the engine itself schedules at the start of the next cycle week once it is due (21 days after the
+    // last result). Without this reserve the full-budget week left no room for the checkpoint and it was turned into EASY.
+    const anticipated = shares !== null && !w.countsAsQuality ? anticipatedCheckpoint(s, date, later) : null;
+    // Budget left in the seven-day window ending on `end` after `sessions`.
+    const space = (sessions: readonly Workout[], end: number, extra = anticipated): number => Math.max(0, baselineMeters - sessions.reduce((sum, other) => {
+      const scheduled = day(other.scheduledDate);
+      if (scheduled <= end - 7 || scheduled > end) return sum;
+      return sum + (reservedMetres(s, other) ?? Infinity);
+    }, 0) - (extra !== null && extra.day <= end && extra.day > end - 7 ? extra.metres : 0));
     let available = baselineMeters;
-    for (let windowEnd = date; windowEnd <= date + 6; windowEnd++) {
-      const booked = bookedSessions.reduce((sum, other) => {
-        const scheduled = day(other.scheduledDate);
-        if (scheduled <= windowEnd - 7 || scheduled > windowEnd) return sum;
-        return sum + (reservedMetres(s, other) ?? Infinity);
-      }, 0);
-      available = Math.min(available, Math.max(0, baselineMeters - booked));
-    }
+    for (let windowEnd = date; windowEnd <= date + 6; windowEnd++) available = Math.min(available, space(bookedSessions, windowEnd));
+    // The long run of this week, if it is still ahead: the sessions before it leave room for it and share what is left
+    // in the proportion of the runner's own habitual week (long : ordinary run), so the long run is not the first thing
+    // that disappears when intense sessions have reserved most of the budget. Only the windows that contain BOTH the
+    // session and the long run are shared; earlier windows (which hold last week's long run) are not.
+    const upcomingLong = shares !== null && w.type !== 'LONG_EASY' ? later.find(other => other.type === 'LONG_EASY') : undefined;
+    const longDate = upcomingLong ? day(upcomingLong.scheduledDate) : 0;
+    const easyBeforeLong = (from: number): number => ordered.slice(from).filter(other =>
+      other.type === 'EASY' && day(other.scheduledDate) < longDate).length;
+    const recentEasyMax = Math.max(0, ...recent.filter(other => other.type === 'EASY' && other.main.dose.unit === 'METERS').map(other => other.main.dose.value));
 
     if (w.type === 'LONG_EASY' && recent.some(other => other.type === 'LONG_EASY')) {
       const planning = {...s, decision: decide(s, w.scheduledDate)};
@@ -188,7 +239,25 @@ export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] 
 
     if (w.countsAsQuality) {
       const reserved = reservedMetres(s,w);
-      if (reserved === null || reserved > available + 1e-6) {
+      let crowdsOutLong = false;
+      if (upcomingLong && w.type !== 'CONTROL' && recent.some(other => other.countsAsQuality)) {
+        // A second intense session is optional. It is kept only if, after its reserve, the long run and the ordinary runs before
+        // it still get their shares of what is left (proportional to the runner's own habitual week, ordinary runs at least the
+        // engine's 1 km minimum) and the long run stays longer than the ordinary runs. Otherwise it becomes EASY.
+        const easies = easyBeforeLong(position + 1);
+        const longDose = upcomingLong.main.dose.value;
+        const weight = longDose + easies * shares!.other;
+        let longShare = Infinity; let easyShare = Infinity;
+        for (let windowEnd = longDate; windowEnd <= date + 6; windowEnd++) {
+          const laterQuality = later.filter(other => other.countsAsQuality && day(other.scheduledDate) <= windowEnd)
+            .reduce((sum, other) => sum + (reservedMetres(s, other) ?? Infinity), 0);
+          const room = Math.max(0, space([...alreadyDone, ...accepted], windowEnd, null) - (reserved ?? Infinity) - laterQuality);
+          longShare = Math.min(longShare, room * longDose / weight);
+          easyShare = Math.min(easyShare, room * shares!.other / weight);
+        }
+        crowdsOutLong = !(longShare >= 1000 && longShare > easyShare && (easies === 0 || easyShare >= 1000));
+      }
+      if (reserved === null || reserved > available + 1e-6 || crowdsOutLong) {
         // If the reserve cannot fit, there is no evidence for extra intense work this week.
         const planning = {...s,decision:decide(s,w.scheduledDate)};
         w = prescribe(planning,'EASY',w.scheduledDate,w.id,w.volumeFactor);
@@ -201,6 +270,17 @@ export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] 
     }
 
     if (w.main.dose.unit === 'METERS') {
+      if (upcomingLong && w.type === 'EASY') {
+        const weight = upcomingLong.main.dose.value + easyBeforeLong(position) * shares!.other;
+        let allowed = Infinity;
+        for (let windowEnd = date; windowEnd <= date + 6; windowEnd++) {
+          const left = space(bookedSessions, windowEnd);
+          allowed = Math.min(allowed, windowEnd >= longDate ? left * shares!.other / weight : left);
+        }
+        // Same rule as below: no sub-1 km EASY merely to use up what is left of a shared budget.
+        if (allowed < 1000) continue;
+        w.main.dose.value = Math.min(w.main.dose.value, allowed);
+      }
       if (w.main.dose.value > available) {
         if (available < 1000) {
           // We never prescribe sub-1km EASY just to use up a small remaining budget.
@@ -209,9 +289,12 @@ export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] 
         w.main.dose.value = Math.min(w.main.dose.value,available);
       }
       if (w.type === 'LONG_EASY') {
+        // With a habitual long-run structure the long run must exceed the ordinary runs of its week; otherwise (legacy
+        // or moved long sessions of runners without that structure) it must exceed the ordinary EASY prescription.
         const planning = {...s, decision:decide(s,w.scheduledDate)};
         const ordinary = prescribe(planning,'EASY',w.scheduledDate,w.id,w.volumeFactor);
-        if(w.main.dose.value <= ordinary.main.dose.value){
+        const reference = shares !== null ? Math.max(recentEasyMax, shares.other) : ordinary.main.dose.value;
+        if(w.main.dose.value <= reference || w.main.dose.value < 1000){
           w = ordinary;
           w.main.dose.value=Math.min(w.main.dose.value,available,offered.main.dose.value);
         }
@@ -227,8 +310,17 @@ export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] 
   }
   return accepted;
 }
-/** Rolling seven-day queue. Stable slots avoid training debt and repeated same-day workouts. */
-export function generateQueue(s: EngineState, now: string): Workout[] {
+/**
+ * Rolling seven-day queue. Stable slots avoid training debt and repeated same-day workouts.
+ *
+ * Week structure. Every cycle week has the same active slots (anchored to the cycle start). For a runner with an
+ * established long run (`longRunShares`) the LAST slot of the week is the LONG_EASY slot and intense sessions never take
+ * it; the first free slots after it carry the intense sessions as before. The role of a slot therefore no longer depends on
+ * the day the plan happens to be rebuilt on (the old rule "a free slot four or more days from today is the long run" moved
+ * the long run around with every replan and in practice never produced one).
+ * `forcedEasy` lists slots whose intense session the weekly budget has already refused (see `generateQueue`).
+ */
+function buildQueue(s: EngineState, now: string, forcedEasy: ReadonlySet<string>): {queue: Workout[]; slots: Workout[]} {
   const availability = s.profile.availableRunsPerWeek;
   // Availability is a maximum for the calendar, not proof of tolerance for added running days.
   // Frequency progression requires separate evidence; preserve the user's habitual baseline now.
@@ -243,6 +335,7 @@ export function generateQueue(s: EngineState, now: string): Workout[] {
   let qualityIndex = 0;
   let pendingFirstEasyReduction = s.reentry?.easyReductionPending ?? false;
   let controlScheduled = false;
+  const longOffset = longRunShares(s) !== null && offsets.length >= 3 ? Math.max(...offsets) : -1;
   for (let delta = 0; delta < 7; delta++) {
     const date = addDays(now, delta);
     // Approved decision C1: `raceDate` is the day of the final 3000 m race itself, which the UI
@@ -264,11 +357,15 @@ export function generateQueue(s: EngineState, now: string): Workout[] {
     else if (pendingEasy > 0) { factor = s.reentry!.easyFactor; pendingEasy--; }
     else if (s.reentry?.diagnosticRequired) type = 'EASY';
     else if (s.checkpointRequired && (!s.reentry || s.reentry.diagnosticRequired) && s.profile.canRun3Km && canQuality && !controlScheduled && !s.progressionBlocked && planning.decision.phase !== 'TAPER') { type = 'CONTROL'; factor = 1; controlScheduled = true; }
-    else if (canQuality && !s.progressionBlocked) {
-      const specificAlreadyPlanned = [...s.history.map(h => ({type: h.workout.type, date: h.result.date})), ...s.skippedWorkouts.map(w => ({type: w.type, date: w.scheduledDate})), ...s.movedWorkouts.filter(w => !completed.has(w.id)).map(w => ({type: w.type, date: w.scheduledDate})), ...result.map(w => ({type: w.type, date: w.scheduledDate}))].some(w => w.type === 'SPECIFIC_3K' && day(w.date) > day(date) - 7 && day(w.date) <= day(date));
-      type = qualityType(planning, planning.decision.phase === 'SPECIFIC' ? Number(specificAlreadyPlanned) : qualityIndex++);
+    else if (offset === longOffset && !s.reentry && ['DEVELOPMENT', 'SPECIFIC'].includes(planning.decision.phase)) type = 'LONG_EASY';
+    else if (canQuality && !s.progressionBlocked && !forcedEasy.has(id)) {
+      // Intense sessions already completed, skipped, moved or planned earlier decide which type comes next.
+      const earlier = [...s.history.map(h => ({type: h.workout.type, date: h.result.date})), ...s.skippedWorkouts.map(w => ({type: w.type, date: w.scheduledDate})), ...s.movedWorkouts.filter(w => !completed.has(w.id)).map(w => ({type: w.type, date: w.scheduledDate})), ...result.map(w => ({type: w.type, date: w.scheduledDate}))]
+        .filter(w => ['THRESHOLD', 'VO2', 'SPECIFIC_3K'].includes(w.type) && day(w.date) < day(date))
+        .sort((a, b) => day(a.date) - day(b.date)).map(w => w.type);
+      type = qualityType(planning, qualityIndex++, earlier);
       if (pendingQualityReduction) { factor *= s.reentry!.qualityFactor; pendingQualityReduction = false; }
-    } else if (delta >= 4 && planning.decision.phase !== 'RE_ENTRY' && s.profile.longestUsualRunKm > 0) type = 'LONG_EASY';
+    }
     if (type === 'EASY' && pendingFirstEasyReduction) { factor = s.reentry!.easyFactor; pendingFirstEasyReduction = false; }
     // No quality is pre-authorized beyond re-entry: feedback must complete the mandatory easy sessions first.
     if (s.reentry && s.reentry.easyRemaining > 0 && QUALITY.includes(type)) type = 'EASY';
@@ -294,5 +391,22 @@ export function generateQueue(s: EngineState, now: string): Workout[] {
       next.main.dose.value=Math.min(next.main.dose.value,original.main.dose.value);
     return next;
   });
-  return guardWeeklyLoad(s, [...result, ...safeMoved].sort((a, b) => day(a.scheduledDate) - day(b.scheduledDate)));
+  const proposed = [...result, ...safeMoved].sort((a, b) => day(a.scheduledDate) - day(b.scheduledDate));
+  return {queue: guardWeeklyLoad(s, proposed), slots: result};
+}
+/**
+ * Seven-day plan after the weekly-load guard. An intense session that the guard turns into EASY is not "used": the
+ * slot is rebuilt as EASY and the following slots are typed again, so the SPECIFIC_3K / THRESHOLD / VO2 rotation (which is
+ * derived from the schedule) continues from the sessions that are actually planned. The loop is deterministic, only ever
+ * adds slots to `forcedEasy` and so ends after at most one pass per slot.
+ */
+export function generateQueue(s: EngineState, now: string): Workout[] {
+  const forced = new Set<string>();
+  for (;;) {
+    const {queue, slots} = buildQueue(s, now, forced);
+    const refused = slots.filter(w => w.countsAsQuality && w.type !== 'CONTROL' && !forced.has(w.id) &&
+      !queue.some(kept => kept.id === w.id && kept.countsAsQuality));
+    if (refused.length === 0) return queue;
+    for (const w of refused) forced.add(w.id);
+  }
 }

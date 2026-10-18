@@ -343,6 +343,18 @@ export function analyze(run: ScenarioRun): Analysis {
     expected: 'Контрольный результат уточняет текущую форму, но не стирает накопленное подтверждение выполненных занятий.', actual: resetDetails.join('; '),
     why: 'recordCheckpoint обнуляет счётчики успешных качественных занятий и серии успехов; при контроле раз в 21 день прогрессия качества и открытие целевого темпа каждый раз начинаются заново.', recommendation: 'Не сбрасывать счётчики при контроле, подтверждающем прежний результат.'}));
 
+  // ---- C23 engine weekly budget: the engine's own reservations of every rolling seven days stay within the approved budget
+  // (sessions that were actually planned and not removed by a skip or by the checkpoint screen). Uses the engine's `reservedMetres`.
+  const booked = rows.filter(r => r.type !== 'REST' && r.outcome !== 'SKIPPED' && r.outcome !== 'DISPLACED_BY_CONTROL' && r.reservedMeters !== null && r.approvedWeekMeters !== null);
+  for (const r of booked) {
+    const total = booked.filter(o => o.offset <= r.offset && o.offset > r.offset - 7).reduce((n, o) => n + (o.reservedMeters ?? 0), 0);
+    const over = total > (r.approvedWeekMeters ?? Infinity) + 1;
+    count('C23', 'Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета', over);
+    if (over) findings.push(mk(run, r, {code: 'WEEKLY_BUDGET_EXCEEDED', severity: 'CRITICAL',
+      expected: `Сумма резервов движка за 7 дней ≤ ${Math.round((r.approvedWeekMeters ?? 0) / 100) / 10} км`, actual: `${Math.round(total / 100) / 10} км за 7 дней, оканчивающихся ${r.date}`,
+      why: 'Резерв превышает утверждённый недельный бюджет (защитный потолок).', recommendation: 'Недельный guard не должен пропускать такой план.'}));
+  }
+
   // ---- C22 control cadence burden (information for the report)
   count('C22', 'Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)', false);
 
