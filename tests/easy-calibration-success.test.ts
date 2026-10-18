@@ -46,6 +46,7 @@ test('CAL-02: two confirmed consistent trials generate provisional PERSONAL EASY
   assert.equal(afterOne.main.calibration,true);
   assert.equal(afterOne.main.dose.value,2000);
   append(s,afterOne,timed(afterOne,2000,16.5,3)); // 8:15/km
+  s.asOf=dateAfter(7);
   const next=prescribe(s,'EASY',dateAfter(7),'cal-3');
   assert.equal(next.main.calibration,undefined);
   assert.equal(next.main.dose.value,3000,'no immediate leap from 2km to 5km');
@@ -72,6 +73,7 @@ test('CAL-04: hard, unconfirmed, incomplete or incompatible trials do not calibr
     append(s,w1,timed(w1,2000,16,3));
     const w2=prescribe(s,'EASY',dateAfter(3),'two');
     append(s,w2,timed(w2,invalid.meters,invalid.minutes,invalid.rpe,invalid.confirmed));
+    s.asOf=dateAfter(7);
     assert.equal(prescribe(s,'EASY',dateAfter(7),'three').main.calibration,true,
       'ambiguous or unsuccessful measurement cannot establish speed');
   }
@@ -114,6 +116,7 @@ test('CAL-08: three confirmed EASY sessions at fast half of assigned pace and RP
     append(s,w,timed(w,5000,35,2)); // 7:00/km, within the faster half
     if(i<2)assert.deepEqual(prescribe(s,'EASY',NOW,'probe-'+i).paceRangeSecondsPerKm,[410,455]);
   }
+  s.asOf=dateAfter(9);
   const next=prescribe(s,'EASY',dateAfter(9),'advanced');
   assert.deepEqual(next.paceRangeSecondsPerKm,[405,450]);
   assert.deepEqual(next.speedRangeMps,[1000/450,1000/405]);
@@ -132,6 +135,7 @@ test('CAL-09: RPE 3, missing measurements, one skip, or three overfast sessions 
       append(s,w,r);
     }
     if(mode==='skip')s.skippedWorkouts=[{...s.history[1]!.workout,scheduledDate:dateAfter(4)}];
+    s.asOf=dateAfter(10);
     const next=prescribe(s,'EASY',dateAfter(10),'end');
     assert.deepEqual(next.paceRangeSecondsPerKm,[410,455],mode);
   }
