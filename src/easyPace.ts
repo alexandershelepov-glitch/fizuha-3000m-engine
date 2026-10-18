@@ -142,11 +142,18 @@ export function beginnerEasyPace(s: EngineState):
   // Freeze the entry benchmark to the actual calibration sessions. Otherwise
   // later ordinary EASY results silently replace the two trials and cause
   // the prescribed pace to drift even when the runner obeys the programme.
-  const latest = mostRecentContinuous(s)
+  const continuous = mostRecentContinuous(s);
+  const latest = continuous
     .filter(entry => entry.workout.main.calibration === true).slice(0, 2);
+  // Both trials must belong to one recent calibration period. Once a pace
+  // is established, normal verified EASY workouts keep that benchmark active;
+  // otherwise a regular runner is forced back to calibration every 22 days.
+  const lastMeasured = continuous.find(measuredEasy);
   if (latest.length !== 2 || latest.some(entry => !measuredEasy(entry) ||
-      daysAgo(s.asOf, entry.result.date) < 0 ||
-      daysAgo(s.asOf, entry.result.date) > 21)) return null;
+      daysAgo(s.asOf, entry.result.date) < 0) ||
+      daysAgo(latest[0]!.result.date, latest[1]!.result.date) > 21 ||
+      !lastMeasured || daysAgo(s.asOf, lastMeasured.result.date) > 21 ||
+      daysAgo(s.asOf, lastMeasured.result.date) < 0) return null;
   const paces = latest.map(actualPace);
   if (paces.some(p => !Number.isFinite(p) || p < 180 || p > 850) ||
       Math.max(...paces) / Math.min(...paces) > 1.15) return null;
