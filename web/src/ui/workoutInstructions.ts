@@ -383,6 +383,13 @@ function continuousSteps(workout: Workout, paceText: string | null): string[] {
   }
 
   if (paceText === null) {
+    if (workout.main.calibration === true && mode === 'CONTINUOUS') {
+      steps.push(copy.calibrationTask(distanceText(dose.value)));
+      steps.push(copy.calibrationIntensity);
+      steps.push(copy.calibrationMeasure);
+      steps.push(copy.calibrationSubmit);
+      return steps;
+    }
     const what = dose.unit === 'MINUTES' ? counts.minutes(Math.round(dose.value)) : distanceText(dose.value);
     if (workout.type === 'EASY' || workout.type === 'LONG_EASY') {
       steps.push(copy.easyContinuous(distanceText(dose.value)));
@@ -452,7 +459,7 @@ export function workoutInstruction(workout: Workout): WorkoutInstruction {
   }
 
   return {
-    headline: copy.today(headlineFor(workout)),
+    headline: workout.main.calibration === true ? copy.today('калибровка темпа · ' + headlineFor(workout)) : copy.today(headlineFor(workout)),
     steps,
     effort: effortFor(workout),
     effortScale: copy.effortScale(effortRangeText(workout)),
