@@ -1,0 +1,5 @@
+
+> adaptive-3000m-core@1.0.0 typecheck
+> tsc --noEmit && tsc -p web/tsconfig.json
+
+exit=0
