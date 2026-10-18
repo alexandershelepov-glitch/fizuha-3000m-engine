@@ -79,8 +79,15 @@ export function prescribe(s: EngineState, type: WorkoutType, date: string, id: s
         // Two short, measured EASY runs teach the engine this runner's actual pace.
         // An introductory trial must not quietly inherit a 5+ km routine.
         isEasyCalibration = true;
-        dose.value = Math.min(dose.value,
-          s.profile.averageWeeklyKm4Weeks >= 8 && s.profile.actualRunsPerWeek >= 2 ? 2000 : 1000);
+        // A measured habitual volume >= 12 km/week already establishes a
+        // regular running distance. Do NOT override that dose simply because
+        // the user has not timed a full 3km. Likewise, confirmation of
+        // continuous 3km from a zero-history RUN_WALK user is not erased.
+        if (s.profile.averageWeeklyKm4Weeks > 0 &&
+            s.profile.averageWeeklyKm4Weeks < 12) {
+          dose.value = Math.min(dose.value,
+            s.profile.averageWeeklyKm4Weeks >= 8 && s.profile.actualRunsPerWeek >= 2 ? 2000 : 1000);
+        }
       } else dose.value = calibratedBeginnerDose(s, dose.value);
     }
     const adapted = adaptEasyFromRecentResult(s, dose.value, initial);
