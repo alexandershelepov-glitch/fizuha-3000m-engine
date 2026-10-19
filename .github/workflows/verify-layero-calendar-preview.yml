@@ -25,7 +25,8 @@ jobs:
         run: |
           npm ci
           npm run build:layero
-          echo "build_id=$(node -p \"JSON.parse(require('fs').readFileSync('web/dist/build-info.json')).buildId\")" >> "$GITHUB_OUTPUT"
+          build_id=$(node -p "JSON.parse(require('fs').readFileSync('web/dist/build-info.json')).buildId")
+          echo "build_id=${build_id}" >> "$GITHUB_OUTPUT"
       - name: Verify the preview serves this branch's exact commit
         shell: bash
         env:
