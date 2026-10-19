@@ -3,7 +3,8 @@ import type {ReactNode} from 'react';
 import {QUESTIONNAIRE_STEPS, STEP_INDEX, healthySafety, buildProfile} from '../../application/questionnaire.ts';
 import type {QualityRecall} from '../../application/questionnaire.ts';
 import {previewGoalDecision} from '../../application/engineGateway.ts';
-import {daysBetween, deviceToday, parseTime} from '../../application/format.ts';
+import {daysBetween, parseTime} from '../../application/format.ts';
+import {effectiveToday} from '../../application/qaMode.ts';
 import {feasibilityText} from '../copy/values.ts';
 import type {BreakEntryDraft, FieldKey, QuestionnaireDraft, QuestionnaireStep} from '../../application/questionnaire.ts';
 import {breakReasonText, performanceSourceText} from '../copy/values.ts';
@@ -84,7 +85,7 @@ export function Questionnaire({step, store, onNavigate, engineError = null, onDi
         {step === 'BREAKS' ? <BreaksStep draft={draft} update={update} error={error} /> : null}
         {step === 'AVAILABILITY' ? <AvailabilityStep draft={draft} update={update} error={error} /> : null}
         {step === 'GOAL' ? <GoalStep draft={draft} update={update} error={error} /> : null}
-        {step === 'RACE_DATE' ? <><RaceDateStep draft={draft} update={update} error={error} />{draft.raceDateConfirmed === true ? <GoalPreview draft={draft} today={deviceToday()} /> : <p className="hint">Предложена дата через 8 недель. Выберите другую дату или нажмите «Продолжить», чтобы подтвердить эту. Оценка цели появится после выбора срока.</p>}</> : null}
+        {step === 'RACE_DATE' ? <><RaceDateStep draft={draft} update={update} error={error} />{draft.raceDateConfirmed === true ? <GoalPreview draft={draft} today={effectiveToday()} /> : <p className="hint">Предложена дата через 8 недель. Выберите другую дату или нажмите «Продолжить», чтобы подтвердить эту. Оценка цели появится после выбора срока.</p>}</> : null}
       </Card>
 
       <div className="actions">
