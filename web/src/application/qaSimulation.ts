@@ -8,6 +8,7 @@ import type {CycleRepository} from './storage.ts';
 import {submitWorkoutResult} from './workoutResult.ts';
 import {skipScheduledWorkout} from './workoutSchedule.ts';
 import {refreshPlan} from './clockOps.ts';
+import {submitCheckpoint} from './checkpoint.ts';
 
 export interface QaInput{
   repo:CycleRepository;appState:AppStateV1;engineState:EngineState;
@@ -29,16 +30,25 @@ export function simulateQa(input:QaInput):QaOutput{
   let specialUsed=false;
   function perform(w:Workout,at:string):string|null{
     if(w.type==='REST')return 'Защитная пауза: автоматическое выполнение запрещено.';
-    if(w.type==='CONTROL')return 'Контрольные 3000 м требуют отдельного ввода результата.';
     if(at>=engineState.profile.raceDate)return 'Дата итогового забега: внесите результат вручную.';
     const action:QaAction=!specialUsed?input.action:'SUCCESS';
     if(action!=='SUCCESS')specialUsed=true;
-    if(action==='SKIP'){
+    // A partial CONTROL is not a valid 3 km checkpoint, so record it as not completed.
+    if(action==='SKIP'||(w.type==='CONTROL'&&action==='PARTIAL')){
       const result=skipScheduledWorkout({repo:input.repo,appState,engineState,
         workoutId:w.id,deviceToday:at,at:deviceTimestamp()});
       if(!result.ok)return 'Пропуск отклонён: '+result.error.code;
       appState=result.done.appState;engineState=result.done.engineState;
       events.push(w.scheduledDate+' '+w.type+': SKIP (тест)');
+    }else if(w.type==='CONTROL'){
+      const timeSeconds=engineState.profile.performance?.timeSeconds;
+      if(timeSeconds===null||timeSeconds===undefined)
+        return 'Контрольные 3000 м требуют подтверждённого исходного результата.';
+      const result=submitCheckpoint({repo:input.repo,appState,engineState,
+        performance:{timeSeconds,date:at,source:'TEST_3K'},deviceToday:at,at:deviceTimestamp()});
+      if(!result.ok)return 'Контрольный результат отклонён: '+result.error.code;
+      appState=result.done.appState;engineState=result.done.engineState;
+      events.push(w.scheduledDate+' CONTROL: '+timeSeconds+' сек. (тестовый 3000 м; без имитации улучшения)');
     }else{
       const result=submitWorkoutResult({repo:input.repo,appState,engineState,
         workoutId:w.id,deviceToday:at,result:makeQaResult(w,action==='PARTIAL')});

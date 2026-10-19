@@ -74,11 +74,11 @@ export async function readActiveCycle(page: Page): Promise<StoredCycle> {
   return JSON.parse(stored) as StoredCycle;
 }
 
-export async function readEngineState(page: Page): Promise<{history: unknown[]; queue: {id: string; scheduledDate: string; type: string}[]; asOf: string; checkpointRequired: boolean; profile: {performance: {timeSeconds: number} | null}}> {
+export async function readEngineState(page: Page): Promise<{history: unknown[]; queue: {id: string; scheduledDate: string; type: string}[]; asOf: string; checkpointRequired: boolean; profile: {performance: {timeSeconds: number} | null; raceDate: string}}> {
   const stored = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
   if (stored === null) throw new Error('no active cycle is stored');
   const envelope = JSON.parse(stored) as {cycle: {engineState: string}};
-  return JSON.parse(envelope.cycle.engineState) as {history: unknown[]; queue: {id: string; scheduledDate: string; type: string}[]; asOf: string; checkpointRequired: boolean; profile: {performance: {timeSeconds: number} | null}};
+  return JSON.parse(envelope.cycle.engineState) as {history: unknown[]; queue: {id: string; scheduledDate: string; type: string}[]; asOf: string; checkpointRequired: boolean; profile: {performance: {timeSeconds: number} | null; raceDate: string}};
 }
 
 /** The questionnaire answered without a current result, so the engine asks for a checkpoint. */
