@@ -9,11 +9,17 @@
  * service-worker script; old mobile PWA installations then receive new assets.
  */
 import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import {readFile, readdir, stat} from 'node:fs/promises';
 import {writeFile} from 'node:fs/promises';
 import {join, relative, resolve} from 'node:path';
 
 const dist=resolve(import.meta.dirname,'../web/dist');
+const sourceCommit=process.env.LAYERO_SOURCE_COMMIT ?? process.env.GITHUB_SHA ??
+  execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+if(!/^[0-9a-f]{40}$/i.test(sourceCommit)) {
+  throw new Error('Layero build must expose the full Git commit SHA');
+}
 const html=await readFile(join(dist,'index.html'),'utf8');
 if(!html.includes('href="/manifest.webmanifest"') ||
    !html.includes('href="/icons/icon-192.png"') ||
@@ -58,4 +64,5 @@ for(const file of (await files(dist)).sort()){
 hash.update(sw);
 const release=hash.digest('hex').slice(0,16);
 await writeFile(swPath,sw.replaceAll('__FIZUHA_BUILD_ID__',release));
-console.log(`Layero PWA package ready at /; cache version ${release}; no Pages 404 fallback`);
+await writeFile(join(dist,'build-info.json'),`${JSON.stringify({sourceCommit,buildId:release},null,2)}\n`);
+console.log(`Layero PWA package ready at /; source ${sourceCommit}; cache version ${release}; no Pages 404 fallback`);

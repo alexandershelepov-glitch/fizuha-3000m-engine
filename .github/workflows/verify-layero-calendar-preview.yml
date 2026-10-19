@@ -4,45 +4,54 @@ on:
   push:
     branches:
       - feature/issue-24-calendar
+      - feature/staging-pwa-deploy
   pull_request:
     branches:
-      - main
+      - feature/issue-24-calendar
   workflow_dispatch:
 
 jobs:
   check-preview:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 8
     steps:
-      - name: Verify isolated Layero branch preview without touching production
+      - name: Verify the preview serves this branch's exact commit
         shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PREVIEW_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
         run: |
-          set -u
-          for host in \
-            fizuha-3000m-engine-feature-issue-24-calendar.layero.app \
-            fizuha-3000m-engine-featureissue24calendar.layero.app; do
-            echo "Checking https://${host}/"
-            if ! curl -sS -L --max-time 25 "https://${host}/" -o /tmp/layero-page; then
-              echo "Network or host inaccessible"
-              continue
-            fi
-            if ! grep -q '/assets/' /tmp/layero-page; then
-              echo "No built frontend assets on this host"
-              head -c 250 /tmp/layero-page || true
-              echo
-              continue
-            fi
-            asset=$(grep -oE 'src="/assets/[^"]+\.js"' /tmp/layero-page | head -n1 | cut -d '"' -f2)
-            if [ -z "${asset}" ]; then
-              echo "No JavaScript entry script found"
-              continue
-            fi
-            if curl -fsS -L --max-time 25 "https://${host}${asset}" -o /tmp/layero-app && grep -q 'calendar-screen' /tmp/layero-app && grep -q 'home-overview' /tmp/layero-app && grep -q 'Не беги быстрее' /tmp/layero-app && grep -q 'Калибровка: обязательно внеси фактическое время' /tmp/layero-app; then
-              echo "VERIFIED CALENDAR PREVIEW: https://${host}/"
-              echo "Verified calendar, numeric EASY, and beginner calibration in published JavaScript"
+          set -euo pipefail
+          branch_slug="${PREVIEW_BRANCH//\//-}"
+          host="fizuha-3000m-engine-${branch_slug}.layero.app"
+          echo "Checking https://${host}/ for commit ${EXPECTED_SHA}"
+
+          for attempt in $(seq 1 24); do
+            info=$(curl -fsSL --max-time 20 \
+              -H 'Cache-Control: no-cache' \
+              "https://${host}/build-info.json?expected=${EXPECTED_SHA}-${attempt}" 2>/dev/null || true)
+            if [ -n "${info}" ] && echo "${info}" | jq -e --arg sha "${EXPECTED_SHA}" '.sourceCommit == $sha' >/dev/null; then
+              page=$(curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "https://${host}/?expected=${EXPECTED_SHA}" )
+              asset=$(echo "${page}" | grep -oE 'src="/assets/[^\"]+\.js"' | head -n1 | cut -d '"' -f2 || true)
+              if [ -z "${asset}" ]; then
+                echo "Commit matches, but the published page has no JavaScript entry asset"
+                exit 1
+              fi
+              bundle=$(curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "https://${host}${asset}?expected=${EXPECTED_SHA}")
+              for marker in 'calendar-screen' 'home-overview' 'Не беги быстрее' 'Калибровка: обязательно внеси фактическое время'; do
+                if ! echo "${bundle}" | grep -Fq "${marker}"; then
+                  echo "Published bundle for ${EXPECTED_SHA} is missing expected UI marker: ${marker}"
+                  exit 1
+                fi
+              done
+              echo "VERIFIED LAYERO PREVIEW: https://${host}/"
+              echo "Published source commit: ${EXPECTED_SHA}"
               exit 0
             fi
-            echo "Host is not yet serving the new EASY calibration build"
+            actual=$(echo "${info}" | jq -r '.sourceCommit // "unavailable"' 2>/dev/null || echo unavailable)
+            echo "Attempt ${attempt}/24: expected ${EXPECTED_SHA}; Layero currently serves ${actual}"
+            sleep 15
           done
-          echo "::error::Layero calendar preview not verified. Check project environment builds in Layero dashboard."
+
+          echo "::error::Layero preview did not publish ${EXPECTED_SHA}. Check the GitHub connection and build history for branch ${PREVIEW_BRANCH}."
           exit 1

@@ -8,6 +8,11 @@ test('Layero root PWA: install cache and nested-route offline reload',async({pag
   const errors:string[]=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/');
+  const buildInfoResponse=await page.request.get('/build-info.json');
+  expect(buildInfoResponse.ok()).toBe(true);
+  const buildInfo=await buildInfoResponse.json() as {sourceCommit:string;buildId:string};
+  expect(buildInfo.sourceCommit).toMatch(/^[0-9a-f]{40}$/i);
+  expect(buildInfo.buildId).toMatch(/^[0-9a-f]{16}$/);
   await expect(page.getByRole('button',{name:'Начать подготовку'})).toBeVisible();
 
   await expect.poll(async()=>page.evaluate(async()=>{
