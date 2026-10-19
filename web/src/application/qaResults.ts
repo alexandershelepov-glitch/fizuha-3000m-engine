@@ -20,7 +20,7 @@ export function makeQaResult(w:Workout, partial=false):WorkoutResult{
   const workMinutes=repeats.length?repeats.reduce((n,r)=>n+r.seconds,0)/60:
     w.main.dose.unit==='MINUTES'?w.main.dose.value:metres/mps/60;
   return {
-    date:w.scheduledDate,completionFraction:partial?.7:1,
+    date:w.scheduledDate,completionFraction:partial ? 0.7 : 1,
     sessionRpe:partial?Math.min(10,w.targetRpe[1]+2):(w.targetRpe[0]+w.targetRpe[1])/2,
     safety:{pain:0,painIncreasing:false,alteredMovement:false,painWalkingOrRest:false,
       swelling:false,acuteIllness:false,otherStop:false,needsAssessment:false},
