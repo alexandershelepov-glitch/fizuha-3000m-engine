@@ -15,10 +15,16 @@ import {writeFile} from 'node:fs/promises';
 import {join, relative, resolve} from 'node:path';
 
 const dist=resolve(import.meta.dirname,'../web/dist');
-const sourceCommit=process.env.LAYERO_SOURCE_COMMIT ?? process.env.GITHUB_SHA ??
-  execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
-if(!/^[0-9a-f]{40}$/i.test(sourceCommit)) {
-  throw new Error('Layero build must expose the full Git commit SHA');
+let sourceCommit=process.env.LAYERO_SOURCE_COMMIT ?? process.env.GITHUB_SHA;
+if(!sourceCommit) {
+  try {
+    sourceCommit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim();
+  } catch {
+    sourceCommit='unknown';
+  }
+}
+if(sourceCommit!=='unknown' && !/^[0-9a-f]{40}$/i.test(sourceCommit)) {
+  throw new Error('Layero build source revision must be a full Git commit SHA');
 }
 const html=await readFile(join(dist,'index.html'),'utf8');
 if(!html.includes('href="/manifest.webmanifest"') ||

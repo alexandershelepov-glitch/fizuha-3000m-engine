@@ -15,11 +15,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Build the expected artifact from this commit
+        id: expected-build
+        run: |
+          npm ci
+          npm run build:layero
+          echo "build_id=$(node -p \"JSON.parse(require('fs').readFileSync('web/dist/build-info.json')).buildId\")" >> "$GITHUB_OUTPUT"
       - name: Verify the preview serves this branch's exact commit
         shell: bash
         env:
           EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           PREVIEW_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          EXPECTED_BUILD_ID: ${{ steps.expected-build.outputs.build_id }}
         run: |
           set -euo pipefail
           branch_slug="${PREVIEW_BRANCH//\//-}"
@@ -30,7 +42,7 @@ jobs:
             info=$(curl -fsSL --max-time 20 \
               -H 'Cache-Control: no-cache' \
               "https://${host}/build-info.json?expected=${EXPECTED_SHA}-${attempt}" 2>/dev/null || true)
-            if [ -n "${info}" ] && echo "${info}" | jq -e --arg sha "${EXPECTED_SHA}" '.sourceCommit == $sha' >/dev/null; then
+            if [ -n "${info}" ] && echo "${info}" | jq -e --arg sha "${EXPECTED_SHA}" --arg id "${EXPECTED_BUILD_ID}" '(.buildId == $id) and (.sourceCommit == "unknown" or .sourceCommit == $sha)' >/dev/null; then
               page=$(curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "https://${host}/?expected=${EXPECTED_SHA}" )
               asset=$(echo "${page}" | grep -oE 'src="/assets/[^\"]+\.js"' | head -n1 | cut -d '"' -f2 || true)
               if [ -z "${asset}" ]; then
@@ -48,10 +60,10 @@ jobs:
               echo "Published source commit: ${EXPECTED_SHA}"
               exit 0
             fi
-            actual=$(echo "${info}" | jq -r '.sourceCommit // "unavailable"' 2>/dev/null || echo unavailable)
-            echo "Attempt ${attempt}/24: expected ${EXPECTED_SHA}; Layero currently serves ${actual}"
+            actual=$(echo "${info}" | jq -r '"\(.sourceCommit // "unavailable") / \(.buildId // "no build ID")"' 2>/dev/null || echo unavailable)
+            echo "Attempt ${attempt}/24: expected ${EXPECTED_SHA} / ${EXPECTED_BUILD_ID}; Layero currently serves ${actual}"
             sleep 15
           done
 
-          echo "::error::Layero preview did not publish ${EXPECTED_SHA}. Check the GitHub connection and build history for branch ${PREVIEW_BRANCH}."
+          echo "::error::Layero preview did not publish the artifact built from ${EXPECTED_SHA}. Check the GitHub connection and build history for branch ${PREVIEW_BRANCH}."
           exit 1
