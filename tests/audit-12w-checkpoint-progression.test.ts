@@ -127,6 +127,8 @@ test('D02-5 restart is preserved when the checkpoint closes a break (re-entry): 
   s = applyBreak(s, {days: 6, endDate: s.asOf, reason: 'WORK'}, s.asOf);
   assert.ok(s.reentry !== null);
   assert.ok(s.successfulQuality > 0, 'precondition: counter present before the checkpoint');
+  const easy = s.queue.find(w => w.type === 'EASY')!;
+  s = recordResult(s, easy.id, feedback(easy));
   const after = checkpointAt(s, 905);
   assert.equal(after.successfulQuality, 0);
   assert.equal(after.successfulIntro, 0);

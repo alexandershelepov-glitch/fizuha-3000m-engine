@@ -179,7 +179,8 @@ export function applyBreak(state: EngineState, b: TrainingBreak, now: string, ad
     s.profile.safety.needsAssessment = true; s.diagnosticHold = true; s.progressionBlocked = true;
   } else if (b.days >= 4) {
     s.successfulSpecificPartial = 0;
-    s.reentry = {breakDays: b.days, easyRemaining: b.days >= 8 ? 2 : 0, easyReductionPending: b.days <= 7, easyFactor: b.days <= 7 ? .8 : .7, qualityFactor: b.days <= 7 ? .85 : .75, diagnosticRequired: b.days > 14};
+    s.reentry = {breakDays: b.days, easyRemaining: b.days >= 8 ? 2 : 1, easyReductionPending: true, easyFactor: b.days <= 7 ? .8 : .7, qualityFactor: b.days <= 7 ? .85 : .75, diagnosticRequired: b.days > 14};
+    s.pendingQualityFactor = s.reentry.qualityFactor;
   }
   return replan(s, now);
 }
@@ -210,13 +211,14 @@ export function recordResult(state: EngineState, workoutId: string, result: Work
     s.progressionBlocked = true; s.diagnosticHold = true; s.successStreak = {}; s.successfulSpecificPartial = 0;
   } else if (c.evaluation === 'YELLOW') {
     s.progressionBlocked = true; s.successStreak = {}; s.successfulSpecificPartial = 0; s.greenPlusIds = [];
-    if (previous && previous.classified.yellowReason && c.yellowReason && yellowFamily(previous.classified.yellowReason) === yellowFamily(c.yellowReason) && !s.history.slice(s.history.indexOf(previous) + 1, -1).some(h => h.workout.countsAsQuality && ['GREEN', 'GREEN_PLUS'].includes(h.classified.evaluation))) {
-      s.relatedYellow = true; s.reducedQualityUntilConfirmed = true; s.diagnosticHold = true; s.doses = structuredClone(s.confirmedDoses);
+    if (previous && previous.classified.yellowReason && c.yellowReason && yellowFamily(previous.classified.yellowReason) === yellowFamily(c.yellowReason) && !s.history.slice(s.history.indexOf(previous) + 1, -1).some(h => h.workout.type === 'EASY' && ['GREEN', 'GREEN_PLUS'].includes(h.classified.evaluation))) {
+      s.relatedYellow = true; s.yellowEasyRequired = true; s.reducedQualityUntilConfirmed = true; s.doses = structuredClone(s.confirmedDoses);
     }
-    if (c.yellowReason === 'PAIN' || c.yellowReason === 'ILLNESS') { s.diagnosticHold = true; s.profile.safety.needsAssessment = true; }
+    if (c.yellowReason === 'PAIN' || c.yellowReason === 'ILLNESS' || assessSafety(result.safety) !== 'OK') { s.diagnosticHold = true; s.profile.safety.needsAssessment = true; }
   } else {
     // A successful easy session clears an isolated non-health yellow, but never a diagnostic hold.
-    if (!s.diagnosticHold && !s.relatedYellow) s.progressionBlocked = false;
+    if (!s.diagnosticHold && (!s.relatedYellow || (s.yellowEasyRequired && w.type === 'EASY'))) s.progressionBlocked = false;
+    if (s.yellowEasyRequired && w.type === 'EASY') { s.yellowEasyRequired = false; s.relatedYellow = false; s.pendingQualityFactor = .85; }
     if (s.reentry && w.type === 'EASY') {
       s.reentry.easyReductionPending = false;
       s.reentry.easyRemaining = Math.max(0, s.reentry.easyRemaining - 1);
@@ -235,6 +237,7 @@ export function recordResult(state: EngineState, workoutId: string, result: Work
       }
       if (w.type === 'THRESHOLD' || w.type === 'VO2') s.qualityRotation++;
       if (s.reentry && s.reentry.easyRemaining === 0 && !s.reentry.diagnosticRequired) s.reentry = null;
+      if (s.pendingQualityFactor !== null && s.pendingQualityFactor !== undefined && !s.reentry && w.countsAsQuality) s.pendingQualityFactor = null;
     }
   }
   // Current performance is intentionally untouched; CONTROL feedback alone is not a valid 3K result.
@@ -299,7 +302,7 @@ export function recordFinalResult(state: EngineState, performance: PerformanceSn
   s.profile.breaks = s.profile.breaks.filter(b => day(b.endDate) > day(performance.date));
   s.lastAssessmentDate = performance.date; s.checkpointRequired = false; s.greenPlusIds = [];
   s.successfulSpecificPartial = 0; s.successfulQuality = 0; s.successfulIntro = 0; s.successStreak = {};
-  s.diagnosticHold = false; s.progressionBlocked = false; s.relatedYellow = false; s.reentry = null;
+  s.diagnosticHold = false; s.progressionBlocked = false; s.relatedYellow = false; s.yellowEasyRequired = false; s.pendingQualityFactor = null; s.reentry = null;
   s.asOf = now; s.finalResultRecorded = true;
   // The cycle is closed: an empty queue is the only honest plan after the event date.
   s.queue = [];
@@ -310,7 +313,7 @@ export function recordFinalResult(state: EngineState, performance: PerformanceSn
 export function resolveDiagnostic(state: EngineState, safety: SafetyData, now: string): EngineState {
   const s = copy(state); s.profile.safety = structuredClone(safety);
   if (assessSafety(safety) !== 'OK') return replan(s, now);
-  s.relatedYellow = false; s.diagnosticHold = false; s.progressionBlocked = false;
+  s.relatedYellow = false; s.yellowEasyRequired = false; s.pendingQualityFactor = null; s.diagnosticHold = false; s.progressionBlocked = false;
   if (s.reentry?.diagnosticRequired) s.checkpointRequired = true;
   return replan(s, now);
 }

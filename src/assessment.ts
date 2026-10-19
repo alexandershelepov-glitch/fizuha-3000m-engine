@@ -61,7 +61,7 @@ export function decide(s: EngineState, now: string): Decision {
   // or LONG_TERM + T0/T1 + Q0) keeps phase FOUNDATION and receives the RE_ENTRY *load*
   // restrictions as a modifier only. Phase RE_ENTRY is reserved for a returning prepared runner
   // whose base phase would otherwise be DEVELOPMENT or SPECIFIC.
-  if (safety !== 'OK' || s.diagnosticHold || s.relatedYellow) phase = 'HOLD_DIAGNOSTIC';
+  if (safety !== 'OK' || s.diagnosticHold) phase = 'HOLD_DIAGNOSTIC';
   else if (!p.performance || !p.canRun3Km || capacity === 'T0') phase = 'FOUNDATION';
   // Explicit conservative resolution of scenario 11 / section 11 conflict (approved as a general rule).
   else if (feasibility === 'LONG_TERM' && (capacity === 'T1') && quality === 'Q0') { phase = 'FOUNDATION'; reasons.push('FOUNDATION_LONG_TERM_CONFLICT'); }
@@ -82,6 +82,7 @@ export function decide(s: EngineState, now: string): Decision {
   // Until normal running frequency is established, that slot stays aerobic.
   if (p.actualRunsPerWeek < 2 || p.availableRunsPerWeek < 2 || !p.performance) maximumQualityPerWeek = 0;
   if (s.reducedQualityUntilConfirmed || s.reentry) maximumQualityPerWeek = Math.min(1, maximumQualityPerWeek);
+  if (s.yellowEasyRequired) maximumQualityPerWeek = 0;
   if (safety !== 'OK' || phase === 'HOLD_DIAGNOSTIC' || (s.reentry && (s.reentry.easyRemaining > 0 || s.reentry.diagnosticRequired)) || (phase === 'FOUNDATION' && (confidence === 'LOW' || !p.canRun3Km))) maximumQualityPerWeek = 0;
   const daysBeforeRace=day(p.raceDate)-day(now);
   if (daysBeforeRace <= 3) maximumQualityPerWeek=0;
