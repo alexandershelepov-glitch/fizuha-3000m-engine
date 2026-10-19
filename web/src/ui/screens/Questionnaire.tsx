@@ -47,6 +47,7 @@ export function Questionnaire({step, store, onNavigate, engineError = null, onDi
     setAttempted(true);
     if (Object.keys(problemsForStep(draft, step)).length > 0) return;
     onDismissEngineError?.();
+    if (step === 'RACE_DATE') update({raceDateConfirmed: true});
     const next = QUESTIONNAIRE_STEPS[QUESTIONNAIRE_STEPS.indexOf(step) + 1];
     onNavigate(next ? {name: 'QUESTIONNAIRE', step: next} : {name: 'REVIEW'});
   };
@@ -82,8 +83,8 @@ export function Questionnaire({step, store, onNavigate, engineError = null, onDi
         }} /> : null}
         {step === 'BREAKS' ? <BreaksStep draft={draft} update={update} error={error} /> : null}
         {step === 'AVAILABILITY' ? <AvailabilityStep draft={draft} update={update} error={error} /> : null}
-        {step === 'GOAL' ? <><GoalStep draft={draft} update={update} error={error} /><GoalPreview draft={draft} today={deviceToday()} /></> : null}
-        {step === 'RACE_DATE' ? <><RaceDateStep draft={draft} update={update} error={error} /><GoalPreview draft={draft} today={deviceToday()} /></> : null}
+        {step === 'GOAL' ? <GoalStep draft={draft} update={update} error={error} /> : null}
+        {step === 'RACE_DATE' ? <><RaceDateStep draft={draft} update={update} error={error} />{draft.raceDateConfirmed === true ? <GoalPreview draft={draft} today={deviceToday()} /> : <p className="hint">Предложена дата через 8 недель. Выберите другую дату или нажмите «Продолжить», чтобы подтвердить эту. Оценка цели появится после выбора срока.</p>}</> : null}
       </Card>
 
       <div className="actions">
@@ -283,7 +284,7 @@ function GoalStep({draft, update, error}: StepProps): ReactNode {
 function RaceDateStep({draft, update, error}: StepProps): ReactNode {
   return (
     <Field id="raceDate" label={questionnaire.fields.raceDate.label} error={error('raceDate')}>
-      <TextInput id="raceDate" type="date" value={draft.raceDate} onChange={(value) => update({raceDate: value})} />
+      <TextInput id="raceDate" type="date" value={draft.raceDate} onChange={(value) => update({raceDate: value, raceDateConfirmed: true})} />
     </Field>
   );
 }

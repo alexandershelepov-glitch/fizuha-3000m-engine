@@ -45,6 +45,8 @@ export interface QuestionnaireDraft {
   readonly performanceMismatch: PerformanceMismatch;
   readonly targetTime: string;
   readonly raceDate: string;
+  /** Date explicitly reviewed by the user; the eight-week suggestion is not a decision. */
+  readonly raceDateConfirmed?: boolean;
 }
 
 export function healthySafety(): SafetyData {
@@ -74,6 +76,7 @@ export function defaultDraft(today: string): QuestionnaireDraft {
     performanceMismatch: 'NONE',
     targetTime: '',
     raceDate: addDaysIso(today, 56),
+    raceDateConfirmed: false,
   };
 }
 
