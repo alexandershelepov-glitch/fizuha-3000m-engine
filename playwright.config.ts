@@ -1,5 +1,7 @@
 import {defineConfig, devices} from '@playwright/test';
 
+const stagingBaseURL=process.env.PLAYWRIGHT_BASE_URL;
+
 /**
  * One real browser end-to-end run against the production build, on a mobile viewport.
  * Chrome is used from the system installation, so no browser download is required.
@@ -12,7 +14,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['list']],
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: stagingBaseURL ?? 'http://127.0.0.1:4173',
     trace: 'off',
     video: 'off',
   },
@@ -22,7 +24,7 @@ export default defineConfig({
       use: {...devices['Pixel 7'], channel: 'chrome'},
     },
   ],
-  webServer: {
+  webServer: stagingBaseURL ? undefined : {
     // Always build first: running the suite against a stale `web/dist` would silently test old code.
     command: 'npm run build:layero && npm run preview:web',
     url: 'http://127.0.0.1:4173',
