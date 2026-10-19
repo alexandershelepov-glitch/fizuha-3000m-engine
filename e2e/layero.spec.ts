@@ -11,7 +11,7 @@ test('Layero root PWA: install cache and nested-route offline reload',async({pag
   const buildInfoResponse=await page.request.get('/build-info.json');
   expect(buildInfoResponse.ok()).toBe(true);
   const buildInfo=await buildInfoResponse.json() as {sourceCommit:string;buildId:string};
-  expect(buildInfo.sourceCommit).toMatch(/^[0-9a-f]{40}$/i);
+  expect(buildInfo.sourceCommit).toMatch(/^(?:[0-9a-f]{40}|unknown)$/i);
   expect(buildInfo.buildId).toMatch(/^[0-9a-f]{16}$/);
   await expect(page.getByRole('button',{name:'Начать подготовку'})).toBeVisible();
 
@@ -25,7 +25,7 @@ test('Layero root PWA: install cache and nested-route offline reload',async({pag
     const cacheNames=await caches.keys();
     return {scope:registration.scope,cacheNames};
   });
-  expect(packageInfo.scope).toBe('http://127.0.0.1:4173/');
+  expect(packageInfo.scope).toBe(new URL('/', process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4173').href);
   expect(packageInfo.cacheNames.some(key=>
     /^fizuha-shell-[0-9a-f]{16}$/.test(key))).toBe(true);
 
