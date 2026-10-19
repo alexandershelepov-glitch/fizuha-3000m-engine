@@ -1,0 +1,3850 @@
+[
+ {
+  "id": "U1-novice-A",
+  "user": {
+   "id": "U1-novice",
+   "n": 1,
+   "label": "Новичок",
+   "currentSeconds": null,
+   "goalSeconds": 1200,
+   "goalIsPlaceholder": true,
+   "runsPerWeek": 1,
+   "availableRunsPerWeek": 3,
+   "weeklyKm": 2,
+   "weeklyKmNote": "минимальный (допущение 2 км)",
+   "longestKm": 1.5,
+   "regularWeeks": 3,
+   "qualitySessions": 0,
+   "qualityWeeks": 0,
+   "qualityTolerated": false,
+   "experience": {
+    "threshold": false,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": false,
+   "assumptions": "Нет результата 3000 м, не может бежать 3 км подряд. Цель во времени в ТЗ не задана — подставлено 20:00 как техническая заглушка. 1 пробежка/нед фактически, 3 доступно, 3 недели регулярного бега."
+  },
+  "behaviour": "A",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T0",
+   "quality": "Q0",
+   "phase": "FOUNDATION",
+   "gate": "CLOSED",
+   "feasibility": null,
+   "goalGap": null,
+   "confidence": "UNKNOWN",
+   "maxQuality": 0,
+   "reasons": [
+    "FOUNDATION_NO_3K_RESULT",
+    "TARGET_GATE_CLOSED",
+    "LOW_QUALITY_EXPERIENCE",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   1260,
+   1260
+  ],
+  "finalResultSeconds": 1260,
+  "finalPhase": "FOUNDATION",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 6,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 5,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06b",
+    "label": "Обоснованные исключения (калибровка, вводное качество, контроль) — учтены отдельно",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C08",
+    "label": "Успешные занятия приводят к росту недельного плана (недели 7–10 против 1–3 ≥ +5 %)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C09",
+    "label": "План не становится бессмысленно лёгким (км недель 3–10 ≥ 90 % привычного или есть качество)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 5,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C20",
+    "label": "Число пробежек в неделю растёт, если пользователь доступен чаще, чем бегает",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 2,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 2
+ },
+ {
+  "id": "U1-novice-B",
+  "user": {
+   "id": "U1-novice",
+   "n": 1,
+   "label": "Новичок",
+   "currentSeconds": null,
+   "goalSeconds": 1200,
+   "goalIsPlaceholder": true,
+   "runsPerWeek": 1,
+   "availableRunsPerWeek": 3,
+   "weeklyKm": 2,
+   "weeklyKmNote": "минимальный (допущение 2 км)",
+   "longestKm": 1.5,
+   "regularWeeks": 3,
+   "qualitySessions": 0,
+   "qualityWeeks": 0,
+   "qualityTolerated": false,
+   "experience": {
+    "threshold": false,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": false,
+   "assumptions": "Нет результата 3000 м, не может бежать 3 км подряд. Цель во времени в ТЗ не задана — подставлено 20:00 как техническая заглушка. 1 пробежка/нед фактически, 3 доступно, 3 недели регулярного бега."
+  },
+  "behaviour": "B",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T0",
+   "quality": "Q0",
+   "phase": "FOUNDATION",
+   "gate": "CLOSED",
+   "feasibility": null,
+   "goalGap": null,
+   "confidence": "UNKNOWN",
+   "maxQuality": 0,
+   "reasons": [
+    "FOUNDATION_NO_3K_RESULT",
+    "TARGET_GATE_CLOSED",
+    "LOW_QUALITY_EXPERIENCE",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   1260,
+   1260
+  ],
+  "finalResultSeconds": 1260,
+  "finalPhase": "FOUNDATION",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 8,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06b",
+    "label": "Обоснованные исключения (калибровка, вводное качество, контроль) — учтены отдельно",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C07",
+    "label": "После неудачи следующее занятие того же типа облегчено (доза или темп)",
+    "examined": 3,
+    "violations": 2
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 2,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 3
+ },
+ {
+  "id": "U1-novice-V",
+  "user": {
+   "id": "U1-novice",
+   "n": 1,
+   "label": "Новичок",
+   "currentSeconds": null,
+   "goalSeconds": 1200,
+   "goalIsPlaceholder": true,
+   "runsPerWeek": 1,
+   "availableRunsPerWeek": 3,
+   "weeklyKm": 2,
+   "weeklyKmNote": "минимальный (допущение 2 км)",
+   "longestKm": 1.5,
+   "regularWeeks": 3,
+   "qualitySessions": 0,
+   "qualityWeeks": 0,
+   "qualityTolerated": false,
+   "experience": {
+    "threshold": false,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": false,
+   "assumptions": "Нет результата 3000 м, не может бежать 3 км подряд. Цель во времени в ТЗ не задана — подставлено 20:00 как техническая заглушка. 1 пробежка/нед фактически, 3 доступно, 3 недели регулярного бега."
+  },
+  "behaviour": "V",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T0",
+   "quality": "Q0",
+   "phase": "FOUNDATION",
+   "gate": "CLOSED",
+   "feasibility": null,
+   "goalGap": null,
+   "confidence": "UNKNOWN",
+   "maxQuality": 0,
+   "reasons": [
+    "FOUNDATION_NO_3K_RESULT",
+    "TARGET_GATE_CLOSED",
+    "LOW_QUALITY_EXPERIENCE",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   1260,
+   1260
+  ],
+  "finalResultSeconds": 1260,
+  "finalPhase": "FOUNDATION",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 8,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06b",
+    "label": "Обоснованные исключения (калибровка, вводное качество, контроль) — учтены отдельно",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C10",
+    "label": "После пропуска план следующей недели не повышается (нет компенсации)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C10b",
+    "label": "Пропущенные ключевые занятия приходят на замену/учитываются (информационная проверка)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 2,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 8,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 1
+ },
+ {
+  "id": "U2-beginner-A",
+  "user": {
+   "id": "U2-beginner",
+   "n": 2,
+   "label": "Начинающий",
+   "currentSeconds": 1080,
+   "goalSeconds": 896,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 2,
+   "availableRunsPerWeek": 2,
+   "weeklyKm": 9,
+   "weeklyKmNote": "8–10 км → 9",
+   "longestKm": 5,
+   "regularWeeks": 12,
+   "qualitySessions": 0,
+   "qualityWeeks": 0,
+   "qualityTolerated": false,
+   "experience": {
+    "threshold": false,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 8–10 км = 9 км; доступно столько же пробежек, сколько бегает (2); качественных тренировок за 8 недель нет."
+  },
+  "behaviour": "A",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T1",
+   "quality": "Q0",
+   "phase": "FOUNDATION",
+   "gate": "CLOSED",
+   "feasibility": "LONG_TERM",
+   "goalGap": 0.205,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "FOUNDATION_LONG_TERM_CONFLICT",
+    "GOAL_GAP_TOO_LARGE",
+    "TARGET_GATE_CLOSED",
+    "LOW_QUALITY_EXPERIENCE",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   1080,
+   1080,
+   1080
+  ],
+  "finalResultSeconds": 1080,
+  "finalPhase": "FOUNDATION",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 11,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 24,
+    "violations": 0
+   },
+   {
+    "code": "C08",
+    "label": "Успешные занятия приводят к росту недельного плана (недели 7–10 против 1–3 ≥ +5 %)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C09",
+    "label": "План не становится бессмысленно лёгким (км недель 3–10 ≥ 90 % привычного или есть качество)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 21,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 1
+ },
+ {
+  "id": "U2-beginner-B",
+  "user": {
+   "id": "U2-beginner",
+   "n": 2,
+   "label": "Начинающий",
+   "currentSeconds": 1080,
+   "goalSeconds": 896,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 2,
+   "availableRunsPerWeek": 2,
+   "weeklyKm": 9,
+   "weeklyKmNote": "8–10 км → 9",
+   "longestKm": 5,
+   "regularWeeks": 12,
+   "qualitySessions": 0,
+   "qualityWeeks": 0,
+   "qualityTolerated": false,
+   "experience": {
+    "threshold": false,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 8–10 км = 9 км; доступно столько же пробежек, сколько бегает (2); качественных тренировок за 8 недель нет."
+  },
+  "behaviour": "B",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T1",
+   "quality": "Q0",
+   "phase": "FOUNDATION",
+   "gate": "CLOSED",
+   "feasibility": "LONG_TERM",
+   "goalGap": 0.205,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "FOUNDATION_LONG_TERM_CONFLICT",
+    "GOAL_GAP_TOO_LARGE",
+    "TARGET_GATE_CLOSED",
+    "LOW_QUALITY_EXPERIENCE",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   1080,
+   1080,
+   1080
+  ],
+  "finalResultSeconds": 1080,
+  "finalPhase": "FOUNDATION",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 13,
+    "violations": 2
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 11,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 24,
+    "violations": 0
+   },
+   {
+    "code": "C07",
+    "label": "После неудачи следующее занятие того же типа облегчено (доза или темп)",
+    "examined": 6,
+    "violations": 4
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 13,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 22,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 7
+ },
+ {
+  "id": "U2-beginner-V",
+  "user": {
+   "id": "U2-beginner",
+   "n": 2,
+   "label": "Начинающий",
+   "currentSeconds": 1080,
+   "goalSeconds": 896,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 2,
+   "availableRunsPerWeek": 2,
+   "weeklyKm": 9,
+   "weeklyKmNote": "8–10 км → 9",
+   "longestKm": 5,
+   "regularWeeks": 12,
+   "qualitySessions": 0,
+   "qualityWeeks": 0,
+   "qualityTolerated": false,
+   "experience": {
+    "threshold": false,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 8–10 км = 9 км; доступно столько же пробежек, сколько бегает (2); качественных тренировок за 8 недель нет."
+  },
+  "behaviour": "V",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T1",
+   "quality": "Q0",
+   "phase": "FOUNDATION",
+   "gate": "CLOSED",
+   "feasibility": "LONG_TERM",
+   "goalGap": 0.205,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "FOUNDATION_LONG_TERM_CONFLICT",
+    "GOAL_GAP_TOO_LARGE",
+    "TARGET_GATE_CLOSED",
+    "LOW_QUALITY_EXPERIENCE",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   1080,
+   1080,
+   1080
+  ],
+  "finalResultSeconds": 1080,
+  "finalPhase": "FOUNDATION",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 11,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 24,
+    "violations": 0
+   },
+   {
+    "code": "C10",
+    "label": "После пропуска план следующей недели не повышается (нет компенсации)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C10b",
+    "label": "Пропущенные ключевые занятия приходят на замену/учитываются (информационная проверка)",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 16,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 1
+ },
+ {
+  "id": "U3-beginner-plus-A",
+  "user": {
+   "id": "U3-beginner-plus",
+   "n": 3,
+   "label": "Начинающий+",
+   "currentSeconds": 990,
+   "goalSeconds": 896,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 3,
+   "availableRunsPerWeek": 3,
+   "weeklyKm": 13.5,
+   "weeklyKmNote": "12–15 км → 13,5",
+   "longestKm": 6,
+   "regularWeeks": 20,
+   "qualitySessions": 0,
+   "qualityWeeks": 0,
+   "qualityTolerated": false,
+   "experience": {
+    "threshold": false,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 12–15 км = 13,5 км; доступно 3 пробежки; качественных за 8 недель нет."
+  },
+  "behaviour": "A",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T1",
+   "quality": "Q0",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "LOW_PROBABILITY",
+   "goalGap": 0.105,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "GOAL_GAP_TOO_LARGE",
+    "TARGET_GATE_CLOSED",
+    "LOW_QUALITY_EXPERIENCE",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   990,
+   990,
+   990
+  ],
+  "finalResultSeconds": 990,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 24,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 9,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 11,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 36,
+    "violations": 0
+   },
+   {
+    "code": "C08",
+    "label": "Успешные занятия приводят к росту недельного плана (недели 7–10 против 1–3 ≥ +5 %)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C08b",
+    "label": "Доза успешных THRESHOLD/VO2 растёт при повторных успехах",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C09",
+    "label": "План не становится бессмысленно лёгким (км недель 3–10 ≥ 90 % привычного или есть качество)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 33,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 33,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 1
+ },
+ {
+  "id": "U3-beginner-plus-B",
+  "user": {
+   "id": "U3-beginner-plus",
+   "n": 3,
+   "label": "Начинающий+",
+   "currentSeconds": 990,
+   "goalSeconds": 896,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 3,
+   "availableRunsPerWeek": 3,
+   "weeklyKm": 13.5,
+   "weeklyKmNote": "12–15 км → 13,5",
+   "longestKm": 6,
+   "regularWeeks": 20,
+   "qualitySessions": 0,
+   "qualityWeeks": 0,
+   "qualityTolerated": false,
+   "experience": {
+    "threshold": false,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 12–15 км = 13,5 км; доступно 3 пробежки; качественных за 8 недель нет."
+  },
+  "behaviour": "B",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T1",
+   "quality": "Q0",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "LOW_PROBABILITY",
+   "goalGap": 0.105,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "GOAL_GAP_TOO_LARGE",
+    "TARGET_GATE_CLOSED",
+    "LOW_QUALITY_EXPERIENCE",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   990,
+   990,
+   990
+  ],
+  "finalResultSeconds": 990,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 25,
+    "violations": 5
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 8,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 11,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 36,
+    "violations": 0
+   },
+   {
+    "code": "C07",
+    "label": "После неудачи следующее занятие того же типа облегчено (доза или темп)",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 33,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 33,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 6
+ },
+ {
+  "id": "U3-beginner-plus-V",
+  "user": {
+   "id": "U3-beginner-plus",
+   "n": 3,
+   "label": "Начинающий+",
+   "currentSeconds": 990,
+   "goalSeconds": 896,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 3,
+   "availableRunsPerWeek": 3,
+   "weeklyKm": 13.5,
+   "weeklyKmNote": "12–15 км → 13,5",
+   "longestKm": 6,
+   "regularWeeks": 20,
+   "qualitySessions": 0,
+   "qualityWeeks": 0,
+   "qualityTolerated": false,
+   "experience": {
+    "threshold": false,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 12–15 км = 13,5 км; доступно 3 пробежки; качественных за 8 недель нет."
+  },
+  "behaviour": "V",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T1",
+   "quality": "Q0",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "LOW_PROBABILITY",
+   "goalGap": 0.105,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "GOAL_GAP_TOO_LARGE",
+    "TARGET_GATE_CLOSED",
+    "LOW_QUALITY_EXPERIENCE",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   990,
+   990,
+   990
+  ],
+  "finalResultSeconds": 990,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 24,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 6,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 11,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 36,
+    "violations": 0
+   },
+   {
+    "code": "C10",
+    "label": "После пропуска план следующей недели не повышается (нет компенсации)",
+    "examined": 5,
+    "violations": 0
+   },
+   {
+    "code": "C10b",
+    "label": "Пропущенные ключевые занятия приходят на замену/учитываются (информационная проверка)",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 30,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 28,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 0
+ },
+ {
+  "id": "U4-intermediate-A",
+  "user": {
+   "id": "U4-intermediate",
+   "n": 4,
+   "label": "Средний уровень",
+   "currentSeconds": 930,
+   "goalSeconds": 870,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 3,
+   "availableRunsPerWeek": 3,
+   "weeklyKm": 19,
+   "weeklyKmNote": "18–20 км → 19",
+   "longestKm": 8,
+   "regularWeeks": 40,
+   "qualitySessions": 4,
+   "qualityWeeks": 3,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 18–20 км = 19 км; 3 пробежки; 4 качественные за 8 недель в 3 неделях, переносились нормально; опыт темповых."
+  },
+  "behaviour": "A",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T2",
+   "quality": "Q1",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.069,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "TARGET_GATE_CLOSED",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   930,
+   930,
+   930
+  ],
+  "finalResultSeconds": 930,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 5,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 24,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 11,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 36,
+    "violations": 0
+   },
+   {
+    "code": "C08",
+    "label": "Успешные занятия приводят к росту недельного плана (недели 7–10 против 1–3 ≥ +5 %)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C08b",
+    "label": "Доза успешных THRESHOLD/VO2 растёт при повторных успехах",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C09",
+    "label": "План не становится бессмысленно лёгким (км недель 3–10 ≥ 90 % привычного или есть качество)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 33,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 6,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 36,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 0
+ },
+ {
+  "id": "U4-intermediate-B",
+  "user": {
+   "id": "U4-intermediate",
+   "n": 4,
+   "label": "Средний уровень",
+   "currentSeconds": 930,
+   "goalSeconds": 870,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 3,
+   "availableRunsPerWeek": 3,
+   "weeklyKm": 19,
+   "weeklyKmNote": "18–20 км → 19",
+   "longestKm": 8,
+   "regularWeeks": 40,
+   "qualitySessions": 4,
+   "qualityWeeks": 3,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 18–20 км = 19 км; 3 пробежки; 4 качественные за 8 недель в 3 неделях, переносились нормально; опыт темповых."
+  },
+  "behaviour": "B",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T2",
+   "quality": "Q1",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.069,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "TARGET_GATE_CLOSED",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   930,
+   930,
+   930
+  ],
+  "finalResultSeconds": 930,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 6,
+    "violations": 1
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 5,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 19,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 8,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 9,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 28,
+    "violations": 0
+   },
+   {
+    "code": "C07",
+    "label": "После неудачи следующее занятие того же типа облегчено (доза или темп)",
+    "examined": 7,
+    "violations": 2
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 27,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 6,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 27,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 5
+ },
+ {
+  "id": "U4-intermediate-V",
+  "user": {
+   "id": "U4-intermediate",
+   "n": 4,
+   "label": "Средний уровень",
+   "currentSeconds": 930,
+   "goalSeconds": 870,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 3,
+   "availableRunsPerWeek": 3,
+   "weeklyKm": 19,
+   "weeklyKmNote": "18–20 км → 19",
+   "longestKm": 8,
+   "regularWeeks": 40,
+   "qualitySessions": 4,
+   "qualityWeeks": 3,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 18–20 км = 19 км; 3 пробежки; 4 качественные за 8 недель в 3 неделях, переносились нормально; опыт темповых."
+  },
+  "behaviour": "V",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T2",
+   "quality": "Q1",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.069,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "TARGET_GATE_CLOSED",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   930,
+   930,
+   930
+  ],
+  "finalResultSeconds": 930,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 5,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 24,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 11,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 36,
+    "violations": 0
+   },
+   {
+    "code": "C10",
+    "label": "После пропуска план следующей недели не повышается (нет компенсации)",
+    "examined": 5,
+    "violations": 0
+   },
+   {
+    "code": "C10b",
+    "label": "Пропущенные ключевые занятия приходят на замену/учитываются (информационная проверка)",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 32,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 7,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 28,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 0
+ },
+ {
+  "id": "U5-trained-A",
+  "user": {
+   "id": "U5-trained",
+   "n": 5,
+   "label": "Подготовленный",
+   "currentSeconds": 870,
+   "goalSeconds": 810,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 4,
+   "availableRunsPerWeek": 4,
+   "weeklyKm": 25,
+   "weeklyKmNote": "25 км",
+   "longestKm": 9,
+   "regularWeeks": 40,
+   "qualitySessions": 6,
+   "qualityWeeks": 4,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "4 пробежки, 25 км, длинная 9 км; 6 качественных за 8 недель в 4 неделях; опыт темповых."
+  },
+  "behaviour": "A",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T3",
+   "quality": "Q1",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.074,
+   "confidence": "HIGH",
+   "maxQuality": 2,
+   "reasons": [
+    "TARGET_GATE_CLOSED"
+   ]
+  },
+  "controlSeconds": [
+   870,
+   870,
+   870
+  ],
+  "finalResultSeconds": 870,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 25,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 22,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 23,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 48,
+    "violations": 0
+   },
+   {
+    "code": "C08",
+    "label": "Успешные занятия приводят к росту недельного плана (недели 7–10 против 1–3 ≥ +5 %)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C08b",
+    "label": "Доза успешных THRESHOLD/VO2 растёт при повторных успехах",
+    "examined": 2,
+    "violations": 0
+   },
+   {
+    "code": "C09",
+    "label": "План не становится бессмысленно лёгким (км недель 3–10 ≥ 90 % привычного или есть качество)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 45,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 15,
+    "violations": 1
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 48,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 1
+ },
+ {
+  "id": "U5-trained-B",
+  "user": {
+   "id": "U5-trained",
+   "n": 5,
+   "label": "Подготовленный",
+   "currentSeconds": 870,
+   "goalSeconds": 810,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 4,
+   "availableRunsPerWeek": 4,
+   "weeklyKm": 25,
+   "weeklyKmNote": "25 км",
+   "longestKm": 9,
+   "regularWeeks": 40,
+   "qualitySessions": 6,
+   "qualityWeeks": 4,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "4 пробежки, 25 км, длинная 9 км; 6 качественных за 8 недель в 4 неделях; опыт темповых."
+  },
+  "behaviour": "B",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T3",
+   "quality": "Q1",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.074,
+   "confidence": "HIGH",
+   "maxQuality": 2,
+   "reasons": [
+    "TARGET_GATE_CLOSED"
+   ]
+  },
+  "controlSeconds": [
+   870,
+   870,
+   870
+  ],
+  "finalResultSeconds": 870,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 6,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 23,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 13,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 36,
+    "violations": 0
+   },
+   {
+    "code": "C07",
+    "label": "После неудачи следующее занятие того же типа облегчено (доза или темп)",
+    "examined": 8,
+    "violations": 4
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 33,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 9,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C18",
+    "label": "После недели паузы (hold) объём возвращается постепенно, а не сразу к 90 % и выше прежнего",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 35,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 7
+ },
+ {
+  "id": "U5-trained-V",
+  "user": {
+   "id": "U5-trained",
+   "n": 5,
+   "label": "Подготовленный",
+   "currentSeconds": 870,
+   "goalSeconds": 810,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 4,
+   "availableRunsPerWeek": 4,
+   "weeklyKm": 25,
+   "weeklyKmNote": "25 км",
+   "longestKm": 9,
+   "regularWeeks": 40,
+   "qualitySessions": 6,
+   "qualityWeeks": 4,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "4 пробежки, 25 км, длинная 9 км; 6 качественных за 8 недель в 4 неделях; опыт темповых."
+  },
+  "behaviour": "V",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T3",
+   "quality": "Q1",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.074,
+   "confidence": "HIGH",
+   "maxQuality": 2,
+   "reasons": [
+    "TARGET_GATE_CLOSED"
+   ]
+  },
+  "controlSeconds": [
+   870,
+   870,
+   870
+  ],
+  "finalResultSeconds": 870,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 25,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 22,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 23,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 48,
+    "violations": 0
+   },
+   {
+    "code": "C10",
+    "label": "После пропуска план следующей недели не повышается (нет компенсации)",
+    "examined": 6,
+    "violations": 0
+   },
+   {
+    "code": "C10b",
+    "label": "Пропущенные ключевые занятия приходят на замену/учитываются (информационная проверка)",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 45,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 14,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 37,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 0
+ },
+ {
+  "id": "U6-experienced-A",
+  "user": {
+   "id": "U6-experienced",
+   "n": 6,
+   "label": "Опытный",
+   "currentSeconds": 750,
+   "goalSeconds": 720,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 5,
+   "availableRunsPerWeek": 5,
+   "weeklyKm": 37.5,
+   "weeklyKmNote": "35–40 км → 37,5",
+   "longestKm": 15,
+   "regularWeeks": 150,
+   "qualitySessions": 16,
+   "qualityWeeks": 8,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": true,
+    "specific3k": true
+   },
+   "canRun3Km": true,
+   "assumptions": "Из «4–5 раз в неделю» взято верхнее значение 5 (чтобы отличаться от №5); 37,5 км; длинная 15 км; 16 качественных за 8 недель в 8 неделях; опыт всех типов."
+  },
+  "behaviour": "A",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T3",
+   "quality": "Q2",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.042,
+   "confidence": "HIGH",
+   "maxQuality": 2,
+   "reasons": [
+    "TARGET_GATE_CLOSED"
+   ]
+  },
+  "controlSeconds": [
+   750,
+   750,
+   750
+  ],
+  "finalResultSeconds": 750,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 37,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 22,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 23,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 60,
+    "violations": 0
+   },
+   {
+    "code": "C08",
+    "label": "Успешные занятия приводят к росту недельного плана (недели 7–10 против 1–3 ≥ +5 %)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C08b",
+    "label": "Доза успешных THRESHOLD/VO2 растёт при повторных успехах",
+    "examined": 2,
+    "violations": 2
+   },
+   {
+    "code": "C09",
+    "label": "План не становится бессмысленно лёгким (км недель 3–10 ≥ 90 % привычного или есть качество)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 57,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 15,
+    "violations": 5
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 60,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 7
+ },
+ {
+  "id": "U6-experienced-B",
+  "user": {
+   "id": "U6-experienced",
+   "n": 6,
+   "label": "Опытный",
+   "currentSeconds": 750,
+   "goalSeconds": 720,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 5,
+   "availableRunsPerWeek": 5,
+   "weeklyKm": 37.5,
+   "weeklyKmNote": "35–40 км → 37,5",
+   "longestKm": 15,
+   "regularWeeks": 150,
+   "qualitySessions": 16,
+   "qualityWeeks": 8,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": true,
+    "specific3k": true
+   },
+   "canRun3Km": true,
+   "assumptions": "Из «4–5 раз в неделю» взято верхнее значение 5 (чтобы отличаться от №5); 37,5 км; длинная 15 км; 16 качественных за 8 недель в 8 неделях; опыт всех типов."
+  },
+  "behaviour": "B",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T3",
+   "quality": "Q2",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.042,
+   "confidence": "HIGH",
+   "maxQuality": 2,
+   "reasons": [
+    "TARGET_GATE_CLOSED"
+   ]
+  },
+  "controlSeconds": [
+   750,
+   750,
+   750
+  ],
+  "finalResultSeconds": 750,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 3
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 9,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 24,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 15,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 16,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 40,
+    "violations": 0
+   },
+   {
+    "code": "C07",
+    "label": "После неудачи следующее занятие того же типа облегчено (доза или темп)",
+    "examined": 11,
+    "violations": 7
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 39,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 6,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 12,
+    "violations": 5
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 37,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 17
+ },
+ {
+  "id": "U6-experienced-V",
+  "user": {
+   "id": "U6-experienced",
+   "n": 6,
+   "label": "Опытный",
+   "currentSeconds": 750,
+   "goalSeconds": 720,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 5,
+   "availableRunsPerWeek": 5,
+   "weeklyKm": 37.5,
+   "weeklyKmNote": "35–40 км → 37,5",
+   "longestKm": 15,
+   "regularWeeks": 150,
+   "qualitySessions": 16,
+   "qualityWeeks": 8,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": true,
+    "specific3k": true
+   },
+   "canRun3Km": true,
+   "assumptions": "Из «4–5 раз в неделю» взято верхнее значение 5 (чтобы отличаться от №5); 37,5 км; длинная 15 км; 16 качественных за 8 недель в 8 неделях; опыт всех типов."
+  },
+  "behaviour": "V",
+  "required": true,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T3",
+   "quality": "Q2",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.042,
+   "confidence": "HIGH",
+   "maxQuality": 2,
+   "reasons": [
+    "TARGET_GATE_CLOSED"
+   ]
+  },
+  "controlSeconds": [
+   750,
+   750,
+   750
+  ],
+  "finalResultSeconds": 750,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 37,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 22,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 23,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 60,
+    "violations": 0
+   },
+   {
+    "code": "C10",
+    "label": "После пропуска план следующей недели не повышается (нет компенсации)",
+    "examined": 8,
+    "violations": 0
+   },
+   {
+    "code": "C10b",
+    "label": "Пропущенные ключевые занятия приходят на замену/учитываются (информационная проверка)",
+    "examined": 1,
+    "violations": 1
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 57,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 15,
+    "violations": 5
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 46,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 5
+ },
+ {
+  "id": "U2-beginner-S",
+  "user": {
+   "id": "U2-beginner",
+   "n": 2,
+   "label": "Начинающий",
+   "currentSeconds": 1080,
+   "goalSeconds": 896,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 2,
+   "availableRunsPerWeek": 2,
+   "weeklyKm": 9,
+   "weeklyKmNote": "8–10 км → 9",
+   "longestKm": 5,
+   "regularWeeks": 12,
+   "qualitySessions": 0,
+   "qualityWeeks": 0,
+   "qualityTolerated": false,
+   "experience": {
+    "threshold": false,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 8–10 км = 9 км; доступно столько же пробежек, сколько бегает (2); качественных тренировок за 8 недель нет."
+  },
+  "behaviour": "S",
+  "required": false,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T1",
+   "quality": "Q0",
+   "phase": "FOUNDATION",
+   "gate": "CLOSED",
+   "feasibility": "LONG_TERM",
+   "goalGap": 0.205,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "FOUNDATION_LONG_TERM_CONFLICT",
+    "GOAL_GAP_TOO_LARGE",
+    "TARGET_GATE_CLOSED",
+    "LOW_QUALITY_EXPERIENCE",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   1058,
+   1037,
+   1015
+  ],
+  "finalResultSeconds": 1015,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 2,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 11,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 24,
+    "violations": 0
+   },
+   {
+    "code": "C08",
+    "label": "Успешные занятия приводят к росту недельного плана (недели 7–10 против 1–3 ≥ +5 %)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C09",
+    "label": "План не становится бессмысленно лёгким (км недель 3–10 ≥ 90 % привычного или есть качество)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 14,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 21,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 1
+ },
+ {
+  "id": "U3-beginner-plus-S",
+  "user": {
+   "id": "U3-beginner-plus",
+   "n": 3,
+   "label": "Начинающий+",
+   "currentSeconds": 990,
+   "goalSeconds": 896,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 3,
+   "availableRunsPerWeek": 3,
+   "weeklyKm": 13.5,
+   "weeklyKmNote": "12–15 км → 13,5",
+   "longestKm": 6,
+   "regularWeeks": 20,
+   "qualitySessions": 0,
+   "qualityWeeks": 0,
+   "qualityTolerated": false,
+   "experience": {
+    "threshold": false,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 12–15 км = 13,5 км; доступно 3 пробежки; качественных за 8 недель нет."
+  },
+  "behaviour": "S",
+  "required": false,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T1",
+   "quality": "Q0",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "LOW_PROBABILITY",
+   "goalGap": 0.105,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "GOAL_GAP_TOO_LARGE",
+    "TARGET_GATE_CLOSED",
+    "LOW_QUALITY_EXPERIENCE",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   970,
+   950,
+   931
+  ],
+  "finalResultSeconds": 931,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 24,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 9,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 11,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 36,
+    "violations": 0
+   },
+   {
+    "code": "C08",
+    "label": "Успешные занятия приводят к росту недельного плана (недели 7–10 против 1–3 ≥ +5 %)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C08b",
+    "label": "Доза успешных THRESHOLD/VO2 растёт при повторных успехах",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C09",
+    "label": "План не становится бессмысленно лёгким (км недель 3–10 ≥ 90 % привычного или есть качество)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 33,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 33,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 1
+ },
+ {
+  "id": "U4-intermediate-S",
+  "user": {
+   "id": "U4-intermediate",
+   "n": 4,
+   "label": "Средний уровень",
+   "currentSeconds": 930,
+   "goalSeconds": 870,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 3,
+   "availableRunsPerWeek": 3,
+   "weeklyKm": 19,
+   "weeklyKmNote": "18–20 км → 19",
+   "longestKm": 8,
+   "regularWeeks": 40,
+   "qualitySessions": 4,
+   "qualityWeeks": 3,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "Середина диапазона 18–20 км = 19 км; 3 пробежки; 4 качественные за 8 недель в 3 неделях, переносились нормально; опыт темповых."
+  },
+  "behaviour": "S",
+  "required": false,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T2",
+   "quality": "Q1",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.069,
+   "confidence": "HIGH",
+   "maxQuality": 1,
+   "reasons": [
+    "TARGET_GATE_CLOSED",
+    "SECOND_QUALITY_NOT_ALLOWED"
+   ]
+  },
+  "controlSeconds": [
+   911,
+   893,
+   874
+  ],
+  "finalResultSeconds": 874,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 5,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 24,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 11,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 12,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 36,
+    "violations": 0
+   },
+   {
+    "code": "C08",
+    "label": "Успешные занятия приводят к росту недельного плана (недели 7–10 против 1–3 ≥ +5 %)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C08b",
+    "label": "Доза успешных THRESHOLD/VO2 растёт при повторных успехах",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C09",
+    "label": "План не становится бессмысленно лёгким (км недель 3–10 ≥ 90 % привычного или есть качество)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 33,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 6,
+    "violations": 0
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 36,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 0
+ },
+ {
+  "id": "U5-trained-S",
+  "user": {
+   "id": "U5-trained",
+   "n": 5,
+   "label": "Подготовленный",
+   "currentSeconds": 870,
+   "goalSeconds": 810,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 4,
+   "availableRunsPerWeek": 4,
+   "weeklyKm": 25,
+   "weeklyKmNote": "25 км",
+   "longestKm": 9,
+   "regularWeeks": 40,
+   "qualitySessions": 6,
+   "qualityWeeks": 4,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": false,
+    "specific3k": false
+   },
+   "canRun3Km": true,
+   "assumptions": "4 пробежки, 25 км, длинная 9 км; 6 качественных за 8 недель в 4 неделях; опыт темповых."
+  },
+  "behaviour": "S",
+  "required": false,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T3",
+   "quality": "Q1",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.074,
+   "confidence": "HIGH",
+   "maxQuality": 2,
+   "reasons": [
+    "TARGET_GATE_CLOSED"
+   ]
+  },
+  "controlSeconds": [
+   853,
+   835,
+   818
+  ],
+  "finalResultSeconds": 818,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 25,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 22,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 23,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 48,
+    "violations": 0
+   },
+   {
+    "code": "C08",
+    "label": "Успешные занятия приводят к росту недельного плана (недели 7–10 против 1–3 ≥ +5 %)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C08b",
+    "label": "Доза успешных THRESHOLD/VO2 растёт при повторных успехах",
+    "examined": 2,
+    "violations": 0
+   },
+   {
+    "code": "C09",
+    "label": "План не становится бессмысленно лёгким (км недель 3–10 ≥ 90 % привычного или есть качество)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 45,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 15,
+    "violations": 1
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 48,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 1
+ },
+ {
+  "id": "U6-experienced-S",
+  "user": {
+   "id": "U6-experienced",
+   "n": 6,
+   "label": "Опытный",
+   "currentSeconds": 750,
+   "goalSeconds": 720,
+   "goalIsPlaceholder": false,
+   "runsPerWeek": 5,
+   "availableRunsPerWeek": 5,
+   "weeklyKm": 37.5,
+   "weeklyKmNote": "35–40 км → 37,5",
+   "longestKm": 15,
+   "regularWeeks": 150,
+   "qualitySessions": 16,
+   "qualityWeeks": 8,
+   "qualityTolerated": true,
+   "experience": {
+    "threshold": true,
+    "vo2": true,
+    "specific3k": true
+   },
+   "canRun3Km": true,
+   "assumptions": "Из «4–5 раз в неделю» взято верхнее значение 5 (чтобы отличаться от №5); 37,5 км; длинная 15 км; 16 качественных за 8 недель в 8 неделях; опыт всех типов."
+  },
+  "behaviour": "S",
+  "required": false,
+  "synthetic": true,
+  "initialDecision": {
+   "capacity": "T3",
+   "quality": "Q2",
+   "phase": "DEVELOPMENT",
+   "gate": "CLOSED",
+   "feasibility": "PLAUSIBLE",
+   "goalGap": 0.042,
+   "confidence": "HIGH",
+   "maxQuality": 2,
+   "reasons": [
+    "TARGET_GATE_CLOSED"
+   ]
+  },
+  "controlSeconds": [
+   735,
+   720,
+   705
+  ],
+  "finalResultSeconds": 705,
+  "finalPhase": "TAPER",
+  "engineErrors": [],
+  "checks": [
+   {
+    "code": "C01",
+    "label": "Недельный план км не растёт скачком (> +10 % и ≥ 1,5 км)",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C02",
+    "label": "Объём и интенсивная часть не растут в одну и ту же неделю",
+    "examined": 4,
+    "violations": 0
+   },
+   {
+    "code": "C04",
+    "label": "Темп THRESHOLD 85–95 %, VO2 95–105 % скорости 3000 м",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C03",
+    "label": "Темп EASY/LONG_EASY ≤ 80 % скорости 3000 м (и ≥ 55 %)",
+    "examined": 37,
+    "violations": 0
+   },
+   {
+    "code": "C05",
+    "label": "Между интенсивными (качество + контроль) ≥ 48 ч",
+    "examined": 22,
+    "violations": 0
+   },
+   {
+    "code": "C05b",
+    "label": "Не более 2 интенсивных занятий в скользящие 7 дней",
+    "examined": 23,
+    "violations": 0
+   },
+   {
+    "code": "C06",
+    "label": "У каждой беговой карточки есть числа, достаточные для самостоятельного выполнения (или обоснованное исключение)",
+    "examined": 60,
+    "violations": 0
+   },
+   {
+    "code": "C08",
+    "label": "Успешные занятия приводят к росту недельного плана (недели 7–10 против 1–3 ≥ +5 %)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C08b",
+    "label": "Доза успешных THRESHOLD/VO2 растёт при повторных успехах",
+    "examined": 2,
+    "violations": 2
+   },
+   {
+    "code": "C09",
+    "label": "План не становится бессмысленно лёгким (км недель 3–10 ≥ 90 % привычного или есть качество)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C11",
+    "label": "Защитная пауза (hold) не отнимает значимую часть цикла (≤ 14 дней нулевого бега)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C12",
+    "label": "Тейпер: объём последней недели 30–85 % от пикового",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C13",
+    "label": "Темп (с/км) и скорость (м/с) в назначении согласованы",
+    "examined": 57,
+    "violations": 0
+   },
+   {
+    "code": "C14",
+    "label": "Повторы × длина отрезка = назначенная доза",
+    "examined": 10,
+    "violations": 0
+   },
+   {
+    "code": "C15",
+    "label": "Восстановление между повторами ≥ 50 % времени повтора, если повтор ≥ 3 мин",
+    "examined": 15,
+    "violations": 5
+   },
+   {
+    "code": "C16",
+    "label": "Экран «нужен контрольный результат» совпадает с тем, что движок принимает",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C17",
+    "label": "Движок принимает отчёты о назначенных занятиях без отказов",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C19",
+    "label": "Самая длинная беговая тренировка плана ≥ 80 % привычной длинной (LONG_EASY назначается)",
+    "examined": 1,
+    "violations": 0
+   },
+   {
+    "code": "C21",
+    "label": "Контрольный забег не обнуляет накопленный прогресс (gate/phase)",
+    "examined": 3,
+    "violations": 0
+   },
+   {
+    "code": "C23",
+    "label": "Недельный бюджет движка: резервы всех занятий за скользящие 7 дней ≤ утверждённого бюджета",
+    "examined": 60,
+    "violations": 0
+   },
+   {
+    "code": "C22",
+    "label": "Контрольный забег 3000 м не чаще чем раз в ~3 недели (информационно)",
+    "examined": 1,
+    "violations": 0
+   }
+  ],
+  "findingCount": 7
+ }
+]

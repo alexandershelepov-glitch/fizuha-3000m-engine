@@ -17,6 +17,7 @@ import {
   skipWorkout, updateTrainingData,
 } from '../src/index.ts';
 import type {EngineState, Evaluation, Profile, Workout, WorkoutResult, WorkoutType} from '../src/index.ts';
+import {reservedMetres} from '../src/weeklyLoad.ts';
 import {SIM_START, healthySafety, makeResult} from './trainingSimulator.ts';
 import {deriveToday} from '../web/src/application/uiState.ts';
 import {workoutInstruction, workoutIntervals} from '../web/src/ui/workoutInstructions.ts';
@@ -125,6 +126,8 @@ export interface WorkoutRow {
   /** Synthetic: est total metres × completion fraction (0 when skipped). */
   actualEstMeters: number;
   approvedWeekMeters: number | null;
+  /** The ENGINE's own weekly-booking reservation for this session (`reservedMetres`), at the state the session was planned in. A protective ceiling, not a distance. */
+  reservedMeters: number | null;
   stateAfter: {phase: string; gate: string; hold: boolean; progressionBlocked: boolean; checkpointRequired: boolean; maxQuality: number};
 }
 export interface DayRow {
@@ -262,6 +265,7 @@ export function simulateAudit(scenario: AuditScenario): ScenarioRun {
       reportedRpe: result?.sessionRpe ?? null, completionFraction: completion, reportedMeters: result?.distanceMeters ?? null,
       actualEstMeters: Math.round(est.total * completion),
       approvedWeekMeters: before.easyProgression?.approvedMetersPer7Days ?? null,
+      reservedMeters: (() => { const v = reservedMetres(before, w); return v === null ? null : Math.round(v * 1000) / 1000; })(),
       stateAfter: snapshot(state),
     });
   };

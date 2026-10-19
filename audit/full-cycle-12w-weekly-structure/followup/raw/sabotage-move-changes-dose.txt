@@ -1,0 +1,212 @@
+TAP version 13
+# Subtest: WS-01 prepared users (U4, U5, U6) get exactly one LONG_EASY in every training week 1–10, every behaviour
+ok 1 - WS-01 prepared users (U4, U5, U6) get exactly one LONG_EASY in every training week 1–10, every behaviour
+  ---
+  duration_ms: 2324.441993
+  type: 'test'
+  ...
+# Subtest: WS-02 LONG_EASY is longer than every EASY of its week, follows the habitual long run and stays inside the weekly budget
+ok 2 - WS-02 LONG_EASY is longer than every EASY of its week, follows the habitual long run and stays inside the weekly budget
+  ---
+  duration_ms: 0.48074
+  type: 'test'
+  ...
+# Subtest: WS-03 LONG_EASY is never assigned to novices or to runners without a long-run structure (U1, U2, U3, all behaviours)
+ok 3 - WS-03 LONG_EASY is never assigned to novices or to runners without a long-run structure (U1, U2, U3, all behaviours)
+  ---
+  duration_ms: 471.998246
+  type: 'test'
+  ...
+# Subtest: WS-04 root cause: the long run is a fixed slot of the cycle week and its prescription is the habitual share, not the EASY dose
+ok 4 - WS-04 root cause: the long run is a fixed slot of the cycle week and its prescription is the habitual share, not the EASY dose
+  ---
+  duration_ms: 0.701768
+  type: 'test'
+  ...
+# Subtest: WS-05 a long run does not raise weekly volume: every rolling 7 days of engine reserves stays within the approved budget (all 23 scenarios)
+ok 5 - WS-05 a long run does not raise weekly volume: every rolling 7 days of engine reserves stays within the approved budget (all 23 scenarios)
+  ---
+  duration_ms: 150.795791
+  type: 'test'
+  ...
+# Subtest: WS-06 recovery: no two intense sessions closer than 48 h in any scenario; CONTROL is never displaced by the long run structure
+ok 6 - WS-06 recovery: no two intense sessions closer than 48 h in any scenario; CONTROL is never displaced by the long run structure
+  ---
+  duration_ms: 5.035599
+  type: 'test'
+  ...
+# Subtest: WS-07 taper: no LONG_EASY in the TAPER phase or in the last 7 days before the race
+ok 7 - WS-07 taper: no LONG_EASY in the TAPER phase or in the last 7 days before the race
+  ---
+  duration_ms: 0.154799
+  type: 'test'
+  ...
+# Subtest: WS-08 one intense session a week (U4): SPECIFIC_3K is not repeated every week; THRESHOLD and VO2 both come back
+ok 8 - WS-08 one intense session a week (U4): SPECIFIC_3K is not repeated every week; THRESHOLD and VO2 both come back
+  ---
+  duration_ms: 0.176171
+  type: 'test'
+  ...
+# Subtest: WS-09 two intense sessions a week (U5, U6): every ordinary SPECIFIC week combines SPECIFIC_3K with THRESHOLD or VO2, and both come back
+ok 9 - WS-09 two intense sessions a week (U5, U6): every ordinary SPECIFIC week combines SPECIFIC_3K with THRESHOLD or VO2, and both come back
+  ---
+  duration_ms: 0.417776
+  type: 'test'
+  ...
+# Subtest: WS-10 progression is kept: no more intense sessions per week than the engine allows and no volume+intensity step together (D-05 does not grow beyond the base audit)
+ok 10 - WS-10 progression is kept: no more intense sessions per week than the engine allows and no volume+intensity step together (D-05 does not grow beyond the base audit)
+  ---
+  duration_ms: 5.202643
+  type: 'test'
+  ...
+# Subtest: WS-11 rotation is derived from state: a plan rebuilt every day keeps the type of every date it already showed (SPECIFIC phase)
+ok 11 - WS-11 rotation is derived from state: a plan rebuilt every day keeps the type of every date it already showed (SPECIFIC phase)
+  ---
+  duration_ms: 62.380392
+  type: 'test'
+  ...
+# Subtest: WS-12 replan is idempotent and save/load keeps the queue and the next replan identical
+ok 12 - WS-12 replan is idempotent and save/load keeps the queue and the next replan identical
+  ---
+  duration_ms: 36.708726
+  type: 'test'
+  ...
+# Subtest: WS-13 an old save (no queue stored: only profile and history) is rebuilt with the same long-run and rotation pattern
+ok 13 - WS-13 an old save (no queue stored: only profile and history) is rebuilt with the same long-run and rotation pattern
+  ---
+  duration_ms: 11.426913
+  type: 'test'
+  ...
+# Subtest: WS-14 skip of the LONG_EASY is never made up: later long runs are not larger than in the same plan without the skip, one per 7 days
+ok 14 - WS-14 skip of the LONG_EASY is never made up: later long runs are not larger than in the same plan without the skip, one per 7 days
+  ---
+  duration_ms: 59.671147
+  type: 'test'
+  ...
+# Subtest: WS-15 skip of an intense session: no replacement session, and the rotation continues with the next type (not the skipped one again)
+ok 15 - WS-15 skip of an intense session: no replacement session, and the rotation continues with the next type (not the skipped one again)
+  ---
+  duration_ms: 4.62587
+  type: 'test'
+  ...
+# Subtest: WS-16 calendar shift: days passing without any report miss the sessions without compensation; types and slots stay on the cycle
+ok 16 - WS-16 calendar shift: days passing without any report miss the sessions without compensation; types and slots stay on the cycle
+  ---
+  duration_ms: 4.189538
+  type: 'test'
+  ...
+# Subtest: WS-17 move: a moved long run keeps its dose and type, and the replan does not add a second long run within 7 days
+ok 17 - WS-17 move: a moved long run keeps its dose and type, and the replan does not add a second long run within 7 days
+  ---
+  duration_ms: 3.364009
+  type: 'test'
+  ...
+# Subtest: WS-18 move of an intense session succeeds and keeps type, dose, calendar, rotation and the serialized state
+not ok 18 - WS-18 move of an intense session succeeds and keeps type, dose, calendar, rotation and the serialized state
+  ---
+  duration_ms: 1.413326
+  type: 'test'
+  location: '/workspace/fizuha/tests/weekly-structure.test.ts:308:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    dose kept
+    
+    16.2 !== 18
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 18
+  actual: 16.2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/fizuha/tests/weekly-structure.test.ts:317:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WS-18b move of the first intense session of a one-intense week succeeds and the type of the next week does not change
+not ok 19 - WS-18b move of the first intense session of a one-intense week succeeds and the type of the next week does not change
+  ---
+  duration_ms: 0.784262
+  type: 'test'
+  location: '/workspace/fizuha/tests/weekly-structure.test.ts:346:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    10.8 !== 12
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 12
+  actual: 10.8
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/fizuha/tests/weekly-structure.test.ts:354:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WS-18d a late move of an intense session never creates a third intense session in 7 days: the engine removes the later one instead of adding load
+ok 20 - WS-18d a late move of an intense session never creates a third intense session in 7 days: the engine removes the later one instead of adding load
+  ---
+  duration_ms: 9.015591
+  type: 'test'
+  ...
+# Subtest: WS-18c invalid moves are refused with their own specific codes
+ok 21 - WS-18c invalid moves are refused with their own specific codes
+  ---
+  duration_ms: 7.747102
+  type: 'test'
+  ...
+# Subtest: WS-19 deficit budget: one intense session + EASY + a real LONG_EASY replaces two intense sessions, inside the approved budget
+ok 22 - WS-19 deficit budget: one intense session + EASY + a real LONG_EASY replaces two intense sessions, inside the approved budget
+  ---
+  duration_ms: 0.502083
+  type: 'test'
+  ...
+# Subtest: WS-19b why two intense sessions and a long run do not fit 18 km: the rolling 7-day window T + V + L
+ok 23 - WS-19b why two intense sessions and a long run do not fit 18 km: the rolling 7-day window T + V + L
+  ---
+  duration_ms: 0.463209
+  type: 'test'
+  ...
+# Subtest: WS-19c the long run is NOT forced when even one intense session leaves no room: proof on the window T + E + E + L
+ok 24 - WS-19c the long run is NOT forced when even one intense session leaves no room: proof on the window T + E + E + L
+  ---
+  duration_ms: 0.489389
+  type: 'test'
+  ...
+# Subtest: WS-19d where the budget carries two intense sessions and a long run, both intense sessions are kept (28 km, longest 9 km)
+ok 25 - WS-19d where the budget carries two intense sessions and a long run, both intense sessions are kept (28 km, longest 9 km)
+  ---
+  duration_ms: 0.432429
+  type: 'test'
+  ...
+# Subtest: WS-19e 12 weeks at 18 / 20 / 16 km (probes P1, P2, P4): a regular one-intense microcycle with a real long run, budget and recovery intact
+ok 26 - WS-19e 12 weeks at 18 / 20 / 16 km (probes P1, P2, P4): a regular one-intense microcycle with a real long run, budget and recovery intact
+  ---
+  duration_ms: 531.566002
+  type: 'test'
+  ...
+# Subtest: WS-19f budget priority: the long run never comes from raising the budget or compensating a skip (deficit profile)
+ok 27 - WS-19f budget priority: the long run never comes from raising the budget or compensating a skip (deficit profile)
+  ---
+  duration_ms: 20.519887
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 25
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3835.531832

@@ -37,7 +37,8 @@ test('07: five sessions → at most two quality, majority easy', () => {
   assert.equal(s.queue.filter(w=>w.countsAsQuality).length,2);assert.equal(s.queue.filter(w=>!w.countsAsQuality).length,3);
 });
 test('08: three successful weeks → healthy 8-day break → two easy then reduced quality', () => {
-  let s=createEngine(profile({...experienced,availableRunsPerWeek:4,performance:{timeSeconds:910,date:NOW,source:'TEST_3K'},targetTimeSeconds:870,raceDate:dateAfter(84)}),NOW);
+  // 28 km / longest 9 km (two intense sessions a week fit with a long run): six confirmations take three weeks, as the test assumes
+  let s=createEngine(profile({...experienced,availableRunsPerWeek:4,averageWeeklyKm4Weeks:28,longestUsualRunKm:9,performance:{timeSeconds:910,date:NOW,source:'TEST_3K'},targetTimeSeconds:870,raceDate:dateAfter(84)}),NOW);
   for(let n=0;n<6;n++) s=performQuality(s);
   s=replan(s,dateAfter(21)); const before=s.profile.performance;
   const now=dateAfter(29);s=applyBreak(s,{days:8,endDate:now,reason:'WORK'},now);
