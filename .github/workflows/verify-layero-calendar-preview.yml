@@ -5,9 +5,11 @@ on:
     branches:
       - feature/issue-24-calendar
       - feature/staging-pwa-deploy
+      - feature/issue-42-qa-fastcycle
   pull_request:
     branches:
       - feature/issue-24-calendar
+      - feature/staging-pwa-deploy
   workflow_dispatch:
 
 jobs:
@@ -22,6 +24,8 @@ jobs:
           cache: npm
       - name: Build the expected artifact from this commit
         id: expected-build
+        env:
+          VITE_QA_MODE: ${{ (github.event.pull_request.head.ref || github.ref_name) == 'feature/issue-42-qa-fastcycle' && '1' || '0' }}
         run: |
           npm ci
           npm run build:layero
