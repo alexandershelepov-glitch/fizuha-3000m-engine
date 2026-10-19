@@ -131,13 +131,13 @@ test('B07 RE_ENTRY boundary 7/8 days plus the 1-3 / 4-7 / 8-14 / >14 branches', 
     assert.notEqual(after.decision.phase, 'RE_ENTRY', `days=${days}`);
     assert.equal(after.decision.gate, 'CLOSED', `days=${days}`);
   }
-  // 4-7 days: first easy 0.8, first quality 0.85, no RE_ENTRY phase
+  // 4-7 days: one confirmed easy at 0.8 precedes the first quality at 0.85.
   for (const days of [4, 5, 6, 7]) {
     const after = breakAt(createEngine(baseProfile({...experienced, raceDate: dateAfter(120)}), NOW), days);
     assert.equal(after.reentry?.easyFactor, 0.8, `days=${days} easyFactor`);
     assert.equal(after.reentry?.qualityFactor, 0.85, `days=${days} qualityFactor`);
     assert.notEqual(after.decision.phase, 'RE_ENTRY', `days=${days} phase`);
-    assert.equal(after.reentry?.easyRemaining, 0, `days=${days} no mandatory easy block`);
+    assert.equal(after.reentry?.easyRemaining, 1, `days=${days} one mandatory easy`);
   }
   // 8-14 days: RE_ENTRY, gate CLOSED, two mandatory easy sessions, no quality
   for (const days of [8, 10, 14]) {

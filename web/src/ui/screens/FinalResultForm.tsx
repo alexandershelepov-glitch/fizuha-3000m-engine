@@ -26,7 +26,7 @@ export function FinalResultForm({raceDate, submit, onCancel}: {
   return <div className="screen"><h1>{lifecycle.finalTitle}</h1>
     {copy ? <Notice tone="danger" title={copy.title}><p>{copy.text(error!.params)}</p></Notice> : null}
     <Card><KeyValue label={lifecycle.fixedDate} value={formatDateLong(raceDate)} />
-      <Field id="final-time" label={lifecycle.finalTime} hint="ММ:СС" error={problem ?? undefined}><TextInput id="final-time" value={time} onChange={setTime} /></Field>
+      <Field id="final-time" label={lifecycle.finalTime} hint="ММ:СС" error={problem ?? undefined}><TextInput id="final-time" value={time} onChange={setTime} inputMode="text" /></Field>
       <Field id="final-source" label="Откуда результат"><Choice id="final-source" value={source} onChange={setSource} options={PERFORMANCE_SOURCES.map(value => ({value, label: performanceSourceText[value]}))} /></Field>
     </Card><Button onClick={save} disabled={busy}>{lifecycle.finalSubmit}</Button><Button variant="ghost" onClick={onCancel}>{common.back}</Button>
   </div>;

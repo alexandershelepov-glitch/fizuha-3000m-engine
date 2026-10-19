@@ -100,7 +100,9 @@ export interface Workout {
   countsAsQuality: boolean; warmupMinutes: number; cooldownMinutes: number;
   main: { mode: WorkoutMainMode; dose: Dose; repeats: number; repeatMeters: number | null; finalRepeatMeters: number | null;
     /** Engine-approved alternating steps for RUN_WALK; older saved workouts may omit it. */
-    runWalk?: {stage: number; runSeconds: number; walkSeconds: number} };
+    runWalk?: {stage: number; runSeconds: number; walkSeconds: number};
+    /** Numeric EASY pace cannot be inferred yet: execute the short measured calibration task. */
+    calibration?: boolean };
   targetRpe: [number, number]; effortCues: EffortCue[]; speedRangeMps: [number, number] | null; paceRangeSecondsPerKm: [number, number] | null;
   anchor: Anchor; gateAtPrescription: Gate;
   restSeconds: number; minimumRecoveryHoursBeforeQuality: number;
@@ -127,6 +129,10 @@ export interface EngineState {
   successfulQuality: number; successfulIntro: number; successfulSpecificPartial: number;
   greenPlusIds: string[]; checkpointRequired: boolean; lastAssessmentDate: string;
   relatedYellow: boolean; reducedQualityUntilConfirmed: boolean; diagnosticHold: boolean; progressionBlocked: boolean;
+  /** Healthy non-medical repeat YELLOW: require one confirmed easy before quality can return. */
+  yellowEasyRequired?: boolean;
+  /** Existing re-entry coefficient carried through the required easy confirmation. */
+  pendingQualityFactor?: number | null;
   doses: Partial<Record<WorkoutType, Dose>>; confirmedDoses: Partial<Record<WorkoutType, Dose>>;
   successStreak: Partial<Record<WorkoutType, number>>; qualityRotation: number;
   reentry: { breakDays: number; easyRemaining: number; easyReductionPending: boolean; easyFactor: number; qualityFactor: number; diagnosticRequired: boolean } | null;

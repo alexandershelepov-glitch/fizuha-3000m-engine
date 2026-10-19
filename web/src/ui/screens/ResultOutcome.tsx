@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import {formatDateShort, formatTime} from '../../application/format.ts';
+import {formatDateShort, formatTime, shortTime} from '../../application/format.ts';
 import type {EngineState, HistoryEntry, Workout} from '../../application/engineGateway.ts';
 import type {PlanChange} from '../../application/planDiff.ts';
 import {evaluationSign, evaluationText, feasibilityText, gateText, phaseText, reasonText, safetyStatusText, workoutTypeText, yellowReasonText} from '../copy/values.ts';
@@ -32,6 +32,10 @@ export function ResultOutcome({entry, engineState, nextWorkout, changes, onConti
     !['WORKOUT_RECORDED', 'NEXT_WORKOUT_TYPE_CHANGED', 'NEXT_WORKOUT_DATE_CHANGED',
       'NEXT_WORKOUT_VOLUME_CHANGED', 'NEXT_WORKOUT_PACE_CHANGED'].includes(change.kind));
   const hasMeasuredDistanceOrSplits = entry.result.distanceMeters > 0 || entry.result.repeats.length > 0;
+  const easy = entry.workout.type === 'EASY' || entry.workout.type === 'LONG_EASY';
+  const measuredEasyPace = easy && entry.result.distanceMeters > 0 && entry.result.durationMinutes > 0
+    ? `${shortTime(Math.round(entry.result.durationMinutes * 60 * 1000 / entry.result.distanceMeters))} мин/км`
+    : null;
 
   return (
     <div className="screen">
@@ -68,6 +72,13 @@ export function ResultOutcome({entry, engineState, nextWorkout, changes, onConti
         <KeyValue label="Выполнено по отчёту" value={`${Math.round(entry.result.completionFraction * 100)}%`} />
         <KeyValue label="Тяжесть по вашей оценке" value={`${entry.result.sessionRpe} из 10`} />
         <KeyValue label="Длительность" value={entry.result.durationMinutes > 0 ? durationText(entry.result.durationMinutes * 60) : 'Не измерена'} />
+        {easy && entry.workout.paceRangeSecondsPerKm !== null ? (
+          <KeyValue label="Темп по плану" value={paceRangeText(entry.workout.paceRangeSecondsPerKm)!} />
+        ) : null}
+        {easy && measuredEasyPace !== null ? <KeyValue label="Фактический средний темп" value={measuredEasyPace} /> : null}
+        {easy && entry.workout.paceRangeSecondsPerKm !== null && measuredEasyPace === null ? (
+          <p className="hint">Фактический темп пока не проверен: для сравнения с заданием нужны измеренные время и дистанция.</p>
+        ) : null}
         <KeyValue label="Дистанция" value={entry.result.distanceMeters === 0 ? 'Не указана' :
           entry.result.repeats.length > 0 && Math.abs(entry.result.distanceMeters - entry.result.repeats.reduce((sum, part) => sum + part.distanceMeters, 0)) < 1e-6
             ? `Не менее ${Math.round(entry.result.distanceMeters)} м (по отрезкам)`

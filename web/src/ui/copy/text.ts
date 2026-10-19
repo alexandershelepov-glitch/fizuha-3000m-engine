@@ -460,6 +460,7 @@ export const profile = {
 export const resultForm = {
   title: 'Результат тренировки',
   subtitle: 'Отметьте, как всё прошло. Решение о дальнейшем плане принимает приложение.',
+  calibrationHint: 'Калибровка: обязательно внеси фактическое время в минутах и пройденную дистанцию в метрах. План не подставляет их автоматически.',
   completion: {
     label: 'Насколько выполнено задание',
     options: {
@@ -593,6 +594,16 @@ export const instruction = {
   continuousMinutes: (minutes: number, pace: string): string => `Беги ${counts.minutes(minutes)} в темпе ${pace}.`,
   continuousDistance: (distance: string, pace: string): string => `Пробеги ${distance} в темпе ${pace}.`,
   continuousHoldPace: 'Старайся держать скорость ровно. Не начинай быстрее заданного темпа.',
+  easyAssigned: (distance: string, pace: string): string => `Пробеги ${distance}. Держи темп ${pace}.`,
+  easyTreadmill: (speed: string): string => `На дорожке установи скорость ${speed}.`,
+  easyExpectedTime: (time: string): string => `Ожидаемое время на дистанции при этом темпе: ${time}.`,
+  easySpeedLimit: (fastPace: string): string => `Не беги быстрее ${fastPace} мин/км: задача — лёгкая тренировка, а не проверка скорости.`,
+  easyOutdoorCheck: 'На улице проверяй темп по каждому километру, не ускоряйся к финишу.',
+  calibrationTask: (distance: string): string => `Пробеги ${distance} непрерывно. Это вводное измерение, а не забег на максимальную скорость.`,
+  calibrationIntensity: 'Держи усилие 2–4 из 10. Не ускоряйся ради лучшего времени.',
+  calibrationMeasure: 'Засеки фактическое время пробежки от старта до финиша (часы или секундомер).',
+  calibrationSubmit: 'После финиша внеси пройденную дистанцию, точное время и оценку нагрузки. После двух подтверждённых измерений приложение рассчитает персональный темп.',
+  calibrationRunWalk: 'Если пока не можешь бежать непрерывно, выполняй назначенные чередования бега и ходьбы. Их суммарное время нельзя использовать для расчёта темпа непрерывного бега.',
   easyContinuous: (distance: string): string => `Беги ${distance} в удобном спокойном темпе.`,
   easyNoNeed: 'Специально ускоряться не нужно.',
   easyFeel: 'Ориентир:',

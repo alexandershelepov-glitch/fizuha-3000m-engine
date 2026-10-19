@@ -75,7 +75,7 @@ export function CheckpointForm({deviceToday, earliestDate, submit, onCancel}: Pr
 
       <Card>
         <Field id="checkpoint-time" label={copy.time} hint={copy.timeHint} error={problem ?? undefined}>
-          <TextInput id="checkpoint-time" value={time} onChange={setTime} inputMode="numeric" placeholder="14:30" />
+          <TextInput id="checkpoint-time" value={time} onChange={setTime} inputMode="text" placeholder="14:30" />
         </Field>
         <Field id="checkpoint-date" label={copy.date}>
           <TextInput id="checkpoint-date" type="date" value={date} onChange={setDate} />

@@ -110,10 +110,14 @@ test('D05 YELLOW then YELLOW with the same family becomes a related pair and rol
   const confirmed = structuredClone(s.confirmedDoses);
   const performance = structuredClone(s.profile.performance);
   s = nextOfType(s, 'THRESHOLD', 'YELLOW', {unexpectedFatigue: true}).state;
-  s = easyStep(s);
-  s = nextOfType(s, 'THRESHOLD', 'YELLOW', {unexpectedFatigue: true}).state;
+  const retry = s.queue.find(w => w.type === 'EASY')!;
+  s = recordResult(s, retry.id, feedback(retry, 'YELLOW', {unexpectedFatigue: true}));
   assert.equal(s.relatedYellow, true);
-  assert.equal(s.decision.phase, 'HOLD_DIAGNOSTIC');
+  assert.equal(s.decision.phase, 'SPECIFIC');
+  assert.equal(s.yellowEasyRequired, true);
+  assert.equal(s.diagnosticHold, false);
+  assert.equal(s.queue[0]!.type, 'EASY');
+  assert.equal(s.decision.maximumQualityPerWeek, 0);
   assert.deepEqual(s.doses, confirmed, 'working doses return to the last confirmed values');
   assert.equal(s.reducedQualityUntilConfirmed, true);
   assert.deepEqual(s.profile.performance, performance, 'Current Performance is never lowered automatically');

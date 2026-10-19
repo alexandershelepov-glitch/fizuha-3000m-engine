@@ -1,0 +1,48 @@
+name: Verify Layero calendar preview
+
+on:
+  push:
+    branches:
+      - feature/issue-24-calendar
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  check-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Verify isolated Layero branch preview without touching production
+        shell: bash
+        run: |
+          set -u
+          for host in \
+            fizuha-3000m-engine-feature-issue-24-calendar.layero.app \
+            fizuha-3000m-engine-featureissue24calendar.layero.app; do
+            echo "Checking https://${host}/"
+            if ! curl -sS -L --max-time 25 "https://${host}/" -o /tmp/layero-page; then
+              echo "Network or host inaccessible"
+              continue
+            fi
+            if ! grep -q '/assets/' /tmp/layero-page; then
+              echo "No built frontend assets on this host"
+              head -c 250 /tmp/layero-page || true
+              echo
+              continue
+            fi
+            asset=$(grep -oE 'src="/assets/[^"]+\.js"' /tmp/layero-page | head -n1 | cut -d '"' -f2)
+            if [ -z "${asset}" ]; then
+              echo "No JavaScript entry script found"
+              continue
+            fi
+            if curl -fsS -L --max-time 25 "https://${host}${asset}" -o /tmp/layero-app && grep -q 'calendar-screen' /tmp/layero-app && grep -q 'home-overview' /tmp/layero-app && grep -q 'Не беги быстрее' /tmp/layero-app && grep -q 'Калибровка: обязательно внеси фактическое время' /tmp/layero-app; then
+              echo "VERIFIED CALENDAR PREVIEW: https://${host}/"
+              echo "Verified calendar, numeric EASY, and beginner calibration in published JavaScript"
+              exit 0
+            fi
+            echo "Host is not yet serving the new EASY calibration build"
+          done
+          echo "::error::Layero calendar preview not verified. Check project environment builds in Layero dashboard."
+          exit 1

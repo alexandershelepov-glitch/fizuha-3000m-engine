@@ -1,0 +1,266 @@
+TAP version 13
+# Subtest: WS-01 prepared users (U4, U5, U6) get exactly one LONG_EASY in every training week 1–10, every behaviour
+not ok 1 - WS-01 prepared users (U4, U5, U6) get exactly one LONG_EASY in every training week 1–10, every behaviour
+  ---
+  duration_ms: 130.270487
+  type: 'test'
+  location: '/workspace/fizuha/tests/weekly-structure.test.ts:60:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    U4-intermediate-A week 1
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/fizuha/tests/weekly-structure.test.ts:66:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: WS-02 LONG_EASY is longer than every EASY of its week, follows the habitual long run and stays inside the weekly budget
+not ok 2 - WS-02 LONG_EASY is longer than every EASY of its week, follows the habitual long run and stays inside the weekly budget
+  ---
+  duration_ms: 0.277267
+  type: 'test'
+  location: '/workspace/fizuha/tests/weekly-structure.test.ts:74:1'
+  failureType: 'testCodeFailure'
+  error: 'U4-intermediate-A: long runs exist'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/fizuha/tests/weekly-structure.test.ts:78:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: WS-03 LONG_EASY is never assigned to novices or to runners without a long-run structure (U1, U2, U3, all behaviours)
+ok 3 - WS-03 LONG_EASY is never assigned to novices or to runners without a long-run structure (U1, U2, U3, all behaviours)
+  ---
+  duration_ms: 533.134389
+  type: 'test'
+  ...
+# Subtest: WS-04 root cause: the long run is a fixed slot of the cycle week and its prescription is the habitual share, not the EASY dose
+not ok 4 - WS-04 root cause: the long run is a fixed slot of the cycle week and its prescription is the habitual share, not the EASY dose
+  ---
+  duration_ms: 0.728259
+  type: 'test'
+  location: '/workspace/fizuha/tests/weekly-structure.test.ts:99:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 7344.086021505376
+    - 8000
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 8000
+  actual: 7344.086021505376
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/fizuha/tests/weekly-structure.test.ts:105:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WS-05 a long run does not raise weekly volume: every rolling 7 days of engine reserves stays within the approved budget (all 23 scenarios)
+ok 5 - WS-05 a long run does not raise weekly volume: every rolling 7 days of engine reserves stays within the approved budget (all 23 scenarios)
+  ---
+  duration_ms: 2169.433019
+  type: 'test'
+  ...
+# Subtest: WS-06 recovery: no two intense sessions closer than 48 h in any scenario; CONTROL is never displaced by the long run structure
+ok 6 - WS-06 recovery: no two intense sessions closer than 48 h in any scenario; CONTROL is never displaced by the long run structure
+  ---
+  duration_ms: 5.51332
+  type: 'test'
+  ...
+# Subtest: WS-07 taper: no LONG_EASY in the TAPER phase or in the last 7 days before the race
+ok 7 - WS-07 taper: no LONG_EASY in the TAPER phase or in the last 7 days before the race
+  ---
+  duration_ms: 0.160493
+  type: 'test'
+  ...
+# Subtest: WS-08 one intense session a week (U4): SPECIFIC_3K is not repeated every week; THRESHOLD and VO2 both come back
+not ok 8 - WS-08 one intense session a week (U4): SPECIFIC_3K is not repeated every week; THRESHOLD and VO2 both come back
+  ---
+  duration_ms: 0.22916
+  type: 'test'
+  location: '/workspace/fizuha/tests/weekly-structure.test.ts:148:1'
+  failureType: 'testCodeFailure'
+  error: 'U4-A: two SPECIFIC_3K in a row at 2026-11-09'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/fizuha/tests/weekly-structure.test.ts:154:14)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WS-09 two intense sessions a week (U5, U6): every ordinary SPECIFIC week combines SPECIFIC_3K with THRESHOLD or VO2, and both come back
+ok 9 - WS-09 two intense sessions a week (U5, U6): every ordinary SPECIFIC week combines SPECIFIC_3K with THRESHOLD or VO2, and both come back
+  ---
+  duration_ms: 0.426639
+  type: 'test'
+  ...
+# Subtest: WS-10 progression is kept: no more intense sessions per week than the engine allows and no volume+intensity step together (D-05 does not grow beyond the base audit)
+ok 10 - WS-10 progression is kept: no more intense sessions per week than the engine allows and no volume+intensity step together (D-05 does not grow beyond the base audit)
+  ---
+  duration_ms: 4.759662
+  type: 'test'
+  ...
+# Subtest: WS-11 rotation is derived from state: a plan rebuilt every day keeps the type of every date it already showed (SPECIFIC phase)
+not ok 11 - WS-11 rotation is derived from state: a plan rebuilt every day keeps the type of every date it already showed (SPECIFIC phase)
+  ---
+  duration_ms: 7.457801
+  type: 'test'
+  location: '/workspace/fizuha/tests/weekly-structure.test.ts:191:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    2026-10-21 changed after the replan of 2026-10-17: 10-19 SPECIFIC_3K, 10-21 EASY, 10-23 LONG_EASY
+    + actual - expected
+    
+    + 'EASY'
+    - 'LONG_EASY'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'LONG_EASY'
+  actual: 'EASY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/fizuha/tests/weekly-structure.test.ts:204:121)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WS-12 replan is idempotent and save/load keeps the queue and the next replan identical
+not ok 12 - WS-12 replan is idempotent and save/load keeps the queue and the next replan identical
+  ---
+  duration_ms: 26.109276
+  type: 'test'
+  location: '/workspace/fizuha/tests/weekly-structure.test.ts:210:1'
+  failureType: 'testCodeFailure'
+  error: 'precondition: a long run is planned: 10-19 SPECIFIC_3K, 10-20 EASY, 10-22 VO2, 10-24 EASY'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/fizuha/tests/weekly-structure.test.ts:213:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WS-13 an old save (no queue stored: only profile and history) is rebuilt with the same long-run and rotation pattern
+ok 13 - WS-13 an old save (no queue stored: only profile and history) is rebuilt with the same long-run and rotation pattern
+  ---
+  duration_ms: 9.765538
+  type: 'test'
+  ...
+# Subtest: WS-14 skip of the LONG_EASY is never made up: later long runs are not larger than in the same plan without the skip, one per 7 days
+not ok 14 - WS-14 skip of the LONG_EASY is never made up: later long runs are not larger than in the same plan without the skip, one per 7 days
+  ---
+  duration_ms: 52.50818
+  type: 'test'
+  location: '/workspace/fizuha/tests/weekly-structure.test.ts:233:1'
+  failureType: 'testCodeFailure'
+  error: 'the long runs return on their regular slots'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/fizuha/tests/weekly-structure.test.ts:250:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WS-15 skip of an intense session: no replacement session, and the rotation continues with the next type (not the skipped one again)
+ok 15 - WS-15 skip of an intense session: no replacement session, and the rotation continues with the next type (not the skipped one again)
+  ---
+  duration_ms: 4.355322
+  type: 'test'
+  ...
+# Subtest: WS-16 calendar shift: days passing without any report miss the sessions without compensation; types and slots stay on the cycle
+not ok 16 - WS-16 calendar shift: days passing without any report miss the sessions without compensation; types and slots stay on the cycle
+  ---
+  duration_ms: 3.954127
+  type: 'test'
+  location: '/workspace/fizuha/tests/weekly-structure.test.ts:270:1'
+  failureType: 'testCodeFailure'
+  error: 'the long run stays on the last slot of the cycle week'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/fizuha/tests/weekly-structure.test.ts:281:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: WS-17 move: a moved long run keeps its dose and type, and the replan does not add a second long run within 7 days
+ok 17 - WS-17 move: a moved long run keeps its dose and type, and the replan does not add a second long run within 7 days
+  ---
+  duration_ms: 3.056894
+  type: 'test'
+  ...
+# Subtest: WS-18 moving an intense session keeps its type, and the type of the next one follows from it
+ok 18 - WS-18 moving an intense session keeps its type, and the type of the next one follows from it
+  ---
+  duration_ms: 3.361095
+  type: 'test'
+  ...
+# Subtest: WS-19 budget pressure: when the intense sessions leave no room for a real long run there is no artificial LONG_EASY, and the budget holds
+ok 19 - WS-19 budget pressure: when the intense sessions leave no room for a real long run there is no artificial LONG_EASY, and the budget holds
+  ---
+  duration_ms: 0.741321
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 11
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3078.636248

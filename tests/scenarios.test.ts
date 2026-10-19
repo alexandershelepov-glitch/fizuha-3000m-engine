@@ -37,7 +37,8 @@ test('07: five sessions → at most two quality, majority easy', () => {
   assert.equal(s.queue.filter(w=>w.countsAsQuality).length,2);assert.equal(s.queue.filter(w=>!w.countsAsQuality).length,3);
 });
 test('08: three successful weeks → healthy 8-day break → two easy then reduced quality', () => {
-  let s=createEngine(profile({...experienced,availableRunsPerWeek:4,performance:{timeSeconds:910,date:NOW,source:'TEST_3K'},targetTimeSeconds:870,raceDate:dateAfter(84)}),NOW);
+  // 28 km / longest 9 km (two intense sessions a week fit with a long run): six confirmations take three weeks, as the test assumes
+  let s=createEngine(profile({...experienced,availableRunsPerWeek:4,averageWeeklyKm4Weeks:28,longestUsualRunKm:9,performance:{timeSeconds:910,date:NOW,source:'TEST_3K'},targetTimeSeconds:870,raceDate:dateAfter(84)}),NOW);
   for(let n=0;n<6;n++) s=performQuality(s);
   s=replan(s,dateAfter(21)); const before=s.profile.performance;
   const now=dateAfter(29);s=applyBreak(s,{days:8,endDate:now,reason:'WORK'},now);
@@ -46,13 +47,12 @@ test('08: three successful weeks → healthy 8-day break → two easy then reduc
   assert.equal(s.checkpointRequired,true);const {state,workout}=nextQuality(s);assert.ok(workout.volumeFactor>=.7&&workout.volumeFactor<=.8);
   s=recordResult(state,workout.id,feedback(workout));assert.equal(s.reentry,null);assert.deepEqual(s.profile.performance,before);
 });
-test('09: RPE10 instead of8 then 70% with tired legs → related yellow hold, performance preserved', () => {
+test('09: RPE10 then repeated tired-leg YELLOW → reduced EASY adaptation, performance preserved', () => {
   let s=createEngine(profile({...experienced,performance:{timeSeconds:930,date:NOW,source:'TEST_3K'},targetTimeSeconds:870}),NOW);
   const original=s.profile.performance;
-  let n=nextQuality(s);s=recordResult(n.state,n.workout.id,feedback(n.workout,'GREEN',{sessionRpe:10}));assert.equal(s.history.at(-1)!.classified.evaluation,'YELLOW');
-  const easy=s.queue.find(w=>w.type==='EASY')!;s=recordResult(s,easy.id,feedback(easy));
-  n=nextQuality(s);s=recordResult(n.state,n.workout.id,feedback(n.workout,'YELLOW',{unexpectedFatigue:true}));
-  assert.equal(s.relatedYellow,true);assert.equal(s.decision.phase,'HOLD_DIAGNOSTIC');assert.deepEqual(s.profile.performance,original);assert.ok(s.queue.every(w=>!w.countsAsQuality));
+  const n=nextQuality(s);s=recordResult(n.state,n.workout.id,feedback(n.workout,'GREEN',{sessionRpe:10}));assert.equal(s.history.at(-1)!.classified.evaluation,'YELLOW');
+  const easy=s.queue.find(w=>w.type==='EASY')!;s=recordResult(s,easy.id,feedback(easy,'YELLOW',{unexpectedFatigue:true}));
+  assert.equal(s.relatedYellow,true);assert.notEqual(s.decision.phase,'HOLD_DIAGNOSTIC');assert.equal(s.diagnosticHold,false);assert.deepEqual(s.profile.performance,original);assert.equal(s.decision.maximumQualityPerWeek,0);assert.ok(s.queue.some(w=>w.type==='EASY'));
 });
 test('10: two easy quality confirmations → checkpoint15:20; T/Q unchanged', () => {
   let s=createEngine(profile({performance:{timeSeconds:960,date:NOW,source:'TEST_3K'}}),NOW);

@@ -3,8 +3,21 @@ import { assessSafety } from './assessment.ts';
 import { validateResult } from './validation.ts';
 export function classify(w: Workout, r: WorkoutResult): ClassifiedResult {
   validateResult(r);
-  const speeds = r.repeats.map(rep => rep.distanceMeters / rep.seconds);
-  const inRangeFraction = w.speedRangeMps ? speeds.length ? speeds.filter(v => v >= w.speedRangeMps![0] && v <= w.speedRangeMps![1]).length / speeds.length : 0 : 1;
+  const easyContinuous = (w.type === 'EASY' || w.type === 'LONG_EASY') && w.main.mode === 'CONTINUOUS';
+  // A continuous EASY is not an interval session. When both actual distance and
+  // actual duration are supplied, check its measured average speed against the
+  // assigned pace. Without measurements the pace is UNVERIFIED, not an invented
+  // failed interval block (the report screen discloses this separately).
+  const measuredTotalSpeed = easyContinuous && r.repeats.length === 0 &&
+    r.distanceMeters > 0 && r.durationMinutes > 0
+    ? r.distanceMeters / (r.durationMinutes * 60) : null;
+  const speeds = measuredTotalSpeed !== null ? [measuredTotalSpeed] :
+    r.repeats.map(rep => rep.distanceMeters / rep.seconds);
+  const inRangeFraction = w.speedRangeMps
+    ? speeds.length
+      ? speeds.filter(v => v >= w.speedRangeMps![0] && v <= w.speedRangeMps![1]).length / speeds.length
+      : easyContinuous ? 1 : 0
+    : 1;
   const speedDropFraction = speeds.length >= 2 ? Math.max(0, 1 - speeds[speeds.length - 1]! / speeds[0]!) : 0;
   const base = {sessionLoad: r.sessionRpe * r.durationMinutes, inRangeFraction, speedDropFraction};
   if (assessSafety(r.safety) === 'STOP') return {...base, evaluation: 'RED', yellowReason: null};

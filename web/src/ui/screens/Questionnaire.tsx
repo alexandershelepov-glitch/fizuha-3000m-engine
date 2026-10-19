@@ -3,7 +3,7 @@ import type {ReactNode} from 'react';
 import {QUESTIONNAIRE_STEPS, STEP_INDEX, healthySafety, buildProfile} from '../../application/questionnaire.ts';
 import type {QualityRecall} from '../../application/questionnaire.ts';
 import {previewGoalDecision} from '../../application/engineGateway.ts';
-import {deviceToday, parseTime} from '../../application/format.ts';
+import {daysBetween, deviceToday, parseTime} from '../../application/format.ts';
 import {feasibilityText} from '../copy/values.ts';
 import type {BreakEntryDraft, FieldKey, QuestionnaireDraft, QuestionnaireStep} from '../../application/questionnaire.ts';
 import {breakReasonText, performanceSourceText} from '../copy/values.ts';
@@ -109,7 +109,7 @@ function ResultStep({draft, update, error}: StepProps): ReactNode {
       {draft.hasResult ? (
         <>
           <Field id="resultTime" label={questionnaire.fields.resultTime.label} hint={questionnaire.fields.resultTime.hint} error={error('resultTime')}>
-            <TextInput id="resultTime" value={draft.resultTime} onChange={(value) => update({resultTime: value})} inputMode="numeric" placeholder="14:30" />
+            <TextInput id="resultTime" value={draft.resultTime} onChange={(value) => update({resultTime: value})} inputMode="text" placeholder="14:30" />
           </Field>
           <Field id="resultDate" label={questionnaire.fields.resultDate.label} error={error('resultDate')}>
             <TextInput id="resultDate" type="date" value={draft.resultDate} onChange={(value) => update({resultDate: value})} />
@@ -275,7 +275,7 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
 function GoalStep({draft, update, error}: StepProps): ReactNode {
   return (
     <Field id="targetTime" label={questionnaire.fields.targetTime.label} hint={questionnaire.fields.targetTime.hint} error={error('targetTime')}>
-      <TextInput id="targetTime" value={draft.targetTime} onChange={(value) => update({targetTime: value})} inputMode="numeric" placeholder="14:00" />
+      <TextInput id="targetTime" value={draft.targetTime} onChange={(value) => update({targetTime: value})} inputMode="text" placeholder="14:00" />
     </Field>
   );
 }
@@ -295,9 +295,13 @@ function GoalPreview({draft, today}: {draft: QuestionnaireDraft; today: string})
   try {
     const feasibility = previewGoalDecision(built.profile, today).feasibility;
     if (feasibility === null) return null;
+    const gainSeconds = (built.profile.performance?.timeSeconds ?? 0) - built.profile.targetTimeSeconds;
+    const weeksLeft = Math.round((daysBetween(today, built.profile.raceDate) / 7) * 10) / 10;
+    const weeksLabel = String(weeksLeft).replace('.', ',');
     return (
       <Notice tone="info" title={questionnaire.goalPreview.title}>
         <p>{feasibilityText[feasibility].label}</p>
+        {gainSeconds > 0 && weeksLeft > 0 ? <p className="hint">Для этой цели нужно улучшить время на {gainSeconds} с за {weeksLabel} нед.</p> : null}
         <p className="hint">{feasibilityText[feasibility].description}</p>
         <p className="hint">{questionnaire.goalPreview.note}</p>
       </Notice>

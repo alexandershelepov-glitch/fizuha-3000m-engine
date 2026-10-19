@@ -65,9 +65,11 @@ export interface ResultProblem {
   readonly kind: 'EMPTY' | 'FORMAT' | 'IMPOSSIBLE' | 'NOT_A_NUMBER' | 'NEGATIVE' | 'CONFLICT';
 }
 
-/** The B1 trigger: a prescribed pace range is what makes an empty repeats block cost accuracy. */
+/** B1 needs repeat splits for paced QUALITY work, not a paced continuous EASY run.
+ * EASY/LONG_EASY are verified from the optional measured total distance + duration.
+ */
 export function repeatsAffectEvaluation(workout: Workout): boolean {
-  return workout.speedRangeMps !== null;
+  return workout.speedRangeMps !== null && workout.type !== 'EASY' && workout.type !== 'LONG_EASY';
 }
 
 /** Whether the repeats block must be open and prominent instead of tucked away. */
@@ -104,7 +106,7 @@ export function defaultResultDraft(workout: Workout): ResultDraft {
     safety: {pain: 0, painIncreasing: false, alteredMovement: false, painWalkingOrRest: false, swelling: false, acuteIllness: false, otherStop: false, needsAssessment: false},
     safetyResponse: 'UNANSWERED',
     // A scheduled five-minute walk is not evidence of a measured 10-minute session.
-    durationMinutes: workout.main.mode === 'RUN_WALK' ? '0' : String(plannedDuration(workout)),
+    durationMinutes: workout.main.calibration === true ? '' : workout.main.mode === 'RUN_WALK' ? '0' : String(plannedDuration(workout)),
     distanceMeters: '',
     repeats: defaultRepeats(workout),
     restSeconds: String(workout.restSeconds),
@@ -178,6 +180,10 @@ export function buildWorkoutResult(workout: Workout, draft: ResultDraft): BuildR
   const enteredTotalDistance = totalDistanceWasProvided
     ? numberField(draft.distanceMeters, 'distanceMeters', problems)
     : 0;
+  if (workout.main.calibration === true &&
+      (!totalDistanceWasProvided || enteredTotalDistance < 500)) {
+    problems.push({field:'distanceMeters',kind: totalDistanceWasProvided ? 'IMPOSSIBLE' : 'EMPTY'});
+  }
   const rawRest = numberField(draft.restSeconds, 'restSeconds', problems);
 
   const repeats: {distanceMeters: number; seconds: number}[] = [];

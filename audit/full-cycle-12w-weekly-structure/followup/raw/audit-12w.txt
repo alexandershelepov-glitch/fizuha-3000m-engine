@@ -1,0 +1,29 @@
+
+> adaptive-3000m-core@1.0.0 audit:12w
+> node --experimental-strip-types audit/run12w.ts
+
+U1-novice-A: rows=12; run=12; skipped=2; rest=0; controls=2; findings=2; final=1260
+U1-novice-B: rows=12; run=12; skipped=2; rest=0; controls=2; findings=3; final=1260
+U1-novice-V: rows=12; run=12; skipped=4; rest=0; controls=2; findings=1; final=1260
+U2-beginner-A: rows=24; run=24; skipped=3; rest=0; controls=3; findings=1; final=1080
+U2-beginner-B: rows=24; run=24; skipped=2; rest=0; controls=3; findings=7; final=1080
+U2-beginner-V: rows=24; run=24; skipped=8; rest=0; controls=3; findings=1; final=1080
+U3-beginner-plus-A: rows=36; run=36; skipped=3; rest=0; controls=3; findings=1; final=990
+U3-beginner-plus-B: rows=36; run=36; skipped=3; rest=0; controls=3; findings=6; final=990
+U3-beginner-plus-V: rows=36; run=36; skipped=8; rest=0; controls=3; findings=0; final=990
+U4-intermediate-A: rows=36; run=36; skipped=0; rest=0; controls=3; findings=0; final=930
+U4-intermediate-B: rows=36; run=28; skipped=1; rest=8; controls=3; findings=5; final=930
+U4-intermediate-V: rows=36; run=36; skipped=8; rest=0; controls=3; findings=0; final=930
+U5-trained-A: rows=48; run=48; skipped=0; rest=0; controls=3; findings=1; final=870
+U5-trained-B: rows=48; run=36; skipped=1; rest=12; controls=3; findings=7; final=870
+U5-trained-V: rows=48; run=48; skipped=11; rest=0; controls=3; findings=0; final=870
+U6-experienced-A: rows=60; run=60; skipped=0; rest=0; controls=3; findings=7; final=750
+U6-experienced-B: rows=60; run=40; skipped=3; rest=20; controls=3; findings=17; final=750
+U6-experienced-V: rows=60; run=60; skipped=14; rest=0; controls=3; findings=5; final=750
+U2-beginner-S: rows=24; run=24; skipped=3; rest=0; controls=3; findings=1; final=1015
+U3-beginner-plus-S: rows=36; run=36; skipped=3; rest=0; controls=3; findings=1; final=931
+U4-intermediate-S: rows=36; run=36; skipped=0; rest=0; controls=3; findings=0; final=874
+U5-trained-S: rows=48; run=48; skipped=0; rest=0; controls=3; findings=1; final=818
+U6-experienced-S: rows=60; run=60; skipped=0; rest=0; controls=3; findings=7; final=705
+SCENARIOS=23 WEEKS=276 WORKOUTS=852 RUNNING=812 CHECKS=4209 VIOLATIONS=68 FINDING_CODES=9
+Reports: audit/full-cycle-12w-weekly-structure/followup/after

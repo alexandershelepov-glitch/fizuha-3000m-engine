@@ -33,8 +33,8 @@ test('I07 one GREEN_PLUS cannot alter Current Performance',()=>{
  const s=createEngine(profile(),NOW);const after=performQuality(s,'GREEN_PLUS');assert.deepEqual(after.profile.performance,s.profile.performance);
 });
 test('I08 two related yellow cannot lower Current Performance',()=>{
- let s=createEngine(profile(),NOW);const before=s.profile.performance;let n=nextQuality(s);s=recordResult(n.state,n.workout.id,feedback(n.workout,'YELLOW'));
- const easy=s.queue[0]!;s=recordResult(s,easy.id,feedback(easy));n=nextQuality(s);s=recordResult(n.state,n.workout.id,feedback(n.workout,'YELLOW'));
+ let s=createEngine(profile(),NOW);const before=s.profile.performance;const n=nextQuality(s);s=recordResult(n.state,n.workout.id,feedback(n.workout,'YELLOW'));
+ const easy=s.queue[0]!;s=recordResult(s,easy.id,feedback(easy,'YELLOW',{unexpectedFatigue:true}));
  assert.equal(s.relatedYellow,true);assert.deepEqual(s.profile.performance,before);
 });
 test('I09 RED overrides approaching race/taper',()=>{
