@@ -12,7 +12,7 @@ import {weeklyIntenseCapacity} from '../src/workouts.ts';
 import {PROBES} from '../audit/deficitProfiles.ts';
 import {SCENARIOS, USERS, simulateAudit} from '../audit/fullCycle12w.ts';
 import type {ScenarioRun, WorkoutRow} from '../audit/fullCycle12w.ts';
-import {analyze} from '../audit/fullCycleAnalysis.ts';
+import {analyze, weeklySummary} from '../audit/fullCycleAnalysis.ts';
 import {makeResult} from '../audit/trainingSimulator.ts';
 import {NOW, dateAfter, experienced, profile} from './helpers.ts';
 
@@ -167,21 +167,36 @@ test('WS-08 one intense session a week (U4): SPECIFIC_3K is not repeated every w
   }
 });
 
-test('WS-09 two intense sessions a week (U5, U6): every ordinary SPECIFIC week combines SPECIFIC_3K with THRESHOLD or VO2, and both come back', () => {
+test('WS-09 every audited week with two quality sessions uses SPECIFIC_3K plus THRESHOLD or VO2, and both come back', () => {
   for (const user of ['U5-trained', 'U6-experienced']) {
     const id = `${user}-A`;
     const specificWeeks = weeks(id).filter(w => get(id).rows.some(r => r.week === w && r.phase === 'SPECIFIC' && QUALITY_TYPES.includes(r.type)));
-    let checked = 0;
     for (const w of specificWeeks) {
       const q = get(id).rows.filter(r => r.week === w && QUALITY_TYPES.includes(r.type)).map(r => r.type);
       if (q.length < 2) continue;
-      checked++;
       assert.ok(q.includes('SPECIFIC_3K') && (q.includes('THRESHOLD') || q.includes('VO2')), `${id} week ${w}: ${q}`);
     }
-    assert.ok(checked >= 1, `${id}: optional second intensity is retained when the 65% long-run + 2 km easy floor fits (${checked} weeks)`);
     const all = get(id).rows.filter(r => r.phase === 'SPECIFIC').map(r => r.type);
     assert.ok(all.includes('THRESHOLD') && all.includes('VO2'), `${id}: both THRESHOLD and VO2 appear`);
   }
+});
+
+test('WS-09b every budget-feasible roomy SPECIFIC week schedules the expected quality pair', () => {
+  let s=inSpecific(trained({averageWeeklyKm4Weeks:40,longestUsualRunKm:9}));
+  let eligibleWeeks=0;
+  for(let week=0;week<4;week++) {
+    const quality=s.queue.filter(w=>w.countsAsQuality);
+    const control=quality.some(w=>w.type==='CONTROL');
+    if(s.decision.phase==='SPECIFIC'&&weeklyIntenseCapacity(s,s.asOf,4)===2&&!control) {
+      eligibleWeeks++;
+      assert.equal(quality.length,2,`${s.asOf}: two sessions are permitted by the budget`);
+      assert.ok(quality.some(w=>w.type==='SPECIFIC_3K'));
+      assert.ok(quality.some(w=>w.type==='THRESHOLD'||w.type==='VO2'));
+      assert.ok(s.queue.reduce((sum,w)=>sum+(reservedMetres(s,w)??0),0)<=approvedWeekMeters(s)+1e-6);
+    }
+    s=doneAll(s,7);
+  }
+  assert.ok(eligibleWeeks>=3,`a full four-week cycle has several budget-feasible two-quality weeks (${eligibleWeeks})`);
 });
 
 test('WS-10 progression is kept: no more intense sessions per week than the engine allows and no volume+intensity step together (D-05 does not grow beyond the base audit)', () => {
@@ -193,6 +208,18 @@ test('WS-10 progression is kept: no more intense sessions per week than the engi
     for (const w of weeks(sc.id)) assert.ok(get(sc.id).rows.filter(r => r.week === w && QUALITY_TYPES.includes(r.type)).length <= Math.max(2, max), `${sc.id} week ${w}`);
   }
   assert.ok(d05 <= 4, `D-05 count ${d05} (base audit: 3, after the reviewed rotation: 4)`);
+});
+
+test('WS-10b D-13 return weeks stay within the prior normal training level after the lighter week', () => {
+  for (const [id, jumpWeek] of [['U4-intermediate-B',9],['U6-experienced-B',3]] as const) {
+    const summary=weeklySummary(get(id));
+    const jump=summary.find(w=>w.week===jumpWeek)!;
+    assert.ok(analyze(get(id)).findings.some(f=>f.code==='WEEKLY_VOLUME_JUMP'&&f.week===jumpWeek),`${id}: keep the D-13 finding visible`);
+    const priorNormal=summary.filter(w=>w.week<jumpWeek&&w.runsDone===w.runs&&w.skipped===0&&w.holdDays===0&&!w.controlWeek&&w.approvedKm!==null&&w.plannedKm>=w.approvedKm*.85);
+    const normalPeak=Math.max(...priorNormal.map(w=>w.plannedKm));
+    assert.ok(normalPeak>0,`${id}: at least one fully completed prior normal week exists`);
+    assert.ok(jump.plannedKm<=normalPeak*1.02,`${id} week ${jumpWeek}: ${jump.plannedKm} km must not exceed prior normal peak ${normalPeak} km by more than 2%`);
+  }
 });
 
 // ---------------------------------------------------------------------------------------------------- determinism
@@ -501,6 +528,12 @@ test('WS-19e 12-week P1–P6 probes keep meaningful easy/long runs, numerical pa
     assert.equal(a.checks.filter(c => c.code === 'C23').reduce((n, c) => n + c.violations, 0), 0, `${user.id}: weekly budget`);
     assert.equal(a.checks.filter(c => c.code === 'C05' || c.code === 'C05b').reduce((n, c) => n + c.violations, 0), 0, `${user.id}: recovery`);
     assert.equal(a.findings.filter(f => ['HARD_SESSIONS_TOO_CLOSE', 'WEEKLY_BUDGET_EXCEEDED', 'WEEKLY_VOLUME_JUMP', 'LONG_RUN_NEVER_PRESCRIBED'].includes(f.code)).length, 0, `${user.id}: ${a.findings.map(f => f.code)}`);
+    if(user.id.startsWith('P5-')) {
+      const firstWeek=rows.filter(x=>x.week===1);
+      assert.deepEqual(firstWeek.map(x=>x.type),['THRESHOLD','EASY','LONG_EASY'],`${user.id}: the 25 km prescription has one quality, one ordinary EASY and the full long run`);
+      assert.deepEqual(firstWeek.map(x=>Math.round(x.reservedMeters??0)),[10032,2968,12000]);
+      assert.equal(firstWeek.reduce((n,x)=>n+(x.reservedMeters??0),0),25_000,'all same-week engine reservations fill, but do not exceed, the approved 25 km');
+    }
   }
 });
 
