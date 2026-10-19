@@ -5,13 +5,15 @@ export function makeQaResult(w:Workout, partial=false):WorkoutResult{
   const mps=w.speedRangeMps?(w.speedRangeMps[0]+w.speedRangeMps[1])/2:
     w.paceRangeSecondsPerKm?1000/((w.paceRangeSecondsPerKm[0]+w.paceRangeSecondsPerKm[1])/2):3;
   const repeats:WorkoutResult['repeats']=[];
-  if(w.main.mode==='INTERVALS' && w.main.repeats>0){
-    for(let i=0;i<w.main.repeats;i++){
+  const measuredQuality=w.speedRangeMps!==null && w.type!=='EASY' && w.type!=='LONG_EASY';
+  const repeatCount=Math.max(1,w.main.repeats);
+  if(w.main.mode==='INTERVALS' || measuredQuality){
+    for(let i=0;i<repeatCount;i++){
       const metres=w.main.dose.unit==='METERS'
-        ? i===w.main.repeats-1 ? (w.main.finalRepeatMeters??w.main.repeatMeters??w.main.dose.value)
+        ? i===repeatCount-1 ? (w.main.finalRepeatMeters??w.main.repeatMeters??w.main.dose.value)
           : (w.main.repeatMeters??w.main.dose.value)
-        : mps*w.main.dose.value*60/w.main.repeats;
-      const seconds=w.main.dose.unit==='MINUTES'?w.main.dose.value*60/w.main.repeats:metres/mps;
+        : mps*w.main.dose.value*60/repeatCount;
+      const seconds=w.main.dose.unit==='MINUTES'?w.main.dose.value*60/repeatCount:metres/mps;
       repeats.push({distanceMeters:metres,seconds});
     }
   }
