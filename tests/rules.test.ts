@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {applyBreak, classify, createEngine, deserialize, recordCheckpoint, recordResult, replan, resolveDiagnostic, prescribe, serialize, skipWorkout, updateTrainingData} from '../src/index.ts';
+import {applyBreak, classify, createEngine, deserialize, recordCheckpoint, recordResult, replan, prescribe, serialize, skipWorkout, updateTrainingData} from '../src/index.ts';
 import {NOW, dateAfter, experienced, feedback, healthy, nextQuality, performQuality, profile} from './helpers.ts';
 
 test('GREEN → GREEN: first holds, second progresses one volume parameter',()=>{
@@ -26,12 +26,12 @@ test('unrelated environment and recovery YELLOW do not merge',()=>{
  const easy=s.queue[0]!;s=recordResult(s,easy.id,feedback(easy));const n=nextQuality(s);
  s=recordResult(n.state,n.workout.id,feedback(n.workout,'YELLOW',{yellowReason:'RECOVERY',unexpectedFatigue:true}));assert.equal(s.relatedYellow,false);
 });
-test('two related yellow roll back last confirmed dose and restrict quality after diagnostic',()=>{
+test('two related healthy yellow roll back last confirmed dose and require an easy confirmation',()=>{
  let s=createEngine(profile({...experienced,availableRunsPerWeek:4,actualRunsPerWeek:4}),NOW);s=performQuality(s);s=performQuality(s);
- const confirmed=structuredClone(s.confirmedDoses);let n=nextQuality(s);s=recordResult(n.state,n.workout.id,feedback(n.workout,'YELLOW'));
- const easy=s.queue[0]!;s=recordResult(s,easy.id,feedback(easy));n=nextQuality(s);s=recordResult(n.state,n.workout.id,feedback(n.workout,'YELLOW'));
+ const confirmed=structuredClone(s.confirmedDoses);const n=nextQuality(s);s=recordResult(n.state,n.workout.id,feedback(n.workout,'YELLOW'));
+ const easy=s.queue[0]!;s=recordResult(s,easy.id,feedback(easy,'YELLOW',{unexpectedFatigue:true}));
  assert.equal(s.relatedYellow,true);assert.deepEqual(s.doses,confirmed);
- s=resolveDiagnostic(s,healthy(),s.asOf);assert.equal(s.decision.maximumQualityPerWeek,1);
+ assert.equal(s.diagnosticHold,false);assert.equal(s.queue.find(w=>w.type==='EASY')!.volumeFactor,.8);assert.equal(s.decision.maximumQualityPerWeek,0);
 });
 test('PARTIAL → OPEN requires two successful specific workouts; no simultaneous speed+volume growth',()=>{
  let s=createEngine(profile({...experienced,actualRunsPerWeek:4,availableRunsPerWeek:4,averageWeeklyKm4Weeks:28,longestUsualRunKm:9}),NOW);
@@ -59,7 +59,7 @@ for(const days of [1,3,4,7,8,14,15,30]) test(`healthy break ${days} days has cor
  let s=createEngine(profile({...experienced,raceDate:dateAfter(100)}),NOW);s=performQuality(s);const now=dateAfter(days,s.asOf);
  s=applyBreak(s,{days,endDate:now,reason:'WORK'},now);
  if(days<=3){assert.equal(s.reentry,null);assert.equal(s.decision.phase,'DEVELOPMENT');}
- else if(days<=7){assert.equal(s.reentry!.easyFactor,.8);assert.equal(s.reentry!.qualityFactor,.85);const q=nextQuality(s).workout;assert.equal(q.volumeFactor,.85);}
+ else if(days<=7){assert.equal(s.reentry!.easyFactor,.8);assert.equal(s.reentry!.qualityFactor,.85);const easy=s.queue.find(w=>w.type==='EASY')!;s=recordResult(s,easy.id,feedback(easy));const q=nextQuality(s).workout;assert.equal(q.volumeFactor,.85);}
  else {assert.equal(s.reentry!.easyRemaining,2);assert.equal(s.decision.gate,'CLOSED');assert.ok(s.queue.every(w=>!w.countsAsQuality));}
  if(days>14){assert.equal(s.decision.confidence,'LOW');for(let i=0;i<2;i++){const w=s.queue[0]!;s=recordResult(s,w.id,feedback(w));}assert.equal(s.diagnosticHold,true);assert.equal(s.checkpointRequired,true);assert.ok(s.queue.every(w=>!w.countsAsQuality));s=recordCheckpoint(s,{timeSeconds:930,date:s.asOf,source:'TEST_3K'},s.asOf);assert.equal(s.decision.confidence,'HIGH');assert.equal(s.reentry,null);}
 });

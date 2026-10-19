@@ -98,8 +98,11 @@ export function longRunShares(s: EngineState): {long: number; other: number} | n
   const runs = Math.min(p.availableRunsPerWeek, Math.max(1, p.actualRunsPerWeek));
   if (runs < 3) return null;
   const budget = approvedWeekMeters(s);
-  const long = p.longestUsualRunKm * budget / p.averageWeeklyKm4Weeks;
+  const long = Math.max(p.longestUsualRunKm * budget / p.averageWeeklyKm4Weeks, p.longestUsualRunKm * 1000 * .65);
   if (!(long < budget)) return null;
   const other = (budget - long) / (runs - 1);
+  // A long run is only meaningful when the existing weekly budget can also support
+  // ordinary runs of at least 2 km. Otherwise the caller keeps an aerobic slot or drops it.
+  if (other < 2000) return null;
   return long > other ? {long, other} : null;
 }

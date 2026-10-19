@@ -129,6 +129,10 @@ export interface EngineState {
   successfulQuality: number; successfulIntro: number; successfulSpecificPartial: number;
   greenPlusIds: string[]; checkpointRequired: boolean; lastAssessmentDate: string;
   relatedYellow: boolean; reducedQualityUntilConfirmed: boolean; diagnosticHold: boolean; progressionBlocked: boolean;
+  /** Healthy non-medical repeat YELLOW: require one confirmed easy before quality can return. */
+  yellowEasyRequired?: boolean;
+  /** Existing re-entry coefficient carried through the required easy confirmation. */
+  pendingQualityFactor?: number | null;
   doses: Partial<Record<WorkoutType, Dose>>; confirmedDoses: Partial<Record<WorkoutType, Dose>>;
   successStreak: Partial<Record<WorkoutType, number>>; qualityRotation: number;
   reentry: { breakDays: number; easyRemaining: number; easyReductionPending: boolean; easyFactor: number; qualityFactor: number; diagnosticRequired: boolean } | null;

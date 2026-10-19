@@ -90,7 +90,9 @@ test('MOVE-04 through MOVE-07 the engine refusal is reported by its own code', (
   }
 
   // Recovery: two quality sessions cannot end up a day apart.
-  const recovery = appCycle({...experienced, availableRunsPerWeek: 4});
+  // Give the recovery-spacing case enough approved budget for two quality sessions plus
+  // the newly protected long run and meaningful EASY mileage.
+  const recovery = appCycle({...experienced, averageWeeklyKm4Weeks: 25, availableRunsPerWeek: 4});
   const qualities = recovery.engineState.queue.filter((workout) => workout.countsAsQuality);
   assert.ok(qualities.length >= 2, 'the fixture needs two quality sessions');
   const recoveryOutcome = moveScheduledWorkout({

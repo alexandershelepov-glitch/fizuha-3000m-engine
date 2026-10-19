@@ -61,7 +61,7 @@ test('AUDIT-FEEDBACK-01 easy can be GREEN without any measured duration, distanc
   assert.equal(classify(easy,parsed.result).evaluation,'GREEN');
 });
 
-test('AUDIT-LOAD-03 first half-completed EASY repeats full distance; the second triggers protective REST',()=>{
+test('AUDIT-LOAD-03 first half-completed EASY repeats full distance; repeated healthy YELLOW requires reduced EASY',()=>{
   let state=highAvailabilityLowHabit();
   for(let i=0;i<2;i++){
     const current=state.queue.find(w=>w.scheduledDate>=state.asOf)!;
@@ -78,8 +78,9 @@ test('AUDIT-LOAD-03 first half-completed EASY repeats full distance; the second 
       assert.equal(next.main.dose.value,5000);
     }else{
       assert.equal(state.relatedYellow,true);
-      assert.equal(state.diagnosticHold,true);
-      assert.equal(next.type,'REST','repeated YELLOW has a genuine protective effect');
+      assert.equal(state.diagnosticHold,false);
+      assert.equal(next.type,'EASY','healthy repeated YELLOW receives a bounded easy adaptation');
+      assert.ok(next.volumeFactor<=.8);
     }
   }
 });

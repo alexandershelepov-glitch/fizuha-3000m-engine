@@ -139,12 +139,11 @@ test('C08 two related YELLOW outrank an approaching start', () => {
   perform('YELLOW');
   for (let n = 0; n < 90; n++) {
     const easy = s.queue.find(x => x.type === 'EASY');
-    if (easy) { s = recordResult(s, easy.id, feedback(easy)); break; }
+      if (easy) { s = recordResult(s, easy.id, feedback(easy, 'YELLOW', {unexpectedFatigue: true})); break; }
     s = replan(s, dateAfter(1, s.asOf));
   }
-  perform('YELLOW');
   assert.equal(s.relatedYellow, true);
-  assert.equal(s.decision.phase, 'HOLD_DIAGNOSTIC');
+  assert.notEqual(s.decision.phase, 'HOLD_DIAGNOSTIC');
   assert.equal(s.decision.gate, 'CLOSED');
   assert.equal(s.decision.maximumQualityPerWeek, 0);
   assert.ok(s.queue.every(w => !w.countsAsQuality));
