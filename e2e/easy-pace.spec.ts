@@ -12,7 +12,7 @@ test('EASY session shows concrete running pace, treadmill speed, distance and ex
   expect(easy,'at least one EASY session should be prescribed in current cycle').toBeTruthy();
   await page.goto('/workout/'+encodeURIComponent(easy!.id));
   await expect(page.locator('.instruction__headline')).toContainText(/спокойный бег/);
-  await expect(page.getByText(/Держи темп/)).toContainText(/мин\/км/);
+  await expect(page.getByText(/Держите темп/)).toContainText(/мин\/км/);
   await expect(page.getByText(/На дорожке установи скорость/)).toContainText(/км\/ч/);
   await expect(page.getByText(/Ожидаемое время на дистанции/)).toBeVisible();
   await expect(page.getByText(/Не бегите быстрее/)).toContainText(/мин\/км/);
