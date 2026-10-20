@@ -179,6 +179,8 @@ export interface WorkoutInstruction {
   /** "Сегодня: 6 × 400 м" */
   readonly headline: string;
   readonly steps: readonly string[];
+  /** Non-action explanations do not consume numbered steps. */
+  readonly notes: readonly string[];
   /** The main feeling in words, taken from the existing effort scale. */
   readonly effort: string;
   /** "Усилие: 8–9 из 10" — the technical twin of the words above. */
@@ -308,8 +310,9 @@ function headlineFor(workout: Workout): string {
   return `${label} ${distanceText(dose.value)}`;
 }
 
-function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): string[] {
+function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): {steps: string[]; notes: string[]} {
   const steps: string[] = [];
+  const notes: string[] = [];
   const {dose, repeats} = workout.main;
   const structure = workoutRepeats(workout);
   if (structure !== null) {
@@ -347,17 +350,17 @@ function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): s
     steps.push(copy.targetPace(pace));
     if (speed !== null) steps.push(copy.treadmillSpeed(speed));
   } else {
-    steps.push(copy.unpacedIntervals);
+    notes.push(copy.unpacedIntervals);
   }
 
   if (workoutIntervals(workout)?.kind === 'TIME') {
     const estimate = estimatedTimeRepeatDistance(workout);
-    steps.push(estimate === null ? copy.timeIntervalsNoDistance : copy.timeIntervalsEstimatedDistance(estimate));
+    notes.push(estimate === null ? copy.timeIntervalsNoDistance : copy.timeIntervalsEstimatedDistance(estimate));
   }
   if (workout.restSeconds > 0 && repeats > 1) {
     steps.push(copy.restBetweenRepeats(durationText(workout.restSeconds)));
   }
-  return steps;
+  return {steps, notes};
 }
 
 function continuousSteps(workout: Workout, paceText: string | null): string[] {
@@ -431,12 +434,14 @@ export function workoutInstruction(workout: Workout): WorkoutInstruction {
   const paceText = paceRangeText(pace);
   const splits = splitsFor(workout);
   const steps: string[] = [];
+  const notes: string[] = [];
 
   // A rest day carries no work at all: it is stated, not dressed up as a session.
   if (workout.main.mode === 'REST') {
     return {
       headline: copy.today(headlineFor(workout)),
       steps: [copy.rest],
+      notes: [],
       effort: effortFor(workout),
       effortScale: copy.effortScale(effortRangeText(workout)),
       guidance: [],
@@ -452,7 +457,13 @@ export function workoutInstruction(workout: Workout): WorkoutInstruction {
   if (workout.warmupMinutes > 0) steps.push(copy.warmup(workout.warmupMinutes));
 
   const isInterval = workout.main.mode === 'INTERVALS';
-  steps.push(...(isInterval ? intervalSteps(workout, splits) : continuousSteps(workout, paceText)));
+  if (isInterval) {
+    const intervals = intervalSteps(workout, splits);
+    steps.push(...intervals.steps);
+    notes.push(...intervals.notes);
+  } else {
+    steps.push(...continuousSteps(workout, paceText));
+  }
 
   if (workout.cooldownMinutes > 0) {
     steps.push(isInterval ? copy.cooldownAfterRepeats(workout.cooldownMinutes) : copy.cooldown(workout.cooldownMinutes));
@@ -461,6 +472,7 @@ export function workoutInstruction(workout: Workout): WorkoutInstruction {
   return {
     headline: workout.main.calibration === true ? copy.today('калибровка темпа · ' + headlineFor(workout)) : copy.today(headlineFor(workout)),
     steps,
+    notes,
     effort: effortFor(workout),
     effortScale: copy.effortScale(effortRangeText(workout)),
     guidance: workout.main.mode === 'INTERVALS' ? [] : guidanceFor(workout),
