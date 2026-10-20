@@ -13,10 +13,10 @@ test('EASY session shows concrete running pace, treadmill speed, distance and ex
   await page.goto('/workout/'+encodeURIComponent(easy!.id));
   await expect(page.locator('.instruction__headline')).toContainText(/спокойный бег/);
   await expect(page.getByText(/Держите темп/)).toContainText(/мин\/км/);
-  await expect(page.getByText(/На дорожке установи скорость/)).toContainText(/км\/ч/);
+  await expect(page.getByText(/На дорожке установите скорость/)).toContainText(/км\/ч/);
   await expect(page.getByText(/Ожидаемое время на дистанции/)).toBeVisible();
   await expect(page.getByText(/Не бегите быстрее/)).toContainText(/мин\/км/);
   await page.screenshot({path:info.outputPath('issue-30-easy-assignment-390.png'),fullPage:true});
   await page.reload();
-  await expect(page.getByText(/На дорожке установи скорость/)).toBeVisible();
+  await expect(page.getByText(/На дорожке установите скорость/)).toBeVisible();
 });
