@@ -199,7 +199,7 @@ describe('the workout card and the technical block', () => {
     );
 
     expect(screen.getByText('Сегодня: 4 × 51 с')).toBeInTheDocument();
-    expect(screen.getByText('Выполни 4 отрезка. Каждый отрезок длится 51 секунду.')).toBeInTheDocument();
+    expect(screen.getByText('Выполните 4 отрезка. Каждый отрезок длится 51 секунду.')).toBeInTheDocument();
     expect(within(rowOf('Объём')).getByText('3 минуты 24 секунды')).toBeInTheDocument();
     expect(within(rowOf('Отрезки')).getByText('4 × 51 с')).toBeInTheDocument();
     expect(within(rowOf('Дистанция одного отрезка')).getByText('Не задана (отрезки по времени)')).toBeInTheDocument();
