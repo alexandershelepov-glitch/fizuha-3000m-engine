@@ -9,8 +9,11 @@ import type {FieldKey, FieldProblem, QuestionnaireDraft, QuestionnaireStep} from
 import {questionnaire} from './copy/text.ts';
 
 const TIME_FIELDS: readonly FieldKey[] = ['resultTime', 'targetTime'];
+/** Fields answered by picking an option, not by typing: their EMPTY wording talks about choosing. */
+const CHOICE_FIELDS: readonly FieldKey[] = ['canRun3Km', 'performanceMismatch'];
 
 export function problemMessage(problem: FieldProblem): string {
+  if (CHOICE_FIELDS.includes(problem.field)) return questionnaire.choiceErrors.EMPTY;
   if (TIME_FIELDS.includes(problem.field)) return questionnaire.timeErrors[problem.kind === 'NOT_A_NUMBER' ? 'FORMAT' : problem.kind];
   if (problem.field === 'raceDate' || problem.field === 'resultDate') {
     return problem.kind === 'EMPTY' ? questionnaire.dateErrors.EMPTY : questionnaire.dateErrors.FORMAT;
