@@ -120,7 +120,7 @@ export function Checkbox({id, checked, onChange, label, hint}: {id: string; chec
       <input id={id} type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
       <span>
         <span className="checkbox__label">{label}</span>
-        {hint === undefined ? null : <span className="checkbox__hint">{hint}</span>
+        {hint === undefined ? null : <span className="checkbox__hint">{hint}</span>}
       </span>
     </label>
   );
