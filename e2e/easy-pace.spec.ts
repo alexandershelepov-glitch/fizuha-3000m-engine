@@ -15,7 +15,7 @@ test('EASY session shows concrete running pace, treadmill speed, distance and ex
   await expect(page.getByText(/Держи темп/)).toContainText(/мин\/км/);
   await expect(page.getByText(/На дорожке установи скорость/)).toContainText(/км\/ч/);
   await expect(page.getByText(/Ожидаемое время на дистанции/)).toBeVisible();
-  await expect(page.getByText(/Не беги быстрее/)).toContainText(/мин\/км/);
+  await expect(page.getByText(/Не бегите быстрее/)).toContainText(/мин\/км/);
   await page.screenshot({path:info.outputPath('issue-30-easy-assignment-390.png'),fullPage:true});
   await page.reload();
   await expect(page.getByText(/На дорожке установи скорость/)).toBeVisible();
