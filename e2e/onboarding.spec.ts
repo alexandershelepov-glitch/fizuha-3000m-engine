@@ -44,6 +44,7 @@ test('happy path: first run, questionnaire, review, assessment, ready plan, Toda
   // Nothing is stored before the explicit action.
   expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBeNull();
 
+  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
 
   // The assessment explains the engine's verdict in words.
@@ -70,6 +71,7 @@ test('happy path: first run, questionnaire, review, assessment, ready plan, Toda
 
 test('the active cycle survives a reload', async ({page}) => {
   await fillQuestionnaire(page);
+  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
   await page.getByRole('button', {name: 'Посмотреть план'}).click();
   await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
@@ -110,6 +112,7 @@ test('an engine rejection is reported by code, not by its English message', asyn
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await page.getByLabel('Дата итогового забега').fill('2020-01-01');
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
+  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
 
   await expect(page.getByText('Дата старта уже прошла')).toBeVisible();
@@ -152,6 +155,7 @@ test('the build is installable and keeps working offline', async ({page, context
 
   // Create a cycle, then reload once so every asset is served through the worker.
   await fillQuestionnaire(page);
+  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
   await page.getByRole('button', {name: 'Посмотреть план'}).click();
   await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
@@ -176,6 +180,7 @@ test('the build is installable and keeps working offline', async ({page, context
 test('INV-1: two days later an unrecorded session blocks the plan refresh', async ({page}) => {
   await page.clock.install();
   await fillQuestionnaire(page);
+  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
   await page.getByRole('button', {name: 'Посмотреть план'}).click();
   await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
@@ -222,6 +227,7 @@ test('a damaged record can be discarded, but only after a confirmation', async (
 
 test('a user can safely restart onboarding from Profile without losing archived cycles', async ({page}) => {
   await fillQuestionnaire(page);
+  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
   await page.getByRole('button', {name: 'Посмотреть план'}).click();
   await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
@@ -263,6 +269,7 @@ test('a browser that denies storage is reported instead of silently using memory
 test('the app crosses midnight without a reload', async ({page}) => {
   await page.clock.install();
   await fillQuestionnaire(page);
+  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
   await page.getByRole('button', {name: 'Посмотреть план'}).click();
   await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
@@ -280,6 +287,7 @@ test('the app crosses midnight without a reload', async ({page}) => {
 
 test('a plan refresh does not reopen onboarding', async ({page}) => {
   await fillQuestionnaire(page);
+  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
   await page.getByRole('button', {name: 'Посмотреть план'}).click();
   await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
@@ -304,6 +312,7 @@ test('a paused plan explains why it contains only rest and can recover without a
   await page.getByRole('button', {name: 'Есть жалобы или сомнения — заполнить подробно'}).click();
   await page.getByRole('button', {name: 'Насколько сильна боль: 3'}).click();
   await page.goto('/review');
+  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
   await page.getByRole('button', {name: 'Посмотреть план'}).click();
   await expect(page.getByRole('heading', {name: 'Подготовка временно приостановлена'})).toBeVisible();
