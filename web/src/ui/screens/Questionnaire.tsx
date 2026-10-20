@@ -258,6 +258,7 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
       <Field id="availableRunsPerWeek" label={questionnaire.fields.availableRunsPerWeek.label} error={error('availableRunsPerWeek')}>
         <TextInput id="availableRunsPerWeek" value={draft.availableRunsPerWeek} onChange={(value) => update({availableRunsPerWeek: value})} inputMode="numeric" />
       </Field>
+      {draft.hasResult ? (
       <Field id="performanceMismatch" label={questionnaire.fields.performanceMismatch.label} error={error('performanceMismatch')}>
         <Choice
           id="performanceMismatch"
@@ -270,6 +271,7 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
           ]}
         />
       </Field>
+      ) : null}
     </>
   );
 }
