@@ -25,7 +25,7 @@ test('PACE-01: 15:00 current / 14:30 goal: EASY 5 km receives explicit numerical
   assert.equal(estimatedEasyTimeText(w),'34:10–37:55');
   const display=workoutInstruction(w);
   assert.equal(display.paceText,'6:50–7:35 мин/км');
-  assert.ok(display.steps.some(x=>x.includes('Не беги быстрее 6:50 мин/км')));
+  assert.ok(display.steps.some(x=>x.includes('Не бегите быстрее 6:50 мин/км')));
   assert.ok(display.steps.some(x=>x.includes('Ожидаемое время') && x.includes('34:10–37:55')));
 });
 
