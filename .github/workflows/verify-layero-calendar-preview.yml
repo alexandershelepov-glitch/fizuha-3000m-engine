@@ -55,7 +55,7 @@ jobs:
                 exit 1
               fi
               bundle=$(curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "https://${host}${asset}?expected=${EXPECTED_SHA}")
-              for marker in 'calendar-screen' 'home-overview' 'Не беги быстрее' 'Калибровка: обязательно внеси фактическое время'; do
+              for marker in 'calendar-screen' 'home-overview' 'Не бегите быстрее' 'Калибровка: обязательно внеси фактическое время'; do
                 if ! echo "${bundle}" | grep -Fq "${marker}"; then
                   echo "Published bundle for ${EXPECTED_SHA} is missing expected UI marker: ${marker}"
                   exit 1

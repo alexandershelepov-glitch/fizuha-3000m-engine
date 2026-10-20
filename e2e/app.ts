@@ -56,6 +56,7 @@ export async function fillQuestionnaireExperienced(page: Page): Promise<void> {
 
 /** Create the cycle from the review screen and land on Today. */
 export async function createCycleAndReachToday(page: Page): Promise<void> {
+  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
   await page.getByRole('button', {name: 'Посмотреть план'}).click();
   await page.getByRole('button', {name: 'Перейти к подготовке'}).click();

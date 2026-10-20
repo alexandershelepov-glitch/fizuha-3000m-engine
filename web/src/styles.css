@@ -468,6 +468,12 @@ input {
   height: 22px;
 }
 
+.checkbox > span { display: flex; flex-direction: column; gap: var(--space-1); }
+.checkbox__label { display: block; }
+.checkbox__hint { display: block; font-size: var(--text-xs); color: var(--muted); font-weight: 400; }
+.input::placeholder { color: #738995; opacity: 1; }
+
+
 .repeat {
   display: flex;
   flex-direction: column;

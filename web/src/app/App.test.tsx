@@ -29,7 +29,12 @@ function memoryStorage(initial: Record<string, string> = {}): KeyValueStorage & 
 }
 
 const path = (): string => `${window.location.pathname}${window.location.search}`;
-const click = (user: User, name: string): Promise<void> => user.click(screen.getByRole('button', {name}));
+const click = async (user: User, name: string): Promise<void> => {
+  if (name === 'Рассчитать план') {
+    await user.click(screen.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}));
+  }
+  await user.click(screen.getByRole('button', {name}));
+};
 const clickIn = (user: User, container: HTMLElement | Document, label: string): Promise<void> => {
   const button = [...container.querySelectorAll('button')].find((item) => item.textContent === label);
   if (!button) throw new Error(`button "${label}" is missing`);
@@ -167,6 +172,7 @@ describe('cycle creation', () => {
     expect(screen.getByText('15:20')).toBeInTheDocument();
     expect(screen.getByText('14:30')).toBeInTheDocument();
     expect(loadActiveCycle(createRepository(storage)).kind).toBe('EMPTY');
+    expect(screen.getByRole('button', {name: 'Рассчитать план'})).toBeDisabled();
 
     await click(user, 'Рассчитать план');
 
