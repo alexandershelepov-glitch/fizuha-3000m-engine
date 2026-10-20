@@ -119,8 +119,8 @@ export function Checkbox({id, checked, onChange, label, hint}: {id: string; chec
     <label className="checkbox" htmlFor={id}>
       <input id={id} type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
       <span>
-        {label}
-        {hint === undefined ? null : <span className="checkbox__hint">{hint}</span>}
+        <span className="checkbox__label">{label}</span>
+        {hint === undefined ? null : <span className="checkbox__hint">{hint}</span>
       </span>
     </label>
   );
