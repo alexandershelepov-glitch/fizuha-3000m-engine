@@ -33,9 +33,9 @@ test('CAL-01: beginner with 3km continuous ability but no race time receives exa
   assert.equal(w.speedRangeMps,null);
   const instruction=workoutInstruction(w);
   assert.match(instruction.headline,/калибровка темпа/);
-  assert.ok(instruction.steps.some(x=>x.includes('Пробеги 2 км')));
+  assert.ok(instruction.steps.some(x=>x.includes('Пробегите 2 км')));
   assert.ok(instruction.steps.some(x=>x.includes('2–4 из 10')));
-  assert.ok(instruction.steps.some(x=>x.includes('Засеки фактическое время')));
+  assert.ok(instruction.steps.some(x=>x.includes('Засеките фактическое время')));
   assert.ok(instruction.steps.some(x=>x.includes('двух подтверждённых измерений')));
 });
 test('CAL-02: two confirmed consistent trials generate provisional PERSONAL EASY target and 3km next dose',()=>{
