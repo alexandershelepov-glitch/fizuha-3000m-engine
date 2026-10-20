@@ -261,6 +261,10 @@ export const questionnaire = {
     EMPTY: 'Заполните это поле',
     NOT_A_NUMBER: 'Введите число',
   } as const,
+  /** Answers that are buttons rather than text: nothing is preselected, so an empty choice needs its own wording. */
+  choiceErrors: {
+    EMPTY: 'Выберите один из вариантов',
+  } as const,
   dateErrors: {
     EMPTY: 'Выберите дату',
     FORMAT: 'Выберите дату из календаря',
