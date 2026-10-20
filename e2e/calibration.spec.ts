@@ -26,7 +26,7 @@ test('untimed continuous beginner sees a measured EASY task and a blank real-tim
   expect(w.main.dose.value).toBe(2000);
   await page.goto('/workout/'+encodeURIComponent(w.id));
   await expect(page.locator('.instruction__headline')).toContainText('калибровка темпа');
-  await expect(page.getByText(/Засеки фактическое время/)).toBeVisible();
+  await expect(page.getByText(/Засеките фактическое время/)).toBeVisible();
   await expect(page.getByText(/двух подтверждённых измерений/)).toBeVisible();
   await page.screenshot({path:info.outputPath('beginner-calibration-390.png'),fullPage:true});
   await page.goto('/workout/'+encodeURIComponent(w.id)+'/result');
