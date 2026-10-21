@@ -11,13 +11,29 @@ export async function reset(page: Page): Promise<void> {
   await expect(page.getByRole('button', {name: 'Начать подготовку'})).toBeVisible();
 }
 
-/** Fill the result step and walk to the goal step. */
+/** A valid baseline date: ten days before the app's today, ISO format for the date input.
+ *  Computed inside the page so a Playwright clock installed by the test is respected. */
+export async function resultDate(page: Page): Promise<string> {
+  return page.evaluate(() => new Date(Date.now() - 10 * 86400000).toISOString().slice(0, 10));
+}
+
+/** Fill the result step and walk to the goal step, answering every material question explicitly. */
 export async function walkToGoal(page: Page): Promise<void> {
   await page.getByRole('button', {name: 'Начать подготовку'}).click();
   await page.getByLabel('Ваш результат').fill('15:20');
+  await page.getByLabel('Дата результата').fill(await resultDate(page));
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // VOLUME
+  await page.getByRole('button', {name: 'Да', exact: true}).click(); // canRun3Km
   await page.getByLabel(/Сколько недель подряд/).fill('8');
-  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
+  await page.getByLabel(/Сколько раз в неделю вы обычно бегаете сейчас/).fill('3');
+  await page.getByLabel(/Примерно сколько километров вы пробегаете за неделю/).fill('15');
+  await page.getByLabel(/Сколько километров обычно составляет ваша самая длинная пробежка/).fill('5');
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // QUALITY
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // SAFETY
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // BREAKS
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // AVAILABILITY
+  await page.getByRole('radio', {name: /Да, примерно соответствует/}).click();
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // GOAL
   await expect(page.getByText('Шаг 7 из 8')).toBeVisible();
 }
 
@@ -34,8 +50,13 @@ export async function fillQuestionnaireExperienced(page: Page): Promise<void> {
   // The result step first: the draft is persisted, so it survives moving between steps by URL.
   await page.goto('/questionnaire?step=RESULT');
   await page.getByLabel('Ваш результат').fill('15:20');
+  await page.getByLabel('Дата результата').fill(await resultDate(page));
   await page.goto('/questionnaire?step=VOLUME');
+  await page.getByRole('button', {name: 'Да', exact: true}).click(); // canRun3Km
   await page.getByLabel(/Сколько недель подряд/).fill('20');
+  await page.getByLabel(/Сколько раз в неделю вы обычно бегаете сейчас/).fill('4');
+  await page.getByLabel(/Примерно сколько километров вы пробегаете за неделю/).fill('26');
+  await page.getByLabel(/Сколько километров обычно составляет ваша самая длинная пробежка/).fill('9');
   await page.goto('/questionnaire?step=QUALITY');
   await page.getByRole('radio', {name: 'Знаю точное количество'}).click();
   // The labels now carry their own explanation, so they are matched by their leading words.
@@ -47,6 +68,7 @@ export async function fillQuestionnaireExperienced(page: Page): Promise<void> {
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();   // BREAKS
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();   // AVAILABILITY
   await page.getByLabel('Сколько тренировок в неделю вы можете выполнять').fill('4');
+  await page.getByRole('radio', {name: /Да, примерно соответствует/}).click();
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();   // GOAL
   await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();   // RACE_DATE
@@ -56,6 +78,7 @@ export async function fillQuestionnaireExperienced(page: Page): Promise<void> {
 
 /** Create the cycle from the review screen and land on Today. */
 export async function createCycleAndReachToday(page: Page): Promise<void> {
+  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
   await page.getByRole('button', {name: 'Рассчитать план'}).click();
   await page.getByRole('button', {name: 'Посмотреть план'}).click();
   await page.getByRole('button', {name: 'Перейти к подготовке'}).click();
@@ -86,8 +109,16 @@ export async function fillQuestionnaireWithoutResult(page: Page): Promise<void> 
   await page.goto('/questionnaire?step=RESULT');
   await page.getByRole('button', {name: 'Нет результата'}).click();
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // VOLUME
+  await page.getByRole('button', {name: 'Да', exact: true}).click(); // canRun3Km
   await page.getByLabel(/Сколько недель подряд/).fill('8');
-  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
+  await page.getByLabel(/Сколько раз в неделю вы обычно бегаете сейчас/).fill('2');
+  await page.getByLabel(/Примерно сколько километров вы пробегаете за неделю/).fill('8');
+  await page.getByLabel(/Сколько километров обычно составляет ваша самая длинная пробежка/).fill('4');
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // QUALITY
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // SAFETY
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // BREAKS
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // AVAILABILITY (no mismatch question without a result)
+  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // GOAL
   await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();

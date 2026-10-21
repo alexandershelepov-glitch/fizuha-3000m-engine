@@ -24,7 +24,7 @@ test('calendar: week/month, factual horizon and responsive screenshots', async (
   await expect(page.locator('.calendar-day--unformed').first()).toBeVisible();
   await page.getByRole('group', {name:'Режим календаря'}).getByRole('button',{name:'Неделя'}).click();
   await page.setViewportSize({width:1280,height:850});
-  await expect(page.getByRole('button',{name:'Календарь'})).toBeVisible();
+  await expect(page.getByRole('complementary',{name:'Разделы приложения'}).getByRole('button',{name:'План'})).toBeVisible();
   await expect(page.locator('.calendar-sidebar')).toBeVisible();
   await page.screenshot({path:info.outputPath('calendar-desktop-1280.png'),fullPage:true});
 });

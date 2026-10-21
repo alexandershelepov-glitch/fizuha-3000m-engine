@@ -10,6 +10,7 @@ function Harness({step}: {step: QuestionnaireStep}) {
   const [draft, setDraft] = useState<QuestionnaireDraft>(() => ({
     ...defaultDraft(deviceToday()), resultTime: '15:30', regularRunningWeeks: '20',
     actualRunsPerWeek: '4', averageWeeklyKm4Weeks: '26', longestUsualRunKm: '9',
+    canRun3Km: true, performanceMismatch: 'NONE', resultDate: addDays(deviceToday(), -10),
     qualityRecall: 'EXACT', qualitySessions8Weeks: '6', qualityWeeks8Weeks: '4',
     targetTime: '14:30',
   }));

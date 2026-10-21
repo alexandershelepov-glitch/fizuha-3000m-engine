@@ -111,9 +111,9 @@ function ResultStep({draft, update, error}: StepProps): ReactNode {
       {draft.hasResult ? (
         <>
           <Field id="resultTime" label={questionnaire.fields.resultTime.label} hint={questionnaire.fields.resultTime.hint} error={error('resultTime')}>
-            <TextInput id="resultTime" value={draft.resultTime} onChange={(value) => update({resultTime: value})} inputMode="text" placeholder="14:30" />
+            <TextInput id="resultTime" value={draft.resultTime} onChange={(value) => update({resultTime: value})} inputMode="text" placeholder="Например, 14:30" />
           </Field>
-          <Field id="resultDate" label={questionnaire.fields.resultDate.label} error={error('resultDate')}>
+          <Field id="resultDate" label={questionnaire.fields.resultDate.label} hint="Укажите дату, когда вы пробежали 3000 м с этим результатом." error={error('resultDate')}>
             <TextInput id="resultDate" type="date" value={draft.resultDate} onChange={(value) => update({resultDate: value})} />
           </Field>
           <Field id="resultSource" label={questionnaire.fields.resultSource.label} error={error('resultSource')}>
@@ -258,6 +258,7 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
       <Field id="availableRunsPerWeek" label={questionnaire.fields.availableRunsPerWeek.label} error={error('availableRunsPerWeek')}>
         <TextInput id="availableRunsPerWeek" value={draft.availableRunsPerWeek} onChange={(value) => update({availableRunsPerWeek: value})} inputMode="numeric" />
       </Field>
+      {draft.hasResult ? (
       <Field id="performanceMismatch" label={questionnaire.fields.performanceMismatch.label} error={error('performanceMismatch')}>
         <Choice
           id="performanceMismatch"
@@ -270,6 +271,7 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
           ]}
         />
       </Field>
+      ) : null}
     </>
   );
 }
@@ -277,14 +279,14 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
 function GoalStep({draft, update, error}: StepProps): ReactNode {
   return (
     <Field id="targetTime" label={questionnaire.fields.targetTime.label} hint={questionnaire.fields.targetTime.hint} error={error('targetTime')}>
-      <TextInput id="targetTime" value={draft.targetTime} onChange={(value) => update({targetTime: value})} inputMode="text" placeholder="14:00" />
+      <TextInput id="targetTime" value={draft.targetTime} onChange={(value) => update({targetTime: value})} inputMode="text" placeholder="Например, 14:00" />
     </Field>
   );
 }
 
 function RaceDateStep({draft, update, error}: StepProps): ReactNode {
   return (
-    <Field id="raceDate" label={questionnaire.fields.raceDate.label} error={error('raceDate')}>
+    <Field id="raceDate" label={questionnaire.fields.raceDate.label} hint="Выберите дату сдачи норматива. На разных устройствах порядок дня и месяца может отличаться." error={error('raceDate')}>
       <TextInput id="raceDate" type="date" value={draft.raceDate} onChange={(value) => update({raceDate: value, raceDateConfirmed: true})} />
     </Field>
   );
