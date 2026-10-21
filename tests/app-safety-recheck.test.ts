@@ -57,7 +57,10 @@ test('RECOVERY-04 past sessions must be closed before rechecking: no silent miss
 });
 
 test('RECOVERY-05 goal preview is exactly the engine verdict, never a second formula', () => {
-  const draft = {...defaultDraft(NOW), regularRunningWeeks: '20', resultTime: '15:20', targetTime: '14:30', raceDate: dateAfter(56)};
+  const draft = {...defaultDraft(NOW), regularRunningWeeks: '20', resultTime: '15:20',
+    resultDate: NOW, canRun3Km: true, actualRunsPerWeek: '3', averageWeeklyKm4Weeks: '15',
+    longestUsualRunKm: '5', performanceMismatch: 'NONE' as const,
+    targetTime: '14:30', raceDate: dateAfter(56)};
   const built = buildProfile(draft);
   assert.equal(built.ok, true);
   if (!built.ok) return;

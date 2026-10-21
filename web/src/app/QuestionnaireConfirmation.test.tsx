@@ -1,8 +1,8 @@
 /**
  * Material questionnaire answers must come from the person, not from a preselected default.
  * A fresh draft starts blank on every answer that shapes the plan, the walk is blocked until
- * each one is answered explicitly, and a stored draft from an earlier visit is never overwritten
- * by the new blank defaults. The no-result path must keep working without any of these answers.
+ * each one is answered explicitly. Confirmed drafts keep their answers; legacy guesses require
+ * new answers. The no-result path does not require a result date or a mismatch verdict.
  */
 import {afterEach, beforeEach, describe, expect, test} from 'vitest';
 import {cleanup, fireEvent, render, screen} from '@testing-library/react';
@@ -122,7 +122,7 @@ describe('a returning draft', () => {
     expect(loaded.performanceMismatch).toBe('CLEAR');
   });
 
-  test('a draft written by an older build with prefilled numbers still builds', () => {
+  test('a draft written by an older build requires new material answers', () => {
     const storage = memoryStorage();
     storage.setItem(QUESTIONNAIRE_DRAFT_KEY, JSON.stringify({
       resultTime: '15:20', resultDate: '2025-12-20', regularRunningWeeks: '8',
@@ -131,7 +131,15 @@ describe('a returning draft', () => {
       hasResult: true, resultSource: 'TEST_3K',
     }));
     const loaded = loadDraft(storage, '2026-01-10');
-    expect(buildProfile(loaded).ok).toBe(true);
+    expect(loaded.resultTime).toBe('15:20');
+    expect(loaded.regularRunningWeeks).toBe('8');
+    expect(loaded.resultDate).toBe('');
+    expect(loaded.canRun3Km).toBeNull();
+    expect(loaded.actualRunsPerWeek).toBe('');
+    expect(loaded.averageWeeklyKm4Weeks).toBe('');
+    expect(loaded.longestUsualRunKm).toBe('');
+    expect(loaded.performanceMismatch).toBeNull();
+    expect(buildProfile(loaded).ok).toBe(false);
   });
 });
 

@@ -11,6 +11,10 @@ import {QUESTIONNAIRE_DRAFT_KEY, RESULT_DRAFT_KEY} from './storage.ts';
 import type {ResultDraft} from './resultForm.ts';
 import type {KeyValueStorage} from './storage.ts';
 
+// Draft-only provenance: older builds prefilled material answers and cannot distinguish
+// those defaults from choices made by the person. This is unrelated to cycle serialization.
+const MATERIAL_ANSWERS_VERSION = 1;
+
 export function loadDraft(storage: KeyValueStorage | null, today: string): QuestionnaireDraft {
   const fallback = defaultDraft(today);
   if (storage === null) return fallback;
@@ -19,13 +23,18 @@ export function loadDraft(storage: KeyValueStorage | null, today: string): Quest
   if (raw === null) return fallback;
   try {
     const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed !== 'object' || parsed === null) return fallback;
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return fallback;
     // Merge over the defaults so a draft written by an older build cannot leave fields undefined.
-    const previous = parsed as Partial<QuestionnaireDraft>;
+    const {materialAnswersVersion, ...previous} = parsed as Partial<QuestionnaireDraft> & {materialAnswersVersion?: number};
     // Old questionnaires had exact numeric answers but no recall mode.
     const legacyExact = previous.qualityRecall === undefined &&
       (Number(previous.qualitySessions8Weeks ?? '0') > 0 || Number(previous.qualityWeeks8Weeks ?? '0') > 0);
-    return {...fallback, ...previous, qualityRecall: previous.qualityRecall ?? (legacyExact ? 'EXACT' : 'UNKNOWN')};
+    const loaded = {...fallback, ...previous, qualityRecall: previous.qualityRecall ?? (legacyExact ? 'EXACT' : 'UNKNOWN')};
+    if (materialAnswersVersion === MATERIAL_ANSWERS_VERSION) return loaded;
+    // Unknown provenance requires a fresh answer even when an old value looks valid.
+    // Do not write during loading or touch the separate active-cycle storage record.
+    return {...loaded, resultDate: '', canRun3Km: null, actualRunsPerWeek: '',
+      averageWeeklyKm4Weeks: '', longestUsualRunKm: '', performanceMismatch: null};
   } catch {
     return fallback;
   }
@@ -34,7 +43,7 @@ export function loadDraft(storage: KeyValueStorage | null, today: string): Quest
 export function saveDraft(storage: KeyValueStorage | null, draft: QuestionnaireDraft): void {
   if (storage === null) return;
   try {
-    storage.setItem(QUESTIONNAIRE_DRAFT_KEY, JSON.stringify(draft));
+    storage.setItem(QUESTIONNAIRE_DRAFT_KEY, JSON.stringify({...draft, materialAnswersVersion: MATERIAL_ANSWERS_VERSION}));
   } catch {
     // A draft that cannot be stored must never block the questionnaire.
   }
