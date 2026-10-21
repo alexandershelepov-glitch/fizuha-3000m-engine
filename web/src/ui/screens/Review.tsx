@@ -70,7 +70,8 @@ export function Review({draft, today, onCreate, onNavigate}: Props): ReactNode {
           : draft.qualityRecall === 'SOMETIMES' ? 'Несколько раз, без точных записей' : 'Нет точных данных'} />
         <KeyValue label={review.rows.breaks} value={draft.hasBreaks && draft.breaks.length > 0 ? draft.breaks.map((entry) => `${breakReasonText[entry.reason]}, ${entry.days} дн.`).join('; ') : review.rows.noBreaks} />
         <KeyValue label={review.rows.safety} value={safetyHasFlags(draft.safety) ? 'отмечено' : review.rows.noRestrictions} />
-        <KeyValue label={review.rows.mismatch} value={mismatchText[draft.performanceMismatch]} />
+        {/* Review is only reachable once the draft validates, so an unanswered mismatch cannot render. */}
+        <KeyValue label={review.rows.mismatch} value={draft.performanceMismatch === null ? '—' : mismatchText[draft.performanceMismatch]} />
       </Card>
 
       <div className="actions">

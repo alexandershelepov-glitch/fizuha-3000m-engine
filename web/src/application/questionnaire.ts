@@ -26,10 +26,13 @@ export type QualityRecall = 'NONE' | 'SOMETIMES' | 'REGULAR' | 'UNKNOWN' | 'EXAC
 export interface QuestionnaireDraft {
   readonly hasResult: boolean;
   readonly resultTime: string;
+  /** Blank until the user picks a date: the confirmed baseline must never be a silent default. */
   readonly resultDate: string;
   readonly resultSource: PerformanceSource;
-  readonly canRun3Km: boolean;
+  /** Null until the user answers: continuous 3 km capability gates the whole beginner path. */
+  readonly canRun3Km: boolean | null;
   readonly regularRunningWeeks: string;
+  /** The three baseline numbers start blank: they lock the weekly load budget for the cycle. */
   readonly actualRunsPerWeek: string;
   readonly averageWeeklyKm4Weeks: string;
   readonly longestUsualRunKm: string;
@@ -42,7 +45,8 @@ export interface QuestionnaireDraft {
   readonly hasBreaks: boolean;
   readonly breaks: readonly BreakEntryDraft[];
   readonly availableRunsPerWeek: string;
-  readonly performanceMismatch: PerformanceMismatch;
+  /** Null until the user answers: this decides whether the saved result still describes the runner. */
+  readonly performanceMismatch: PerformanceMismatch | null;
   readonly targetTime: string;
   readonly raceDate: string;
   /** Date explicitly reviewed by the user; the eight-week suggestion is not a decision. */
@@ -57,13 +61,13 @@ export function defaultDraft(today: string): QuestionnaireDraft {
   return {
     hasResult: true,
     resultTime: '',
-    resultDate: today,
+    resultDate: '',
     resultSource: 'TEST_3K',
-    canRun3Km: true,
+    canRun3Km: null,
     regularRunningWeeks: '',
-    actualRunsPerWeek: '3',
-    averageWeeklyKm4Weeks: '15',
-    longestUsualRunKm: '5',
+    actualRunsPerWeek: '',
+    averageWeeklyKm4Weeks: '',
+    longestUsualRunKm: '',
     qualityRecall: 'UNKNOWN',
     qualitySessions8Weeks: '0',
     qualityWeeks8Weeks: '0',
@@ -73,7 +77,7 @@ export function defaultDraft(today: string): QuestionnaireDraft {
     hasBreaks: false,
     breaks: [],
     availableRunsPerWeek: '3',
-    performanceMismatch: 'NONE',
+    performanceMismatch: null,
     targetTime: '',
     raceDate: addDaysIso(today, 56),
     raceDateConfirmed: false,
@@ -132,7 +136,11 @@ export function buildProfile(draft: QuestionnaireDraft): BuildProfileResult {
   if (draft.hasResult) {
     const time = parseTime(draft.resultTime);
     if (!time.ok) problems.push({field: 'resultTime', kind: time.error});
-    else performance = {timeSeconds: time.seconds, date: draft.resultDate, source: draft.resultSource};
+    // The baseline date is as material as the time: an empty or malformed date is caught here,
+    // while calendar rules (not in the future, not stale) stay with the engine.
+    if (draft.resultDate.trim().length === 0) problems.push({field: 'resultDate', kind: 'EMPTY'});
+    else if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.resultDate)) problems.push({field: 'resultDate', kind: 'FORMAT'});
+    if (time.ok) performance = {timeSeconds: time.seconds, date: draft.resultDate, source: draft.resultSource};
   }
 
   const target = parseTime(draft.targetTime);
@@ -149,6 +157,12 @@ export function buildProfile(draft: QuestionnaireDraft): BuildProfileResult {
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(draft.raceDate)) problems.push({field: 'raceDate', kind: draft.raceDate.trim().length === 0 ? 'EMPTY' : 'FORMAT'});
 
+  // Unanswered capability/mismatch questions are problems, not silent defaults: they decide the
+  // beginner path and whether the stored result may be trusted.
+  if (draft.canRun3Km === null) problems.push({field: 'canRun3Km', kind: 'EMPTY'});
+  // The mismatch question is about the stored result, so the no-result path never asks it.
+  if (draft.hasResult && draft.performanceMismatch === null) problems.push({field: 'performanceMismatch', kind: 'EMPTY'});
+
   // Inexact recollections are never treated as confirmed fast-training counts.
   const exactQuality = draft.qualityRecall === 'EXACT' || draft.qualityRecall === undefined;
   const profile: Profile = {
@@ -160,14 +174,14 @@ export function buildProfile(draft: QuestionnaireDraft): BuildProfileResult {
     availableRunsPerWeek: numberField(draft.availableRunsPerWeek, 'availableRunsPerWeek', problems),
     averageWeeklyKm4Weeks: numberField(draft.averageWeeklyKm4Weeks, 'averageWeeklyKm4Weeks', problems),
     longestUsualRunKm: numberField(draft.longestUsualRunKm, 'longestUsualRunKm', problems),
-    canRun3Km: draft.canRun3Km,
+    canRun3Km: draft.canRun3Km === true,
     qualitySessions8Weeks: exactQuality ? numberField(draft.qualitySessions8Weeks, 'qualitySessions8Weeks', problems) : 0,
     qualityWeeks8Weeks: exactQuality ? numberField(draft.qualityWeeks8Weeks, 'qualityWeeks8Weeks', problems) : 0,
     qualityMostlyTolerated: exactQuality ? draft.qualityMostlyTolerated : false,
     experience: {...draft.experience},
     breaks,
     safety: {...draft.safety},
-    performanceMismatch: draft.performanceMismatch,
+    performanceMismatch: draft.performanceMismatch ?? 'NONE',
   };
 
   return problems.length > 0 ? {ok: false, problems} : {ok: true, profile};

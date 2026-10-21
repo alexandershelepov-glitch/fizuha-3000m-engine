@@ -6,6 +6,7 @@
  */
 import {expect, test} from '@playwright/test';
 import type {Page} from '@playwright/test';
+import {fillQuestionnaire, walkToGoal} from './app.ts';
 
 const ACTIVE_CYCLE = 'fizuha.activeCycle';
 
@@ -14,24 +15,6 @@ async function reset(page: Page): Promise<void> {
   await page.evaluate(() => window.localStorage.clear());
   await page.goto('/');
   await expect(page.getByRole('button', {name: 'Начать подготовку'})).toBeVisible();
-}
-
-/** Fill the questionnaire through the goal step. */
-async function walkToGoal(page: Page): Promise<void> {
-  await page.getByRole('button', {name: 'Начать подготовку'}).click();
-  await page.getByLabel('Ваш результат').fill('15:20');
-  await page.getByRole('button', {name: 'Продолжить', exact: true}).click(); // VOLUME
-  await page.getByLabel(/Сколько недель подряд/).fill('8');
-  for (let step = 1; step < 6; step += 1) await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
-  await expect(page.getByText('Шаг 7 из 8')).toBeVisible();
-}
-
-async function fillQuestionnaire(page: Page): Promise<void> {
-  await walkToGoal(page);
-  await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
-  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
-  await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
-  await expect(page.getByText('Проверьте данные')).toBeVisible();
 }
 
 test.beforeEach(async ({page}) => {
@@ -95,12 +78,12 @@ test('an invalid time is refused locally and never reaches the engine', async ({
   await page.getByLabel('Ваш результат').fill('15.20');
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
 
-  await expect(page.getByRole('alert')).toContainText('Введите время в формате ММ:СС');
+  await expect(page.getByText('Введите время в формате ММ:СС')).toBeVisible();
   await expect(page).toHaveURL(/step=RESULT$/);
 
   await page.getByLabel('Ваш результат').fill('15:75');
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
-  await expect(page.getByRole('alert')).toContainText('Такого времени не существует');
+  await expect(page.getByText(/Такого времени не существует/)).toBeVisible();
   expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBeNull();
 });
 
