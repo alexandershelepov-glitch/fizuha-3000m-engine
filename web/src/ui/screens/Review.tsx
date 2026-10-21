@@ -7,6 +7,7 @@ import {copyForError} from '../copy/errors.ts';
 import {breakReasonText, mismatchText} from '../copy/values.ts';
 import {common, review} from '../copy/text.ts';
 import {Button} from '../components/Button.tsx';
+import {Checkbox} from '../components/Field.tsx';
 import {Card, KeyValue, Notice} from '../components/Layout.tsx';
 import type {Route} from '../../app/routes.ts';
 
@@ -29,8 +30,10 @@ const timeOrRaw = (raw: string): string => {
 
 export function Review({draft, today, onCreate, onNavigate}: Props): ReactNode {
   const [outcome, setOutcome] = useState<CreateOutcome | null>(null);
+  const [inputsConfirmed, setInputsConfirmed] = useState(false);
 
   const handleCreate = (): void => {
+    if (!inputsConfirmed) return;
     const result = onCreate(draft);
     setOutcome(result);
     if (result.kind === 'CREATED') onNavigate({name: 'ASSESSMENT'});
@@ -73,8 +76,11 @@ export function Review({draft, today, onCreate, onNavigate}: Props): ReactNode {
         <KeyValue label={review.rows.mismatch} value={mismatchText[draft.performanceMismatch]} />
       </Card>
 
+      <Checkbox id="inputs-confirmed" checked={inputsConfirmed} onChange={setInputsConfirmed}
+        label="Подтверждаю, что проверил исходные данные"
+        hint="Время и дата результата, текущий объём и число тренировок должны отражать ваш реальный опыт. Исправьте значения, которые приложение подставило автоматически." />
       <div className="actions">
-        <Button onClick={handleCreate}>{review.primaryCta}</Button>
+        <Button onClick={handleCreate} disabled={!inputsConfirmed}>{review.primaryCta}</Button>
         <Button variant="ghost" onClick={() => onNavigate({name: 'QUESTIONNAIRE', step: 'RESULT'})}>{review.secondaryCta}</Button>
       </div>
 

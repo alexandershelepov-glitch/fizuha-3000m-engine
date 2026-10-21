@@ -82,6 +82,11 @@ export function WorkoutDetails({workout, resultAvailability, moveAvailability, o
             <li key={step} className="steps__item">{step}</li>
           ))}
         </ol>
+        {plan.notes.length > 0 ? (
+          <div className="instruction__notes" aria-label="Пояснения к тренировке">
+            {plan.notes.map((note) => <p className="hint" key={note}>{note}</p>)}
+          </div>
+        ) : null}
 
         {/* Two different repeat lengths are easier to read as their own lines. */}
         {plan.splits.length > 1 ? (

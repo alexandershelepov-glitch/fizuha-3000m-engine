@@ -148,8 +148,8 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
     <div className="screen calendar-screen">
       <aside className="calendar-sidebar" aria-label="Разделы приложения">
         <strong className="calendar-brand">↗ ФИЗУХА</strong>
-        <button type="button" onClick={() => onNavigate({name:'TODAY'})}>Главная</button>
-        <button type="button" aria-current="page">Календарь</button>
+        <button type="button" onClick={() => onNavigate({name:'TODAY'})}>Сегодня</button>
+        <button type="button" aria-current="page">План</button>
         <button type="button" onClick={() => onNavigate({name:'HISTORY'})}>История</button>
         <button type="button" onClick={() => onNavigate({name:'PROFILE'})}>Профиль</button>
       </aside>
@@ -233,7 +233,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
                 <span>Назначение для основной части; разминка и заминка показаны в карточке занятия.</span>
                 {workoutPaceRange(selected.workout) ? <p>Темп <b>{workoutPaceRange(selected.workout)}</b></p> : null}
                 {workoutSpeedRange(selected.workout) ? <p>Дорожка <b>{workoutSpeedRange(selected.workout)}</b></p> : null}
-                <p>Усилие <b>{workoutRpe(selected.workout)}</b></p>
+                <p>Усилие <b>{workoutRpe(selected.workout)} из 10</b></p>
               </div>
               {selected.result ? <p className="calendar-fact">Записано фактически: {selected.result.result.distanceMeters > 0 ? km(selected.result.result.distanceMeters) : 'дистанция не указана'}. Результат сохранён в истории.</p> : null}
               {selected.status === 'skipped' ? <p className="calendar-fact">Тренировка отмечена как пропущенная. Нагрузка не переносится автоматически.</p> : null}
