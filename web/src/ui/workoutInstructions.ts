@@ -179,6 +179,8 @@ export interface WorkoutInstruction {
   /** "Сегодня: 6 × 400 м" */
   readonly headline: string;
   readonly steps: readonly string[];
+  /** Non-action explanations do not consume numbered steps. */
+  readonly notes: readonly string[];
   /** The main feeling in words, taken from the existing effort scale. */
   readonly effort: string;
   /** "Усилие: 8–9 из 10" — the technical twin of the words above. */
@@ -214,8 +216,11 @@ export function paceRangeText(pace: readonly [number, number] | null): string | 
 export function treadmillSpeedText(workout: Workout): string | null {
   const pace = prescribedPace(workout);
   if (pace === null) return null;
-  const speedLow = (3600 / pace[1]).toFixed(1).replace('.', ',');
-  const speedHigh = (3600 / pace[0]).toFixed(1).replace('.', ',');
+  // On EASY, show conservative tenths: treadmill rounding must never tell the
+  // runner to exceed the fast edge of the pace prescription.
+  const easy = workout.type === 'EASY' || workout.type === 'LONG_EASY';
+  const speedLow = (easy ? Math.ceil((3600 / pace[1]) * 10) / 10 : 3600 / pace[1]).toFixed(1).replace('.', ',');
+  const speedHigh = (easy ? Math.floor((3600 / pace[0]) * 10) / 10 : 3600 / pace[0]).toFixed(1).replace('.', ',');
   return speedLow === speedHigh ? `${speedLow} км/ч` : `${speedLow}–${speedHigh} км/ч`;
 }
 
@@ -230,6 +235,16 @@ export function estimatedTimeRepeatDistance(workout: Workout): string | null {
   const lower = Math.floor((1000 * intervals.perRepeatSeconds / pace[1]) / 10) * 10;
   const upper = Math.ceil((1000 * intervals.perRepeatSeconds / pace[0]) / 10) * 10;
   return lower === upper ? `около ${lower} м` : `примерно ${lower}–${upper} м`;
+}
+
+/** Predicted time follows the assigned distance and pace; it is never an actual result. */
+export function estimatedEasyTimeText(workout: Workout): string | null {
+  if ((workout.type !== 'EASY' && workout.type !== 'LONG_EASY') ||
+      workout.main.mode !== 'CONTINUOUS' || workout.main.dose.unit !== 'METERS') return null;
+  const pace = prescribedPace(workout);
+  if (pace === null) return null;
+  const km = workout.main.dose.value / 1000;
+  return `${shortTime(Math.round(pace[0] * km))}–${shortTime(Math.round(pace[1] * km))}`;
 }
 
 /** The nearest word the existing effort scale already has for this range. Ties pick the harder one. */
@@ -295,8 +310,9 @@ function headlineFor(workout: Workout): string {
   return `${label} ${distanceText(dose.value)}`;
 }
 
-function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): string[] {
+function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): {steps: string[]; notes: string[]} {
   const steps: string[] = [];
+  const notes: string[] = [];
   const {dose, repeats} = workout.main;
   const structure = workoutRepeats(workout);
   if (structure !== null) {
@@ -334,17 +350,17 @@ function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): s
     steps.push(copy.targetPace(pace));
     if (speed !== null) steps.push(copy.treadmillSpeed(speed));
   } else {
-    steps.push(copy.unpacedIntervals);
+    notes.push(copy.unpacedIntervals);
   }
 
   if (workoutIntervals(workout)?.kind === 'TIME') {
     const estimate = estimatedTimeRepeatDistance(workout);
-    steps.push(estimate === null ? copy.timeIntervalsNoDistance : copy.timeIntervalsEstimatedDistance(estimate));
+    notes.push(estimate === null ? copy.timeIntervalsNoDistance : copy.timeIntervalsEstimatedDistance(estimate));
   }
   if (workout.restSeconds > 0 && repeats > 1) {
     steps.push(copy.restBetweenRepeats(durationText(workout.restSeconds)));
   }
-  return steps;
+  return {steps, notes};
 }
 
 function continuousSteps(workout: Workout, paceText: string | null): string[] {
@@ -370,6 +386,13 @@ function continuousSteps(workout: Workout, paceText: string | null): string[] {
   }
 
   if (paceText === null) {
+    if (workout.main.calibration === true && mode === 'CONTINUOUS') {
+      steps.push(copy.calibrationTask(distanceText(dose.value)));
+      steps.push(copy.calibrationIntensity);
+      steps.push(copy.calibrationMeasure);
+      steps.push(copy.calibrationSubmit);
+      return steps;
+    }
     const what = dose.unit === 'MINUTES' ? counts.minutes(Math.round(dose.value)) : distanceText(dose.value);
     if (workout.type === 'EASY' || workout.type === 'LONG_EASY') {
       steps.push(copy.easyContinuous(distanceText(dose.value)));
@@ -381,6 +404,19 @@ function continuousSteps(workout: Workout, paceText: string | null): string[] {
       steps.push(copy.continuousByEffort(what));
       steps.push(copy.noteNoPace);
     }
+    return steps;
+  }
+
+  if (workout.type === 'EASY' || workout.type === 'LONG_EASY') {
+    steps.push(copy.easyAssigned(distanceText(dose.value), paceText));
+    const speed = treadmillSpeedText(workout);
+    if (speed !== null) steps.push(copy.easyTreadmill(speed));
+    const expected = estimatedEasyTimeText(workout);
+    if (expected !== null) steps.push(copy.easyExpectedTime(expected));
+    const pace = prescribedPace(workout)!;
+    steps.push(copy.easySpeedLimit(shortTime(pace[0])));
+    steps.push(copy.easyOutdoorCheck);
+    steps.push(copy.easySlowDown);
     return steps;
   }
 
@@ -398,12 +434,14 @@ export function workoutInstruction(workout: Workout): WorkoutInstruction {
   const paceText = paceRangeText(pace);
   const splits = splitsFor(workout);
   const steps: string[] = [];
+  const notes: string[] = [];
 
   // A rest day carries no work at all: it is stated, not dressed up as a session.
   if (workout.main.mode === 'REST') {
     return {
       headline: copy.today(headlineFor(workout)),
       steps: [copy.rest],
+      notes: [],
       effort: effortFor(workout),
       effortScale: copy.effortScale(effortRangeText(workout)),
       guidance: [],
@@ -419,15 +457,22 @@ export function workoutInstruction(workout: Workout): WorkoutInstruction {
   if (workout.warmupMinutes > 0) steps.push(copy.warmup(workout.warmupMinutes));
 
   const isInterval = workout.main.mode === 'INTERVALS';
-  steps.push(...(isInterval ? intervalSteps(workout, splits) : continuousSteps(workout, paceText)));
+  if (isInterval) {
+    const intervals = intervalSteps(workout, splits);
+    steps.push(...intervals.steps);
+    notes.push(...intervals.notes);
+  } else {
+    steps.push(...continuousSteps(workout, paceText));
+  }
 
   if (workout.cooldownMinutes > 0) {
     steps.push(isInterval ? copy.cooldownAfterRepeats(workout.cooldownMinutes) : copy.cooldown(workout.cooldownMinutes));
   }
 
   return {
-    headline: copy.today(headlineFor(workout)),
+    headline: workout.main.calibration === true ? copy.today('калибровка темпа · ' + headlineFor(workout)) : copy.today(headlineFor(workout)),
     steps,
+    notes,
     effort: effortFor(workout),
     effortScale: copy.effortScale(effortRangeText(workout)),
     guidance: workout.main.mode === 'INTERVALS' ? [] : guidanceFor(workout),

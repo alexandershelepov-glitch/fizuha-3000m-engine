@@ -29,7 +29,12 @@ function memoryStorage(initial: Record<string, string> = {}): KeyValueStorage & 
 }
 
 const path = (): string => `${window.location.pathname}${window.location.search}`;
-const click = (user: User, name: string): Promise<void> => user.click(screen.getByRole('button', {name}));
+const click = async (user: User, name: string): Promise<void> => {
+  if (name === 'Рассчитать план') {
+    await user.click(screen.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}));
+  }
+  await user.click(screen.getByRole('button', {name}));
+};
 const clickIn = (user: User, container: HTMLElement | Document, label: string): Promise<void> => {
   const button = [...container.querySelectorAll('button')].find((item) => item.textContent === label);
   if (!button) throw new Error(`button "${label}" is missing`);
@@ -40,9 +45,19 @@ const clickIn = (user: User, container: HTMLElement | Document, label: string): 
 async function walkToGoal(user: User): Promise<void> {
   await click(user, 'Начать подготовку');
   await user.type(screen.getByLabelText('Ваш результат'), '15:20');
+  fireEvent.change(screen.getByLabelText('Дата результата'), {target: {value: addDays(deviceToday(), -10)}});
   await click(user, 'Продолжить'); // VOLUME
+  await user.click(screen.getByRole('button', {name: 'Да'})); // canRun3Km
   await user.type(screen.getByLabelText(/Сколько недель подряд/), '8');
-  for (let step = 1; step < 6; step += 1) await click(user, 'Продолжить');
+  await user.type(screen.getByLabelText(/Сколько раз в неделю вы обычно бегаете сейчас/), '3');
+  await user.type(screen.getByLabelText(/Примерно сколько километров вы пробегаете за неделю/), '15');
+  await user.type(screen.getByLabelText(/Сколько километров обычно составляет ваша самая длинная пробежка/), '5');
+  await click(user, 'Продолжить'); // QUALITY
+  await click(user, 'Продолжить'); // SAFETY
+  await click(user, 'Продолжить'); // BREAKS
+  await click(user, 'Продолжить'); // AVAILABILITY
+  await user.click(screen.getByRole('radio', {name: /Да, примерно соответствует/}));
+  await click(user, 'Продолжить'); // GOAL
 }
 
 /** Walk the whole questionnaire to the review screen. */
@@ -108,16 +123,17 @@ describe('questionnaire', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     await user.type(time, '15.20');
     await click(user, 'Продолжить');
-    expect(screen.getByRole('alert')).toHaveTextContent('Введите время в формате ММ:СС');
+    expect(screen.getByText('Введите время в формате ММ:СС')).toHaveAttribute('role', 'alert');
     expect(path()).toBe('/questionnaire?step=RESULT');
 
     await user.clear(time);
     await user.type(time, '15:75');
     await click(user, 'Продолжить');
-    expect(screen.getByRole('alert')).toHaveTextContent('Такого времени не существует');
+    expect(screen.getByText(/Такого времени не существует/)).toHaveAttribute('role', 'alert');
 
     await user.clear(time);
     await user.type(time, '15:20');
+    fireEvent.change(screen.getByLabelText('Дата результата'), {target: {value: addDays(deviceToday(), -10)}});
     await click(user, 'Продолжить');
     expect(path()).toBe('/questionnaire?step=VOLUME');
   });
@@ -137,6 +153,7 @@ describe('questionnaire', () => {
     render(<App storage={memoryStorage()} />);
     await click(user, 'Начать подготовку');
     await user.type(screen.getByLabelText('Ваш результат'), '15:20');
+    fireEvent.change(screen.getByLabelText('Дата результата'), {target: {value: addDays(deviceToday(), -10)}});
     await click(user, 'Продолжить');
     await click(user, 'Назад');
 
@@ -167,6 +184,7 @@ describe('cycle creation', () => {
     expect(screen.getByText('15:20')).toBeInTheDocument();
     expect(screen.getByText('14:30')).toBeInTheDocument();
     expect(loadActiveCycle(createRepository(storage)).kind).toBe('EMPTY');
+    expect(screen.getByRole('button', {name: 'Рассчитать план'})).toBeDisabled();
 
     await click(user, 'Рассчитать план');
 
@@ -400,7 +418,7 @@ const EXPERIENCED: Partial<QuestionnaireDraft> = {
 };
 
 function seedCycle(today: string, createdOn: string, overrides: Partial<QuestionnaireDraft> = {}): string {
-  const filled = {...defaultDraft(today), regularRunningWeeks: '8', resultTime: '15:20', resultDate: addDays(createdOn, -10), targetTime: '14:30', raceDate: addDays(today, 56), ...overrides};
+  const filled = {...defaultDraft(today), regularRunningWeeks: '8', resultTime: '15:20', resultDate: addDays(createdOn, -10), actualRunsPerWeek: '3', averageWeeklyKm4Weeks: '15', longestUsualRunKm: '5', canRun3Km: true, performanceMismatch: 'NONE' as const, targetTime: '14:30', raceDate: addDays(today, 56), ...overrides};
   const built = buildProfile(filled);
   if (!built.ok) throw new Error('fixture: the draft must build');
   const seed = memoryStorage();

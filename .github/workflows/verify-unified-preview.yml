@@ -1,0 +1,31 @@
+name: Optional Layero unified UI preview
+
+on:
+  push:
+    branches: [design/issue-25-unified-ui]
+  pull_request:
+    branches: [feature/issue-24-calendar]
+  workflow_dispatch:
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check separate Layero branch preview
+        shell: bash
+        run: |
+          for host in \
+            fizuha-3000m-engine-design-issue-25-unified-ui.layero.app \
+            fizuha-3000m-engine-designissue25unifiedui.layero.app; do
+            echo "Checking https://${host}/"
+            if ! curl -fsSL --max-time 20 "https://${host}/" -o /tmp/preview; then continue; fi
+            asset=$(grep -oE 'src="/assets/[^"]+\.js"' /tmp/preview | head -n1 | cut -d '"' -f2)
+            if [ -z "${asset}" ]; then continue; fi
+            if curl -fsSL --max-time 20 "https://${host}${asset}" -o /tmp/app && grep -q 'home-overview' /tmp/app && grep -q 'calendar-screen' /tmp/app; then
+              echo "VERIFIED UNIFIED PREVIEW: https://${host}/"
+              exit 0
+            fi
+          done
+          echo "::notice::Standalone branch preview is not published in Layero yet. This does not block UI code review; use Playwright screenshots or merge into the existing test branch after approval."
+          exit 0

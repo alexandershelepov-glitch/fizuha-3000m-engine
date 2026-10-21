@@ -1,12 +1,13 @@
 import type { EngineState, PerformanceSnapshot, Profile, SafetyData, TrainingBreak, Workout, WorkoutResult, WorkoutType } from './models.ts';
 import { PERFORMANCE_SOURCES } from './models.ts';
-import { assessSafety, decide, taperDays } from './assessment.ts';
+import { assessConfidence, assessSafety, decide, taperDays } from './assessment.ts';
 import { classify, yellowFamily } from './feedback.ts';
 import { day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
 import { EngineError } from './errors.ts';
 import { generateQueue, guardWeeklyLoad, qualityDoseCeiling } from './workouts.ts';
 import {withinRollingWeekBudget} from './weeklyLoad.ts';
 import {LAST_RUN_WALK_STAGE} from './runWalk.ts';
+import {initialEasyPace} from './easyPace.ts';
 function copy(s: EngineState): EngineState { return structuredClone(s); }
 /**
  * Remove a workout from the plan. Approved decision 2: a missed session is deleted from the
@@ -89,8 +90,13 @@ function reviewEasyProgression(s: EngineState, now: string): void {
     h.workout.type !== 'REST' && h.result.feedbackConfirmed === true).length >= count);
   if (!bothWeeksVerified) { state.lastReviewedBlock = completedBlock; return; }
   // A separately increased quality prescription occupies this block's progression step.
-  if (Object.entries(s.doses).some(([type, dose]) =>
-    dose !== undefined && (s.confirmedDoses[type as Workout['type']]?.value ?? dose.value) < dose.value)) return;
+  // An increased introductory dose is no longer pending once a Q0 runner has moved on to THRESHOLD, whose first
+  // dose IS that introductory dose (`initialDose`) and has been confirmed at that value or more: INTRO_QUALITY is not
+  // prescribed again, so it could never be confirmed and would defer the volume step for the rest of the cycle.
+  const pendingQualityIncrease = Object.entries(s.doses).some(([type, dose]) =>
+    dose !== undefined && (s.confirmedDoses[type as Workout['type']]?.value ?? dose.value) < dose.value &&
+    !(type === 'INTRO_QUALITY' && (s.confirmedDoses.THRESHOLD?.value ?? 0) >= dose.value));
+  if (pendingQualityIncrease) return;
   state.lastReviewedBlock = completedBlock;
 
   if (!s.profile.canRun3Km) {
@@ -124,6 +130,11 @@ function reviewEasyProgression(s: EngineState, now: string): void {
 }
 function rebuildQueue(s: EngineState, now: string, preserve: Workout[] | null): EngineState {
   if (day(now) - day(s.lastAssessmentDate) >= 21 || s.profile.performanceMismatch === 'CLEAR') s.checkpointRequired = true;
+  // A checkpoint is a 3000 m time trial: `recordCheckpoint` refuses it (CHECKPOINT_NOT_PERMITTED) until continuous
+  // 3 km is confirmed, and `createEngine` already starts with `!performance && canRun3Km`. Demanding an unavailable
+  // checkpoint left such users in a dead end (QA issue #23 DEF-002, 12-week audit D-01). The due-rules above are
+  // unchanged: once the ability is confirmed (`updateTrainingData`), the same rules set the flag again.
+  if (!s.profile.canRun3Km) s.checkpointRequired = false;
   reviewEasyProgression(s, now);
   s.decision = decide(s, now);
   const generated = generateQueue(s, now);
@@ -168,7 +179,8 @@ export function applyBreak(state: EngineState, b: TrainingBreak, now: string, ad
     s.profile.safety.needsAssessment = true; s.diagnosticHold = true; s.progressionBlocked = true;
   } else if (b.days >= 4) {
     s.successfulSpecificPartial = 0;
-    s.reentry = {breakDays: b.days, easyRemaining: b.days >= 8 ? 2 : 0, easyReductionPending: b.days <= 7, easyFactor: b.days <= 7 ? .8 : .7, qualityFactor: b.days <= 7 ? .85 : .75, diagnosticRequired: b.days > 14};
+    s.reentry = {breakDays: b.days, easyRemaining: b.days >= 8 ? 2 : 1, easyReductionPending: true, easyFactor: b.days <= 7 ? .8 : .7, qualityFactor: b.days <= 7 ? .85 : .75, diagnosticRequired: b.days > 14};
+    s.pendingQualityFactor = s.reentry.qualityFactor;
   }
   return replan(s, now);
 }
@@ -199,13 +211,14 @@ export function recordResult(state: EngineState, workoutId: string, result: Work
     s.progressionBlocked = true; s.diagnosticHold = true; s.successStreak = {}; s.successfulSpecificPartial = 0;
   } else if (c.evaluation === 'YELLOW') {
     s.progressionBlocked = true; s.successStreak = {}; s.successfulSpecificPartial = 0; s.greenPlusIds = [];
-    if (previous && previous.classified.yellowReason && c.yellowReason && yellowFamily(previous.classified.yellowReason) === yellowFamily(c.yellowReason) && !s.history.slice(s.history.indexOf(previous) + 1, -1).some(h => h.workout.countsAsQuality && ['GREEN', 'GREEN_PLUS'].includes(h.classified.evaluation))) {
-      s.relatedYellow = true; s.reducedQualityUntilConfirmed = true; s.diagnosticHold = true; s.doses = structuredClone(s.confirmedDoses);
+    if (previous && previous.classified.yellowReason && c.yellowReason && yellowFamily(previous.classified.yellowReason) === yellowFamily(c.yellowReason) && !s.history.slice(s.history.indexOf(previous) + 1, -1).some(h => h.workout.type === 'EASY' && ['GREEN', 'GREEN_PLUS'].includes(h.classified.evaluation))) {
+      s.relatedYellow = true; s.yellowEasyRequired = true; s.reducedQualityUntilConfirmed = true; s.doses = structuredClone(s.confirmedDoses);
     }
-    if (c.yellowReason === 'PAIN' || c.yellowReason === 'ILLNESS') { s.diagnosticHold = true; s.profile.safety.needsAssessment = true; }
+    if (c.yellowReason === 'PAIN' || c.yellowReason === 'ILLNESS' || assessSafety(result.safety) !== 'OK') { s.diagnosticHold = true; s.profile.safety.needsAssessment = true; }
   } else {
     // A successful easy session clears an isolated non-health yellow, but never a diagnostic hold.
-    if (!s.diagnosticHold && !s.relatedYellow) s.progressionBlocked = false;
+    if (!s.diagnosticHold && (!s.relatedYellow || (s.yellowEasyRequired && w.type === 'EASY'))) s.progressionBlocked = false;
+    if (s.yellowEasyRequired && w.type === 'EASY') { s.yellowEasyRequired = false; s.relatedYellow = false; s.pendingQualityFactor = .85; }
     if (s.reentry && w.type === 'EASY') {
       s.reentry.easyReductionPending = false;
       s.reentry.easyRemaining = Math.max(0, s.reentry.easyRemaining - 1);
@@ -224,21 +237,49 @@ export function recordResult(state: EngineState, workoutId: string, result: Work
       }
       if (w.type === 'THRESHOLD' || w.type === 'VO2') s.qualityRotation++;
       if (s.reentry && s.reentry.easyRemaining === 0 && !s.reentry.diagnosticRequired) s.reentry = null;
+      if (s.pendingQualityFactor !== null && s.pendingQualityFactor !== undefined && !s.reentry && w.countsAsQuality) s.pendingQualityFactor = null;
     }
   }
   // Current performance is intentionally untouched; CONTROL feedback alone is not a valid 3K result.
   return replan(s, result.date);
 }
+/**
+ * Does a new checkpoint continue the same, uninterrupted preparation?
+ *
+ * Evaluated against the state *before* the new result replaces Current Performance. It is true only for a routine
+ * checkpoint: a previous result exists, it is not stale or contradicted (confidence is not LOW), no break of 4+ days
+ * (or any illness/injury break) happened since it, and no re-entry is in progress or just finished. After a break
+ * the earlier confirmations no longer describe the runner, so those cases keep the full restart.
+ */
+function continuesPreparation(s: EngineState, performance: PerformanceSnapshot): boolean {
+  const previous = s.profile.performance;
+  if (!previous || s.reentry) return false;
+  if (assessConfidence(s.profile, performance.date) === 'LOW') return false;
+  return !s.profile.breaks.some(b => day(b.endDate) >= day(previous.date) && b.days >= 4);
+}
 export function recordCheckpoint(state: EngineState, performance: PerformanceSnapshot, now: string): EngineState {
   const s = copy(state);
   if (!PERFORMANCE_SOURCES.includes(performance.source) || !s.profile.canRun3Km || assessSafety(s.profile.safety) !== 'OK' || s.relatedYellow || (s.reentry && s.reentry.easyRemaining > 0)) throw new EngineError('CHECKPOINT_NOT_PERMITTED');
   if (day(performance.date) > day(now) || day(performance.date) < day(s.lastAssessmentDate)) throw new EngineError('INVALID_CHECKPOINT_DATE');
+  const previous = s.profile.performance;
+  const continuous = continuesPreparation(s, performance);
   s.profile.performance = structuredClone(performance); s.profile.performanceMismatch = 'NONE';
   // Breaks ending on the test date have already been evaluated by the valid post-break test.
   s.profile.breaks = s.profile.breaks.filter(b => day(b.endDate) > day(performance.date));
   s.lastAssessmentDate = performance.date; s.checkpointRequired = false; s.greenPlusIds = [];
-  s.successfulSpecificPartial = 0; s.successfulQuality = 0; s.successfulIntro = 0; s.successStreak = {};
   s.diagnosticHold = false; s.progressionBlocked = false; s.reentry = null;
+  if (continuous) {
+    // 12-week audit D-02/D-03. A routine checkpoint refreshes Current Performance; it is not evidence against the
+    // sessions already completed. successfulQuality/successfulIntro/successStreak count confirmed sessions (volume and
+    // experience, independent of the result) and `confirmedDoses` has never been reset, so wiping only the counters
+    // made every 21-day checkpoint restart quality progression, rotation and the gate. Paces, goal gap, confidence,
+    // phase and gate are all derived from the new result by `decide`/`prescribe`, so they are recomputed anyway.
+    // The only counter anchored to a pace is the SPECIFIC_3K evidence for opening the target-pace gate: it is kept
+    // when the result confirms or improves the previous one, and restarted when the runner became slower.
+    if (performance.timeSeconds > previous!.timeSeconds) s.successfulSpecificPartial = 0;
+  } else {
+    s.successfulSpecificPartial = 0; s.successfulQuality = 0; s.successfulIntro = 0; s.successStreak = {};
+  }
   return replan(s, now);
 }
 /**
@@ -261,7 +302,7 @@ export function recordFinalResult(state: EngineState, performance: PerformanceSn
   s.profile.breaks = s.profile.breaks.filter(b => day(b.endDate) > day(performance.date));
   s.lastAssessmentDate = performance.date; s.checkpointRequired = false; s.greenPlusIds = [];
   s.successfulSpecificPartial = 0; s.successfulQuality = 0; s.successfulIntro = 0; s.successStreak = {};
-  s.diagnosticHold = false; s.progressionBlocked = false; s.relatedYellow = false; s.reentry = null;
+  s.diagnosticHold = false; s.progressionBlocked = false; s.relatedYellow = false; s.yellowEasyRequired = false; s.pendingQualityFactor = null; s.reentry = null;
   s.asOf = now; s.finalResultRecorded = true;
   // The cycle is closed: an empty queue is the only honest plan after the event date.
   s.queue = [];
@@ -272,7 +313,7 @@ export function recordFinalResult(state: EngineState, performance: PerformanceSn
 export function resolveDiagnostic(state: EngineState, safety: SafetyData, now: string): EngineState {
   const s = copy(state); s.profile.safety = structuredClone(safety);
   if (assessSafety(safety) !== 'OK') return replan(s, now);
-  s.relatedYellow = false; s.diagnosticHold = false; s.progressionBlocked = false;
+  s.relatedYellow = false; s.yellowEasyRequired = false; s.pendingQualityFactor = null; s.diagnosticHold = false; s.progressionBlocked = false;
   if (s.reentry?.diagnosticRequired) s.checkpointRequired = true;
   return replan(s, now);
 }
@@ -360,6 +401,22 @@ export function deserialize(json: string): EngineState {
       throw new EngineError('INVALID_PROGRESSION_STATE');
   }
   s.decision = decide(s, s.asOf);
+  // Backward-compatible enrichment of the existing committed queue: a new UI build
+  // must show numeric EASY targets for old saved cycles without resetting dates,
+  // doses, skipped sessions, progress, or historical results. Never overwrite a
+  // target already committed by this or a future engine.
+  const easyPace = initialEasyPace(s.profile.performance?.timeSeconds ?? null,
+    s.profile.canRun3Km, s.decision.confidence, s.decision.capacity);
+  if (easyPace.paceRangeSecondsPerKm !== null) {
+    for (const workout of s.queue) {
+      if ((workout.type !== 'EASY' && workout.type !== 'LONG_EASY') ||
+          workout.main.mode !== 'CONTINUOUS' ||
+          workout.paceRangeSecondsPerKm !== null || workout.speedRangeMps !== null) continue;
+      workout.paceRangeSecondsPerKm = [...easyPace.paceRangeSecondsPerKm];
+      workout.speedRangeMps = [...easyPace.speedRangeMps!];
+      workout.anchor = 'CURRENT';
+    }
+  }
   return s;
 }
 /** Moving preserves the dose and rejects density/weekly limit violations. */

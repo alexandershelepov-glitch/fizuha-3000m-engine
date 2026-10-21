@@ -29,6 +29,34 @@ for(const [gap,weeks,expected] of [[.03,3,'PLAUSIBLE'],[.03,2.99,'AMBITIOUS'],[.
 test('feasibility modifiers apply only gap>3%, cap at LOW_PROBABILITY, preserve LONG_TERM',()=>{
  assert.equal(assessFeasibility(.03,6,'T0','Q0',2),'PLAUSIBLE');assert.equal(assessFeasibility(.04,6,'T1','Q1',3),'AMBITIOUS');assert.equal(assessFeasibility(.04,6,'T1','Q0',2),'LOW_PROBABILITY');assert.equal(assessFeasibility(.2,20,'T0','Q0',2),'LONG_TERM');assert.equal(assessFeasibility(null,20,'T3','Q2',5),null);
 });
+test('goal realism: 15:00 → 14:30 over 8 weeks is ambitious, not low-probability, for a modest active runner', () => {
+  const s=createEngine(profile({
+    performance:{timeSeconds:900,date:NOW,source:'TEST_3K'}, targetTimeSeconds:870,
+    raceDate:dateAfter(56),regularRunningWeeks:8,actualRunsPerWeek:2,
+    averageWeeklyKm4Weeks:9,longestUsualRunKm:5,availableRunsPerWeek:2,
+    qualitySessions8Weeks:0,qualityWeeks8Weeks:0,
+  }),NOW);
+  assert.equal(s.decision.capacity,'T1');
+  assert.equal(s.decision.quality,'Q0');
+  assert.equal(s.decision.feasibility,'AMBITIOUS');
+  assert.equal(s.decision.gate,'CLOSED');
+  assert.equal(s.decision.effectiveSpeedMps,3000/900);
+  assert.ok(s.decision.maximumQualityPerWeek<=1);
+});
+for(const [gap,weeks,t,q,available,expected] of [
+  [.035,8,'T1','Q0',2,'AMBITIOUS'],
+  [.05,8,'T1','Q0',2,'AMBITIOUS'],
+  [.035,8,'T2','Q0',2,'AMBITIOUS'],
+  [.035,8,'T2','Q1',3,'PLAUSIBLE'],
+  [.035,7.99,'T1','Q0',2,'LOW_PROBABILITY'],
+  [.035,8,'T1','Q0',1,'LOW_PROBABILITY'],
+  [.035,8,'T0','Q0',2,'LOW_PROBABILITY'],
+  [.050001,8,'T1','Q0',2,'LOW_PROBABILITY'],
+  [.10,8,'T1','Q0',2,'LOW_PROBABILITY'],
+  [.16,20,'T3','Q2',5,'LONG_TERM'],
+] as const) test(`two-month goal boundary: ${gap}, ${weeks}w, ${t}/${q}, ${available} runs -> ${expected}`,()=>{
+  assert.equal(assessFeasibility(gap,weeks,t,q,available),expected);
+});
 for(const [completion,expected] of [[.94999,'YELLOW'],[.95,'GREEN'],[1,'GREEN']] as const)test(`completion boundary ${completion} → ${expected}`,()=>{
  const w=createEngine(profile({...experienced}),NOW).queue[0]!;assert.equal(classify(w,feedback(w,'GREEN',{completionFraction:completion})).evaluation,expected);
 });

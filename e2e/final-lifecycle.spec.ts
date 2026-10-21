@@ -24,7 +24,7 @@ test('E2E lifecycle: onboarding → parameter update → plan → reload; baseli
  await page.clock.install({time:new Date(NOW+'T12:00:00Z')});await reset(page);await fillQuestionnaire(page);await createCycleAndReachToday(page);
  const before=await readActiveCycle(page);await page.getByRole('navigation').getByRole('button',{name:'Профиль'}).click();await page.getByRole('button',{name:'Изменить цель и дату старта'}).click();
  await page.getByLabel('Цель 3000 м').fill('14:50');await page.getByLabel('Дата итогового старта').fill(dateAfter(10));await page.getByRole('button',{name:'Сохранить изменения'}).click();
- await expect(page.getByRole('heading',{name:'План обновлён'})).toBeVisible();await page.getByRole('button',{name:'Продолжить',exact:true}).click();await expect(page.getByRole('heading',{name:'План'})).toBeVisible();await page.reload();
+ await expect(page.getByRole('heading',{name:'План обновлён'})).toBeVisible();await page.getByRole('button',{name:'Продолжить',exact:true}).click();await expect(page.getByRole('heading',{name:'Календарь тренировок'})).toBeVisible();await page.reload();
  const after=await readActiveCycle(page);expect(after.cycle.baseline).toEqual(before.cycle.baseline);const engine=JSON.parse(after.cycle.engineState);expect(engine.profile.targetTimeSeconds).toBe(890);expect(engine.profile.raceDate).toBe(dateAfter(10));expect(after.events.at(-1)!.type).toBe('TRAINING_PARAMETERS_CHANGED');
 });
 test('E2E lifecycle: taper → live race day → final result → archived summary reload',async({page})=>{

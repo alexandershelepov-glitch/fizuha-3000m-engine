@@ -11,6 +11,7 @@
  * This conservative planning ceiling is a guardrail, not a physiological load model or guarantee.
  */
 import type {EngineState,Workout} from './models.ts';
+import {assessCapacity} from './assessment.ts';
 import {day} from './validation.ts';
 
 export function approvedWeekMeters(s: EngineState): number {
@@ -73,4 +74,35 @@ export function withinRollingWeekBudget(s: EngineState, workouts: readonly Worko
     if(total>limits+1e-6)return false;
   }
   return true;
+}
+
+/**
+ * Weekly structure of a runner who has an established long run (12-week audit D-08).
+ *
+ * `long` is the LONG_EASY length and `other` the length of each remaining ordinary run, both derived only from the
+ * runner's own questionnaire: the share of the habitual week that the longest usual run represents
+ * (`longestUsualRunKm / averageWeeklyKm4Weeks`) is kept, applied to the currently APPROVED weekly budget. At the start of
+ * a cycle `long` therefore equals the longest usual run exactly; it grows only when the approved budget grows (verified
+ * progression), never because a long run was scheduled. `other` is what is left of the budget for the other runs of the
+ * habitual week. The two numbers are a distribution of the existing budget, not an additional load.
+ *
+ * null = no LONG_EASY for this runner: capacity is not T2/T3 (the engine's own "trained" categories: >=3 runs, >=15 km
+ * per week, longest run >=6 km), no timed 3 km result, fewer than three habitual runs, or the longest usual run is not
+ * genuinely longer than an ordinary run of the habitual week (so it would be an ordinary EASY run under another name).
+ */
+export function longRunShares(s: EngineState): {long: number; other: number} | null {
+  const p = s.profile;
+  if (!p.canRun3Km || p.performance === null || p.longestUsualRunKm <= 0 || p.averageWeeklyKm4Weeks <= 0 || p.actualRunsPerWeek <= 0) return null;
+  const capacity = assessCapacity(p);
+  if (capacity !== 'T2' && capacity !== 'T3') return null;
+  const runs = Math.min(p.availableRunsPerWeek, Math.max(1, p.actualRunsPerWeek));
+  if (runs < 3) return null;
+  const budget = approvedWeekMeters(s);
+  const long = Math.max(p.longestUsualRunKm * budget / p.averageWeeklyKm4Weeks, p.longestUsualRunKm * 1000 * .65);
+  if (!(long < budget)) return null;
+  const other = (budget - long) / (runs - 1);
+  // A long run is only meaningful when the existing weekly budget can also support
+  // ordinary runs of at least 2 km. Otherwise the caller keeps an aerobic slot or drops it.
+  if (other < 2000) return null;
+  return long > other ? {long, other} : null;
 }

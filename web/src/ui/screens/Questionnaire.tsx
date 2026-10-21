@@ -3,7 +3,8 @@ import type {ReactNode} from 'react';
 import {QUESTIONNAIRE_STEPS, STEP_INDEX, healthySafety, buildProfile} from '../../application/questionnaire.ts';
 import type {QualityRecall} from '../../application/questionnaire.ts';
 import {previewGoalDecision} from '../../application/engineGateway.ts';
-import {deviceToday, parseTime} from '../../application/format.ts';
+import {daysBetween, parseTime} from '../../application/format.ts';
+import {effectiveToday} from '../../application/qaMode.ts';
 import {feasibilityText} from '../copy/values.ts';
 import type {BreakEntryDraft, FieldKey, QuestionnaireDraft, QuestionnaireStep} from '../../application/questionnaire.ts';
 import {breakReasonText, performanceSourceText} from '../copy/values.ts';
@@ -47,6 +48,7 @@ export function Questionnaire({step, store, onNavigate, engineError = null, onDi
     setAttempted(true);
     if (Object.keys(problemsForStep(draft, step)).length > 0) return;
     onDismissEngineError?.();
+    if (step === 'RACE_DATE') update({raceDateConfirmed: true});
     const next = QUESTIONNAIRE_STEPS[QUESTIONNAIRE_STEPS.indexOf(step) + 1];
     onNavigate(next ? {name: 'QUESTIONNAIRE', step: next} : {name: 'REVIEW'});
   };
@@ -82,8 +84,8 @@ export function Questionnaire({step, store, onNavigate, engineError = null, onDi
         }} /> : null}
         {step === 'BREAKS' ? <BreaksStep draft={draft} update={update} error={error} /> : null}
         {step === 'AVAILABILITY' ? <AvailabilityStep draft={draft} update={update} error={error} /> : null}
-        {step === 'GOAL' ? <><GoalStep draft={draft} update={update} error={error} /><GoalPreview draft={draft} today={deviceToday()} /></> : null}
-        {step === 'RACE_DATE' ? <><RaceDateStep draft={draft} update={update} error={error} /><GoalPreview draft={draft} today={deviceToday()} /></> : null}
+        {step === 'GOAL' ? <GoalStep draft={draft} update={update} error={error} /> : null}
+        {step === 'RACE_DATE' ? <><RaceDateStep draft={draft} update={update} error={error} />{draft.raceDateConfirmed === true ? <GoalPreview draft={draft} today={effectiveToday()} /> : <p className="hint">Предложена дата через 8 недель. Выберите другую дату или нажмите «Продолжить», чтобы подтвердить эту. Оценка цели появится после выбора срока.</p>}</> : null}
       </Card>
 
       <div className="actions">
@@ -109,9 +111,9 @@ function ResultStep({draft, update, error}: StepProps): ReactNode {
       {draft.hasResult ? (
         <>
           <Field id="resultTime" label={questionnaire.fields.resultTime.label} hint={questionnaire.fields.resultTime.hint} error={error('resultTime')}>
-            <TextInput id="resultTime" value={draft.resultTime} onChange={(value) => update({resultTime: value})} inputMode="numeric" placeholder="14:30" />
+            <TextInput id="resultTime" value={draft.resultTime} onChange={(value) => update({resultTime: value})} inputMode="text" placeholder="Например, 14:30" />
           </Field>
-          <Field id="resultDate" label={questionnaire.fields.resultDate.label} error={error('resultDate')}>
+          <Field id="resultDate" label={questionnaire.fields.resultDate.label} hint="Укажите дату, когда вы пробежали 3000 м с этим результатом." error={error('resultDate')}>
             <TextInput id="resultDate" type="date" value={draft.resultDate} onChange={(value) => update({resultDate: value})} />
           </Field>
           <Field id="resultSource" label={questionnaire.fields.resultSource.label} error={error('resultSource')}>
@@ -256,6 +258,7 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
       <Field id="availableRunsPerWeek" label={questionnaire.fields.availableRunsPerWeek.label} error={error('availableRunsPerWeek')}>
         <TextInput id="availableRunsPerWeek" value={draft.availableRunsPerWeek} onChange={(value) => update({availableRunsPerWeek: value})} inputMode="numeric" />
       </Field>
+      {draft.hasResult ? (
       <Field id="performanceMismatch" label={questionnaire.fields.performanceMismatch.label} error={error('performanceMismatch')}>
         <Choice
           id="performanceMismatch"
@@ -268,6 +271,7 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
           ]}
         />
       </Field>
+      ) : null}
     </>
   );
 }
@@ -275,15 +279,15 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
 function GoalStep({draft, update, error}: StepProps): ReactNode {
   return (
     <Field id="targetTime" label={questionnaire.fields.targetTime.label} hint={questionnaire.fields.targetTime.hint} error={error('targetTime')}>
-      <TextInput id="targetTime" value={draft.targetTime} onChange={(value) => update({targetTime: value})} inputMode="numeric" placeholder="14:00" />
+      <TextInput id="targetTime" value={draft.targetTime} onChange={(value) => update({targetTime: value})} inputMode="text" placeholder="Например, 14:00" />
     </Field>
   );
 }
 
 function RaceDateStep({draft, update, error}: StepProps): ReactNode {
   return (
-    <Field id="raceDate" label={questionnaire.fields.raceDate.label} error={error('raceDate')}>
-      <TextInput id="raceDate" type="date" value={draft.raceDate} onChange={(value) => update({raceDate: value})} />
+    <Field id="raceDate" label={questionnaire.fields.raceDate.label} hint="Выберите дату сдачи норматива. На разных устройствах порядок дня и месяца может отличаться." error={error('raceDate')}>
+      <TextInput id="raceDate" type="date" value={draft.raceDate} onChange={(value) => update({raceDate: value, raceDateConfirmed: true})} />
     </Field>
   );
 }
@@ -295,9 +299,13 @@ function GoalPreview({draft, today}: {draft: QuestionnaireDraft; today: string})
   try {
     const feasibility = previewGoalDecision(built.profile, today).feasibility;
     if (feasibility === null) return null;
+    const gainSeconds = (built.profile.performance?.timeSeconds ?? 0) - built.profile.targetTimeSeconds;
+    const weeksLeft = Math.round((daysBetween(today, built.profile.raceDate) / 7) * 10) / 10;
+    const weeksLabel = String(weeksLeft).replace('.', ',');
     return (
       <Notice tone="info" title={questionnaire.goalPreview.title}>
         <p>{feasibilityText[feasibility].label}</p>
+        {gainSeconds > 0 && weeksLeft > 0 ? <p className="hint">Для этой цели нужно улучшить время на {gainSeconds} с за {weeksLabel} нед.</p> : null}
         <p className="hint">{feasibilityText[feasibility].description}</p>
         <p className="hint">{questionnaire.goalPreview.note}</p>
       </Notice>

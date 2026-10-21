@@ -1,0 +1,15 @@
+
+> adaptive-3000m-core@1.0.0 audit:training
+> node --experimental-strip-types audit/run.ts
+
+01-beginner-normal-10w: history=20; skips=0; errors=0; warnings=0; final=1050s
+02-regular-normal-8w: history=24; skips=0; errors=0; warnings=0; final=920s
+03-trained-easy-wins-12w: history=48; skips=0; errors=0; warnings=0; final=880s
+04-advanced-normal-10w: history=50; skips=0; errors=0; warnings=0; final=810s
+05-regular-overload-8w: history=24; skips=0; errors=0; warnings=0; final=920s
+06-trained-skipped-10w: history=27; skips=13; errors=0; warnings=0; final=880s
+07-trained-break-12w: history=40; skips=4; errors=0; warnings=0; final=880s
+08-regular-red-and-review-10w: history=30; skips=0; errors=0; warnings=0; final=920s
+09-regular-inconsistent-report-8w: history=24; skips=0; errors=0; warnings=0; final=920s
+Reports: /workspace/fizuha/audit/reports/training-audit.md and training-audit.json
+EXIT 0

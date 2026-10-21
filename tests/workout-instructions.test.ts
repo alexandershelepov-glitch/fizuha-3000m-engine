@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import {prescribe} from '../src/index.ts';
 import type {Workout, WorkoutType} from '../src/index.ts';
 import {appCycle} from './helpers-app.ts';
-import {compactDuration, effortFor, estimatedTimeRepeatDistance, intervalStructure, prescribedPace, repeatStructure, splitSeconds, treadmillSpeedText, workoutInstruction, workoutIntervals, workoutRepeats} from '../web/src/ui/workoutInstructions.ts';
+import {compactDuration, effortFor, estimatedEasyTimeText, estimatedTimeRepeatDistance, intervalStructure, prescribedPace, repeatStructure, splitSeconds, treadmillSpeedText, workoutInstruction, workoutIntervals, workoutRepeats} from '../web/src/ui/workoutInstructions.ts';
 import {workoutIntervalsText, workoutMainDose, workoutSummaryText, workoutVolume} from '../web/src/ui/display.ts';
 import {formatDateShort} from '../web/src/application/format.ts';
 import {workoutTypeText} from '../web/src/ui/copy/values.ts';
@@ -49,28 +49,31 @@ test('INSTR-01 the split of a repeat is pace times distance, rounded to whole se
   assert.deepEqual(splitSeconds([298, 316], 200), [60, 63]);
 });
 
-test('INSTR-02 an easy run keeps the engine distance and never invents a pace', () => {
+test('INSTR-02 EASY contains a numeric, engine-assigned pace, treadmill speed and projected time', () => {
   const workout = ordered('EASY');
   const plan = workoutInstruction(workout);
-
-  assert.equal(workout.paceRangeSecondsPerKm, null, 'the fixture must have no prescribed pace');
-  assert.equal(plan.paceText, null, 'no pace may appear when the engine prescribed none');
-  assert.equal(plan.splits.length, 0);
+  assert.ok(workout.paceRangeSecondsPerKm !== null, 'current 3 km performance should yield a target');
+  assert.ok(workout.speedRangeMps !== null);
+  assert.deepEqual(workout.targetRpe,[2,4]);
   assert.match(plan.headline, /^Сегодня: спокойный бег /);
-  assert.ok(plan.steps[0]!.includes('удобном спокойном темпе'), plan.steps[0]);
-  assert.ok(plan.guidance.length > 0, 'the feeling takes the place of a pace');
-  assert.ok(plan.steps.some((step) => step.includes('замедлись')));
-  // The engine prescribed no warm-up or cool-down for an easy run, so the card must not add one.
-  assert.equal(plan.steps.some((step) => step.startsWith('Разминка')), false);
-  assert.equal(plan.steps.some((step) => step.startsWith('Заминка')), false);
+  assert.ok(plan.paceText!.includes('мин/км'), plan.paceText!);
+  assert.ok(plan.steps.some(step=>step.includes('Держите темп') && step.includes(plan.paceText!)));
+  assert.ok(plan.steps.some(step=>step.includes('На дорожке установите скорость') && step.includes('км/ч')));
+  assert.ok(plan.steps.some(step=>step.includes('Ожидаемое время') && step.includes(estimatedEasyTimeText(workout)!)));
+  assert.ok(plan.steps.some(step=>step.includes('Не бегите быстрее')));
+  assert.equal(plan.splits.length,0);
+  assert.equal(plan.steps.some(step=>step.startsWith('Разминка')),false);
+  assert.equal(plan.steps.some(step=>step.startsWith('Заминка')),false);
 });
 
-test('INSTR-03 a long easy run is described the same way, with its own distance', () => {
+test('INSTR-03 long easy run has an individual numeric pace with its own distance/time', () => {
   const workout = ordered('LONG_EASY');
   const plan = workoutInstruction(workout);
-  assert.equal(plan.paceText, null);
+  assert.ok(plan.paceText !== null);
   assert.match(plan.headline, /^Сегодня: длинный спокойный бег /);
   assert.ok(plan.headline.includes(String(Math.round(workout.main.dose.value) / 1000)), plan.headline);
+  assert.ok(plan.steps.some(step=>step.includes(estimatedEasyTimeText(workout)!)));
+  assert.ok(workout.speedRangeMps !== null);
 });
 
 test('INSTR-04 continuous work with a pace states the pace as the engine ordered it', () => {
@@ -81,7 +84,7 @@ test('INSTR-04 continuous work with a pace states the pace as the engine ordered
   assert.ok(workout.paceRangeSecondsPerKm !== null, 'a threshold session must carry a pace');
   assert.equal(plan.paceText, `${Math.floor(pace[0] / 60)}:${String(Math.round(pace[0]) % 60).padStart(2, '0')}–${Math.floor(pace[1] / 60)}:${String(Math.round(pace[1]) % 60).padStart(2, '0')} мин/км`);
   assert.ok(plan.steps.some((step) => step.includes('в темпе')), plan.steps.join(' | '));
-  assert.ok(plan.steps.some((step) => step.includes('Не начинай быстрее заданного темпа')));
+  assert.ok(plan.steps.some((step) => step.includes('Не начинайте быстрее заданного темпа')));
   assert.ok(plan.steps[0]!.startsWith('Разминка'), 'the warm-up is part of the instruction');
   assert.ok(plan.steps.at(-1)!.startsWith('Заминка'), 'the cool-down is part of the instruction');
 });
@@ -95,8 +98,8 @@ test('INSTR-05 intervals of 400 m show the time of one repeat', () => {
 
   assert.equal(plan.headline, 'Сегодня: 6 × 400 м');
   assert.deepEqual(plan.splits.map((split) => split.text), ['400 метров примерно за 1:36–1:40']);
-  assert.ok(plan.steps.some((step) => step.includes('Каждый отрезок старайся пробежать за 1:36–1:40')), plan.steps.join(' | '));
-  assert.ok(plan.steps.some((step) => step.includes('Между отрезками отдыхай 1 минуту 30 секунд')));
+  assert.ok(plan.steps.some((step) => step.includes('Каждый отрезок старайтесь пробежать за 1:36–1:40')), plan.steps.join(' | '));
+  assert.ok(plan.steps.some((step) => step.includes('Между отрезками отдыхайте 1 минуту 30 секунд')));
   assert.ok(plan.steps.some((step) => step.includes('После последнего отрезка отдых не нужен.')));
   assert.ok(plan.paceText!.endsWith('/км'), 'the pace stays available below');
 });
@@ -122,7 +125,7 @@ test('INSTR-07 a shorter final repeat is the last of them, not an extra one', ()
   assert.equal(plan.headline, 'Сегодня: 5 × 400 м + 1 × 200 м');
   assert.equal(repeatStructure({repeats: 6, repeatMeters: 400, finalRepeatMeters: 200})!.volumeMeters, 2200);
   assert.deepEqual(plan.splits.map((split) => split.text), ['400 метров примерно за 1:36–1:40', '200 метров примерно за 0:48–0:50']);
-  assert.ok(plan.steps.some((step) => step === 'Выполни 6 отрезков: первые 5 — по 400 метров, последний — 200 метров.'), plan.steps.join(' | '));
+  assert.ok(plan.steps.some((step) => step === 'Выполните 6 отрезков: первые 5 — по 400 метров, последний — 200 метров.'), plan.steps.join(' | '));
   assert.ok(plan.steps.some((step) => step === '400 метров — за 1:36–1:40.'));
   assert.ok(plan.steps.some((step) => step === 'Последний 200 метров — за 0:48–0:50.'));
   assert.equal(plan.steps.join(' ').includes('7 отрезков'), false);
@@ -145,7 +148,7 @@ test('INSTR-09 the control run names the real distance and states that no pace i
 
   assert.equal(workout.paceRangeSecondsPerKm, null);
   assert.equal(plan.headline, 'Сегодня: контрольный забег 3000 метров');
-  assert.ok(plan.steps.some((step) => step === 'Пробеги 3000 метров на результат.'));
+  assert.ok(plan.steps.some((step) => step === 'Пробегите 3000 метров на результат.'));
   assert.ok(plan.steps.some((step) => step === 'Конкретный темп не задан.'));
   assert.ok(plan.steps.some((step) => step === 'Ориентир по усилию указан ниже.'));
   assert.equal(plan.paceText, null);
@@ -175,7 +178,7 @@ test('INSTR-11 strides are described by technique, not by a target time', () => 
   assert.equal(workout.paceRangeSecondsPerKm, null);
   assert.equal(plan.splits.length, 0, 'no pace means no split time');
   assert.equal(plan.note, 'Ускорения не должны быть тяжёлыми: это работа над техникой, а не на результат.');
-  assert.ok(plan.steps.some((step) => step.includes('Между отрезками отдыхай')));
+  assert.ok(plan.steps.some((step) => step.includes('Между отрезками отдыхайте')));
 });
 
 test('INSTR-12 no warm-up and no cool-down mean no such steps', () => {
@@ -216,8 +219,8 @@ test('INSTR-15 intervals without a pace state only what the engine ordered', () 
 
   assert.equal(plan.splits.length, 0);
   assert.equal(plan.paceText, null);
-  assert.ok(plan.steps.some((step) => step.startsWith('Выполни 4 отрезка. Каждый отрезок длится')));
-  assert.ok(plan.steps.some((step) => step.includes('Между отрезками отдыхай')));
+  assert.ok(plan.steps.some((step) => step.startsWith('Выполните 4 отрезка. Каждый отрезок длится')));
+  assert.ok(plan.steps.some((step) => step.includes('Между отрезками отдыхайте')));
 });
 
 test('INSTR-16 a rest day is not dressed up as training', () => {
@@ -283,7 +286,7 @@ test('INSTR-21 a single repeat carries only its own actual length', () => {
   const single: Workout = {...workout, main: {...workout.main, repeats: 1, repeatMeters: 600, finalRepeatMeters: 480}};
   const plan = workoutInstruction(single);
   assert.equal(plan.headline, 'Сегодня: 1 × 480 м');
-  assert.ok(plan.steps.some((step) => step === 'Пробеги 480 метров.'), plan.steps.join(' | '));
+  assert.ok(plan.steps.some((step) => step === 'Пробегите 480 метров.'), plan.steps.join(' | '));
   assert.equal(/600/.test(plan.steps.join(' ')), false, 'the standard length is not prescribed alongside it');
 });
 
@@ -304,7 +307,7 @@ test('INSTR-22 a real engine prescription that is not a multiple of the repeat l
 
   const plan = workoutInstruction(workout);
   assert.equal(plan.headline, 'Сегодня: 5 × 600 м + 1 × 150 м');
-  assert.ok(plan.steps.some((step) => step === 'Выполни 6 отрезков: первые 5 — по 600 метров, последний — 150 метров.'));
+  assert.ok(plan.steps.some((step) => step === 'Выполните 6 отрезков: первые 5 — по 600 метров, последний — 150 метров.'));
   assert.equal(plan.splits.length, 2);
 });
 
@@ -336,7 +339,7 @@ test('INSTR-24 the rest is a duration, and the way of resting stays the plan own
   assert.ok(workout.restSeconds > 0, 'the fixture must prescribe a rest');
   const plan = workoutInstruction(workout);
 
-  assert.ok(plan.steps.some((step) => step === 'Между отрезками отдыхай 1 минуту 30 секунд. После последнего отрезка отдых не нужен.'));
+  assert.ok(plan.steps.some((step) => step === 'Между отрезками отдыхайте 1 минуту 30 секунд. После последнего отрезка отдых не нужен.'));
   assert.ok(plan.steps.some((step) => step.includes('После последнего отрезка отдых не нужен.')));
   // The engine does not say how to rest, so the card must not say it either.
   const text = plan.steps.join(' ');
@@ -350,7 +353,7 @@ test('INSTR-25 a continuous run is never turned into run and walk', () => {
 
   const text = plan.steps.join(' ');
   assert.equal(/перейти на шаг|переходи на шаг|ходьб/i.test(text), false, text);
-  assert.ok(plan.steps.some((step) => step.includes('Если становится тяжело поддерживать такой режим — замедлись.')));
+  assert.ok(plan.steps.some((step) => step.includes('Если становится тяжело поддерживать такой режим — замедлитесь.')));
   assert.deepEqual(plan.guidance, ['Можно говорить полными фразами', 'Дыхание контролируемое']);
 });
 
@@ -390,7 +393,7 @@ test('INSTR-28 a time interval is split by its own repeat count, never multiplie
   for (const text of [workoutInstruction(eight).headline, workoutVolume(eight), workoutIntervalsText(eight)!, planSummaryVolume(eight)]) {
     assert.equal(/8\s*мин|4 × 8/.test(text), false, text);
   }
-  assert.ok(workoutInstruction(eight).steps.some((step) => step === 'Выполни 4 отрезка. Каждый отрезок длится 2 минуты.'));
+  assert.ok(workoutInstruction(eight).steps.some((step) => step === 'Выполните 4 отрезка. Каждый отрезок длится 2 минуты.'));
 });
 
 test('INSTR-29 a fractional per-repeat time keeps whole seconds', () => {
@@ -427,9 +430,9 @@ test('INSTR-31 fractional total minutes show exact main work (not rounded away)'
   assert.equal(plan.headline, 'Сегодня: 4 × 51 с');
   assert.equal(workoutMainDose(intro), '3 минуты 24 секунды');
   assert.ok(plan.steps.some(line => line.includes('Каждый отрезок длится 51 секунду')));
-  assert.ok(plan.steps.some(line => line.includes('Между отрезками отдыхай 1 минуту 30 секунд')));
-  assert.ok(plan.steps.some(line => line.includes('Числовой темп не назначен')));
-  assert.ok(plan.steps.some(line => line.includes('Дистанция не назначена')));
+  assert.ok(plan.steps.some(line => line.includes('Между отрезками отдыхайте 1 минуту 30 секунд')));
+  assert.ok(plan.notes.some(line => line.includes('Числовой темп не назначен')));
+  assert.ok(plan.notes.some(line => line.includes('Дистанция не назначена')));
   assert.equal(plan.speedText, null);
   assert.equal(plan.estimatedDistanceText, null);
 });
@@ -444,7 +447,7 @@ test('INSTR-32 a prescribed pace gives both min/km and equivalent treadmill km/h
   assert.ok(plan.steps.some(step => step === 'Целевой темп: 5:00–5:20 мин/км.'));
   assert.ok(plan.steps.some(step => step.includes('На беговой дорожке: 11,3–12,0 км/ч')));
   assert.equal(estimatedTimeRepeatDistance(paced), 'примерно 150–170 м');
-  assert.ok(plan.steps.some(step => step.includes('Это не обязательная дистанция')));
+  assert.ok(plan.notes.some(step => step.includes('Это не обязательная дистанция')));
   assert.equal(paced.main.repeatMeters, null, 'metres were not promoted to mandatory repeats');
 });
 
@@ -477,5 +480,5 @@ test('INSTR-35 unpaced acceleration cannot invent pace, speed or a distance esti
   assert.equal(plan.paceText, null);
   assert.equal(plan.speedText, null);
   assert.equal(plan.estimatedDistanceText, null);
-  assert.ok(plan.steps.some(x => x.includes('Числовой темп не назначен')));
+  assert.ok(plan.notes.some(x => x.includes('Числовой темп не назначен')));
 });

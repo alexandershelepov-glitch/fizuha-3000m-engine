@@ -7,6 +7,7 @@ import {copyForError} from '../copy/errors.ts';
 import {breakReasonText, mismatchText} from '../copy/values.ts';
 import {common, review} from '../copy/text.ts';
 import {Button} from '../components/Button.tsx';
+import {Checkbox} from '../components/Field.tsx';
 import {Card, KeyValue, Notice} from '../components/Layout.tsx';
 import type {Route} from '../../app/routes.ts';
 
@@ -29,8 +30,10 @@ const timeOrRaw = (raw: string): string => {
 
 export function Review({draft, today, onCreate, onNavigate}: Props): ReactNode {
   const [outcome, setOutcome] = useState<CreateOutcome | null>(null);
+  const [inputsConfirmed, setInputsConfirmed] = useState(false);
 
   const handleCreate = (): void => {
+    if (!inputsConfirmed) return;
     const result = onCreate(draft);
     setOutcome(result);
     if (result.kind === 'CREATED') onNavigate({name: 'ASSESSMENT'});
@@ -70,11 +73,15 @@ export function Review({draft, today, onCreate, onNavigate}: Props): ReactNode {
           : draft.qualityRecall === 'SOMETIMES' ? 'Несколько раз, без точных записей' : 'Нет точных данных'} />
         <KeyValue label={review.rows.breaks} value={draft.hasBreaks && draft.breaks.length > 0 ? draft.breaks.map((entry) => `${breakReasonText[entry.reason]}, ${entry.days} дн.`).join('; ') : review.rows.noBreaks} />
         <KeyValue label={review.rows.safety} value={safetyHasFlags(draft.safety) ? 'отмечено' : review.rows.noRestrictions} />
-        <KeyValue label={review.rows.mismatch} value={mismatchText[draft.performanceMismatch]} />
+        {/* Review is only reachable once the draft validates, so an unanswered mismatch cannot render. */}
+        <KeyValue label={review.rows.mismatch} value={draft.performanceMismatch === null ? '—' : mismatchText[draft.performanceMismatch]} />
       </Card>
 
+      <Checkbox id="inputs-confirmed" checked={inputsConfirmed} onChange={setInputsConfirmed}
+        label="Подтверждаю, что проверил исходные данные"
+        hint="Проверьте время и дату результата, если он есть, текущий объём и число тренировок. Эти данные должны отражать ваш реальный опыт." />
       <div className="actions">
-        <Button onClick={handleCreate}>{review.primaryCta}</Button>
+        <Button onClick={handleCreate} disabled={!inputsConfirmed}>{review.primaryCta}</Button>
         <Button variant="ghost" onClick={() => onNavigate({name: 'QUESTIONNAIRE', step: 'RESULT'})}>{review.secondaryCta}</Button>
       </div>
 

@@ -1,0 +1,24 @@
+P1-18km-long7-4runs-12:30: budget 18000 m; phase DEVELOPMENT; decision max intense 2; capacity 1
+  habitual long 7000 m, habitual ordinary run 3667 m; reserve T 8184 m, V 7289 m
+  two intense (T+V): 15473 m reserved, 2527 m left for L and the other runs (an ordinary run is 3667 m)
+  one intense (T): long run share 4794 m vs habitual ordinary run 3667 m; EASY share 2511 m
+P2-20km-long8-4runs-12:30: budget 20000 m; phase DEVELOPMENT; decision max intense 2; capacity 1
+  habitual long 8000 m, habitual ordinary run 4000 m; reserve T 8184 m, V 7289 m
+  two intense (T+V): 15473 m reserved, 4527 m left for L and the other runs (an ordinary run is 4000 m)
+  one intense (T): long run share 5908 m vs habitual ordinary run 4000 m; EASY share 2954 m
+P3-22km-long9-4runs-12:00: budget 22000 m; phase DEVELOPMENT; decision max intense 2; capacity 1
+  habitual long 9000 m, habitual ordinary run 4333 m; reserve T 8525 m, V 7593 m
+  two intense (T+V): 16118 m reserved, 5882 m left for L and the other runs (an ordinary run is 4333 m)
+  one intense (T): long run share 6865 m vs habitual ordinary run 4333 m; EASY share 3305 m
+P4-16km-long6-4runs-15:20: budget 16000 m; phase DEVELOPMENT; decision max intense 2; capacity 1
+  habitual long 6000 m, habitual ordinary run 3333 m; reserve T 6672 m, V 5942 m
+  two intense (T+V): 12614 m reserved, 3386 m left for L and the other runs (an ordinary run is 3333 m)
+  one intense (T): long run share 4419 m vs habitual ordinary run 3333 m; EASY share 2455 m
+P5-25km-long12-4runs-12:30: budget 25000 m; phase DEVELOPMENT; decision max intense 2; capacity 2
+  habitual long 12000 m, habitual ordinary run 4333 m; reserve T 10032 m, V 8921 m
+  two intense (T+V): 18953 m reserved, 6047 m left for L and the other runs (an ordinary run is 4333 m)
+  one intense (T): long run share 8691 m vs habitual ordinary run 4333 m; EASY share 3138 m
+P6-30km-long12-5runs-11:40: budget 30000 m; phase DEVELOPMENT; decision max intense 2; capacity 2
+  habitual long 12000 m, habitual ordinary run 4500 m; reserve T 10749 m, V 9558 m
+  two intense (T+V): 20306 m reserved, 9694 m left for L and the other runs (an ordinary run is 4500 m)
+  one intense (T): long run share 11001 m vs habitual ordinary run 4500 m; EASY share 4125 m
