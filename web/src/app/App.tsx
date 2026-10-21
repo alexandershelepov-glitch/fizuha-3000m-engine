@@ -28,9 +28,14 @@ import type {PlanChange} from '../application/planDiff.ts';
 import {clearResultDraft} from '../application/draft.ts';
 import type {WorkoutResult} from '../application/engineGateway.ts';
 import {newCycleId} from '../application/draft.ts';
-import {deviceTimestamp} from '../application/format.ts';
+import {addDays, deviceTimestamp} from '../application/format.ts';
+import {IS_QA_BUILD, setQaToday, resetQaToday} from '../application/qaMode.ts';
+import {simulateQa} from '../application/qaSimulation.ts';
+import type {QaAction} from '../application/qaResults.ts';
+import {QaPanel} from '../ui/components/QaPanel.tsx';
 import {clearDraft} from '../application/draft.ts';
-import {createRepository} from '../application/storage.ts';
+import {createRepository, ACTIVE_CYCLE_KEY, QUESTIONNAIRE_DRAFT_KEY, RESULT_DRAFT_KEY} from '../application/storage.ts';
+import {ARCHIVED_CYCLES_KEY} from '../application/archiveStorage.ts';
 import {resetActiveCycle} from '../application/resetCycle.ts';
 import {recheckSafety} from '../application/safetyRecheck.ts';
 import {SafetyRecheck} from '../ui/screens/SafetyRecheck.tsx';
@@ -101,6 +106,9 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
   const [checkpointChanges, setCheckpointChanges] = useState<readonly PlanChange[] | null>(null);
   /** True while an engine transition is being applied, so a second tap cannot start another one. */
   const [busy, setBusy] = useState(false);
+  const [qaBusy, setQaBusy] = useState(false);
+  const [qaMessage, setQaMessage] = useState('');
+  const [qaEvents, setQaEvents] = useState<readonly string[]>([]);
 
   const hasCycle = store.load.kind === 'READY';
   const guarded = guardRoute(route, {hasCycle, onboardingInProgress: store.onboardingInProgress});
@@ -305,6 +313,42 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     else navigate(next);
   }, [store.appState]);
 
+
+  const handleQaAdvance = (days: number): void => {
+    if (!IS_QA_BUILD) return;
+    setQaToday(addDays(store.today, days));
+    setQaMessage('Дата изменена. Необработанные тренировки остаются открытыми.');
+  };
+  const handleQaRun = (action: QaAction, days: 0 | 7): void => {
+    if (!IS_QA_BUILD || !repo || !store.appState || !store.engineState) return;
+    setQaBusy(true);
+    try {
+      const result = simulateQa({repo, appState: store.appState, engineState: store.engineState,
+        today: store.today, action, days});
+      store.replaceActiveState({appState: result.appState, engineState: result.engineState});
+      if (result.day >= store.today) setQaToday(result.day);
+      setQaEvents(previous => [...previous, ...result.events].slice(-12));
+      setQaMessage(result.message);
+      navigate({name: 'TODAY'});
+    } catch (error) { setQaMessage('Тест остановлен: ' + String(error)); }
+    finally { setQaBusy(false); }
+  };
+  const handleQaReset = (): void => {
+    if (!IS_QA_BUILD || !storage ||
+      !window.confirm('Удалить только синтетические записи этого QA-сайта?')) return;
+    try {
+      for (const key of [ACTIVE_CYCLE_KEY, QUESTIONNAIRE_DRAFT_KEY, RESULT_DRAFT_KEY, ARCHIVED_CYCLES_KEY]) {
+        storage.removeItem(key);
+      }
+    } catch { setQaMessage('Не удалось удалить данные.'); return; }
+    resetQaToday();
+    store.reload();
+    draftStore.reset(store.today);
+    setQaEvents([]);
+    setQaMessage('Тестовый цикл очищен.');
+    navigate({name: 'FIRST_RUN'});
+  };
+
   if (store.load.kind === 'NO_STORAGE') return <StorageUnavailable onRetry={retryStorage} />;
   if (store.load.kind === 'STORAGE_UNAVAILABLE') return <StorageUnavailable onRetry={store.reload} />;
 
@@ -315,6 +359,9 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
 
   return (
     <div className="app">
+      {IS_QA_BUILD ? <QaPanel today={store.today} ready={store.load.kind === 'READY'}
+        busy={qaBusy} events={qaEvents} message={qaMessage}
+        advance={handleQaAdvance} run={handleQaRun} reset={handleQaReset} /> : null}
       {planError ? (
         <div className="app__banner">
           <Notice tone="danger" title={copyForError(planError).title}>

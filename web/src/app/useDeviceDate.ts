@@ -10,7 +10,7 @@
  * behind INV-1 (`application/clockOps.ts`).
  */
 import {useEffect, useState} from 'react';
-import {deviceToday} from '../application/format.ts';
+import {effectiveToday, IS_QA_BUILD, QA_DATE_EVENT} from '../application/qaMode.ts';
 
 /** Milliseconds until the next local midnight, with a one-second margin so the date has certainly changed. */
 export function msUntilNextLocalMidnight(now: Date = new Date()): number {
@@ -19,7 +19,7 @@ export function msUntilNextLocalMidnight(now: Date = new Date()): number {
 }
 
 export function useDeviceDate(): string {
-  const [today, setToday] = useState(() => deviceToday());
+  const [today, setToday] = useState(() => effectiveToday());
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -28,7 +28,7 @@ export function useDeviceDate(): string {
     // does not re-render the tree.
     const sync = (): void => {
       setToday((current) => {
-        const next = deviceToday();
+        const next = effectiveToday();
         return next === current ? current : next;
       });
     };
@@ -41,6 +41,7 @@ export function useDeviceDate(): string {
       }, msUntilNextLocalMidnight());
     };
 
+    if (IS_QA_BUILD) window.addEventListener(QA_DATE_EVENT, sync);
     document.addEventListener('visibilitychange', sync);
     window.addEventListener('focus', sync);
     // `pageshow` also covers a restore from the back/forward cache.
@@ -49,6 +50,7 @@ export function useDeviceDate(): string {
 
     return () => {
       if (timer !== undefined) clearTimeout(timer);
+      if (IS_QA_BUILD) window.removeEventListener(QA_DATE_EVENT, sync);
       document.removeEventListener('visibilitychange', sync);
       window.removeEventListener('focus', sync);
       window.removeEventListener('pageshow', sync);

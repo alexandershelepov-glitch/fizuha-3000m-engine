@@ -69,7 +69,7 @@ test('PROFILE-02 the answers are the only input: no label, hint or option text i
   assert.deepEqual(keys, [
     'actualRunsPerWeek', 'availableRunsPerWeek', 'averageWeeklyKm4Weeks', 'breaks', 'canRun3Km',
     'experience', 'hasBreaks', 'hasResult', 'longestUsualRunKm', 'performanceMismatch',
-    'qualityMostlyTolerated', 'qualityRecall', 'qualitySessions8Weeks', 'qualityWeeks8Weeks', 'raceDate',
+    'qualityMostlyTolerated', 'qualityRecall', 'qualitySessions8Weeks', 'qualityWeeks8Weeks', 'raceDate', 'raceDateConfirmed',
     'regularRunningWeeks', 'resultDate', 'resultSource', 'resultTime', 'safety', 'targetTime',
   ]);
   for (const value of Object.values(ANSWERS)) {

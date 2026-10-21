@@ -4,12 +4,13 @@
  * session is, and an explanation under every term the question still uses.
  */
 import {afterEach, beforeEach, describe, expect, test} from 'vitest';
-import {cleanup, render, screen, within} from '@testing-library/react';
+import {cleanup, fireEvent, render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {App} from './App.tsx';
 import type {KeyValueStorage} from '../application/storage.ts';
 import {WorkoutDetails} from '../ui/screens/WorkoutDetails.tsx';
 import type {Workout} from '../application/engineGateway.ts';
+import {addDays, deviceToday} from '../application/format.ts';
 
 type User = ReturnType<typeof userEvent.setup>;
 
@@ -25,12 +26,14 @@ async function reachStep(user: User, step: 'VOLUME' | 'QUALITY' | 'AVAILABILITY'
   render(<App storage={memoryStorage()} />);
   await click(user, 'Начать подготовку');            // → RESULT
   await user.type(screen.getByLabelText('Ваш результат'), '15:20');
+  fireEvent.change(screen.getByLabelText('Дата результата'), {target: {value: addDays(deviceToday(), -10)}});
   await click(user, 'Продолжить');                   // → VOLUME
   if (step === 'VOLUME') return;
   await user.type(screen.getByLabelText(/Сколько недель подряд/), '52');
   await user.type(screen.getByLabelText(/Сколько раз в неделю вы обычно бегаете сейчас/), '4');
   await user.type(screen.getByLabelText(/Примерно сколько километров вы пробегаете за неделю/), '30');
   await user.type(screen.getByLabelText(/Сколько километров обычно составляет ваша самая длинная пробежка/), '10');
+  await user.click(screen.getByRole('button', {name: 'Да'}));  // canRun3Km
   await click(user, 'Продолжить');                   // → QUALITY
   if (step === 'QUALITY') return;
   await user.click(screen.getByRole('radio', {name: 'Знаю точное количество'}));
@@ -199,7 +202,7 @@ describe('the workout card and the technical block', () => {
     );
 
     expect(screen.getByText('Сегодня: 4 × 51 с')).toBeInTheDocument();
-    expect(screen.getByText('Выполни 4 отрезка. Каждый отрезок длится 51 секунду.')).toBeInTheDocument();
+    expect(screen.getByText('Выполните 4 отрезка. Каждый отрезок длится 51 секунду.')).toBeInTheDocument();
     expect(within(rowOf('Объём')).getByText('3 минуты 24 секунды')).toBeInTheDocument();
     expect(within(rowOf('Отрезки')).getByText('4 × 51 с')).toBeInTheDocument();
     expect(within(rowOf('Дистанция одного отрезка')).getByText('Не задана (отрезки по времени)')).toBeInTheDocument();

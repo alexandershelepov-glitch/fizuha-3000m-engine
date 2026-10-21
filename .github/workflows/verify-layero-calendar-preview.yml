@@ -5,9 +5,11 @@ on:
     branches:
       - feature/issue-24-calendar
       - feature/staging-pwa-deploy
+      - feature/issue-42-qa-fastcycle
   pull_request:
     branches:
       - feature/issue-24-calendar
+      - feature/staging-pwa-deploy
   workflow_dispatch:
 
 jobs:
@@ -22,6 +24,8 @@ jobs:
           cache: npm
       - name: Build the expected artifact from this commit
         id: expected-build
+        env:
+          VITE_QA_MODE: ${{ (github.event.pull_request.head.ref || github.ref_name) == 'feature/issue-42-qa-fastcycle' && '1' || '0' }}
         run: |
           npm ci
           npm run build:layero
@@ -51,7 +55,7 @@ jobs:
                 exit 1
               fi
               bundle=$(curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "https://${host}${asset}?expected=${EXPECTED_SHA}")
-              for marker in 'calendar-screen' 'home-overview' 'Не беги быстрее' 'Калибровка: обязательно внеси фактическое время'; do
+              for marker in 'calendar-screen' 'home-overview' 'Не бегите быстрее' 'Калибровка: обязательно внеси фактическое время'; do
                 if ! echo "${bundle}" | grep -Fq "${marker}"; then
                   echo "Published bundle for ${EXPECTED_SHA} is missing expected UI marker: ${marker}"
                   exit 1

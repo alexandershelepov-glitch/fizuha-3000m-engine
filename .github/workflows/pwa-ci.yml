@@ -51,6 +51,8 @@ jobs:
       - run: npx playwright install --with-deps chrome
       # Required release gate: the actual Layero root-hosted PWA (including offline).
       - run: npm run test:e2e
+      # Exercise the QA-only virtual clock separately; ordinary test:e2e stays production-like.
+      - run: VITE_QA_MODE=1 npx playwright test e2e/qa-cycle.spec.ts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
