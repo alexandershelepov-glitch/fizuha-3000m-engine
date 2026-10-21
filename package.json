@@ -21,7 +21,8 @@
     "lint": "eslint src tests web/src e2e",
     "demo": "node --experimental-strip-types examples/demo.ts",
     "audit:training": "node --experimental-strip-types audit/run.ts",
-    "audit:12w": "node --experimental-strip-types audit/run12w.ts"
+    "audit:12w": "node --experimental-strip-types audit/run12w.ts",
+    "audit:issue51": "node --experimental-strip-types audit/issue-51-forecast-spike/run.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
