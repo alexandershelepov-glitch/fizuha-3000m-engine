@@ -261,6 +261,10 @@ export const questionnaire = {
     EMPTY: 'Заполните это поле',
     NOT_A_NUMBER: 'Введите число',
   } as const,
+  /** Answers that are buttons rather than text: nothing is preselected, so an empty choice needs its own wording. */
+  choiceErrors: {
+    EMPTY: 'Выберите один из вариантов',
+  } as const,
   dateErrors: {
     EMPTY: 'Выберите дату',
     FORMAT: 'Выберите дату из календаря',
@@ -600,7 +604,7 @@ export const instruction = {
   easySpeedLimit: (fastPace: string): string => `Не бегите быстрее ${fastPace} мин/км: задача — лёгкая тренировка, а не проверка скорости.`,
   easyOutdoorCheck: 'На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу.',
   calibrationTask: (distance: string): string => `Пробегите ${distance} непрерывно. Это вводное измерение, а не забег на максимальную скорость.`,
-  calibrationIntensity: 'Держите усилие 2–4 из 10. Не ускоряйся ради лучшего времени.',
+  calibrationIntensity: 'Держите усилие 2–4 из 10. Не ускоряйтесь ради лучшего времени.',
   calibrationMeasure: 'Засеките фактическое время пробежки от старта до финиша (часы или секундомер).',
   calibrationSubmit: 'После финиша внесите пройденную дистанцию, точное время и оценку нагрузки. После двух подтверждённых измерений приложение рассчитает персональный темп.',
   calibrationRunWalk: 'Если пока не можете бежать непрерывно, выполняйте назначенные чередования бега и ходьбы. Их суммарное время нельзя использовать для расчёта темпа непрерывного бега.',
@@ -610,9 +614,9 @@ export const instruction = {
   easySlowDown: 'Если становится тяжело поддерживать такой режим — замедлитесь.',
   easyStop: 'Если нужно остановиться — остановитесь: это лучше, чем бежать через силу.',
   easyGenericCue: 'Ориентируйтесь на спокойное контролируемое усилие.',
-  runWalk: 'Чередуйте очень медленный бег и ходьбу. Бегитете так, чтобы можно было говорить.',
+  runWalk: 'Чередуйте очень медленный бег и ходьбу. Бегите так, чтобы можно было говорить.',
   runWalkTotal: (distance: string): string => `Пройдите и пробегите суммарно ${distance}. Учитывайте и шаги, и бег; разминка и заминка отдельно.`,
-  runWalkBouts: (running: number, walking: number): string => `Бегитете ${durationText(running)}, затем идите пешком ${durationText(walking)}.`,
+  runWalkBouts: (running: number, walking: number): string => `Бегите ${durationText(running)}, затем идите пешком ${durationText(walking)}.`,
   runWalkRepeat: 'Повторяйте эти два отрезка, пока не наберёте указанную общую дистанцию. Последний отрезок можно сократить.',
   runWalkPattern: 'Для старой сохранённой тренировки длительность отрезков не указана. Обновите план перед её выполнением.',
   control: (distance: string): string => `Пробегите ${distance} на результат.`,

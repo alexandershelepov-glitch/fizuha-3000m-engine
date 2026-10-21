@@ -113,7 +113,7 @@ function ResultStep({draft, update, error}: StepProps): ReactNode {
           <Field id="resultTime" label={questionnaire.fields.resultTime.label} hint={questionnaire.fields.resultTime.hint} error={error('resultTime')}>
             <TextInput id="resultTime" value={draft.resultTime} onChange={(value) => update({resultTime: value})} inputMode="text" placeholder="Например, 14:30" />
           </Field>
-          <Field id="resultDate" label={questionnaire.fields.resultDate.label} hint="По умолчанию сегодня. Если вы бежали 3000 м раньше, измените дату." error={error('resultDate')}>
+          <Field id="resultDate" label={questionnaire.fields.resultDate.label} hint="Укажите дату, когда вы пробежали 3000 м с этим результатом." error={error('resultDate')}>
             <TextInput id="resultDate" type="date" value={draft.resultDate} onChange={(value) => update({resultDate: value})} />
           </Field>
           <Field id="resultSource" label={questionnaire.fields.resultSource.label} error={error('resultSource')}>
@@ -258,6 +258,7 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
       <Field id="availableRunsPerWeek" label={questionnaire.fields.availableRunsPerWeek.label} error={error('availableRunsPerWeek')}>
         <TextInput id="availableRunsPerWeek" value={draft.availableRunsPerWeek} onChange={(value) => update({availableRunsPerWeek: value})} inputMode="numeric" />
       </Field>
+      {draft.hasResult ? (
       <Field id="performanceMismatch" label={questionnaire.fields.performanceMismatch.label} error={error('performanceMismatch')}>
         <Choice
           id="performanceMismatch"
@@ -270,6 +271,7 @@ function AvailabilityStep({draft, update, error}: StepProps): ReactNode {
           ]}
         />
       </Field>
+      ) : null}
     </>
   );
 }

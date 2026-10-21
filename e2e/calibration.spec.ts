@@ -8,6 +8,7 @@ test('untimed continuous beginner sees a measured EASY task and a blank real-tim
   await page.getByRole('button',{name:'Начать подготовку'}).click();
   await page.getByRole('button',{name:'Нет результата'}).click();
   await page.getByRole('button',{name:'Продолжить',exact:true}).click();
+  await page.getByRole('button',{name:'Да',exact:true}).click();
   await page.getByLabel(/Сколько недель подряд/).fill('8');
   await page.getByLabel(/Сколько раз в неделю/).fill('2');
   await page.getByLabel(/Примерно сколько километров/i).fill('10');

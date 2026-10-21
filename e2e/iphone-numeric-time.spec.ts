@@ -1,6 +1,6 @@
 /** Mobile Chrome verifies the HTML keyboard hint; actual keyboard layouts belong to the OS. */
 import {expect, test} from '@playwright/test';
-import {reset} from './app.ts';
+import {reset, resultDate} from './app.ts';
 
 test('iPhone: the 3000 m result accepts typed MM:SS through the standard keyboard', async ({page}) => {
   await reset(page);
@@ -9,6 +9,7 @@ test('iPhone: the 3000 m result accepts typed MM:SS through the standard keyboar
   await expect(result).toHaveAttribute('inputmode', 'text');
   await result.fill('14:30');
   await expect(result).toHaveValue('14:30');
+  await page.getByLabel('Дата результата').fill(await resultDate(page));
   await page.getByRole('button', {name:'Продолжить', exact:true}).click();
   await expect(page.getByText('Сколько вы бегаете сейчас')).toBeVisible();
 });

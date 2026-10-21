@@ -60,13 +60,15 @@ export function TextInput({id, value, onChange, inputMode = 'text', type = 'text
   );
 }
 
-export function Toggle({id, value, onChange, yes, no, labelledBy}: {id: string; value: boolean; onChange: (next: boolean) => void; yes: string; no: string; labelledBy?: string | undefined}): ReactNode {
+export function Toggle({id, value, onChange, yes, no, labelledBy}: {id: string; value: boolean | null; onChange: (next: boolean) => void; yes: string; no: string; labelledBy?: string | undefined}): ReactNode {
+  // `null` means "not answered yet": neither option is shown active, so a default can never
+  // masquerade as the user's own answer.
   return (
     <div className="toggle" role="group" id={id} aria-labelledby={labelledBy}>
-      <button type="button" className={`toggle__option${value ? ' toggle__option--active' : ''}`} aria-pressed={value} onClick={() => onChange(true)}>
+      <button type="button" className={`toggle__option${value === true ? ' toggle__option--active' : ''}`} aria-pressed={value === true} onClick={() => onChange(true)}>
         {yes}
       </button>
-      <button type="button" className={`toggle__option${value ? '' : ' toggle__option--active'}`} aria-pressed={!value} onClick={() => onChange(false)}>
+      <button type="button" className={`toggle__option${value === false ? ' toggle__option--active' : ''}`} aria-pressed={value === false} onClick={() => onChange(false)}>
         {no}
       </button>
     </div>
@@ -94,7 +96,7 @@ export function Scale({id, value, onChange, min, max, labelFor, labelledBy}: {id
   );
 }
 
-export function Choice<T extends string>({id, value, options, onChange, labelledBy}: {id: string; value: T; options: readonly {value: T; label: string; hint?: string}[]; onChange: (next: T) => void; labelledBy?: string | undefined}): ReactNode {
+export function Choice<T extends string>({id, value, options, onChange, labelledBy}: {id: string; value: T | null; options: readonly {value: T; label: string; hint?: string}[]; onChange: (next: T) => void; labelledBy?: string | undefined}): ReactNode {
   return (
     <div className="choice" id={id} role="radiogroup" aria-labelledby={labelledBy}>
       {options.map((option) => (
