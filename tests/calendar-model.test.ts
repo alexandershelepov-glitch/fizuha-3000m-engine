@@ -115,3 +115,38 @@ test('periodWeeks spans whole ISO weeks from the cycle start to the race week', 
   const longCycle = createEngine(profile({raceDate: dateAfter(16 * 7)}), NOW);
   assert.equal(periodWeeks(longCycle).length, 17);
 });
+
+test('issue #51 review: UNRESOLVED forecast slots need clarification and never count as forecast workouts', () => {
+  const s = fixture();
+  const forecast = forecastCycle(s, {mode: 'CONDITIONAL', asOf: s.asOf});
+  const real = forecast.entries.find(e => e.status === 'CONDITIONAL' && e.workout.type !== 'REST' && e.workout.type !== 'CONTROL')!;
+  const unresolved = {...real, status: 'UNRESOLVED' as const};
+  const day = calendarDay(s, NOW, real.workout.scheduledDate, new Set(), forecastByDate([unresolved]));
+  assert.equal(day.status, 'unresolved');
+  assert.equal(day.forecast?.status, 'UNRESOLVED');
+  const summary = weekSummary([day]);
+  assert.equal(summary.unresolved, 1);
+  assert.equal(summary.preliminary, 0);
+  assert.equal(summary.assigned, 0);
+  assert.equal(summary.preliminaryMainMeters, 0);
+});
+
+test('issue #51 review: weekly summary keeps forecast volume apart from issued and reported volume', () => {
+  const s = fixture();
+  const forecast = forecastCycle(s, {mode: 'CONDITIONAL', asOf: s.asOf});
+  const byDate = forecastByDate(forecast.entries);
+  const futureWeek = weekDates(dateAfter(21)).map(date => calendarDay(s, NOW, date, new Set(), byDate));
+  const prelim = futureWeek.filter(d => d.status === 'forecast' || d.status === 'control');
+  assert.ok(prelim.length > 0);
+  const summary = weekSummary(futureWeek);
+  assert.equal(summary.assigned, 0, 'forecast days are not "assigned"');
+  assert.equal(summary.knownMainMeters, 0, 'forecast metres are not added to assigned metres');
+  assert.equal(summary.reportedMeters, 0);
+  assert.equal(summary.preliminary, prelim.length);
+  const expected = prelim.filter(d => d.workout!.main.dose.unit === 'METERS').reduce((t, d) => t + d.workout!.main.dose.value, 0);
+  assert.equal(summary.preliminaryMainMeters, expected);
+  // The current week still counts only the issued queue.
+  const thisWeek = weekDates(NOW).map(date => calendarDay(s, NOW, date, new Set(), byDate));
+  const issued = thisWeek.filter(d => d.status === 'planned' || d.status === 'moved').length;
+  assert.equal(weekSummary(thisWeek).assigned, issued);
+});

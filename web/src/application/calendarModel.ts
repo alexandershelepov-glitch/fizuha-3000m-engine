@@ -2,7 +2,10 @@
 import type {EngineState, ForecastEntry, Workout, HistoryEntry} from './engineGateway.ts';
 import {addDays} from './format.ts';
 
-export type CalendarStatus = 'completed' | 'skipped' | 'planned' | 'moved' | 'forecast' | 'control' | 'rest' | 'unformed' | 'race';
+export type CalendarStatus = 'completed' | 'skipped' | 'planned' | 'moved' | 'forecast' | 'control' | 'unresolved' | 'rest' | 'unformed' | 'race';
+/** Days of the preliminary forecast: never facts, never counted together with issued workouts. */
+export const PRELIMINARY_STATUSES: readonly CalendarStatus[] = ['forecast', 'control', 'unresolved'];
+export function isPreliminary(day: CalendarDay): boolean { return PRELIMINARY_STATUSES.includes(day.status); }
 export interface CalendarDay {
   readonly date: string;
   readonly status: CalendarStatus;
@@ -15,6 +18,7 @@ export interface CalendarDay {
   readonly forecast: ForecastEntry | null;
 }
 export interface CalendarSummary {
+  /** Workouts actually issued by the engine (queue, history, skips). Preliminary forecast days are NOT included. */
   readonly assigned: number;
   readonly completed: number;
   readonly skipped: number;
@@ -24,6 +28,13 @@ export interface CalendarSummary {
   /** Only metres explicitly reported by the athlete, not inferred from a prescription. */
   readonly reportedMeters: number;
   readonly sessionsWithoutReportedMeters: number;
+  /** Preliminary forecast workouts (status 'forecast' and 'control'); kept apart from issued ones. */
+  readonly preliminary: number;
+  /** Known METERS of the main part of preliminary workouts — a forecast, never added to planned or reported metres. */
+  readonly preliminaryMainMeters: number;
+  readonly preliminaryWithoutMeters: number;
+  /** Forecast slots the engine could not resolve (UNRESOLVED): they need clarification and carry no volume. */
+  readonly unresolved: number;
 }
 
 /** Monday-based week, with UTC arithmetic to avoid DST and browser time-zone drift. */
@@ -85,6 +96,8 @@ export function calendarDay(state: EngineState, today: string, date: string, mov
   const projected = forecast.get(date) ?? null;
   if (projected) {
     if (projected.workout.type === 'REST') return {date, status: 'rest', workout: null, result: null, forecast: null};
+    // UNRESOLVED: the engine could not resolve this slot; it is shown as needing clarification, never as a normal workout.
+    if (projected.status === 'UNRESOLVED') return {date, status: 'unresolved', workout: projected.workout, result: null, forecast: projected};
     return {date, status: projected.workout.type === 'CONTROL' ? 'control' : 'forecast',
       workout: projected.workout, result: null, forecast: projected};
   }
@@ -99,17 +112,23 @@ export function forecastByDate(entries: readonly ForecastEntry[]): Map<string, F
 }
 
 export function weekSummary(days: readonly CalendarDay[]): CalendarSummary {
-  const workouts = days.filter(day => day.workout !== null);
-  const known = workouts.filter(day => day.workout!.main.dose.unit === 'METERS');
-  const completed = workouts.filter(day => day.status === 'completed');
+  const issued = days.filter(day => day.workout !== null && !isPreliminary(day));
+  const known = issued.filter(day => day.workout!.main.dose.unit === 'METERS');
+  const completed = issued.filter(day => day.status === 'completed');
   const withMeters = completed.filter(day => (day.result?.result.distanceMeters ?? 0) > 0);
+  const preliminary = days.filter(day => day.workout !== null && (day.status === 'forecast' || day.status === 'control'));
+  const preliminaryKnown = preliminary.filter(day => day.workout!.main.dose.unit === 'METERS');
   return {
-    assigned: workouts.length,
+    assigned: issued.length,
     completed: completed.length,
-    skipped: workouts.filter(day => day.status === 'skipped').length,
+    skipped: issued.filter(day => day.status === 'skipped').length,
     knownMainMeters: known.reduce((total, day) => total + day.workout!.main.dose.value, 0),
-    sessionsWithoutPrescribedMeters: workouts.length - known.length,
+    sessionsWithoutPrescribedMeters: issued.length - known.length,
     reportedMeters: withMeters.reduce((total, day) => total + day.result!.result.distanceMeters, 0),
     sessionsWithoutReportedMeters: completed.length - withMeters.length,
+    preliminary: preliminary.length,
+    preliminaryMainMeters: preliminaryKnown.reduce((total, day) => total + day.workout!.main.dose.value, 0),
+    preliminaryWithoutMeters: preliminary.length - preliminaryKnown.length,
+    unresolved: days.filter(day => day.status === 'unresolved').length,
   };
 }

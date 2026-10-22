@@ -157,3 +157,6 @@
   .calendar-period-list { max-height: none; }
   .calendar-days--week .calendar-day-badge { display: none; }
 }
+.calendar-stats--preliminary { margin-top: 8px; opacity: .9; border-top: 1px dashed currentColor; padding-top: 8px; }
+.calendar-day--unresolved { border-style: dashed; border-color: #c27c0e; }
+.calendar-params { display: grid; gap: 2px; margin-top: 6px; }

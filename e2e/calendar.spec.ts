@@ -15,6 +15,11 @@ async function openCalendar(page: import('@playwright/test').Page): Promise<void
 test('calendar: week/month, full period with preliminary forecast, responsive screenshots', async ({page}, info) => {
   await page.setViewportSize({width:390,height:844});
   await openCalendar(page);
+  // Review #1: the first open after creating a cycle shows the whole training period.
+  await expect(page.getByRole('group', {name:'Режим календаря'}).getByRole('button',{name:'Весь период'})).toHaveAttribute('aria-pressed','true');
+  expect(await page.locator('.calendar-week-block').count()).toBeGreaterThanOrEqual(8);
+  await page.screenshot({path:info.outputPath('calendar-mobile-390-period.png'),fullPage:true});
+  await page.getByRole('group', {name:'Режим календаря'}).getByRole('button',{name:'Неделя'}).click();
   await expect(page.locator('.calendar-days--week .calendar-day')).toHaveCount(7);
   await expect(page.getByText('Фактически внесено')).toBeVisible();
   await page.screenshot({path:info.outputPath('calendar-mobile-390.png'),fullPage:true});
@@ -33,7 +38,14 @@ test('calendar: week/month, full period with preliminary forecast, responsive sc
   await expect(page.getByText('Предварительный план. Изменяется по результатам тренировок.')).toBeVisible();
   await expect(page.getByRole('button', {name:'Открыть тренировку'})).toHaveCount(0);
   await expect(page.getByRole('button', {name:'Перенести', exact:true})).toHaveCount(0);
+  // Review #4: every parameter incl. warm-up and cool-down; review #2: forecast counted apart.
+  await expect(page.locator('.calendar-detail .calendar-params')).toContainText('Разминка');
+  await expect(page.locator('.calendar-detail .calendar-params')).toContainText('Заминка');
+  await expect(page.locator('.calendar-stats--preliminary')).toContainText('Предварительно (прогноз, ещё не назначено)');
   await page.getByRole('group', {name:'Режим календаря'}).getByRole('button',{name:'Неделя'}).click();
+  // The later choice survives a reload.
+  await page.reload();
+  await expect(page.getByRole('group', {name:'Режим календаря'}).getByRole('button',{name:'Неделя'})).toHaveAttribute('aria-pressed','true');
   await page.setViewportSize({width:1280,height:850});
   await expect(page.getByRole('complementary',{name:'Разделы приложения'}).getByRole('button',{name:'План'})).toBeVisible();
   await expect(page.locator('.calendar-sidebar')).toBeVisible();
@@ -59,6 +71,7 @@ test('calendar: an unavailable shift is persisted without changing the engine pl
 
 test('calendar: inline move uses persisted engine transition and survives reload', async ({page}) => {
   await openCalendar(page);
+  await page.getByRole('group', {name:'Режим календаря'}).getByRole('button',{name:'Неделя'}).click();
   const state = await readEngineState(page);
   const original = state.queue.find(item => item.type !== 'REST' && (item as typeof item & {movable?: boolean}).movable);
   expect(original).toBeTruthy();

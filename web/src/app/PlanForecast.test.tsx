@@ -10,6 +10,8 @@ import {cleanup, fireEvent, render, screen} from '@testing-library/react';
 import {Plan} from '../ui/screens/Plan.tsx';
 import {createEngineState} from '../application/engineGateway.ts';
 import type {Profile} from '../application/engineGateway.ts';
+import type {KeyValueStorage} from '../application/storage.ts';
+import type {AppStateV1} from '../application/appState.ts';
 
 const TODAY = '2026-10-05'; // Monday
 const addDays = (from: string, days: number): string =>
@@ -28,6 +30,14 @@ function profileFixture(over: Partial<Profile> = {}): Profile {
     experience: {threshold: true, vo2: false, specific3k: false},
     breaks: [], safety: healthy(), performanceMismatch: 'NONE', ...over,
   };
+}
+
+function memoryStorage(): KeyValueStorage & {data: Map<string, string>} {
+  const data = new Map<string, string>();
+  return {data, getItem: k => data.get(k) ?? null, setItem: (k, v) => { data.set(k, v); }, removeItem: k => { data.delete(k); }};
+}
+function appStateFor(cycleId: string): AppStateV1 {
+  return {cycle: {cycleId}, events: []} as unknown as AppStateV1;
 }
 
 function renderPlan(profile: Profile = profileFixture()) {
@@ -74,8 +84,8 @@ test('future days render as a preliminary plan; committed days keep their action
   expect(screen.queryByRole('button', {name: 'Перенести'})).toBeNull();
   // The workout parameters the engine produced are shown; nothing is invented in the UI layer.
   const detail = document.querySelector('.calendar-detail')!;
-  expect(detail.textContent).toContain('Основная часть по предварительному плану');
-  expect(detail.textContent).toMatch(/Усилие .+ из 10/);
+  expect(detail.textContent).toContain('Предварительные параметры');
+  expect(detail.textContent).toMatch(/Усилие.+из 10/);
   expect(detail.textContent).toContain('Результат можно вносить только по назначениям текущей недели');
 });
 
@@ -109,4 +119,60 @@ test('a novice without a 3000 m result sees the whole period without invented pa
   expect(detail.textContent).not.toContain('Темп');
   expect(detail.textContent).not.toContain('Дорожка');
   expect(document.querySelectorAll('.calendar-day--control').length).toBe(0);
+});
+
+// ---- Issue #51 user-review fixes ----
+
+test('review #1: first open after cycle creation shows the whole period; a later choice is remembered per cycle', () => {
+  const engineState = createEngineState(profileFixture(), TODAY);
+  const storage = memoryStorage();
+  const props = {engineState, storage, today: TODAY, onNavigate: vi.fn(), onRefreshPlan: vi.fn(), refreshing: false};
+  render(<Plan {...props} appState={appStateFor('cycle-A')} />);
+  expect(screen.getByRole('button', {name: 'Весь период'}).getAttribute('aria-pressed')).toBe('true');
+  expect(document.querySelectorAll('.calendar-week-block').length).toBeGreaterThanOrEqual(12);
+  fireEvent.click(screen.getByRole('button', {name: 'Неделя'}));
+  expect(document.querySelectorAll('.calendar-days--week .calendar-day').length).toBe(7);
+  cleanup();
+  // Reopening the plan keeps the user's choice.
+  render(<Plan {...props} appState={appStateFor('cycle-A')} />);
+  expect(screen.getByRole('button', {name: 'Неделя'}).getAttribute('aria-pressed')).toBe('true');
+  cleanup();
+  // A new cycle starts with the whole period again.
+  render(<Plan {...props} appState={appStateFor('cycle-B')} />);
+  expect(screen.getByRole('button', {name: 'Весь период'}).getAttribute('aria-pressed')).toBe('true');
+  // Month mode still works and is remembered.
+  fireEvent.click(screen.getByRole('button', {name: 'Месяц'}));
+  expect(storage.data.get('fizuha.calendar.mode.cycle-B')).toBe('month');
+});
+
+test('review #2: weekly summary separates forecast workouts from issued ones', () => {
+  renderPlan();
+  fireEvent.click(screen.getByRole('button', {name: 'Весь период'}));
+  fireEvent.click(document.querySelector('.calendar-day--forecast')!);
+  const summary = document.querySelector('.calendar-summary')!;
+  const assigned = summary.querySelector('.calendar-stats:not(.calendar-stats--preliminary) div strong')!.textContent;
+  expect(assigned).toBe('0');
+  const prelim = summary.querySelector('.calendar-stats--preliminary');
+  expect(prelim).toBeTruthy();
+  expect(prelim!.textContent).toContain('Предварительно (прогноз, ещё не назначено)');
+  expect(prelim!.textContent).toContain('Прогнозный объём основной части');
+  expect(Number(prelim!.querySelector('strong')!.textContent)).toBeGreaterThan(0);
+  expect(summary.textContent).toContain('Нет данных');
+});
+
+test('review #4: preview shows every parameter incl. warm-up and cool-down, and no dead card link', () => {
+  const {onNavigate} = renderPlan();
+  fireEvent.click(screen.getByRole('button', {name: 'Весь период'}));
+  fireEvent.click(document.querySelector('.calendar-day--forecast')!);
+  const params = document.querySelector('.calendar-detail .calendar-params')!;
+  expect(params).toBeTruthy();
+  for (const label of ['Задача', 'Разминка', 'Заминка', 'Усилие']) expect(params.textContent).toContain(label);
+  const detail = document.querySelector('.calendar-detail')!;
+  expect(detail.textContent).not.toContain('в карточке занятия.');
+  expect(screen.queryByRole('button', {name: 'Открыть тренировку'})).toBeNull();
+  // Issued day: same full parameter list, and its card link really opens a queued workout.
+  fireEvent.click(document.querySelector('.calendar-day--planned')!);
+  expect(document.querySelector('.calendar-detail .calendar-params')!.textContent).toContain('Разминка');
+  fireEvent.click(screen.getByRole('button', {name: 'Открыть тренировку'}));
+  expect(onNavigate).toHaveBeenCalledWith(expect.objectContaining({name: 'WORKOUT'}));
 });

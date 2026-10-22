@@ -72,7 +72,7 @@ test('the active cycle survives a reload', async ({page}) => {
   await expect(page).toHaveURL(/\/plan$/);
   await page.reload();
   await expect(page).toHaveURL(/\/plan$/);
-  await expect(page.getByText(/Показан фактический горизонт плана/)).toBeVisible();
+  await expect(page.getByText(/Будущие тренировки — предварительный план/)).toBeVisible();
 });
 
 test('an invalid time is refused locally and never reaches the engine', async ({page}) => {
@@ -277,7 +277,7 @@ test('a plan refresh does not reopen onboarding', async ({page}) => {
 
   await page.getByRole('navigation', {name: 'Основные разделы'}).getByText('План').click();
   await page.getByRole('button', {name: 'Обновить план'}).click();
-  await expect(page.getByText(/Показан фактический горизонт плана/)).toBeVisible();
+  await expect(page.getByText(/Будущие тренировки — предварительный план/)).toBeVisible();
 
   // Onboarding screens stay unreachable for an active cycle, even as direct links.
   for (const onboarding of ['/assessment', '/plan-ready', '/review', '/questionnaire?step=GOAL']) {
