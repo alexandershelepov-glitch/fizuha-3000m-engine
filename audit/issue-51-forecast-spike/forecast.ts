@@ -1,37 +1,42 @@
 /**
  * Issue #51 — технический эксперимент полного прогнозного календаря.
  *
- * Экспериментальный модуль. НЕ production-код, НЕ второй планировщик: обе модели двигают только
- * изолированные глубокие копии состояния движка и используют исключительно публичные переходы
- * (`createEngine`, `replan`, `skipWorkout`, `recordResult`, `recordCheckpoint`, `recordFinalResult`).
+ * Экспериментальный модуль. НЕ production-код, НЕ второй планировщик: обе модели используют
+ * исключительно публичные операции движка и никогда не мутируют исходное состояние.
  *
  * Две модели прогноза на весь цикл до даты норматива:
- *  - A (консервативная): будущие тренировки только занимают резерв нагрузки/восстановления.
- *    Каждая будущая позиция явно закрывается как пропуск (тот же переход `skipWorkout`, что и
- *    автоматический просроченный мисс — согласованное решение 2), поэтому ни одна будущая
- *    тренировка не становится результатом и не начисляет successStreak / easyProgression /
- *    qualityRotation / новые допуски / «омоложение» измерения. Обязательные контрольные точки
- *    честно показываются как неразрешённые: без реального измерения 3000 м движок не может
- *    подтвердить прогрессию.
- *  - Б (условный сценарий «при успешном выполнении»): в той же изолированной копии каждое
- *    назначенное занятие синтетически «выполняется» GREEN (makeResult из аудиторского
- *    симулятора, каждая запись помечена synthetic), контрольные 3000 м вводятся только как
- *    прежний известный результат (улучшение времени не предполагается), для новичка U1
- *    способность пробежать 3 км НЕ подтверждается и время первого 3000 м НЕ выдумывается.
- *    Это предположение модели, не доказательство переносимости и не допуск к нагрузке.
+ *  - A (консервативное бронирование): исходное состояние заморожено; для каждой будущей недели
+ *    чистая генерация недельной очереди движком (`generateQueue` на клоне с решением `decide` на
+ *    дату недели и флагом контрольной точки по правилу 21 дня из rebuildQueue). Будущие назначения
+ *    резервируют нагрузку и восстановление (guardWeeklyLoad внутри generateQueue), но НЕ становятся
+ *    ни результатами, ни пропусками: ни один переход skipWorkout/recordResult не выполняется,
+ *    history/skippedWorkouts/successStreak не трогаются. Это бронирование, а не моделирование
+ *    пропусков.
+ *  - Б (условный сценарий «при успешном выполнении»): в изолированной копии каждое назначенное
+ *    занятие синтетически «выполняется» GREEN; контрольные 3000 м вводятся только как прежний
+ *    известный результат (улучшение не предполагается); для U1 способность пробежать 3 км НЕ
+ *    подтверждается и время первого 3000 м НЕ выдумывается. Не допуск к нагрузке.
  *
- * Исходные параметры (документированы явно): старт цикла = SIM_START аудиторских сценариев
- * (2026-10-12), профили U1/U4/U5 из audit/fullCycle12w.ts без изменения анкетных значений,
- * горизонты 8 и 12 недель (raceDate = старт + недели×7).
+ * Замечание 1 (сохранение утверждённой очереди): неделя 1 в обеих моделях отображается из
+ * неизменяемого снапшота seed.queue, снятого на момент расчёта; виртуальное выполнение сценария
+ * не может изменить представление уже выданных назначений (доказательство — FS-15).
+ *
+ * Замечание 3 (скользящие окна): sweepRollingWindows проверяет ВСЕ последовательные 7-дневные
+ * интервалы прогнозного календаря, включая стыки недель (бюджет броней + 48 ч восстановления).
+ *
+ * Исходные параметры: старт = SIM_START аудиторских сценариев (2026-10-12), анкеты U1/U4/U5 из
+ * audit/fullCycle12w.ts без изменений, горизонты 8 и 12 недель (raceDate = старт + недели×7).
  */
 import {
-  EngineError, addDays, createEngine, recordCheckpoint, recordFinalResult, recordResult, replan, skipWorkout,
+  EngineError, addDays, createEngine, decide, generateQueue, guardWeeklyLoad, recordCheckpoint, recordFinalResult,
+  recordResult, replan, skipWorkout,
 } from '../../src/index.ts';
 import type {
-  Anchor, Capacity, Confidence, DoseUnit, EngineState, Gate, Phase, Profile, WorkoutGoal, WorkoutMainMode,
+  Anchor, Capacity, Confidence, DoseUnit, EngineState, Gate, Phase, Profile, Workout, WorkoutGoal, WorkoutMainMode,
   WorkoutType,
 } from '../../src/index.ts';
-import {approvedWeekMeters, reservedMetres} from '../../src/weeklyLoad.ts';
+import {approvedWeekMeters, reservedMetres, withinRollingWeekBudget} from '../../src/weeklyLoad.ts';
+import {day} from '../../src/validation.ts';
 import {USERS} from '../fullCycle12w.ts';
 import type {AuditUser} from '../fullCycle12w.ts';
 import {SIM_START, healthySafety, makeResult} from '../trainingSimulator.ts';
@@ -59,6 +64,7 @@ export interface ForecastRow {
   cooldownMinutes: number;
   repeats: number;
   repeatMeters: number | null;
+  finalRepeatMeters: number | null;
   restSeconds: number;
   targetRpe: [number, number];
   /** Только если подтверждено исходными данными (измеренный результат 3000 м / калибровка). */
@@ -69,6 +75,8 @@ export interface ForecastRow {
   phase: Phase;
   confidence: Confidence;
   capacity: Capacity;
+  minimumRecoveryHoursBeforeQuality: number;
+  volumeFactor: number;
   runWalkStage: number | null;
   calibration: boolean;
   /** Бронь планировочного пространства движка (НЕ фактические километры); null = не вычислима без измерения. */
@@ -106,6 +114,12 @@ export interface WeekSummary {
   types: string;
 }
 
+export interface WindowViolation {
+  kind: 'BUDGET' | 'RECOVERY';
+  windowEndOffset: number;
+  detail: string;
+}
+
 export interface ForecastRun {
   model: 'A' | 'B';
   user: AuditUser;
@@ -115,13 +129,17 @@ export interface ForecastRun {
   rows: ForecastRow[];
   events: ForecastEvent[];
   weeks: WeekSummary[];
+  /** Скользящие 7-дневные окна (включая стыки недель): пусто = нарушений нет. */
+  windowViolations: WindowViolation[];
   finalState: EngineState;
   finalResultSeconds: number | null;
   controlSeconds: number[];
   engineErrors: {date: string; code: string; detail: string}[];
-  /** Нетронутое исходное состояние (доказательство неизменности проверяется тестами). */
+  /** Нетронутое исходное состояние (доказательство неизменности — FS-01). */
   seed: EngineState;
   seedSerialized: string;
+  /** Замороженная копия очереди, выданной движком на момент расчёта (неделя 1 отображается из неё). */
+  issuedSnapshot: Workout[];
 }
 
 // ------------------------------------------------------------------------------------------------ profile factory
@@ -142,7 +160,7 @@ const round1 = (v: number): number => Math.round(v * 10) / 10;
 
 function makeRow(
   model: 'A' | 'B', user: AuditUser, horizonWeeks: number, state: EngineState, offset: number,
-  workout: Parameters<typeof makeResult>[0], status: RowStatus, note: string, syntheticEvaluation: string | null,
+  workout: Workout, status: RowStatus, note: string, syntheticEvaluation: string | null,
 ): ForecastRow {
   const d = state.decision;
   return {
@@ -152,12 +170,16 @@ function makeRow(
     countsAsQuality: workout.countsAsQuality,
     doseUnit: workout.main.dose.unit, doseValue: round1(workout.main.dose.value),
     warmupMinutes: workout.warmupMinutes, cooldownMinutes: workout.cooldownMinutes,
-    repeats: workout.main.repeats, repeatMeters: workout.main.repeatMeters, restSeconds: workout.restSeconds,
+    repeats: workout.main.repeats, repeatMeters: workout.main.repeatMeters,
+    finalRepeatMeters: workout.main.finalRepeatMeters === null ? null : round1(workout.main.finalRepeatMeters),
+    restSeconds: workout.restSeconds,
     targetRpe: [...workout.targetRpe] as [number, number],
     paceRangeSecondsPerKm: workout.paceRangeSecondsPerKm === null ? null : [...workout.paceRangeSecondsPerKm] as [number, number],
     speedRangeKmh: workout.speedRangeMps === null ? null : [round1(workout.speedRangeMps[0] * 3.6), round1(workout.speedRangeMps[1] * 3.6)],
     anchor: workout.anchor, gateAtPrescription: workout.gateAtPrescription,
     phase: d.phase, confidence: d.confidence, capacity: d.capacity,
+    minimumRecoveryHoursBeforeQuality: workout.minimumRecoveryHoursBeforeQuality,
+    volumeFactor: workout.volumeFactor,
     runWalkStage: workout.main.runWalk?.stage ?? null, calibration: workout.main.calibration === true,
     reservedMeters: reservedMetres(state, workout),
     approvedWeekMeters: approvedWeekMeters(state),
@@ -190,6 +212,43 @@ function summarizeWeeks(rows: ForecastRow[], events: ForecastEvent[], horizonWee
   });
 }
 
+// ------------------------------------------------------------------------------------------------ remark 3: sliding windows
+/**
+ * Проверка ВСЕХ последовательных 7-дневных интервалов прогнозного календаря, включая стыки
+ * календарных недель. Для каждого конца окна E: сумма броней занятий в (E−7, E] ≤ бюджета
+ * (максимум из бюджетов строк окна; в модели А бюджет константен, в модели Б неубывающий —
+ * строгая проверка для А, повторная сверху генерационной проверки движка для Б), и любые два
+ * качественных занятия в окне разнесены не менее чем на 48 часов (правило восстановления движка).
+ */
+export function sweepRollingWindows(rows: ForecastRow[]): WindowViolation[] {
+  const violations: WindowViolation[] = [];
+  const sorted = [...rows].filter(r => r.type !== 'REST').sort((a, b) => a.offset - b.offset);
+  if (sorted.length === 0) return violations;
+  const maxOffset = Math.max(...sorted.map(r => r.offset));
+  for (let end = Math.min(...sorted.map(r => r.offset)) + 6; end <= maxOffset; end++) {
+    const inWindow = sorted.filter(r => r.offset > end - 7 && r.offset <= end);
+    if (inWindow.length === 0) continue;
+    const budget = Math.max(...inWindow.map(r => r.approvedWeekMeters));
+    const reserve = inWindow.reduce((n, r) => n + (r.reservedMeters ?? 0), 0);
+    if (reserve > budget + 1e-6) {
+      violations.push({kind: 'BUDGET', windowEndOffset: end,
+        detail: `окно до смещения ${end}: бронь ${Math.round(reserve)} м > бюджета ${Math.round(budget)} м (${inWindow.map(r => `${r.date} ${r.type}`).join(', ')})`});
+    }
+    const quality = inWindow.filter(r => r.countsAsQuality);
+    for (let i = 0; i < quality.length; i++) {
+      for (let j = i + 1; j < quality.length; j++) {
+        const hours = Math.abs(quality[i]!.offset - quality[j]!.offset) * 24;
+        const needed = Math.min(quality[i]!.minimumRecoveryHoursBeforeQuality, quality[j]!.minimumRecoveryHoursBeforeQuality);
+        if (hours < needed - 1e-9) {
+          violations.push({kind: 'RECOVERY', windowEndOffset: end,
+            detail: `окно до смещения ${end}: ${quality[i]!.type} ${quality[i]!.date} и ${quality[j]!.type} ${quality[j]!.date} через ${hours} ч (< ${needed} ч)`});
+        }
+      }
+    }
+  }
+  return violations;
+}
+
 function controlResult(w: {scheduledDate: string; warmupMinutes: number; cooldownMinutes: number}, seconds: number) {
   return {
     date: w.scheduledDate, completionFraction: 1, sessionRpe: 8.5, safety: healthySafety(),
@@ -198,52 +257,94 @@ function controlResult(w: {scheduledDate: string; warmupMinutes: number; cooldow
   };
 }
 
-// ------------------------------------------------------------------------------------------------ model A
+// ------------------------------------------------------------------------------------------------ model A (reservation)
 /**
- * Консервативная проекция: реальные факты только на asOf; каждая будущая позиция явно закрывается
- * как пропуск (тот же переход, что автоматический мисс), поэтому прогрессия не начисляется.
+ * Консервативное бронирование. Ни один переход состояния после createEngine не выполняется:
+ * ни результатов, ни пропусков — history/skippedWorkouts/successStreak не трогаются.
+ *
+ * Генерация выполняется помнедельно (слоты цикла выровнены по неделям от cycleStart). В отличие
+ * от независимой генерации «в вакууме», так воспроизводится ритм реальной очереди: каждый новый
+ * слот видит внутри своей недели уже занятые брони, а сквозной массив резервирований подаётся
+ * в guardWeeklyLoad вместе с новыми кандидатами (та же роль, что history выполненных/пропущенных
+ * в реальном rebuildQueue) — скользящие окна на стыках недель проверяются самим движком, бронь не
+ * «освобождается» задним числом. Флаг обязательной контрольной точки вычисляется на момент
+ * фиксации слота (понедельник − 6 дней 7-дневного горизонта), как в реальной ежедневной очереди.
+ *
+ * Занятия резервируют нагрузку и восстановление, но не начисляют успехи и не становятся пропусками:
+ * только публичные чистые функции ядра (generateQueue, guardWeeklyLoad, decide) на замороженном
+ * клоне состояния.
  */
 export function projectModelA(user: AuditUser, horizonWeeks: number): ForecastRun {
   const profile = makeSpikeProfile(user, horizonWeeks);
   const seed = createEngine(profile, SIM_START);
   const seedSerialized = JSON.stringify(seed);
-  const issuedIds = new Set(seed.queue.map(w => w.id));
-  let state = structuredClone(seed);
+  const issuedSnapshot = structuredClone(seed.queue);
+  // Замороженная планировочная база: используется только для чтения, никогда не мутируется.
+  const base = structuredClone(seed);
   const days = horizonWeeks * 7;
   const rows: ForecastRow[] = []; const events: ForecastRun['events'] = []; const engineErrors: ForecastRun['engineErrors'] = [];
   const logged = new Set<string>();
-  const log = (offset: number, kind: string, detail: string, synthetic = false): void => {
+  const logOnce = (offset: number, kind: string, detail: string): void => {
     if (logged.has(kind)) return;
     logged.add(kind);
-    events.push({date: addDays(SIM_START, offset), offset, week: weekOf(offset), kind, detail, synthetic});
+    events.push({date: addDays(SIM_START, offset), offset, week: weekOf(offset), kind, detail, synthetic: false});
+  };
+  const emit = (workout: Workout, status: RowStatus, note: string, decision: EngineState): void => {
+    rows.push(makeRow('A', user, horizonWeeks, decision, day(workout.scheduledDate) - day(SIM_START),
+      workout, status, note, null));
   };
 
-  for (let offset = 0; offset < days; offset++) {
-    const today = addDays(SIM_START, offset);
-    state = replan(state, today);
+  // Неделя 1 (замечание 1): дословно очередь, выданная движком на момент расчёта.
+  for (const workout of issuedSnapshot) {
+    emit(workout, 'ISSUED', 'Выданная движком очередь на момент расчёта; зафиксирована снапшотом и не изменяется сценарием.', seed);
+  }
 
-    if (state.checkpointRequired && state.profile.canRun3Km) {
-      log(offset, 'CHECKPOINT_WINDOW_UNRESOLVED',
-        'Обязательная контрольная точка (измерение 3000 м просрочено/требуется). В модели А нет внешнего измерения: ' +
-        'слот контроля закрывается как пропуск, подтверждение прогрессии невозможно, план остаётся на базовом уровне.');
+  // Все зарезервированные назначения удерживаются сквозь весь расчёт.
+  let committedAll: Workout[] = [...issuedSnapshot];
+  for (let week = 2; week <= horizonWeeks; week++) {
+    const mondayOffset = (week - 1) * 7;
+    const monday = addDays(SIM_START, mondayOffset);
+    // Правило rebuildQuery, вычисленное на момент фиксации слота в реальной 7-дневной очереди
+    // (слот понедельника фиксируется за 6 дней до даты):
+    const commitDay = addDays(SIM_START, mondayOffset - 6);
+    const checkpointRequired = base.profile.canRun3Km &&
+      (day(commitDay) - day(base.lastAssessmentDate) >= 21 || base.profile.performanceMismatch === 'CLEAR');
+    const planning: EngineState = {...base, checkpointRequired, decision: decide(base, monday)};
+    let weekQueue: Workout[];
+    try {
+      const generated = generateQueue(planning, monday);
+      // Вся ранее забронированная цепочка участвует в проверке броней (как history в реальном
+      // guardWeeklyLoad); прошлые недели не пересекаются с новой по датам.
+      weekQueue = guardWeeklyLoad(planning, [...committedAll, ...generated].sort((a, b) => day(a.scheduledDate) - day(b.scheduledDate)));
+    } catch (error) {
+      if (!(error instanceof EngineError)) throw error;
+      engineErrors.push({date: monday, code: error.code, detail: `generateQueue week ${week}`});
+      continue;
     }
-    if (state.decision.confidence === 'LOW') {
-      log(offset, 'STALE_MEASUREMENT',
-        'Результат 3000 м устарел (>42 дней): доверие LOW, фаза HOLD_DIAGNOSTIC — интенсивные назначения закрыты до нового измерения.');
+    const dropped = committedAll.filter(c => !weekQueue.some(n => n.id === c.id));
+    if (dropped.length > 0) {
+      logOnce(mondayOffset, 'RESERVATION_RELEASED',
+        `Движок снял ранее зарезервированные слоты при последующем пересмотре (${dropped.map(w => `${w.scheduledDate} ${w.type}`).join(', ')}): бронь недоступна.`);
     }
-    if (state.decision.phase === 'TAPER') log(offset, 'TAPER', 'Начат TAPER по правилам движка (дни до норматива).');
+    committedAll = weekQueue;
 
-    const workout = state.queue.find(w => w.scheduledDate === today) ?? null;
-    if (workout !== null) {
-      const status: RowStatus = issuedIds.has(workout.id) ? 'ISSUED' : 'CONSERVATIVE_FORECAST';
-      rows.push(makeRow('A', user, horizonWeeks, state, offset, workout, status,
-        'Будущее занятие занимает резерв нагрузки/восстановления; результат не подтверждён — слот закрыт как пропуск (согласованное решение 2), прогрессия не начислена.', null));
-      try {
-        state = skipWorkout(state, workout.id, today);
-      } catch (error) {
-        if (!(error instanceof EngineError)) throw error;
-        engineErrors.push({date: today, code: error.code, detail: `skip ${workout.type} ${workout.id}`});
+    if (checkpointRequired) {
+      logOnce(mondayOffset, 'CHECKPOINT_WINDOW_UNRESOLVED',
+        'Обязательная контрольная точка (правило 21 дня после последнего измерения). В модели А нет внешнего измерения: ' +
+        'слот контроля зарезервирован, подтверждение прогрессии невозможно, план остаётся на базовом уровне.');
+    }
+
+    for (const workout of weekQueue) {
+      if (day(workout.scheduledDate) - day(SIM_START) < mondayOffset) continue; // прошлые недели уже отображены
+      const rowState: EngineState = {...planning, decision: decide(base, workout.scheduledDate)};
+      if (rowState.decision.confidence === 'LOW') {
+        logOnce(mondayOffset, 'STALE_MEASUREMENT',
+          'Результат 3000 м устарел (>42 дней): доверие LOW, фаза HOLD_DIAGNOSTIC — интенсивные назначения закрыты до нового измерения.');
       }
+      if (rowState.decision.phase === 'TAPER') logOnce(mondayOffset, 'TAPER', 'Начат TAPER по правилам движка (дни до норматива).');
+      emit(workout, 'CONSERVATIVE_FORECAST',
+        'Бронирование без перехода: занятие резервирует нагрузку/восстановление (генерация движка на замороженном состоянии, ' +
+        'скользящие окна контролируются guardWeeklyLoad с учётом всей цепочки броней); не результат, не пропуск, прогрессия не начисляется.', rowState);
     }
   }
   const raceDay = addDays(SIM_START, days);
@@ -251,8 +352,9 @@ export function projectModelA(user: AuditUser, horizonWeeks: number): ForecastRu
     detail: 'День норматива. Итоговый результат в модели А не вводится: без реального забега нет факта.', synthetic: false});
   return {
     model: 'A', user, horizonWeeks, startDate: SIM_START, raceDate: profile.raceDate,
-    rows, events, weeks: summarizeWeeks(rows, events, horizonWeeks), finalState: state,
-    finalResultSeconds: null, controlSeconds: [], engineErrors, seed, seedSerialized,
+    rows, events, weeks: summarizeWeeks(rows, events, horizonWeeks),
+    windowViolations: sweepRollingWindows(rows),
+    finalState: base, finalResultSeconds: null, controlSeconds: [], engineErrors, seed, seedSerialized, issuedSnapshot,
   };
 }
 
@@ -262,12 +364,14 @@ export function projectModelA(user: AuditUser, horizonWeeks: number): ForecastRu
  * синтетическое предположение (syntheticEvaluation), контрольные 3000 м — только прежний известный
  * результат (никакого улучшения времени). Для U1 способность пробежать 3 км не подтверждается и
  * время первого 3000 м не выдумывается — контрольных забегов и итогового результата у U1 нет.
+ * Неделя 1 отображается из снапшота seed.queue и не зависит от сценарного выполнения (FS-15).
  */
 export function projectModelB(user: AuditUser, horizonWeeks: number): ForecastRun {
   const profile = makeSpikeProfile(user, horizonWeeks);
   const seed = createEngine(profile, SIM_START);
   const seedSerialized = JSON.stringify(seed);
-  const issuedIds = new Set(seed.queue.map(w => w.id));
+  const issuedSnapshot = structuredClone(seed.queue);
+  const issuedById = new Map(issuedSnapshot.map(w => [w.id, w]));
   let state = structuredClone(seed);
   const days = horizonWeeks * 7;
   const rows: ForecastRow[] = []; const events: ForecastRun['events'] = []; const engineErrors: ForecastRun['engineErrors'] = [];
@@ -286,16 +390,17 @@ export function projectModelB(user: AuditUser, horizonWeeks: number): ForecastRu
 
     const workout = state.queue.find(w => w.scheduledDate === today) ?? null;
     if (workout === null) continue;
-    const status: RowStatus = issuedIds.has(workout.id) ? 'ISSUED' : 'CONDITIONAL_FORECAST';
+    // Замечание 1: уже выданные назначения показываем дословно из снапшота на момент расчёта,
+    // даже если сценарное выполнение изменило живую очередь (адаптация доз, ротация).
+    const issued = issuedById.get(workout.id);
     const note = 'Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.';
 
-    // Контрольный 3000 м, назначенный движком (только у профилей с подтверждённой способностью).
     if (workout.type === 'CONTROL') {
       const known = state.profile.performance;
       if (known === null) throw new Error('CONTROL without measured performance must not be scheduled by the engine');
       const seconds = known.timeSeconds; // явно условный сценарный ввод = прежний известный результат
       const before = state;
-      rows.push(makeRow('B', user, horizonWeeks, before, offset, workout, status,
+      rows.push(makeRow('B', user, horizonWeeks, before, offset, workout, 'CONDITIONAL_FORECAST',
         `${note} Контрольный 3000 м: условный ввод = прежний известный результат ${secText(seconds)}, улучшение не предполагается.`,
         'GREEN'));
       state = recordResult(state, workout.id, controlResult(workout, seconds));
@@ -307,18 +412,23 @@ export function projectModelB(user: AuditUser, horizonWeeks: number): ForecastRu
       continue;
     }
 
+    const status: RowStatus = issued !== undefined ? 'ISSUED' : 'CONDITIONAL_FORECAST';
+    const displayState = issued !== undefined ? seed : state;
+    const displayWorkout = issued ?? workout;
+
     if (workout.type === 'REST') {
-      rows.push(makeRow('B', user, horizonWeeks, state, offset, workout, status, note, 'GREEN'));
+      rows.push(makeRow('B', user, horizonWeeks, displayState, offset, displayWorkout, status,
+        issued !== undefined ? `${note} Назначение отображено из снапшота выданной очереди на момент расчёта.` : note, 'GREEN'));
       state = recordResult(state, workout.id, makeResult(workout, 'GREEN'));
       continue;
     }
 
     const result = makeResult(workout, 'GREEN');
     try {
-      const before = state;
       state = recordResult(state, workout.id, result);
       const classified = state.history.find(h => h.workout.id === workout.id)?.classified ?? null;
-      rows.push(makeRow('B', user, horizonWeeks, before, offset, workout, status, note,
+      rows.push(makeRow('B', user, horizonWeeks, displayState, offset, displayWorkout, status,
+        issued !== undefined ? `${note} Назначение отображено из снапшота выданной очереди на момент расчёта.` : note,
         classified?.evaluation ?? null));
     } catch (error) {
       if (!(error instanceof EngineError)) throw error;
@@ -346,8 +456,9 @@ export function projectModelB(user: AuditUser, horizonWeeks: number): ForecastRu
   }
   return {
     model: 'B', user, horizonWeeks, startDate: SIM_START, raceDate: profile.raceDate,
-    rows, events, weeks: summarizeWeeks(rows, events, horizonWeeks), finalState: state,
-    finalResultSeconds, controlSeconds, engineErrors, seed, seedSerialized,
+    rows, events, weeks: summarizeWeeks(rows, events, horizonWeeks),
+    windowViolations: sweepRollingWindows(rows),
+    finalState: state, finalResultSeconds, controlSeconds, engineErrors, seed, seedSerialized, issuedSnapshot,
   };
 }
 
@@ -363,3 +474,5 @@ export function runSpike(): {A: ForecastRun[]; B: ForecastRun[]} {
   const B = spikeConfigs().map(c => projectModelB(c.user, c.horizonWeeks));
   return {A, B};
 }
+
+export {withinRollingWeekBudget};

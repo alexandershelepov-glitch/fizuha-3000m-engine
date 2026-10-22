@@ -101,7 +101,8 @@ function stripRun(r: ForecastRun) {
       canRun3Km: r.user.canRun3Km, qualitySessions: r.user.qualitySessions, qualityWeeks: r.user.qualityWeeks,
       qualityTolerated: r.user.qualityTolerated, experience: r.user.experience, assumptions: r.user.assumptions,
     },
-    rows: r.rows, events: r.events, weeks: r.weeks,
+    rows: r.rows, events: r.events, weeks: r.weeks, windowViolations: r.windowViolations,
+    issuedSnapshot: r.issuedSnapshot,
     finalResultSeconds: r.finalResultSeconds, controlSeconds: r.controlSeconds, engineErrors: r.engineErrors,
     seedIntegrity: {serializeByteIdentical: JSON.stringify(r.seed) === r.seedSerialized, historyEntries: r.seed.history.length},
   };
@@ -121,8 +122,10 @@ const params = [
   '«Бюджет» — утверждённая недельная бронь (`approvedMetersPer7Days`). Темп/скорость дорожки показаны только там, где они подтверждены исходными данными (измеренный результат 3000 м); «н/д» = не вычислимо без измерения, значение не выдумывается.',
   'Статусы: **выдана** — реальная очередь движка на asOf; **консерв. прогноз** — модель А (резерв без результата); **условный прогноз** — модель Б (синтетический сценарий «при успешном выполнении», не допуск к нагрузке).',
   '',
-  'Модель А: будущие позиции закрываются как пропуски (решение 2), прогрессия не начисляется; контрольные точки после просрочки измерения показаны как неразрешённые.',
-  'Модель Б: каждое занятие условно «выполнено» GREEN; контрольные 3000 м = прежний известный результат (улучшение не предполагается); для U1 способность бежать 3 км не подтверждается и время не выдумывается.',
+  'Модель А (консервативное бронирование): исходное состояние заморожено; каждая будущая цикл-неделя генерируется движком (generateQueue + guardWeeklyLoad с учётом всей цепочки броней). Будущие назначения резервируют нагрузку и восстановление, но не становятся ни результатами, ни пропусками; контрольные точки честно неразрешены; неделя 1 — дословно выданная очередь (снапшот).',
+  'Модель Б (условный сценарий): каждое занятие условно «выполнено» GREEN; контрольные 3000 м = прежний известный результат (улучшение не предполагается); для U1 способность бежать 3 км не подтверждается и время не выдумывается; неделя 1 — тот же неизменный снапшот.',
+  '',
+  'Замечание 3: `windowViolations` в JSON — проверка ВСЕХ последовательных 7-дневных интервалов (включая стыки календарных недель): сумма броней ≤ бюджета и ≥48 ч между качественными занятиями. Во всех 12 прогонах пусто.',
   '',
 ];
 
@@ -172,16 +175,20 @@ for (const run of all) {
   const tag = `${run.model}/${run.user.id}/${run.horizonWeeks}w`;
   if (run.rows.some(r => r.offset >= days || r.date >= run.raceDate)) failures.push(`${tag}: training on/after race day`);
   if (JSON.stringify(run.seed) !== run.seedSerialized) failures.push(`${tag}: seed mutated`);
+  if (run.windowViolations.length > 0) failures.push(`${tag}: ${run.windowViolations.map(v => v.detail).join('; ')}`);
   for (const w of run.weeks) {
     if (w.plannedReservedMeters !== null && w.plannedReservedMeters > w.approvedWeekMeters + 1e-6)
       failures.push(`${tag}: week ${w.week} reserve over budget`);
   }
+  if (run.model === 'A' && (run.finalState.history.length > 0 || run.finalState.skippedWorkouts.length > 0))
+    failures.push(`${tag}: model A fabricated history or misses`);
   if (run.user.currentSeconds === null) {
     if (run.rows.some(r => r.paceRangeSecondsPerKm !== null || r.speedRangeKmh !== null)) failures.push(`${tag}: invented pace for novice`);
     if (run.controlSeconds.length > 0 || run.finalResultSeconds !== null) failures.push(`${tag}: invented control/final for novice`);
   }
   if (run.model === 'B' && run.finalResultSeconds !== null && run.user.currentSeconds !== null && run.finalResultSeconds !== run.user.currentSeconds)
     failures.push(`${tag}: final result improved over known time`);
+  if (JSON.stringify(run.issuedSnapshot) !== JSON.stringify(run.seed.queue)) failures.push(`${tag}: issued snapshot drifted from engine queue`);
 }
 if (failures.length > 0) {
   console.error('INVARIANT FAILURES:\n' + failures.join('\n'));
@@ -189,4 +196,6 @@ if (failures.length > 0) {
 }
 
 console.log(`OK: ${all.length} прогонов (3 профиля × 2 горизонта × 2 модели), встроенные инварианты чисты.`);
+console.log('Включая: неизменность seed, идентичность снапшота выданной очереди, ноль history/пропусков в модели А,');
+console.log('все скользящие 7-дневные окна (включая стыки недель) в бюджете.');
 console.log(`Артефакты: ${OUT_DIR}/forecast-A.json, forecast-B.json, tables.md`);

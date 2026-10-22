@@ -7,8 +7,10 @@
 «Бюджет» — утверждённая недельная бронь (`approvedMetersPer7Days`). Темп/скорость дорожки показаны только там, где они подтверждены исходными данными (измеренный результат 3000 м); «н/д» = не вычислимо без измерения, значение не выдумывается.
 Статусы: **выдана** — реальная очередь движка на asOf; **консерв. прогноз** — модель А (резерв без результата); **условный прогноз** — модель Б (синтетический сценарий «при успешном выполнении», не допуск к нагрузке).
 
-Модель А: будущие позиции закрываются как пропуски (решение 2), прогрессия не начисляется; контрольные точки после просрочки измерения показаны как неразрешённые.
-Модель Б: каждое занятие условно «выполнено» GREEN; контрольные 3000 м = прежний известный результат (улучшение не предполагается); для U1 способность бежать 3 км не подтверждается и время не выдумывается.
+Модель А (консервативное бронирование): исходное состояние заморожено; каждая будущая цикл-неделя генерируется движком (generateQueue + guardWeeklyLoad с учётом всей цепочки броней). Будущие назначения резервируют нагрузку и восстановление, но не становятся ни результатами, ни пропусками; контрольные точки честно неразрешены; неделя 1 — дословно выданная очередь (снапшот).
+Модель Б (условный сценарий): каждое занятие условно «выполнено» GREEN; контрольные 3000 м = прежний известный результат (улучшение не предполагается); для U1 способность бежать 3 км не подтверждается и время не выдумывается; неделя 1 — тот же неизменный снапшот.
+
+Замечание 3: `windowViolations` в JSON — проверка ВСЕХ последовательных 7-дневных интервалов (включая стыки календарных недель): сумма броней ≤ бюджета и ≥48 ч между качественными занятиями. Во всех 12 прогонах пусто.
 
 ## U1-novice — Новичок (8 недель, норматив 2026-12-07)
 
@@ -152,8 +154,8 @@
 | 1 | THRESHOLD×1, EASY×1, LONG_EASY×1 | 18 895 / 19 000 | 1 | DEVELOPMENT · HIGH | THRESHOLD×1, EASY×1, LONG_EASY×1 | 18 895 / 19 000 | 1 | DEVELOPMENT · HIGH | — |
 | 2 | THRESHOLD×1, EASY×1, LONG_EASY×1 | 18 895 / 19 000 | 1 | DEVELOPMENT · HIGH | VO2×1, EASY×1, LONG_EASY×1 | 18 704 / 19 000 | 1 | SPECIFIC · HIGH | состав, бронь, фаза DEVELOPMENT→SPECIFIC |
 | 3 | THRESHOLD×1, EASY×1, LONG_EASY×1 | 18 555 / 19 000 | 1 | DEVELOPMENT · HIGH | SPECIFIC_3K×1, EASY×1, LONG_EASY×1 | 19 106 / 20 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→20000, фаза DEVELOPMENT→SPECIFIC |
-| 4 | CONTROL×1, EASY×1, LONG_EASY×1 | 19 000 / 19 000 | 1 | DEVELOPMENT · MEDIUM | CONTROL×1, EASY×1, LONG_EASY×1 | 19 987 / 20 000 | 1 | SPECIFIC · HIGH | бронь, бюджет 19000→20000, фаза DEVELOPMENT→SPECIFIC, доверие, контрольная точка |
-| 5 | CONTROL×1, EASY×1, LONG_EASY×1 | 19 000 / 19 000 | 1 | DEVELOPMENT · MEDIUM | THRESHOLD×1, EASY×1, LONG_EASY×1 | 20 552 / 21 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→21000, фаза DEVELOPMENT→SPECIFIC, доверие |
+| 4 | THRESHOLD×1, EASY×1, LONG_EASY×1 | 18 555 / 19 000 | 1 | DEVELOPMENT · MEDIUM | CONTROL×1, EASY×1, LONG_EASY×1 | 19 987 / 20 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→20000, фаза DEVELOPMENT→SPECIFIC, доверие |
+| 5 | CONTROL×1, EASY×1, LONG_EASY×1 | 19 000 / 19 000 | 1 | DEVELOPMENT · MEDIUM | THRESHOLD×1, EASY×1, LONG_EASY×1 | 20 552 / 21 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→21000, фаза DEVELOPMENT→SPECIFIC, доверие, контрольная точка |
 | 6 | CONTROL×1, EASY×1, LONG_EASY×1 | 19 000 / 19 000 | 1 | DEVELOPMENT · MEDIUM | SPECIFIC_3K×1, EASY×1, LONG_EASY×1 | 19 935 / 21 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→21000, фаза DEVELOPMENT→SPECIFIC, доверие |
 | 7 | CONTROL×1, EASY×2 | 17 333 / 19 000 | 1 | HOLD_DIAGNOSTIC · LOW | CONTROL×1, EASY×1, LONG_EASY×1 | 20 816 / 21 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→21000, фаза HOLD_DIAGNOSTIC→SPECIFIC, доверие |
 | 8 | EASY×3 | 15 200 / 19 000 | 0 | HOLD_DIAGNOSTIC · LOW | SPECIFIC_3K×1, EASY×2 | 11 407 / 21 000 | 1 | TAPER · HIGH | состав, бронь, бюджет 19000→21000, качество, фаза HOLD_DIAGNOSTIC→TAPER, доверие |
@@ -168,8 +170,8 @@
 
 ### События модели А (где заканчиваются данные)
 
-- 2026-11-02 (нед 4) **CHECKPOINT_WINDOW_UNRESOLVED**: Обязательная контрольная точка (измерение 3000 м просрочено/требуется). В модели А нет внешнего измерения: слот контроля закрывается как пропуск, подтверждение прогрессии невозможно, план остаётся на базовом уровне.
-- 2026-11-24 (нед 7) **STALE_MEASUREMENT**: Результат 3000 м устарел (>42 дней): доверие LOW, фаза HOLD_DIAGNOSTIC — интенсивные назначения закрыты до нового измерения.
+- 2026-11-09 (нед 5) **CHECKPOINT_WINDOW_UNRESOLVED**: Обязательная контрольная точка (правило 21 дня после последнего измерения). В модели А нет внешнего измерения: слот контроля зарезервирован, подтверждение прогрессии невозможно, план остаётся на базовом уровне.
+- 2026-11-23 (нед 7) **STALE_MEASUREMENT**: Результат 3000 м устарел (>42 дней): доверие LOW, фаза HOLD_DIAGNOSTIC — интенсивные назначения закрыты до нового измерения.
 - 2026-12-07 (нед 8) **RACE_DAY**: День норматива. Итоговый результат в модели А не вводится: без реального забега нет факта.
 
 ### События модели Б (условные вводы)
@@ -191,7 +193,7 @@
 | 2026-10-26 | 3 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:30–5:44 | 10.5–10.9 | 5 323 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-28 | 3 | EASY | 5232.3 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 5 232 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-30 | 3 | LONG_EASY | 8000 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 8 000 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-11-02 | 4 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 768 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-11-02 | 4 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:30–5:44 | 10.5–10.9 | 5 323 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-11-04 | 4 | EASY | 5232.3 м | CONTINUOUS | — | 7:00–7:50 | 7.7–8.6 | 5 232 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-06 | 4 | LONG_EASY | 8000 м | CONTINUOUS | — | 7:00–7:50 | 7.7–8.6 | 8 000 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-09 | 5 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 768 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
@@ -212,8 +214,8 @@
 | Дата | Нед | Тип | Доза | Режим | Повторы/пауза | Темп мин/км | Дорожка км/ч | Бронь, м | Статус | Фаза · гейт · доверие |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-10-12 | 1 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:30–5:44 | 10.5–10.9 | 5 323 | выдана | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-14 | 1 | EASY | 5572.3 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 5 572 | выдана | DEVELOPMENT · PARTIAL · HIGH |
-| 2026-10-16 | 1 | LONG_EASY | 8000 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 8 000 | выдана | DEVELOPMENT · PARTIAL · HIGH |
+| 2026-10-14 | 1 | EASY | 5572.3 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 5 572 | выдана | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-16 | 1 | LONG_EASY | 8000 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 8 000 | выдана | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-19 | 2 | VO2 | 8 мин | INTERVALS | пауза 90 с | 5:01–5:20 | 11.3–12.0 | 5 001 | условный прогноз | DEVELOPMENT · PARTIAL · HIGH |
 | 2026-10-21 | 2 | EASY | 5703.3 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 5 703 | условный прогноз | SPECIFIC · PARTIAL · HIGH |
 | 2026-10-23 | 2 | LONG_EASY | 8000 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 8 000 | условный прогноз | SPECIFIC · PARTIAL · HIGH |
@@ -247,8 +249,8 @@
 | 1 | THRESHOLD×1, EASY×1, LONG_EASY×1 | 18 895 / 19 000 | 1 | DEVELOPMENT · HIGH | THRESHOLD×1, EASY×1, LONG_EASY×1 | 18 895 / 19 000 | 1 | DEVELOPMENT · HIGH | — |
 | 2 | THRESHOLD×1, EASY×1, LONG_EASY×1 | 18 895 / 19 000 | 1 | DEVELOPMENT · HIGH | VO2×1, EASY×1, LONG_EASY×1 | 18 704 / 19 000 | 1 | SPECIFIC · HIGH | состав, бронь, фаза DEVELOPMENT→SPECIFIC |
 | 3 | THRESHOLD×1, EASY×1, LONG_EASY×1 | 18 555 / 19 000 | 1 | DEVELOPMENT · HIGH | SPECIFIC_3K×1, EASY×1, LONG_EASY×1 | 19 106 / 20 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→20000, фаза DEVELOPMENT→SPECIFIC |
-| 4 | CONTROL×1, EASY×1, LONG_EASY×1 | 19 000 / 19 000 | 1 | DEVELOPMENT · MEDIUM | CONTROL×1, EASY×1, LONG_EASY×1 | 19 987 / 20 000 | 1 | SPECIFIC · HIGH | бронь, бюджет 19000→20000, фаза DEVELOPMENT→SPECIFIC, доверие, контрольная точка |
-| 5 | CONTROL×1, EASY×1, LONG_EASY×1 | 19 000 / 19 000 | 1 | DEVELOPMENT · MEDIUM | THRESHOLD×1, EASY×1, LONG_EASY×1 | 20 552 / 21 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→21000, фаза DEVELOPMENT→SPECIFIC, доверие |
+| 4 | THRESHOLD×1, EASY×1, LONG_EASY×1 | 18 555 / 19 000 | 1 | DEVELOPMENT · MEDIUM | CONTROL×1, EASY×1, LONG_EASY×1 | 19 987 / 20 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→20000, фаза DEVELOPMENT→SPECIFIC, доверие |
+| 5 | CONTROL×1, EASY×1, LONG_EASY×1 | 19 000 / 19 000 | 1 | DEVELOPMENT · MEDIUM | THRESHOLD×1, EASY×1, LONG_EASY×1 | 20 552 / 21 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→21000, фаза DEVELOPMENT→SPECIFIC, доверие, контрольная точка |
 | 6 | CONTROL×1, EASY×1, LONG_EASY×1 | 19 000 / 19 000 | 1 | DEVELOPMENT · MEDIUM | SPECIFIC_3K×1, EASY×1, LONG_EASY×1 | 19 935 / 21 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→21000, фаза DEVELOPMENT→SPECIFIC, доверие |
 | 7 | CONTROL×1, EASY×2 | 17 333 / 19 000 | 1 | HOLD_DIAGNOSTIC · LOW | CONTROL×1, EASY×1, LONG_EASY×1 | 20 816 / 21 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→21000, фаза HOLD_DIAGNOSTIC→SPECIFIC, доверие |
 | 8 | EASY×3 | 19 000 / 19 000 | 0 | HOLD_DIAGNOSTIC · LOW | VO2×1, EASY×1, LONG_EASY×1 | 20 180 / 21 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 19000→21000, качество, фаза HOLD_DIAGNOSTIC→SPECIFIC, доверие |
@@ -268,8 +270,8 @@
 
 ### События модели А (где заканчиваются данные)
 
-- 2026-11-02 (нед 4) **CHECKPOINT_WINDOW_UNRESOLVED**: Обязательная контрольная точка (измерение 3000 м просрочено/требуется). В модели А нет внешнего измерения: слот контроля закрывается как пропуск, подтверждение прогрессии невозможно, план остаётся на базовом уровне.
-- 2026-11-24 (нед 7) **STALE_MEASUREMENT**: Результат 3000 м устарел (>42 дней): доверие LOW, фаза HOLD_DIAGNOSTIC — интенсивные назначения закрыты до нового измерения.
+- 2026-11-09 (нед 5) **CHECKPOINT_WINDOW_UNRESOLVED**: Обязательная контрольная точка (правило 21 дня после последнего измерения). В модели А нет внешнего измерения: слот контроля зарезервирован, подтверждение прогрессии невозможно, план остаётся на базовом уровне.
+- 2026-11-23 (нед 7) **STALE_MEASUREMENT**: Результат 3000 м устарел (>42 дней): доверие LOW, фаза HOLD_DIAGNOSTIC — интенсивные назначения закрыты до нового измерения.
 - 2027-01-04 (нед 12) **RACE_DAY**: День норматива. Итоговый результат в модели А не вводится: без реального забега нет факта.
 
 ### События модели Б (условные вводы)
@@ -292,7 +294,7 @@
 | 2026-10-26 | 3 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:30–5:44 | 10.5–10.9 | 5 323 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-28 | 3 | EASY | 5232.3 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 5 232 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-30 | 3 | LONG_EASY | 8000 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 8 000 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-11-02 | 4 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 768 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-11-02 | 4 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:30–5:44 | 10.5–10.9 | 5 323 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-11-04 | 4 | EASY | 5232.3 м | CONTINUOUS | — | 7:00–7:50 | 7.7–8.6 | 5 232 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-06 | 4 | LONG_EASY | 8000 м | CONTINUOUS | — | 7:00–7:50 | 7.7–8.6 | 8 000 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-09 | 5 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 768 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
@@ -325,8 +327,8 @@
 | Дата | Нед | Тип | Доза | Режим | Повторы/пауза | Темп мин/км | Дорожка км/ч | Бронь, м | Статус | Фаза · гейт · доверие |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-10-12 | 1 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:30–5:44 | 10.5–10.9 | 5 323 | выдана | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-14 | 1 | EASY | 5572.3 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 5 572 | выдана | DEVELOPMENT · PARTIAL · HIGH |
-| 2026-10-16 | 1 | LONG_EASY | 8000 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 8 000 | выдана | DEVELOPMENT · PARTIAL · HIGH |
+| 2026-10-14 | 1 | EASY | 5572.3 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 5 572 | выдана | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-16 | 1 | LONG_EASY | 8000 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 8 000 | выдана | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-19 | 2 | VO2 | 8 мин | INTERVALS | пауза 90 с | 5:01–5:20 | 11.3–12.0 | 5 001 | условный прогноз | DEVELOPMENT · PARTIAL · HIGH |
 | 2026-10-21 | 2 | EASY | 5703.3 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 5 703 | условный прогноз | SPECIFIC · PARTIAL · HIGH |
 | 2026-10-23 | 2 | LONG_EASY | 8000 м | CONTINUOUS | — | 6:45–7:30 | 8.0–8.9 | 8 000 | условный прогноз | SPECIFIC · PARTIAL · HIGH |
@@ -369,12 +371,12 @@
 
 | Нед | А: занятия | А: бронь / бюджет, м | А: качество | А: фаза · доверие | Б: занятия | Б: бронь / бюджет, м | Б: качество | Б: фаза · доверие | Различия A/Б |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | THRESHOLD×2, EASY×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · HIGH | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | SPECIFIC · HIGH | состав, фаза DEVELOPMENT→SPECIFIC |
-| 2 | THRESHOLD×2, EASY×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · HIGH | SPECIFIC_3K×1, EASY×1, THRESHOLD×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | SPECIFIC · HIGH | состав, фаза DEVELOPMENT→SPECIFIC |
-| 3 | THRESHOLD×2, EASY×1, LONG_EASY×1 | 24 731 / 25 000 | 2 | DEVELOPMENT · HIGH | SPECIFIC_3K×1, EASY×1, VO2×1, LONG_EASY×1 | 24 141 / 25 000 | 2 | SPECIFIC · HIGH | состав, бронь, фаза DEVELOPMENT→SPECIFIC |
-| 4 | CONTROL×2, EASY×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · MEDIUM | CONTROL×1, EASY×1, SPECIFIC_3K×1, LONG_EASY×1 | 24 586 / 25 000 | 2 | SPECIFIC · HIGH | состав, бронь, фаза DEVELOPMENT→SPECIFIC, доверие, контрольная точка |
-| 5 | CONTROL×2, EASY×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · MEDIUM | THRESHOLD×1, EASY×1, SPECIFIC_3K×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | SPECIFIC · HIGH | состав, фаза DEVELOPMENT→SPECIFIC, доверие |
-| 6 | CONTROL×2, EASY×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · MEDIUM | VO2×1, EASY×2, LONG_EASY×1 | 24 717 / 25 000 | 1 | SPECIFIC · HIGH | состав, бронь, качество, фаза DEVELOPMENT→SPECIFIC, доверие |
+| 1 | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · HIGH | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · HIGH | — |
+| 2 | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · HIGH | SPECIFIC_3K×1, EASY×1, THRESHOLD×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | SPECIFIC · HIGH | состав, фаза DEVELOPMENT→SPECIFIC |
+| 3 | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 24 731 / 25 000 | 2 | DEVELOPMENT · HIGH | SPECIFIC_3K×1, EASY×1, VO2×1, LONG_EASY×1 | 24 141 / 25 000 | 2 | SPECIFIC · HIGH | состав, бронь, фаза DEVELOPMENT→SPECIFIC |
+| 4 | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 24 731 / 25 000 | 2 | DEVELOPMENT · MEDIUM | CONTROL×1, EASY×1, SPECIFIC_3K×1, LONG_EASY×1 | 24 586 / 25 000 | 2 | SPECIFIC · HIGH | состав, бронь, фаза DEVELOPMENT→SPECIFIC, доверие |
+| 5 | CONTROL×1, EASY×1, THRESHOLD×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · MEDIUM | THRESHOLD×1, EASY×1, SPECIFIC_3K×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | SPECIFIC · HIGH | состав, фаза DEVELOPMENT→SPECIFIC, доверие, контрольная точка |
+| 6 | CONTROL×1, EASY×1, THRESHOLD×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · MEDIUM | VO2×1, EASY×2, LONG_EASY×1 | 24 717 / 25 000 | 1 | SPECIFIC · HIGH | состав, бронь, качество, фаза DEVELOPMENT→SPECIFIC, доверие |
 | 7 | CONTROL×1, EASY×3 | 22 250 / 25 000 | 1 | HOLD_DIAGNOSTIC · LOW | CONTROL×1, EASY×1, SPECIFIC_3K×1, LONG_EASY×1 | 25 360 / 26 000 | 2 | SPECIFIC · HIGH | состав, бронь, бюджет 25000→26000, качество, фаза HOLD_DIAGNOSTIC→SPECIFIC, доверие |
 | 8 | EASY×4 | 21 250 / 25 000 | 0 | HOLD_DIAGNOSTIC · LOW | EASY×3, SPECIFIC_3K×1 | 15 260 / 26 000 | 1 | TAPER · HIGH | состав, бронь, бюджет 25000→26000, качество, фаза HOLD_DIAGNOSTIC→TAPER, доверие |
 
@@ -388,8 +390,8 @@
 
 ### События модели А (где заканчиваются данные)
 
-- 2026-11-02 (нед 4) **CHECKPOINT_WINDOW_UNRESOLVED**: Обязательная контрольная точка (измерение 3000 м просрочено/требуется). В модели А нет внешнего измерения: слот контроля закрывается как пропуск, подтверждение прогрессии невозможно, план остаётся на базовом уровне.
-- 2026-11-24 (нед 7) **STALE_MEASUREMENT**: Результат 3000 м устарел (>42 дней): доверие LOW, фаза HOLD_DIAGNOSTIC — интенсивные назначения закрыты до нового измерения.
+- 2026-11-09 (нед 5) **CHECKPOINT_WINDOW_UNRESOLVED**: Обязательная контрольная точка (правило 21 дня после последнего измерения). В модели А нет внешнего измерения: слот контроля зарезервирован, подтверждение прогрессии невозможно, план остаётся на базовом уровне.
+- 2026-11-23 (нед 7) **STALE_MEASUREMENT**: Результат 3000 м устарел (>42 дней): доверие LOW, фаза HOLD_DIAGNOSTIC — интенсивные назначения закрыты до нового измерения.
 - 2026-12-07 (нед 8) **RACE_DAY**: День норматива. Итоговый результат в модели А не вводится: без реального забега нет факта.
 
 ### События модели Б (условные вводы)
@@ -403,32 +405,32 @@
 | Дата | Нед | Тип | Доза | Режим | Повторы/пауза | Темп мин/км | Дорожка км/ч | Бронь, м | Статус | Фаза · гейт · доверие |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-10-12 | 1 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | выдана | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-13 | 1 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | выдана | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-15 | 1 | EASY | 4620.7 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 621 | выдана | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-13 | 1 | EASY | 4964.3 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 964 | выдана | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-15 | 1 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | выдана | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-17 | 1 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 9 000 | выдана | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-19 | 2 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-20 | 2 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-22 | 2 | EASY | 4620.7 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 621 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-20 | 2 | EASY | 4964.3 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 964 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-22 | 2 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-24 | 2 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 9 000 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-26 | 3 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-27 | 3 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-29 | 3 | EASY | 4351.7 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 352 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-27 | 3 | EASY | 4695.4 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 695 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-29 | 3 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-31 | 3 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 9 000 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-11-02 | 4 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-11-03 | 4 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-05 | 4 | EASY | 4082.8 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 083 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-02 | 4 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-11-03 | 4 | EASY | 4695.4 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 695 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-05 | 4 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-07 | 4 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 9 000 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-09 | 5 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-10 | 5 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-12 | 5 | EASY | 4082.8 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 083 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-10 | 5 | EASY | 4351.7 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 352 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-12 | 5 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-14 | 5 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 9 000 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-16 | 6 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-17 | 6 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-19 | 6 | EASY | 4082.8 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 083 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-17 | 6 | EASY | 4351.7 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 352 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-19 | 6 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-21 | 6 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 9 000 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-23 | 7 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-24 | 7 | EASY | 5958.6 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
-| 2026-11-26 | 7 | EASY | 4082.8 м | CONTINUOUS | — | — | — | 4 083 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
+| 2026-11-24 | 7 | EASY | 4351.7 м | CONTINUOUS | — | — | — | 4 352 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
+| 2026-11-26 | 7 | EASY | 5689.7 м | CONTINUOUS | — | — | — | 5 690 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
 | 2026-11-28 | 7 | EASY | 6250 м | CONTINUOUS | — | — | — | 6 250 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
 | 2026-11-30 | 8 | EASY | 6250 м | CONTINUOUS | — | — | — | 6 250 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
 | 2026-12-01 | 8 | EASY | 6250 м | CONTINUOUS | — | — | — | 6 250 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
@@ -440,9 +442,9 @@
 | Дата | Нед | Тип | Доза | Режим | Повторы/пауза | Темп мин/км | Дорожка км/ч | Бронь, м | Статус | Фаза · гейт · доверие |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-10-12 | 1 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | выдана | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-13 | 1 | EASY | 4964.3 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 964 | выдана | DEVELOPMENT · PARTIAL · HIGH |
-| 2026-10-15 | 1 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | выдана | DEVELOPMENT · PARTIAL · HIGH |
-| 2026-10-17 | 1 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 9 000 | выдана | SPECIFIC · PARTIAL · HIGH |
+| 2026-10-13 | 1 | EASY | 4964.3 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 964 | выдана | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-15 | 1 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | выдана | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-17 | 1 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 9 000 | выдана | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-19 | 2 | SPECIFIC_3K | 1800 м | INTERVALS | 600 м × 3, пауза 90 с | 4:36–4:44 | 12.7–13.1 | 5 100 | условный прогноз | SPECIFIC · PARTIAL · HIGH |
 | 2026-10-20 | 2 | EASY | 5210.3 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 5 210 | условный прогноз | SPECIFIC · PARTIAL · HIGH |
 | 2026-10-22 | 2 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | условный прогноз | SPECIFIC · PARTIAL · HIGH |
@@ -480,12 +482,12 @@
 
 | Нед | А: занятия | А: бронь / бюджет, м | А: качество | А: фаза · доверие | Б: занятия | Б: бронь / бюджет, м | Б: качество | Б: фаза · доверие | Различия A/Б |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | THRESHOLD×2, EASY×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · HIGH | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | SPECIFIC · HIGH | состав, фаза DEVELOPMENT→SPECIFIC |
-| 2 | THRESHOLD×2, EASY×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · HIGH | SPECIFIC_3K×1, EASY×1, THRESHOLD×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | SPECIFIC · HIGH | состав, фаза DEVELOPMENT→SPECIFIC |
-| 3 | THRESHOLD×2, EASY×1, LONG_EASY×1 | 24 731 / 25 000 | 2 | DEVELOPMENT · HIGH | SPECIFIC_3K×1, EASY×1, VO2×1, LONG_EASY×1 | 24 141 / 25 000 | 2 | SPECIFIC · HIGH | состав, бронь, фаза DEVELOPMENT→SPECIFIC |
-| 4 | CONTROL×2, EASY×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · MEDIUM | CONTROL×1, EASY×1, SPECIFIC_3K×1, LONG_EASY×1 | 24 586 / 25 000 | 2 | SPECIFIC · HIGH | состав, бронь, фаза DEVELOPMENT→SPECIFIC, доверие, контрольная точка |
-| 5 | CONTROL×2, EASY×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · MEDIUM | THRESHOLD×1, EASY×1, SPECIFIC_3K×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | SPECIFIC · HIGH | состав, фаза DEVELOPMENT→SPECIFIC, доверие |
-| 6 | CONTROL×2, EASY×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · MEDIUM | VO2×1, EASY×2, LONG_EASY×1 | 24 717 / 25 000 | 1 | SPECIFIC · HIGH | состав, бронь, качество, фаза DEVELOPMENT→SPECIFIC, доверие |
+| 1 | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · HIGH | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · HIGH | — |
+| 2 | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · HIGH | SPECIFIC_3K×1, EASY×1, THRESHOLD×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | SPECIFIC · HIGH | состав, фаза DEVELOPMENT→SPECIFIC |
+| 3 | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 24 731 / 25 000 | 2 | DEVELOPMENT · HIGH | SPECIFIC_3K×1, EASY×1, VO2×1, LONG_EASY×1 | 24 141 / 25 000 | 2 | SPECIFIC · HIGH | состав, бронь, фаза DEVELOPMENT→SPECIFIC |
+| 4 | THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1 | 24 731 / 25 000 | 2 | DEVELOPMENT · MEDIUM | CONTROL×1, EASY×1, SPECIFIC_3K×1, LONG_EASY×1 | 24 586 / 25 000 | 2 | SPECIFIC · HIGH | состав, бронь, фаза DEVELOPMENT→SPECIFIC, доверие |
+| 5 | CONTROL×1, EASY×1, THRESHOLD×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · MEDIUM | THRESHOLD×1, EASY×1, SPECIFIC_3K×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | SPECIFIC · HIGH | состав, фаза DEVELOPMENT→SPECIFIC, доверие, контрольная точка |
+| 6 | CONTROL×1, EASY×1, THRESHOLD×1, LONG_EASY×1 | 25 000 / 25 000 | 2 | DEVELOPMENT · MEDIUM | VO2×1, EASY×2, LONG_EASY×1 | 24 717 / 25 000 | 1 | SPECIFIC · HIGH | состав, бронь, качество, фаза DEVELOPMENT→SPECIFIC, доверие |
 | 7 | CONTROL×1, EASY×3 | 22 250 / 25 000 | 1 | HOLD_DIAGNOSTIC · LOW | CONTROL×1, EASY×2, LONG_EASY×1 | 24 717 / 25 000 | 1 | SPECIFIC · HIGH | состав, бронь, фаза HOLD_DIAGNOSTIC→SPECIFIC, доверие |
 | 8 | EASY×4 | 25 000 / 25 000 | 0 | HOLD_DIAGNOSTIC · LOW | SPECIFIC_3K×1, EASY×2, LONG_EASY×1 | 25 869 / 26 000 | 1 | SPECIFIC · HIGH | состав, бронь, бюджет 25000→26000, качество, фаза HOLD_DIAGNOSTIC→SPECIFIC, доверие |
 | 9 | EASY×4 | 25 000 / 25 000 | 0 | HOLD_DIAGNOSTIC · LOW | THRESHOLD×1, EASY×1, SPECIFIC_3K×1, LONG_EASY×1 | 27 000 / 27 000 | 2 | SPECIFIC · HIGH | состав, бронь, бюджет 25000→27000, качество, фаза HOLD_DIAGNOSTIC→SPECIFIC, доверие |
@@ -504,8 +506,8 @@
 
 ### События модели А (где заканчиваются данные)
 
-- 2026-11-02 (нед 4) **CHECKPOINT_WINDOW_UNRESOLVED**: Обязательная контрольная точка (измерение 3000 м просрочено/требуется). В модели А нет внешнего измерения: слот контроля закрывается как пропуск, подтверждение прогрессии невозможно, план остаётся на базовом уровне.
-- 2026-11-24 (нед 7) **STALE_MEASUREMENT**: Результат 3000 м устарел (>42 дней): доверие LOW, фаза HOLD_DIAGNOSTIC — интенсивные назначения закрыты до нового измерения.
+- 2026-11-09 (нед 5) **CHECKPOINT_WINDOW_UNRESOLVED**: Обязательная контрольная точка (правило 21 дня после последнего измерения). В модели А нет внешнего измерения: слот контроля зарезервирован, подтверждение прогрессии невозможно, план остаётся на базовом уровне.
+- 2026-11-23 (нед 7) **STALE_MEASUREMENT**: Результат 3000 м устарел (>42 дней): доверие LOW, фаза HOLD_DIAGNOSTIC — интенсивные назначения закрыты до нового измерения.
 - 2027-01-04 (нед 12) **RACE_DAY**: День норматива. Итоговый результат в модели А не вводится: без реального забега нет факта.
 
 ### События модели Б (условные вводы)
@@ -520,32 +522,32 @@
 | Дата | Нед | Тип | Доза | Режим | Повторы/пауза | Темп мин/км | Дорожка км/ч | Бронь, м | Статус | Фаза · гейт · доверие |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-10-12 | 1 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | выдана | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-13 | 1 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | выдана | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-15 | 1 | EASY | 4620.7 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 621 | выдана | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-13 | 1 | EASY | 4964.3 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 964 | выдана | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-15 | 1 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | выдана | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-17 | 1 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 9 000 | выдана | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-19 | 2 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-20 | 2 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-22 | 2 | EASY | 4620.7 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 621 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-20 | 2 | EASY | 4964.3 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 964 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-22 | 2 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-24 | 2 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 9 000 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-26 | 3 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-27 | 3 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-29 | 3 | EASY | 4351.7 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 352 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-27 | 3 | EASY | 4695.4 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 695 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-29 | 3 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-31 | 3 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 9 000 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-11-02 | 4 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
-| 2026-11-03 | 4 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-05 | 4 | EASY | 4082.8 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 083 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-02 | 4 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · HIGH |
+| 2026-11-03 | 4 | EASY | 4695.4 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 695 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-05 | 4 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-07 | 4 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 9 000 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-09 | 5 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-10 | 5 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-12 | 5 | EASY | 4082.8 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 083 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-10 | 5 | EASY | 4351.7 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 352 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-12 | 5 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-14 | 5 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 9 000 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-16 | 6 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-17 | 6 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-19 | 6 | EASY | 4082.8 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 083 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-17 | 6 | EASY | 4351.7 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 4 352 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
+| 2026-11-19 | 6 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-21 | 6 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:30–7:15 | 8.3–9.2 | 9 000 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
 | 2026-11-23 | 7 | CONTROL | 3000 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | DEVELOPMENT · CLOSED · MEDIUM |
-| 2026-11-24 | 7 | EASY | 5958.6 м | CONTINUOUS | — | — | — | 5 959 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
-| 2026-11-26 | 7 | EASY | 4082.8 м | CONTINUOUS | — | — | — | 4 083 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
+| 2026-11-24 | 7 | EASY | 4351.7 м | CONTINUOUS | — | — | — | 4 352 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
+| 2026-11-26 | 7 | EASY | 5689.7 м | CONTINUOUS | — | — | — | 5 690 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
 | 2026-11-28 | 7 | EASY | 6250 м | CONTINUOUS | — | — | — | 6 250 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
 | 2026-11-30 | 8 | EASY | 6250 м | CONTINUOUS | — | — | — | 6 250 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
 | 2026-12-01 | 8 | EASY | 6250 м | CONTINUOUS | — | — | — | 6 250 | консерв. прогноз | HOLD_DIAGNOSTIC · CLOSED · LOW |
@@ -573,9 +575,9 @@
 | Дата | Нед | Тип | Доза | Режим | Повторы/пауза | Темп мин/км | Дорожка км/ч | Бронь, м | Статус | Фаза · гейт · доверие |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-10-12 | 1 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | выдана | DEVELOPMENT · CLOSED · HIGH |
-| 2026-10-13 | 1 | EASY | 4964.3 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 964 | выдана | DEVELOPMENT · PARTIAL · HIGH |
-| 2026-10-15 | 1 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | выдана | DEVELOPMENT · PARTIAL · HIGH |
-| 2026-10-17 | 1 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 9 000 | выдана | SPECIFIC · PARTIAL · HIGH |
+| 2026-10-13 | 1 | EASY | 4964.3 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 4 964 | выдана | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-15 | 1 | VO2 | 8 мин | INTERVALS | пауза 90 с | 4:42–4:59 | 12.0–12.8 | 5 346 | выдана | DEVELOPMENT · CLOSED · HIGH |
+| 2026-10-17 | 1 | LONG_EASY | 9000 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 9 000 | выдана | DEVELOPMENT · CLOSED · HIGH |
 | 2026-10-19 | 2 | SPECIFIC_3K | 1800 м | INTERVALS | 600 м × 3, пауза 90 с | 4:36–4:44 | 12.7–13.1 | 5 100 | условный прогноз | SPECIFIC · PARTIAL · HIGH |
 | 2026-10-20 | 2 | EASY | 5210.3 м | CONTINUOUS | — | 6:15–6:55 | 8.7–9.6 | 5 210 | условный прогноз | SPECIFIC · PARTIAL · HIGH |
 | 2026-10-22 | 2 | THRESHOLD | 12 мин | CONTINUOUS | — | 5:09–5:22 | 11.2–11.7 | 5 690 | условный прогноз | SPECIFIC · PARTIAL · HIGH |

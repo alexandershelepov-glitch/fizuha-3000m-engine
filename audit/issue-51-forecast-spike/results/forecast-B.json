@@ -45,6 +45,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -57,12 +58,14 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 0,
         "calibration": false,
         "reservedMeters": 2000,
         "approvedWeekMeters": 2000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -83,6 +86,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -95,6 +99,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 0,
         "calibration": false,
         "reservedMeters": 2000,
@@ -121,6 +127,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -133,6 +140,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 1,
         "calibration": false,
         "reservedMeters": 2000,
@@ -159,6 +168,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -171,6 +181,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 1,
         "calibration": false,
         "reservedMeters": 2000,
@@ -197,6 +209,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -209,6 +222,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 1,
         "calibration": false,
         "reservedMeters": 2200,
@@ -235,6 +250,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -247,6 +263,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 1,
         "calibration": false,
         "reservedMeters": 2200,
@@ -273,6 +291,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -285,6 +304,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 2,
         "calibration": false,
         "reservedMeters": 2200,
@@ -311,6 +332,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -323,6 +345,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 2,
         "calibration": false,
         "reservedMeters": 2200,
@@ -448,6 +472,62 @@
         "types": "EASY×1"
       }
     ],
+    "windowViolations": [],
+    "issuedSnapshot": [
+      {
+        "id": "slot-2026-10-12",
+        "scheduledDate": "2026-10-12",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 5,
+        "cooldownMinutes": 5,
+        "main": {
+          "mode": "RUN_WALK",
+          "dose": {
+            "unit": "METERS",
+            "value": 2000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null,
+          "runWalk": {
+            "stage": 0,
+            "runSeconds": 30,
+            "walkSeconds": 120
+          }
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": null,
+        "paceRangeSecondsPerKm": null,
+        "anchor": "EFFORT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    ],
     "finalResultSeconds": null,
     "controlSeconds": [],
     "engineErrors": [],
@@ -502,6 +582,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -514,12 +595,14 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 0,
         "calibration": false,
         "reservedMeters": 2000,
         "approvedWeekMeters": 2000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -540,6 +623,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -552,6 +636,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 0,
         "calibration": false,
         "reservedMeters": 2000,
@@ -578,6 +664,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -590,6 +677,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 1,
         "calibration": false,
         "reservedMeters": 2000,
@@ -616,6 +705,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -628,6 +718,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 1,
         "calibration": false,
         "reservedMeters": 2000,
@@ -654,6 +746,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -666,6 +759,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 1,
         "calibration": false,
         "reservedMeters": 2200,
@@ -692,6 +787,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -704,6 +800,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 1,
         "calibration": false,
         "reservedMeters": 2200,
@@ -730,6 +828,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -742,6 +841,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 2,
         "calibration": false,
         "reservedMeters": 2200,
@@ -768,6 +869,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -780,6 +882,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 2,
         "calibration": false,
         "reservedMeters": 2200,
@@ -806,6 +910,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -818,6 +923,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 2,
         "calibration": false,
         "reservedMeters": 2400,
@@ -844,6 +951,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -856,6 +964,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 2,
         "calibration": false,
         "reservedMeters": 2400,
@@ -882,6 +992,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -894,6 +1005,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 3,
         "calibration": false,
         "reservedMeters": 2400,
@@ -920,6 +1033,7 @@
         "cooldownMinutes": 5,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -932,6 +1046,8 @@
         "phase": "FOUNDATION",
         "confidence": "UNKNOWN",
         "capacity": "T0",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": 3,
         "calibration": false,
         "reservedMeters": 2400,
@@ -1109,6 +1225,62 @@
         "types": "EASY×1"
       }
     ],
+    "windowViolations": [],
+    "issuedSnapshot": [
+      {
+        "id": "slot-2026-10-12",
+        "scheduledDate": "2026-10-12",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 5,
+        "cooldownMinutes": 5,
+        "main": {
+          "mode": "RUN_WALK",
+          "dose": {
+            "unit": "METERS",
+            "value": 2000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null,
+          "runWalk": {
+            "stage": 0,
+            "runSeconds": 30,
+            "walkSeconds": 120
+          }
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": null,
+        "paceRangeSecondsPerKm": null,
+        "anchor": "EFFORT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    ],
     "finalResultSeconds": null,
     "controlSeconds": [],
     "engineErrors": [],
@@ -1163,6 +1335,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -1181,12 +1354,14 @@
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5322.58064516129,
         "approvedWeekMeters": 19000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -1207,6 +1382,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1221,16 +1397,18 @@
           8.9
         ],
         "anchor": "CURRENT",
-        "gateAtPrescription": "PARTIAL",
+        "gateAtPrescription": "CLOSED",
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5572.2819593787335,
         "approvedWeekMeters": 19000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -1251,6 +1429,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1265,16 +1444,18 @@
           8.9
         ],
         "anchor": "CURRENT",
-        "gateAtPrescription": "PARTIAL",
+        "gateAtPrescription": "CLOSED",
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8000,
         "approvedWeekMeters": 19000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -1295,6 +1476,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -1313,6 +1495,8 @@
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5001.096774193548,
@@ -1339,6 +1523,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1357,6 +1542,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5703.2568697729985,
@@ -1383,6 +1570,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1401,6 +1589,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8000,
@@ -1427,6 +1617,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 600,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -1445,6 +1636,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4887.096774193549,
@@ -1471,6 +1664,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1489,6 +1683,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5798.327359617683,
@@ -1515,6 +1711,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1533,6 +1730,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8421.052631578947,
@@ -1559,6 +1758,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           8,
@@ -1571,6 +1771,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5767.741935483871,
@@ -1597,6 +1799,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1615,6 +1818,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5798.327359617683,
@@ -1641,6 +1846,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1659,6 +1865,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8421.052631578947,
@@ -1685,6 +1893,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -1703,6 +1912,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5322.58064516129,
@@ -1729,6 +1940,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1747,6 +1959,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6387.096774193548,
@@ -1773,6 +1987,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1791,6 +2006,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8842.105263157895,
@@ -1817,6 +2034,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 600,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -1835,6 +2053,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4887.096774193549,
@@ -1861,6 +2081,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1879,6 +2100,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6205.73476702509,
@@ -1905,6 +2128,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -1923,6 +2147,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8842.105263157895,
@@ -1949,6 +2175,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           8,
@@ -1961,6 +2188,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5767.741935483871,
@@ -1987,6 +2216,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2005,6 +2235,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6205.73476702509,
@@ -2031,6 +2263,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2049,6 +2282,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8842.105263157895,
@@ -2075,6 +2310,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 120,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -2093,6 +2329,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 0.6,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4407.096774193549,
@@ -2119,6 +2357,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2137,6 +2376,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 0.6,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4200,
@@ -2163,6 +2404,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2181,6 +2423,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 0.4,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 2800,
@@ -2225,7 +2469,7 @@
         "plannedReservedMeters": 18894.862604540023,
         "approvedWeekMeters": 19000,
         "phase": "DEVELOPMENT",
-        "gate": "PARTIAL",
+        "gate": "CLOSED",
         "confidence": "HIGH",
         "checkpointDue": false,
         "types": "THRESHOLD×1, EASY×1, LONG_EASY×1"
@@ -2322,6 +2566,168 @@
         "types": "SPECIFIC_3K×1, EASY×2"
       }
     ],
+    "windowViolations": [],
+    "issuedSnapshot": [
+      {
+        "id": "slot-2026-10-12",
+        "scheduledDate": "2026-10-12",
+        "type": "THRESHOLD",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 10,
+        "cooldownMinutes": 10,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "MINUTES",
+            "value": 12
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          6,
+          7
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          2.903225806451613,
+          3.0322580645161286
+        ],
+        "paceRangeSecondsPerKm": [
+          329.7872340425532,
+          344.44444444444446
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      },
+      {
+        "id": "slot-2026-10-14",
+        "scheduledDate": "2026-10-14",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 5572.2819593787335
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.2222222222222223,
+          2.4691358024691357
+        ],
+        "paceRangeSecondsPerKm": [
+          405,
+          450
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      },
+      {
+        "id": "slot-2026-10-16",
+        "scheduledDate": "2026-10-16",
+        "type": "LONG_EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 8000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.2222222222222223,
+          2.4691358024691357
+        ],
+        "paceRangeSecondsPerKm": [
+          405,
+          450
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    ],
     "finalResultSeconds": 930,
     "controlSeconds": [
       930,
@@ -2379,6 +2785,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -2397,12 +2804,14 @@
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5322.58064516129,
         "approvedWeekMeters": 19000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -2423,6 +2832,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2437,16 +2847,18 @@
           8.9
         ],
         "anchor": "CURRENT",
-        "gateAtPrescription": "PARTIAL",
+        "gateAtPrescription": "CLOSED",
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5572.2819593787335,
         "approvedWeekMeters": 19000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -2467,6 +2879,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2481,16 +2894,18 @@
           8.9
         ],
         "anchor": "CURRENT",
-        "gateAtPrescription": "PARTIAL",
+        "gateAtPrescription": "CLOSED",
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8000,
         "approvedWeekMeters": 19000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -2511,6 +2926,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -2529,6 +2945,8 @@
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5001.096774193548,
@@ -2555,6 +2973,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2573,6 +2992,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5703.2568697729985,
@@ -2599,6 +3020,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2617,6 +3039,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8000,
@@ -2643,6 +3067,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 600,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -2661,6 +3086,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4887.096774193549,
@@ -2687,6 +3114,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2705,6 +3133,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5798.327359617683,
@@ -2731,6 +3161,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2749,6 +3180,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8421.052631578947,
@@ -2775,6 +3208,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           8,
@@ -2787,6 +3221,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5767.741935483871,
@@ -2813,6 +3249,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2831,6 +3268,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5798.327359617683,
@@ -2857,6 +3296,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2875,6 +3315,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8421.052631578947,
@@ -2901,6 +3343,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -2919,6 +3362,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5322.58064516129,
@@ -2945,6 +3390,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -2963,6 +3409,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6387.096774193548,
@@ -2989,6 +3437,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3007,6 +3456,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8842.105263157895,
@@ -3033,6 +3484,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 600,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -3051,6 +3503,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4887.096774193549,
@@ -3077,6 +3531,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3095,6 +3550,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6205.73476702509,
@@ -3121,6 +3578,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3139,6 +3597,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8842.105263157895,
@@ -3165,6 +3625,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           8,
@@ -3177,6 +3638,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5767.741935483871,
@@ -3203,6 +3666,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3221,6 +3685,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6205.73476702509,
@@ -3247,6 +3713,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3265,6 +3732,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8842.105263157895,
@@ -3291,6 +3760,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -3309,6 +3779,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5001.096774193548,
@@ -3335,6 +3807,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3353,6 +3826,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6336.499402628436,
@@ -3379,6 +3854,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3397,6 +3873,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8842.105263157895,
@@ -3423,6 +3901,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": 600,
+        "finalRepeatMeters": 400,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -3441,6 +3920,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5446.774193548387,
@@ -3467,6 +3948,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3485,6 +3967,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6126.881720430108,
@@ -3511,6 +3995,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3529,6 +4014,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8842.105263157895,
@@ -3555,6 +4042,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           8,
@@ -3567,6 +4055,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5767.741935483871,
@@ -3593,6 +4083,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3611,6 +4102,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6126.881720430108,
@@ -3637,6 +4130,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3655,6 +4149,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8842.105263157895,
@@ -3681,6 +4177,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -3699,6 +4196,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5961.290322580645,
@@ -3725,6 +4224,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3743,6 +4243,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6126.881720430108,
@@ -3769,6 +4271,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3787,6 +4290,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 8842.105263157895,
@@ -3813,6 +4318,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 120,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -3831,6 +4337,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 0.6,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4407.096774193549,
@@ -3857,6 +4365,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3875,6 +4384,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 0.6,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4200,
@@ -3901,6 +4412,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -3919,6 +4431,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T2",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 0.4,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 2800,
@@ -3971,7 +4485,7 @@
         "plannedReservedMeters": 18894.862604540023,
         "approvedWeekMeters": 19000,
         "phase": "DEVELOPMENT",
-        "gate": "PARTIAL",
+        "gate": "CLOSED",
         "confidence": "HIGH",
         "checkpointDue": false,
         "types": "THRESHOLD×1, EASY×1, LONG_EASY×1"
@@ -4120,6 +4634,168 @@
         "types": "SPECIFIC_3K×1, EASY×2"
       }
     ],
+    "windowViolations": [],
+    "issuedSnapshot": [
+      {
+        "id": "slot-2026-10-12",
+        "scheduledDate": "2026-10-12",
+        "type": "THRESHOLD",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 10,
+        "cooldownMinutes": 10,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "MINUTES",
+            "value": 12
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          6,
+          7
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          2.903225806451613,
+          3.0322580645161286
+        ],
+        "paceRangeSecondsPerKm": [
+          329.7872340425532,
+          344.44444444444446
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      },
+      {
+        "id": "slot-2026-10-14",
+        "scheduledDate": "2026-10-14",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 5572.2819593787335
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.2222222222222223,
+          2.4691358024691357
+        ],
+        "paceRangeSecondsPerKm": [
+          405,
+          450
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      },
+      {
+        "id": "slot-2026-10-16",
+        "scheduledDate": "2026-10-16",
+        "type": "LONG_EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 8000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.2222222222222223,
+          2.4691358024691357
+        ],
+        "paceRangeSecondsPerKm": [
+          405,
+          450
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    ],
     "finalResultSeconds": 930,
     "controlSeconds": [
       930,
@@ -4178,6 +4854,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -4196,12 +4873,14 @@
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5689.655172413793,
         "approvedWeekMeters": 25000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -4222,6 +4901,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -4236,16 +4916,18 @@
           9.6
         ],
         "anchor": "CURRENT",
-        "gateAtPrescription": "PARTIAL",
+        "gateAtPrescription": "CLOSED",
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4964.3448275862065,
         "approvedWeekMeters": 25000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -4266,6 +4948,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -4280,16 +4963,18 @@
           12.8
         ],
         "anchor": "CURRENT",
-        "gateAtPrescription": "PARTIAL",
+        "gateAtPrescription": "CLOSED",
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5346,
         "approvedWeekMeters": 25000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -4310,6 +4995,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -4324,16 +5010,18 @@
           9.6
         ],
         "anchor": "CURRENT",
-        "gateAtPrescription": "PARTIAL",
-        "phase": "SPECIFIC",
+        "gateAtPrescription": "CLOSED",
+        "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
         "approvedWeekMeters": 25000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -4354,6 +5042,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 600,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -4372,6 +5061,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5100,
@@ -4398,6 +5089,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -4416,6 +5108,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5210.3448275862065,
@@ -4442,6 +5136,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -4460,6 +5155,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5689.655172413793,
@@ -4486,6 +5183,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -4504,6 +5202,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
@@ -4530,6 +5230,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 600,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -4548,6 +5249,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5100,
@@ -4574,6 +5277,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -4592,6 +5296,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4695.37931034483,
@@ -4618,6 +5324,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -4636,6 +5343,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5346,
@@ -4662,6 +5371,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -4680,6 +5390,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
@@ -4706,6 +5418,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           8,
@@ -4718,6 +5431,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5958.620689655172,
@@ -4744,6 +5459,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -4762,6 +5478,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 3956.8965517241377,
@@ -4788,6 +5506,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": 600,
+        "finalRepeatMeters": 400,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -4806,6 +5525,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5670.689655172414,
@@ -4832,6 +5553,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -4850,6 +5572,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
@@ -4876,6 +5600,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -4894,6 +5619,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6372.413793103449,
@@ -4920,6 +5647,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -4938,6 +5666,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 3956.8965517241377,
@@ -4964,6 +5694,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": 600,
+        "finalRepeatMeters": 400,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -4982,6 +5713,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5670.689655172414,
@@ -5008,6 +5741,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5026,6 +5760,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
@@ -5052,6 +5788,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -5070,6 +5807,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6049.241379310345,
@@ -5096,6 +5835,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5114,6 +5854,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4280.068965517243,
@@ -5140,6 +5882,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5158,6 +5901,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5387.36808340016,
@@ -5184,6 +5929,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5202,6 +5948,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
@@ -5228,6 +5976,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           8,
@@ -5240,6 +5989,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5958.620689655172,
@@ -5266,6 +6017,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5284,6 +6036,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 3800,
@@ -5310,6 +6064,7 @@
         "cooldownMinutes": 10,
         "repeats": 5,
         "repeatMeters": 600,
+        "finalRepeatMeters": 200,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -5328,6 +6083,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6241.379310344828,
@@ -5354,6 +6111,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5372,6 +6130,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9360,
@@ -5398,6 +6158,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5416,6 +6177,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 0.6,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 3900,
@@ -5442,6 +6205,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5460,6 +6224,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 0.6,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 3900,
@@ -5486,6 +6252,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 360,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -5504,6 +6271,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 0.6,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4860,
@@ -5530,6 +6299,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5548,6 +6318,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 0.4,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 2600,
@@ -5591,8 +6363,8 @@
         "qualityCount": 2,
         "plannedReservedMeters": 25000,
         "approvedWeekMeters": 25000,
-        "phase": "SPECIFIC",
-        "gate": "PARTIAL",
+        "phase": "DEVELOPMENT",
+        "gate": "CLOSED",
         "confidence": "HIGH",
         "checkpointDue": false,
         "types": "THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1"
@@ -5689,6 +6461,219 @@
         "types": "EASY×3, SPECIFIC_3K×1"
       }
     ],
+    "windowViolations": [],
+    "issuedSnapshot": [
+      {
+        "id": "slot-2026-10-12",
+        "scheduledDate": "2026-10-12",
+        "type": "THRESHOLD",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 10,
+        "cooldownMinutes": 10,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "MINUTES",
+            "value": 12
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          6,
+          7
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.103448275862069,
+          3.2413793103448274
+        ],
+        "paceRangeSecondsPerKm": [
+          308.51063829787233,
+          322.22222222222223
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      },
+      {
+        "id": "slot-2026-10-13",
+        "scheduledDate": "2026-10-13",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 4964.3448275862065
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4096385542168677,
+          2.6666666666666665
+        ],
+        "paceRangeSecondsPerKm": [
+          375,
+          415
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      },
+      {
+        "id": "slot-2026-10-15",
+        "scheduledDate": "2026-10-15",
+        "type": "VO2",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 10,
+        "cooldownMinutes": 10,
+        "main": {
+          "mode": "INTERVALS",
+          "dose": {
+            "unit": "MINUTES",
+            "value": 8
+          },
+          "repeats": 4,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          8,
+          9
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.3448275862068964,
+          3.5517241379310343
+        ],
+        "paceRangeSecondsPerKm": [
+          281.55339805825247,
+          298.96907216494844
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 90,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      },
+      {
+        "id": "slot-2026-10-17",
+        "scheduledDate": "2026-10-17",
+        "type": "LONG_EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 9000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4096385542168677,
+          2.6666666666666665
+        ],
+        "paceRangeSecondsPerKm": [
+          375,
+          415
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    ],
     "finalResultSeconds": 870,
     "controlSeconds": [
       870,
@@ -5746,6 +6731,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -5764,12 +6750,14 @@
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5689.655172413793,
         "approvedWeekMeters": 25000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -5790,6 +6778,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5804,16 +6793,18 @@
           9.6
         ],
         "anchor": "CURRENT",
-        "gateAtPrescription": "PARTIAL",
+        "gateAtPrescription": "CLOSED",
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4964.3448275862065,
         "approvedWeekMeters": 25000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -5834,6 +6825,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -5848,16 +6840,18 @@
           12.8
         ],
         "anchor": "CURRENT",
-        "gateAtPrescription": "PARTIAL",
+        "gateAtPrescription": "CLOSED",
         "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5346,
         "approvedWeekMeters": 25000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -5878,6 +6872,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5892,16 +6887,18 @@
           9.6
         ],
         "anchor": "CURRENT",
-        "gateAtPrescription": "PARTIAL",
-        "phase": "SPECIFIC",
+        "gateAtPrescription": "CLOSED",
+        "phase": "DEVELOPMENT",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
         "approvedWeekMeters": 25000,
         "status": "ISSUED",
-        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости.",
+        "note": "Условный прогноз: предполагается успешное выполнение (синтетический GREEN). Это не допуск к нагрузке и не доказательство переносимости. Назначение отображено из снапшота выданной очереди на момент расчёта.",
         "syntheticEvaluation": "GREEN"
       },
       {
@@ -5922,6 +6919,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 600,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -5940,6 +6938,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5100,
@@ -5966,6 +6966,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -5984,6 +6985,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5210.3448275862065,
@@ -6010,6 +7013,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -6028,6 +7032,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5689.655172413793,
@@ -6054,6 +7060,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6072,6 +7079,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
@@ -6098,6 +7107,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 600,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -6116,6 +7126,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5100,
@@ -6142,6 +7154,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6160,6 +7173,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4695.37931034483,
@@ -6186,6 +7201,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -6204,6 +7220,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5346,
@@ -6230,6 +7248,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6248,6 +7267,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
@@ -6274,6 +7295,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           8,
@@ -6286,6 +7308,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5958.620689655172,
@@ -6312,6 +7336,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6330,6 +7355,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 3956.8965517241377,
@@ -6356,6 +7383,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": 600,
+        "finalRepeatMeters": 400,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -6374,6 +7402,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5670.689655172414,
@@ -6400,6 +7430,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6418,6 +7449,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
@@ -6444,6 +7477,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -6462,6 +7496,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6372.413793103449,
@@ -6488,6 +7524,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6506,6 +7543,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 3956.8965517241377,
@@ -6532,6 +7571,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": 600,
+        "finalRepeatMeters": 400,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -6550,6 +7590,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5670.689655172414,
@@ -6576,6 +7618,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6594,6 +7637,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
@@ -6620,6 +7665,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -6638,6 +7684,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6049.241379310345,
@@ -6664,6 +7712,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6682,6 +7731,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4280.068965517243,
@@ -6708,6 +7759,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6726,6 +7778,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5387.36808340016,
@@ -6752,6 +7806,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6770,6 +7825,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
@@ -6796,6 +7853,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           8,
@@ -6808,6 +7866,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5958.620689655172,
@@ -6834,6 +7894,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6852,6 +7913,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4654.011226944669,
@@ -6878,6 +7941,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6896,6 +7960,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5104.609462710503,
@@ -6922,6 +7988,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -6940,6 +8007,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9000,
@@ -6966,6 +8035,7 @@
         "cooldownMinutes": 10,
         "repeats": 5,
         "repeatMeters": 600,
+        "finalRepeatMeters": 200,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -6984,6 +8054,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6241.379310344828,
@@ -7010,6 +8082,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7028,6 +8101,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5322.735242548217,
@@ -7054,6 +8129,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7072,6 +8148,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4944.850964348334,
@@ -7098,6 +8176,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7116,6 +8195,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9360,
@@ -7142,6 +8223,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           6,
@@ -7160,6 +8242,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6372.413793103449,
@@ -7186,6 +8270,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7204,6 +8289,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4666.206896551723,
@@ -7230,6 +8317,7 @@
         "cooldownMinutes": 10,
         "repeats": 5,
         "repeatMeters": 600,
+        "finalRepeatMeters": 200,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -7248,6 +8336,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6241.379310344828,
@@ -7274,6 +8364,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7292,6 +8383,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9720,
@@ -7318,6 +8411,7 @@
         "cooldownMinutes": 10,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           8,
@@ -7330,6 +8424,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5958.620689655172,
@@ -7356,6 +8452,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7374,6 +8471,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4589.379310344826,
@@ -7400,6 +8499,7 @@
         "cooldownMinutes": 10,
         "repeats": 4,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -7418,6 +8518,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6049.241379310345,
@@ -7444,6 +8546,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7462,6 +8565,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9720,
@@ -7488,6 +8593,7 @@
         "cooldownMinutes": 10,
         "repeats": 5,
         "repeatMeters": 600,
+        "finalRepeatMeters": 600,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -7506,6 +8612,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 6641.379310344828,
@@ -7532,6 +8640,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7550,6 +8659,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4589.379310344826,
@@ -7576,6 +8687,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7594,6 +8706,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5867.624699278268,
@@ -7620,6 +8734,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7638,6 +8753,8 @@
         "phase": "SPECIFIC",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 1,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 9720,
@@ -7664,6 +8781,7 @@
         "cooldownMinutes": 10,
         "repeats": 3,
         "repeatMeters": 600,
+        "finalRepeatMeters": 600,
         "restSeconds": 90,
         "targetRpe": [
           8,
@@ -7682,6 +8800,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "volumeFactor": 0.6,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 5100,
@@ -7708,6 +8828,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7726,6 +8847,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 0.6,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4050,
@@ -7752,6 +8875,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7770,6 +8894,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 0.6,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 4050,
@@ -7796,6 +8922,7 @@
         "cooldownMinutes": 0,
         "repeats": 1,
         "repeatMeters": null,
+        "finalRepeatMeters": null,
         "restSeconds": 0,
         "targetRpe": [
           2,
@@ -7814,6 +8941,8 @@
         "phase": "TAPER",
         "confidence": "HIGH",
         "capacity": "T3",
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "volumeFactor": 0.4,
         "runWalkStage": null,
         "calibration": false,
         "reservedMeters": 2700,
@@ -7865,8 +8994,8 @@
         "qualityCount": 2,
         "plannedReservedMeters": 25000,
         "approvedWeekMeters": 25000,
-        "phase": "SPECIFIC",
-        "gate": "PARTIAL",
+        "phase": "DEVELOPMENT",
+        "gate": "CLOSED",
         "confidence": "HIGH",
         "checkpointDue": false,
         "types": "THRESHOLD×1, EASY×1, VO2×1, LONG_EASY×1"
@@ -8013,6 +9142,219 @@
         "confidence": "HIGH",
         "checkpointDue": false,
         "types": "SPECIFIC_3K×1, EASY×3"
+      }
+    ],
+    "windowViolations": [],
+    "issuedSnapshot": [
+      {
+        "id": "slot-2026-10-12",
+        "scheduledDate": "2026-10-12",
+        "type": "THRESHOLD",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 10,
+        "cooldownMinutes": 10,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "MINUTES",
+            "value": 12
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          6,
+          7
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.103448275862069,
+          3.2413793103448274
+        ],
+        "paceRangeSecondsPerKm": [
+          308.51063829787233,
+          322.22222222222223
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      },
+      {
+        "id": "slot-2026-10-13",
+        "scheduledDate": "2026-10-13",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 4964.3448275862065
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4096385542168677,
+          2.6666666666666665
+        ],
+        "paceRangeSecondsPerKm": [
+          375,
+          415
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      },
+      {
+        "id": "slot-2026-10-15",
+        "scheduledDate": "2026-10-15",
+        "type": "VO2",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 10,
+        "cooldownMinutes": 10,
+        "main": {
+          "mode": "INTERVALS",
+          "dose": {
+            "unit": "MINUTES",
+            "value": 8
+          },
+          "repeats": 4,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          8,
+          9
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.3448275862068964,
+          3.5517241379310343
+        ],
+        "paceRangeSecondsPerKm": [
+          281.55339805825247,
+          298.96907216494844
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 90,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      },
+      {
+        "id": "slot-2026-10-17",
+        "scheduledDate": "2026-10-17",
+        "type": "LONG_EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 9000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4096385542168677,
+          2.6666666666666665
+        ],
+        "paceRangeSecondsPerKm": [
+          375,
+          415
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
       }
     ],
     "finalResultSeconds": 870,
