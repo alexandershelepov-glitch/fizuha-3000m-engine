@@ -28,7 +28,7 @@ test('BOUNDARY-02 the gateway imports only the public engine API', () => {
   const block = /import \{([\s\S]*?)\} from '\.\.\/\.\.\/\.\.\/src\/index\.ts'/.exec(gateway.text);
   assert.ok(block, 'the gateway must import from the package entry point');
   const imported = block[1]!.split(',').map((name) => name.trim()).filter(Boolean).sort();
-  assert.deepEqual(imported, ['EngineError', 'PERFORMANCE_SOURCES', 'createEngine', 'deserialize', 'moveWorkout as engineMoveWorkout', 'recordCheckpoint as engineRecordCheckpoint', 'recordFinalResult as engineRecordFinalResult', 'recordResult as engineRecordResult', 'replan', 'resolveDiagnostic as engineResolveDiagnostic', 'serialize', 'skipWorkout as engineSkipWorkout', 'taperDays', 'updateTrainingData as engineUpdateTrainingData', 'validateProfile']);
+  assert.deepEqual(imported, ['EngineError', 'PERFORMANCE_SOURCES', 'createEngine', 'deserialize', 'forecastCycle as engineForecastCycle', 'moveWorkout as engineMoveWorkout', 'recordCheckpoint as engineRecordCheckpoint', 'recordFinalResult as engineRecordFinalResult', 'recordResult as engineRecordResult', 'replan', 'resolveDiagnostic as engineResolveDiagnostic', 'serialize', 'skipWorkout as engineSkipWorkout', 'taperDays', 'updateTrainingData as engineUpdateTrainingData', 'validateProfile']);
 });
 
 test('BOUNDARY-03 the frontend never calls internal sport functions', () => {

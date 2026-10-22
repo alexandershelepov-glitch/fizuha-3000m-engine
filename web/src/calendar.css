@@ -136,3 +136,24 @@
 .calendar-day--quality .calendar-day-label { color: #b87532; }
 .calendar-days--month .calendar-day--quality::after { content: '●'; color: #c68a3e; font-size: 9px; position: absolute; bottom: 2px; left: 8px; }
 .calendar-day--today:not(.calendar-day--selected) { border-color: #8bb9b0; }
+
+/* Issue #51: preliminary forecast days and checkpoint controls. They must read as "planned, but not
+   issued yet" — lighter than a committed prescription, never identical to a fact. */
+.calendar-day--forecast { background: #fbfdfd; border-style: dashed; border-color: #a9c8c1; }
+.calendar-day--forecast .calendar-day-label { color: #4f8b81; }
+.calendar-day--control { background: #fdf9f1; border-style: dashed; border-color: #d8b98a; }
+.calendar-day--control .calendar-day-label { color: #a06c26; }
+.calendar-day-badge { position: absolute; top: 4px; right: 4px; font-size: 8.5px; font-weight: 700;
+  letter-spacing: .02em; color: #6f9790; background: #ecf4f2; border: 1px solid #cfe3df; border-radius: 7px; padding: 1px 4px; }
+.calendar-day--control .calendar-day-badge { color: #a3742f; background: #f7efdf; border-color: #e3cfa8; }
+.calendar-days--month .calendar-day--forecast::after { content: '◌'; color: #7fa8a0; font-size: 9px; position: absolute; bottom: 2px; left: 8px; }
+.calendar-days--month .calendar-day--control::after { content: '◆'; color: #c68a3e; font-size: 9px; position: absolute; bottom: 2px; left: 8px; }
+
+/* "Весь период": the same week grid stacked week by week with a compact caption. */
+.calendar-period-list { display: flex; flex-direction: column; gap: 14px; max-height: 72vh; overflow-y: auto; padding-right: 4px; }
+.calendar-week-caption { margin: 0; font-size: 12px; font-weight: 700; color: #5d7482; letter-spacing: .02em; }
+.calendar-week-block { display: flex; flex-direction: column; gap: 5px; }
+@media(max-width:440px) {
+  .calendar-period-list { max-height: none; }
+  .calendar-days--week .calendar-day-badge { display: none; }
+}

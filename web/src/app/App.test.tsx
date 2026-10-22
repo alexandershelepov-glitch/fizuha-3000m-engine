@@ -353,7 +353,7 @@ describe('navigation', () => {
 
     await clickIn(user, nav, 'План');
     expect(path()).toBe('/plan');
-    expect(screen.getByText(/Показан фактический горизонт плана/)).toBeInTheDocument();
+    expect(screen.getByText(/Будущие тренировки — предварительный план/)).toBeInTheDocument();
 
     await clickIn(user, nav, 'История');
     expect(path()).toBe('/history');

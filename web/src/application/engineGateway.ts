@@ -13,6 +13,7 @@ import {
   PERFORMANCE_SOURCES,
   createEngine,
   deserialize,
+  forecastCycle as engineForecastCycle,
   moveWorkout as engineMoveWorkout,
   recordCheckpoint as engineRecordCheckpoint,
   recordFinalResult as engineRecordFinalResult,
@@ -42,6 +43,13 @@ import type {
   Evaluation,
   Feasibility,
   FeedbackField,
+  ForecastEntry,
+  ForecastEntryStatus,
+  ForecastEvent,
+  ForecastMode,
+  ForecastOptions,
+  ForecastResult,
+  ForecastWindowViolation,
   Gate,
   HistoryEntry,
   PerformanceMismatch,
@@ -75,6 +83,8 @@ export type {
   EngineErrorCode, EngineState, Evaluation, Feasibility, FeedbackField, Gate, HistoryEntry, PerformanceMismatch, PerformanceSnapshot,
   PerformanceSource, Phase, Profile, QualityExperience, ReasonCode, SafetyData, SafetyStatus, Workout,
   WorkoutGoal, WorkoutMainMode, WorkoutResult, WorkoutType, YellowReason,
+  ForecastEntry, ForecastEntryStatus, ForecastEvent, ForecastMode, ForecastOptions, ForecastResult,
+  ForecastWindowViolation,
 };
 
 /** Create the engine state for a new cycle. The engine decides everything sport-related. */
@@ -181,4 +191,14 @@ export function resolveCurrentSafety(state: EngineState, safety: SafetyData, now
 /** Non-persisted preview of the real engine verdict. */
 export function previewGoalDecision(profile: Profile, today: string): Decision {
   return createEngineState(profile, today).decision;
+}
+
+/**
+ * Full-cycle forecast to the race date (issue #51). Pure read-only projection: the input state is
+ * never advanced or mutated, nothing is persisted, and the engine remains the only planner. The
+ * application refreshes this whenever the confirmed engine state changes; the UI never calls the
+ * engine directly and never writes forecast entries back.
+ */
+export function forecastCycle(state: EngineState, options: ForecastOptions): ForecastResult {
+  return engineForecastCycle(state, options);
 }

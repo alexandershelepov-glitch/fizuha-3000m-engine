@@ -333,7 +333,7 @@ function forecastConditional(base: EngineState, asOf: string, digest: string): F
       }
       if (!displayed.has(workout.id)) {
         displayed.add(workout.id);
-        entries.push(makeEntry('CONDITIONAL', weekOf(state, today), workout, state, true, 'GREEN', [],
+        entries.push(makeEntry('CONDITIONAL', weekOf(state, today), workout, state, true, 'GREEN', ['CHECKPOINT_DUE'],
           `${note} Контрольный 3000 м: условный ввод = прежний известный результат ${secText(known.timeSeconds)}, улучшение не предполагается.`));
       }
       state = recordResult(state, workout.id, {

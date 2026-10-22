@@ -27,9 +27,10 @@ const freshState = (over: Partial<Profile> = {}): EngineState =>
   createEngine(profile({raceDate: dateAfter(84), ...over}), NOW);
 
 /** Прошёл `days` дней цикла: каждое назначенное занятие выполнено GREEN, кроме одного пропуска. */
-function midCycleState(over: Partial<Profile> = {}, days = 17, skipAt: number | null = 6): {state: EngineState; skipped: number} {
+function midCycleState(over: Partial<Profile> = {}, days = 17, skipAt: number | null = 6): {state: EngineState; skipped: number; recorded: number} {
   let state = freshState(over);
   let skipped = 0;
+  let recorded = 0;
   for (let d = 0; d < days; d++) {
     const today = dateAfter(d);
     state = replan(state, today);
@@ -41,8 +42,9 @@ function midCycleState(over: Partial<Profile> = {}, days = 17, skipAt: number | 
       continue;
     }
     state = recordResult(state, w.id, feedback(w, 'GREEN'));
+    recorded++;
   }
-  return {state, skipped};
+  return {state, skipped, recorded};
 }
 
 const digestOf = (s: EngineState): string => serialize(s);
@@ -256,12 +258,16 @@ test('FC-11 частично пройденный цикл с перенесён
 });
 
 test('FC-12 CONDITIONAL поверх частичного цикла: сценарий продолжает реальную историю', () => {
-  const {state} = midCycleState(experienced, 24, 9);
+  const {state, skipped, recorded} = midCycleState(experienced, 24, 9);
+  assert.equal(skipped, 1);
+  assert.equal(state.history.length, recorded, 'fixture: history holds exactly the recorded GREEN results');
   const result = forecastCycle(state, {mode: 'CONDITIONAL'});
   assert.equal(result.seedUnchanged, true);
   assert.equal(result.finalResultSeconds, 920);
-  // История входа не изменилась, сценарий шёл только по копии.
-  assert.equal(state.history.length, 24 - 1 /* skip */ >= 0 ? state.history.length : 0);
+  // История входа не изменилась: сценарий шёл только по копии, пропуск и записи на месте.
+  assert.equal(state.history.length, recorded, 'real history untouched by the forecast');
+  assert.equal(state.skippedWorkouts.length, 1, 'the real miss is untouched');
+  // Прогнозные позиции начинаются после подтверждённого состояния; совпадают с очередью только COMMITTED.
   assert.ok(result.entries.filter(e => e.status === 'CONDITIONAL')
     .every(e => e.workout.scheduledDate > state.asOf || state.queue.some(w => w.id === e.workout.id)));
   assert.deepEqual(result.windowViolations, []);

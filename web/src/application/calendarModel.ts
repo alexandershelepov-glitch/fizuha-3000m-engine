@@ -1,13 +1,18 @@
 /** Calendar is a read-only projection of engine facts: no prescriptions or safety decisions here. */
-import type {EngineState, Workout, HistoryEntry} from './engineGateway.ts';
+import type {EngineState, ForecastEntry, Workout, HistoryEntry} from './engineGateway.ts';
 import {addDays} from './format.ts';
 
-export type CalendarStatus = 'completed' | 'skipped' | 'planned' | 'moved' | 'rest' | 'unformed' | 'race';
+export type CalendarStatus = 'completed' | 'skipped' | 'planned' | 'moved' | 'forecast' | 'control' | 'rest' | 'unformed' | 'race';
 export interface CalendarDay {
   readonly date: string;
   readonly status: CalendarStatus;
   readonly workout: Workout | null;
   readonly result: HistoryEntry | null;
+  /**
+   * The forecast entry behind a 'forecast'/'control' day, if any. History and the issued queue never
+   * need it: those days are facts and stay sourced from the engine state itself.
+   */
+  readonly forecast: ForecastEntry | null;
 }
 export interface CalendarSummary {
   readonly assigned: number;
@@ -32,6 +37,18 @@ export function weekDates(anyDay: string): string[] {
   return Array.from({length: 7}, (_, i) => addDays(monday, i));
 }
 
+/**
+ * The calendar always displays whole ISO weeks, including leading/trailing month days.
+ * `periodWeeks` lists the Monday of every week from the cycle start to the race week (inclusive):
+ * the "Весь период" view stacks these weeks without inventing days beyond the cycle.
+ */
+export function periodWeeks(state: EngineState): string[] {
+  const first = mondayOf(state.cycleStartDate);
+  const last = mondayOf(state.profile.raceDate);
+  const count = Math.round((Date.parse(last + 'T00:00:00Z') - Date.parse(first + 'T00:00:00Z')) / 86400000) / 7 + 1;
+  return Array.from({length: count}, (_, i) => addDays(first, i * 7));
+}
+
 /** The calendar always displays whole ISO weeks, including leading/trailing month days. */
 export function monthDates(anyDay: string): string[] {
   const first = anyDay.slice(0, 7) + '-01';
@@ -44,18 +61,41 @@ export function monthDates(anyDay: string): string[] {
   return Array.from({length: count}, (_, i) => addDays(begin, i));
 }
 
-export function calendarDay(state: EngineState, today: string, date: string, movedIds: ReadonlySet<string> = new Set()): CalendarDay {
+/**
+ * One day, three strictly separated sources of truth, in priority order:
+ * 1. history — real completed workouts (facts);
+ * 2. skippedWorkouts — real misses (facts);
+ * 3. the issued queue — the engine's current committed prescriptions (facts);
+ * 4. the forecast map (CONDITIONAL entries only) — preliminary future plan, never facts.
+ * A forecast entry never overrides a fact, and committed entries are excluded from the map upstream.
+ */
+export function calendarDay(state: EngineState, today: string, date: string, movedIds: ReadonlySet<string> = new Set(),
+  forecast: ReadonlyMap<string, ForecastEntry> = new Map()): CalendarDay {
   // Completed and skipped entries keep their original factual dates, even after replanning.
   const result = state.history.find(item => item.workout.type !== 'REST' && item.workout.scheduledDate === date) ?? null;
-  if (result) return {date, status: 'completed', workout: result.workout, result};
+  if (result) return {date, status: 'completed', workout: result.workout, result, forecast: null};
   const skipped = state.skippedWorkouts.find(item => item.type !== 'REST' && item.scheduledDate === date) ?? null;
-  if (skipped) return {date, status: 'skipped', workout: skipped, result: null};
+  if (skipped) return {date, status: 'skipped', workout: skipped, result: null, forecast: null};
   const planned = state.queue.find(item => item.type !== 'REST' && item.scheduledDate === date) ?? null;
-  if (planned) return {date, status: movedIds.has(planned.id) ? 'moved' : 'planned', workout: planned, result: null};
-  if (date === state.profile.raceDate) return {date, status: 'race', workout: null, result: null};
+  if (planned) return {date, status: movedIds.has(planned.id) ? 'moved' : 'planned', workout: planned, result: null, forecast: null};
+  if (date === state.profile.raceDate) return {date, status: 'race', workout: null, result: null, forecast: null};
+  // Preliminary forecast: workouts the engine would issue under the conditional scenario. The
+  // checkpoint CONTROL slots needing a real measurement are marked separately. Forecast REST
+  // placeholders are plain rest days, exactly like REST entries in the issued queue.
+  const projected = forecast.get(date) ?? null;
+  if (projected) {
+    if (projected.workout.type === 'REST') return {date, status: 'rest', workout: null, result: null, forecast: null};
+    return {date, status: projected.workout.type === 'CONTROL' ? 'control' : 'forecast',
+      workout: projected.workout, result: null, forecast: projected};
+  }
   // The queue describes only an issued seven-day horizon; do not fake a future schedule.
-  if (date > today && date > addDays(state.asOf, 6)) return {date, status: 'unformed', workout: null, result: null};
-  return {date, status: 'rest', workout: null, result: null};
+  if (date > today && date > addDays(state.asOf, 6)) return {date, status: 'unformed', workout: null, result: null, forecast: null};
+  return {date, status: 'rest', workout: null, result: null, forecast: null};
+}
+
+/** Index forecast entries by date, excluding COMMITTED ones (the issued queue is the only source for them). */
+export function forecastByDate(entries: readonly ForecastEntry[]): Map<string, ForecastEntry> {
+  return new Map(entries.filter(entry => entry.status !== 'COMMITTED').map(entry => [entry.workout.scheduledDate, entry]));
 }
 
 export function weekSummary(days: readonly CalendarDay[]): CalendarSummary {

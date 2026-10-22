@@ -12,7 +12,7 @@ async function openCalendar(page: import('@playwright/test').Page): Promise<void
   await expect(page.getByRole('heading', {name:'Календарь тренировок'})).toBeVisible();
 }
 
-test('calendar: week/month, factual horizon and responsive screenshots', async ({page}, info) => {
+test('calendar: week/month, full period with preliminary forecast, responsive screenshots', async ({page}, info) => {
   await page.setViewportSize({width:390,height:844});
   await openCalendar(page);
   await expect(page.locator('.calendar-days--week .calendar-day')).toHaveCount(7);
@@ -21,7 +21,18 @@ test('calendar: week/month, factual horizon and responsive screenshots', async (
   await page.getByRole('group', {name:'Режим календаря'}).getByRole('button',{name:'Месяц'}).click();
   expect(await page.locator('.calendar-days--month .calendar-day').count()).toBeGreaterThanOrEqual(28);
   await page.getByRole('button', {name:'Следующий период'}).click();
-  await expect(page.locator('.calendar-day--unformed').first()).toBeVisible();
+  // Beyond the issued horizon the month shows the preliminary forecast, not "unformed" training days.
+  await expect(page.locator('.calendar-day--forecast').first()).toBeVisible();
+  // The full period shows every week to the race date (the questionnaire default is an 8-week cycle).
+  await page.getByRole('group', {name:'Режим календаря'}).getByRole('button',{name:'Весь период'}).click();
+  const weekBlocks = page.locator('.calendar-week-block');
+  expect(await weekBlocks.count()).toBeGreaterThanOrEqual(8);
+  await expect(weekBlocks.first().getByRole('heading', {name:/Неделя 1/})).toBeVisible();
+  // A preliminary day opens read-only: no result entry, no move.
+  await weekBlocks.nth(3).locator('.calendar-day--forecast').first().click();
+  await expect(page.getByText('Предварительный план. Изменяется по результатам тренировок.')).toBeVisible();
+  await expect(page.getByRole('button', {name:'Открыть тренировку'})).toHaveCount(0);
+  await expect(page.getByRole('button', {name:'Перенести', exact:true})).toHaveCount(0);
   await page.getByRole('group', {name:'Режим календаря'}).getByRole('button',{name:'Неделя'}).click();
   await page.setViewportSize({width:1280,height:850});
   await expect(page.getByRole('complementary',{name:'Разделы приложения'}).getByRole('button',{name:'План'})).toBeVisible();
