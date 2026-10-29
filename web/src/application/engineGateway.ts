@@ -9,6 +9,8 @@
  * the only planner.
  */
 import {
+  finalRaceWorkout,
+  taperStartDate,
   EngineError,
   PERFORMANCE_SOURCES,
   createEngine,
@@ -69,7 +71,7 @@ import type {
   YellowReason,
 } from '../../../src/index.ts';
 
-export {EngineError, PERFORMANCE_SOURCES};
+export {EngineError, PERFORMANCE_SOURCES, finalRaceWorkout, taperStartDate};
 
 /** A safe, mechanical view of a thrown value. */
 export interface EngineErrorView {

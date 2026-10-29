@@ -9,6 +9,9 @@ import {durationText, today as todayText} from './copy/text.ts';
 import {compactDuration, intervalStructure, workoutIntervals, paceRangeText as formatPrescribedPace, prescribedPace, treadmillSpeedText} from './workoutInstructions.ts';
 
 export function workoutTitle(workout: Workout): string {
+  const p = workout.protocol;
+  if (p?.intensity === 'R') return 'Повторения R';
+  if (p?.role === 'FINAL') return 'Итоговый контроль 3000 м';
   return workoutTypeText[workout.type].label;
 }
 
@@ -59,6 +62,8 @@ export function workoutRpe(workout: Workout): string {
 }
 
 export function workoutRest(workout: Workout): string | null {
+  const recovery = workout.protocol?.recovery;
+  if (recovery && workout.main.repeats > 1) return `отдых ${recovery.dose.unit === 'METERS' ? recovery.dose.value + ' м' : compactDuration(recovery.dose.value)} ${recovery.mode === 'JOG' ? 'трусцой' : 'трусцой или шагом до восстановления'} только между отрезками`;
   if (workout.main.mode !== 'INTERVALS' || workout.main.repeats <= 1 || workout.restSeconds <= 0) return null;
   return `отдых ${compactDuration(workout.restSeconds)} между отрезками`;
 }
@@ -99,4 +104,12 @@ export function workoutSummaryText(summary: {type: WorkoutType; date: string; mo
 /** Pace range as the engine ordered it. */
 export function paceRangeText(pace: readonly [number, number] | null): string | null {
   return formatPrescribedPace(pace);
+}
+
+/** Distance protocol takes precedence; legacy minute-based workouts remain unchanged. */
+export function workoutWarmup(workout: Workout): string {
+  return workout.protocol?.warmupMeters ? `${workout.protocol.warmupMeters} м E` : workout.warmupMinutes > 0 ? `${workout.warmupMinutes} мин` : 'не предусмотрена';
+}
+export function workoutCooldown(workout: Workout): string {
+  return workout.protocol?.cooldownMeters ? `${workout.protocol.cooldownMeters} м E` : workout.cooldownMinutes > 0 ? `${workout.cooldownMinutes} мин` : 'не предусмотрена';
 }

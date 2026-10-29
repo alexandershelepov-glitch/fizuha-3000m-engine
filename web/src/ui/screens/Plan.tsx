@@ -1,8 +1,9 @@
+import {workoutInstruction} from '../workoutInstructions.ts';
 import '../../calendar.css';
 import {useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
 import {addDays, formatDateLong, formatTime, daysBetween} from '../../application/format.ts';
-import {forecastCycle, taperDaysFor} from '../../application/engineGateway.ts';
+import {finalRaceWorkout, forecastCycle, taperStartDate} from '../../application/engineGateway.ts';
 import type {EngineState, ForecastResult} from '../../application/engineGateway.ts';
 import {previewScheduledMove} from '../../application/workoutSchedule.ts';
 import type {AppStateV1} from '../../application/appState.ts';
@@ -11,7 +12,7 @@ import {calendarDay, forecastByDate, monthDates, mondayOf, periodWeeks, weekDate
 import type {CalendarDay} from '../../application/calendarModel.ts';
 import {actionAvailability, hasPendingResults} from '../../application/invariants.ts';
 import {isSafetyHold, needsPerformanceReview} from '../../application/uiState.ts';
-import {workoutMainDose, workoutIntervalsText, workoutRest, workoutTitle, workoutVolume, workoutPaceRange, workoutSpeedRange, workoutRpe} from '../display.ts';
+import {workoutWarmup, workoutCooldown, workoutMainDose, workoutIntervalsText, workoutRest, workoutTitle, workoutVolume, workoutPaceRange, workoutSpeedRange, workoutRpe} from '../display.ts';
 import {effortCueText, mainModeText, phaseText, phaseWhy, workoutGoalText} from '../copy/values.ts';
 import type {Workout} from '../../application/engineGateway.ts';
 import {common, nav, plan, today as todayText} from '../copy/text.ts';
@@ -52,7 +53,7 @@ function WorkoutParams({workout}: {readonly workout: Workout}): ReactNode {
   const speed = workoutSpeedRange(workout);
   return <div className="calendar-params" aria-label="Параметры тренировки">
     <KeyValue label={todayText.workout.task} value={workoutGoalText[workout.goal]} />
-    <KeyValue label={todayText.workout.warmup} value={workout.warmupMinutes > 0 ? `${workout.warmupMinutes} мин` : 'не предусмотрена'} />
+    <KeyValue label={todayText.workout.warmup} value={workoutWarmup(workout)} />
     <KeyValue label={todayText.workout.volume} value={workoutMainDose(workout)} />
     <KeyValue label={todayText.workout.mode} value={mainModeText[workout.main.mode]} />
     {intervals ? <KeyValue label={todayText.workout.intervals} value={intervals} /> : null}
@@ -60,8 +61,10 @@ function WorkoutParams({workout}: {readonly workout: Workout}): ReactNode {
     {pace ? <KeyValue label={todayText.workout.pace} value={pace} /> : null}
     {speed ? <KeyValue label="Дорожка" value={speed} /> : null}
     <KeyValue label={todayText.workout.rpe} value={`${workoutRpe(workout)} из 10`} />
-    <KeyValue label={todayText.workout.cooldown} value={workout.cooldownMinutes > 0 ? `${workout.cooldownMinutes} мин` : 'не предусмотрена'} />
+    <KeyValue label={todayText.workout.cooldown} value={workoutCooldown(workout)} />
     {workout.effortCues.length > 0 ? <KeyValue label={todayText.workout.cues} value={workout.effortCues.map(cue => effortCueText[cue]).join(' · ')} /> : null}
+    {workout.protocol ? <><ol aria-label="Порядок выполнения">{workoutInstruction(workout).steps.map((step,i)=><li key={i}>{step}</li>)}</ol>
+      {workoutInstruction(workout).notes.map((note,i)=><p className="hint" key={i}>{note}</p>)}</> : null}
   </div>;
 }
 function readBusy(storage: KeyValueStorage | null, cycleId: string): string[] {
@@ -144,7 +147,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
   const pending = hasPendingResults(engineState, today);
   const todayWorkout = queue.find(item => item.scheduledDate === today && item.type !== 'REST') ?? null;
   const hold = isSafetyHold(engineState);
-  const taperStart = addDays(profile.raceDate, -taperDaysFor(decision.capacity, decision.quality));
+  const taperStart = taperStartDate(engineState);
   const canMove = onMove !== undefined && selected.workout !== null && selected.status !== 'completed' &&
     selected.status !== 'skipped' && selected.status !== 'forecast' && selected.status !== 'control' && selected.status !== 'unresolved' &&
     selected.workout.movable &&
@@ -313,7 +316,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
                 <p>{plan.unresolvedText}</p>
               </Notice>
               {selected.workout ? <p className="calendar-muted">Слот: {workoutTitle(selected.workout)}. Параметры не показываются, пока занятие не уточнено.</p> : null}
-            </> : selected.status === 'forecast' || selected.status === 'control' ? <>
+            </> : selected.status === 'forecast' || selected.status === 'control' || selected.status === 'race' && selected.forecast !== null ? <>
               <Notice tone="info" title={selected.status === 'control' ? plan.controlTitle : plan.preliminaryTitle}>
                 <p>{selected.status === 'control' ? plan.controlText : plan.preliminaryText}</p>
               </Notice>
@@ -328,6 +331,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
               <div className="calendar-prescription">
                 <strong>{workoutVolume(selected.workout)}</strong>
                 <WorkoutParams workout={selected.workout} />
+                {selected.status === 'race' && selectedDate <= today ? <Button onClick={() => onNavigate({name:'FINAL_RESULT'})}>Внести итоговый результат</Button> : null}
               </div>
               {selected.result ? <p className="calendar-fact">Записано фактически: {selected.result.result.distanceMeters > 0 ? km(selected.result.result.distanceMeters) : 'дистанция не указана'}. Результат сохранён в истории.</p> : null}
               {selected.status === 'skipped' ? <p className="calendar-fact">Тренировка отмечена как пропущенная. Нагрузка не переносится автоматически.</p> : null}
@@ -387,7 +391,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
           </Card>
           <Card title={plan.taperLabel}><KeyValue label={plan.taper} value={formatDateLong(taperStart)} /><p className="hint">{plan.taperNote}</p></Card>
           <Card title={plan.race}><KeyValue label={plan.race} value={`3000 м · ${formatDateLong(profile.raceDate)}`} /><KeyValue label={plan.goalLabel} value={formatTime(profile.targetTimeSeconds)} /><p className="hint">{plan.raceNote}</p></Card>
-          <Card><p className="paragraph">{needsPerformanceReview(engineState) ? todayText.performanceReview.text : phaseWhy[decision.phase]}</p></Card>
+          <Card><p className="paragraph">{needsPerformanceReview(engineState) ? todayText.performanceReview.text : finalRaceWorkout(engineState) ? 'Восьминедельный цикл №4. Темпы назначены по исходному результату 14:30. Будущие занятия — предварительный план; выполнение и улучшение результата не предполагаются фактами.' : phaseWhy[decision.phase]}</p></Card>
           {pending ? <Notice tone="warn" title={todayText.pendingResult.title}>
             <p>{todayText.pendingResult.text}</p>
             <Button onClick={() => onNavigate({name:'TODAY'})}>{nav.today}</Button>

@@ -8,3 +8,5 @@ export * from './forecast.ts';
 // Public validation surface for the future UI (approved decision 3). Re-exported from the single
 // existing implementation so no validation rule is ever duplicated; `number()` stays internal.
 export { day, addDays, validateEventDate, validateSafety, validateProfile, validateResult } from './validation.ts';
+
+export {finalRaceWorkout} from './methodologyV4.ts';

@@ -1,3 +1,4 @@
+import {finalRaceWorkout} from './engineGateway.ts';
 /** Calendar is a read-only projection of engine facts: no prescriptions or safety decisions here. */
 import type {EngineState, ForecastEntry, Workout, HistoryEntry} from './engineGateway.ts';
 import {addDays} from './format.ts';
@@ -5,7 +6,7 @@ import {addDays} from './format.ts';
 export type CalendarStatus = 'completed' | 'skipped' | 'planned' | 'moved' | 'forecast' | 'control' | 'unresolved' | 'rest' | 'unformed' | 'race';
 /** Days of the preliminary forecast: never facts, never counted together with issued workouts. */
 export const PRELIMINARY_STATUSES: readonly CalendarStatus[] = ['forecast', 'control', 'unresolved'];
-export function isPreliminary(day: CalendarDay): boolean { return PRELIMINARY_STATUSES.includes(day.status); }
+export function isPreliminary(day: CalendarDay): boolean { return PRELIMINARY_STATUSES.includes(day.status) || day.status === 'race' && day.forecast !== null; }
 export interface CalendarDay {
   readonly date: string;
   readonly status: CalendarStatus;
@@ -89,7 +90,7 @@ export function calendarDay(state: EngineState, today: string, date: string, mov
   if (skipped) return {date, status: 'skipped', workout: skipped, result: null, forecast: null};
   const planned = state.queue.find(item => item.type !== 'REST' && item.scheduledDate === date) ?? null;
   if (planned) return {date, status: movedIds.has(planned.id) ? 'moved' : 'planned', workout: planned, result: null, forecast: null};
-  if (date === state.profile.raceDate) return {date, status: 'race', workout: null, result: null, forecast: null};
+  if (date === state.profile.raceDate) return {date, status: 'race', workout: date <= today || forecast.has(date) ? finalRaceWorkout(state) : null, result: null, forecast: date > today ? forecast.get(date) ?? null : null};
   // Preliminary forecast: workouts the engine would issue under the conditional scenario. The
   // checkpoint CONTROL slots needing a real measurement are marked separately. Forecast REST
   // placeholders are plain rest days, exactly like REST entries in the issued queue.
@@ -116,7 +117,7 @@ export function weekSummary(days: readonly CalendarDay[]): CalendarSummary {
   const known = issued.filter(day => day.workout!.main.dose.unit === 'METERS');
   const completed = issued.filter(day => day.status === 'completed');
   const withMeters = completed.filter(day => (day.result?.result.distanceMeters ?? 0) > 0);
-  const preliminary = days.filter(day => day.workout !== null && (day.status === 'forecast' || day.status === 'control'));
+  const preliminary = days.filter(day => day.workout !== null && isPreliminary(day) && day.status !== 'unresolved');
   const preliminaryKnown = preliminary.filter(day => day.workout!.main.dose.unit === 'METERS');
   return {
     assigned: issued.length,

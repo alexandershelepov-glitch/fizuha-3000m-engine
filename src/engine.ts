@@ -1,8 +1,9 @@
+import {eligibleForV4, usesV4, v4RecoveryAllowed, v4Coordinates, v4Workout} from './methodologyV4.ts';
 import type { EngineState, PerformanceSnapshot, Profile, SafetyData, TrainingBreak, Workout, WorkoutResult, WorkoutType } from './models.ts';
 import { PERFORMANCE_SOURCES } from './models.ts';
 import { assessConfidence, assessSafety, decide, taperDays } from './assessment.ts';
 import { classify, yellowFamily } from './feedback.ts';
-import { day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
+import { addDays, day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
 import { EngineError } from './errors.ts';
 import { generateQueue, guardWeeklyLoad, qualityDoseCeiling } from './workouts.ts';
 import {withinRollingWeekBudget} from './weeklyLoad.ts';
@@ -42,6 +43,7 @@ function advanceTo(s: EngineState, now: string): void {
  * later can produce at most one step; missed and unclear weeks never create credits.
  */
 function reviewEasyProgression(s: EngineState, now: string): void {
+  if (usesV4(s)) return;
   const baselineMeters = s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
     ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000;
   s.easyProgression ??= {approvedMetersPer7Days: baselineMeters, lastReviewedBlock: -1, lastIncreaseDate: null};
@@ -129,7 +131,7 @@ function reviewEasyProgression(s: EngineState, now: string): void {
   state.lastIncreaseDate = now;
 }
 function rebuildQueue(s: EngineState, now: string, preserve: Workout[] | null): EngineState {
-  if (day(now) - day(s.lastAssessmentDate) >= 21 || s.profile.performanceMismatch === 'CLEAR') s.checkpointRequired = true;
+  if ((!usesV4(s) && day(now) - day(s.lastAssessmentDate) >= 21) || s.profile.performanceMismatch === 'CLEAR') s.checkpointRequired = true;
   // A checkpoint is a 3000 m time trial: `recordCheckpoint` refuses it (CHECKPOINT_NOT_PERMITTED) until continuous
   // 3 km is confirmed, and `createEngine` already starts with `!performance && canRun3Km`. Demanding an unavailable
   // checkpoint left such users in a dead end (QA issue #23 DEF-002, 12-week audit D-01). The due-rules above are
@@ -152,6 +154,11 @@ export function replan(state: EngineState, now = state.asOf): EngineState {
   // decision 2), so a miss freezes the remaining prescriptions instead of replaying the session.
   return rebuildQueue(s, now, missed.length ? before : null);
 }
+/** Read-only calendar metadata; the UI does not calculate sport phases. */
+export function taperStartDate(state: EngineState): string {
+  return usesV4(state) ? v4Coordinates(state).find(c=>c.week===7 && c.role===0)!.date :
+    addDays(state.profile.raceDate,-taperDays(state.decision.capacity,state.decision.quality));
+}
 export function createEngine(profile: Profile, now: string): EngineState {
   validateProfile(profile, now);
   const state = {
@@ -163,6 +170,7 @@ export function createEngine(profile: Profile, now: string): EngineState {
     easyProgression: {approvedMetersPer7Days: profile.actualRunsPerWeek > 0 && profile.averageWeeklyKm4Weeks > 0 ? profile.averageWeeklyKm4Weeks * 1000 : 1000, lastReviewedBlock: -1, lastIncreaseDate: null},
     runWalkProgression: {stage:0},
   } as unknown as EngineState;
+  if (eligibleForV4(profile, now) && assessSafety(profile.safety) === 'OK') state.methodology = {id:'V4_8W_1430', performanceDate:profile.performance!.date, raceDate:profile.raceDate};
   state.decision = decide(state, now);
   const latest = [...profile.breaks].sort((a, b) => day(b.endDate) - day(a.endDate))[0];
   if (latest && (!profile.performance || day(latest.endDate) >= day(profile.performance.date))) return applyBreak(state, latest, now, false);
@@ -185,6 +193,7 @@ export function applyBreak(state: EngineState, b: TrainingBreak, now: string, ad
   return replan(s, now);
 }
 function progress(s: EngineState, type: WorkoutType): void {
+  if (usesV4(s)) return;
   const dose = s.confirmedDoses[type]; if (!dose) return;
   const step = dose.unit === 'MINUTES' ? s.decision.quality === 'Q2' ? 4 : s.decision.quality === 'Q1' ? 3 : 2 : s.decision.quality === 'Q2' ? 600 : 400;
   // Only volume changes. Speed, repeat length and recovery are preserved.
@@ -228,7 +237,7 @@ export function recordResult(state: EngineState, workoutId: string, result: Work
     if (w.countsAsQuality && w.type !== 'CONTROL') {
       s.reducedQualityUntilConfirmed = false; s.successfulQuality++; if (w.type === 'INTRO_QUALITY') s.successfulIntro++;
       if (w.type === 'SPECIFIC_3K' && w.gateAtPrescription === 'PARTIAL') s.successfulSpecificPartial++;
-      if (c.evaluation === 'GREEN_PLUS') { s.greenPlusIds.push(w.id); if (s.greenPlusIds.length >= 2) s.checkpointRequired = true; }
+      if (c.evaluation === 'GREEN_PLUS' && !usesV4(s)) { s.greenPlusIds.push(w.id); if (s.greenPlusIds.length >= 2) s.checkpointRequired = true; }
       s.confirmedDoses[w.type] = structuredClone(w.main.dose);
       s.doses[w.type] = structuredClone(w.main.dose);
       s.successStreak[w.type] = (s.successStreak[w.type] ?? 0) + 1;
@@ -432,6 +441,15 @@ export function moveWorkout(state: EngineState, id: string, date: string): Engin
     if (dates.some(end => dates.filter(d => d <= end && d > end - 7).length > s.decision.maximumQualityPerWeek)) throw new EngineError('MOVE_QUALITY_LIMIT_VIOLATION');
   }
   w.scheduledDate = date;
+  if (usesV4(s)) {
+    const known = [...s.history.map(h=>h.workout),...s.queue];
+    const ids = new Set([...known.map(w=>w.id),...s.skippedIds]);
+    // Known later cycle roles must also remain possible after this move: do not
+    // accept Sunday long running only to silently drop Monday's quality later.
+    const future = v4Coordinates(s).filter(c=>!(c.week===8 && c.role===2) &&
+      day(c.date)>=day(s.asOf) && !ids.has(`slot-${c.date}`)).map(c=>v4Workout(s,c.week,c.role));
+    if (!v4RecoveryAllowed([...known,...future])) throw new EngineError('MOVE_RECOVERY_VIOLATION');
+  }
   if (!withinRollingWeekBudget(s,[...s.history.map(h=>h.workout),...s.queue],date))
     throw new EngineError('MOVE_WEEKLY_LOAD_LIMIT');
   s.movedWorkouts = [...s.movedWorkouts.filter(other => other.id !== id), structuredClone(w)];

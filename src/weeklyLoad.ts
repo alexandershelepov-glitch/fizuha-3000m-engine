@@ -1,3 +1,4 @@
+import {usesV4, v4ReservationBudget, v4ReservedMeters} from './methodologyV4.ts';
 /**
  * Protective booking of a seven-day training budget. Reservation != measured kilometres.
  *
@@ -15,6 +16,7 @@ import {assessCapacity} from './assessment.ts';
 import {day} from './validation.ts';
 
 export function approvedWeekMeters(s: EngineState): number {
+  if (usesV4(s)) return v4ReservationBudget(s);
   return s.easyProgression?.approvedMetersPer7Days ??
     (s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
       ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000);
@@ -32,6 +34,7 @@ export function scheduledMinutes(w: Workout): number {
 /** null: cannot make a defensible distance reservation from unmeasured effort. */
 export function reservedMetres(s: EngineState, w: Workout): number | null {
   if (w.type === 'REST') return 0;
+  if (w.protocol?.methodology === 'V4_8W_1430') return v4ReservedMeters(w);
   const knownMeters = w.main.dose.unit === 'METERS' ? w.main.dose.value : 0;
   // Run/walk warming and cooling remain actual *time*, not fabricated kilometres.
   if (w.main.mode === 'RUN_WALK') return knownMeters;

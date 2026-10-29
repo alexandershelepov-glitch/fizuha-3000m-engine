@@ -209,7 +209,7 @@ export function prescribedPace(workout: Workout): [number, number] | null {
 
 /** Seconds as a pace per kilometre: "4:54–5:03 /км". */
 export function paceRangeText(pace: readonly [number, number] | null): string | null {
-  return pace === null ? null : `${shortTime(pace[0])}–${shortTime(pace[1])} мин/км`;
+  return pace === null ? null : pace[0] === pace[1] ? `${shortTime(pace[0])} мин/км` : `${shortTime(pace[0])}–${shortTime(pace[1])} мин/км`;
 }
 
 /** Convert the engine-prescribed pace range to an equivalent treadmill speed (no new target). */
@@ -275,7 +275,7 @@ function splitsFor(workout: Workout): InstructionSplit[] {
     return {
       distanceMeters: Math.round(distance),
       seconds,
-      text: copy.splitLine(counts.meters(Math.round(distance)), `${shortTime(seconds[0])}–${shortTime(seconds[1])}`),
+      text: copy.splitLine(counts.meters(Math.round(distance)), seconds[0] === seconds[1] ? shortTime(seconds[0]) : `${shortTime(seconds[0])}–${shortTime(seconds[1])}`),
     };
   });
 }
@@ -357,7 +357,11 @@ function intervalSteps(workout: Workout, splits: readonly InstructionSplit[]): {
     const estimate = estimatedTimeRepeatDistance(workout);
     notes.push(estimate === null ? copy.timeIntervalsNoDistance : copy.timeIntervalsEstimatedDistance(estimate));
   }
-  if (workout.restSeconds > 0 && repeats > 1) {
+  if (workout.protocol?.recovery && repeats > 1) {
+    const recovery = workout.protocol.recovery;
+    const dose = recovery.dose.unit === 'METERS' ? distanceText(recovery.dose.value) : durationText(recovery.dose.value);
+    steps.push(`Между повторениями — ${dose} ${recovery.mode === 'JOG' ? 'очень лёгкой трусцой' : 'очень лёгкой трусцой или шагом, до восстановления'}. Только между отрезками, без паузы после последнего.`);
+  } else if (workout.restSeconds > 0 && repeats > 1) {
     steps.push(copy.restBetweenRepeats(durationText(workout.restSeconds)));
   }
   return {steps, notes};
@@ -454,7 +458,11 @@ export function workoutInstruction(workout: Workout): WorkoutInstruction {
   }
 
   // Warm-up and cool-down are part of the task, not a technical line below it.
-  if (workout.warmupMinutes > 0) steps.push(copy.warmup(workout.warmupMinutes));
+  const protocol = workout.protocol;
+  if (protocol?.warmupMeters) steps.push(`Разминка: ${distanceText(protocol.warmupMeters)} E, ${paceRangeText(protocol.easyPaceSecondsPerKm)}.`);
+  else if (workout.warmupMinutes > 0) steps.push(copy.warmup(workout.warmupMinutes));
+  if (protocol?.dynamicMinutes) steps.push(`Динамические упражнения — ${protocol.dynamicMinutes[0]}–${protocol.dynamicMinutes[1]} мин.`);
+  if (protocol?.strides && !protocol.strides.insideDistance) steps.push(`Перед контролем: ${protocol.strides.repeats} × ${protocol.strides.meters} м плавных ускорений с полным отдыхом между ними.`);
 
   const isInterval = workout.main.mode === 'INTERVALS';
   if (isInterval) {
@@ -465,7 +473,11 @@ export function workoutInstruction(workout: Workout): WorkoutInstruction {
     steps.push(...continuousSteps(workout, paceText));
   }
 
-  if (workout.cooldownMinutes > 0) {
+  if (protocol?.strides?.insideDistance) steps.push(`Внутри назначенной дистанции — ${protocol.strides.repeats} × ${protocol.strides.seconds} с плавных ускорений; между ними минимум ${protocol.strides.minimumRecoverySeconds} с лёгкого бега. Ускорения не увеличивают итоговую дистанцию.`);
+  if (protocol?.firstLastKmEasy) steps.push('Первый и последний километр особенно легко. Разминка и заминка входят в назначенную дистанцию.');
+  if (protocol?.intensity === 'R') notes.push('Быстрые повторения с полным восстановлением. Не спринт на максимум.');
+  if (protocol?.cooldownMeters) steps.push(`Заминка: ${distanceText(protocol.cooldownMeters)} E, ${paceRangeText(protocol.easyPaceSecondsPerKm)}.`);
+  else if (workout.cooldownMinutes > 0) {
     steps.push(isInterval ? copy.cooldownAfterRepeats(workout.cooldownMinutes) : copy.cooldown(workout.cooldownMinutes));
   }
 

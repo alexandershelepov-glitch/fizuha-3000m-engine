@@ -95,7 +95,18 @@ export interface Profile {
   breaks: TrainingBreak[]; safety: SafetyData; performanceMismatch: PerformanceMismatch;
 }
 export interface Dose { unit: DoseUnit; value: number }
+/** Optional additive distance protocol; absent in legacy v1 prescriptions. */
+export interface WorkoutProtocol {
+  methodology: 'V4_8W_1430'; week: number; role: 'QUALITY'|'EASY'|'LONG'|'FINAL';
+  intensity: 'E'|'T'|'I'|'R'|'CONTROL'; easyPaceSecondsPerKm: [number,number];
+  warmupMeters: number; dynamicMinutes: [number,number]|null; cooldownMeters: number;
+  recovery: {dose: {unit:'METERS'|'SECONDS'; value:number}; mode:'JOG'|'JOG_OR_WALK_UNTIL_RECOVERED'; betweenOnly:true}|null;
+  strides: {repeats:number; seconds:number|null; meters:number|null; insideDistance:boolean; minimumRecoverySeconds:number|null; fullRecovery:boolean}|null;
+  repeatSeconds: number|null; firstLastKmEasy:boolean;
+  stage:'BUILD'|'DELOAD'|'PEAK'|'TAPER';
+}
 export interface Workout {
+  protocol?: WorkoutProtocol;
   id: string; scheduledDate: string; type: WorkoutType; goal: WorkoutGoal; priority: number;
   countsAsQuality: boolean; warmupMinutes: number; cooldownMinutes: number;
   main: { mode: WorkoutMainMode; dose: Dose; repeats: number; repeatMeters: number | null; finalRepeatMeters: number | null;
@@ -124,6 +135,7 @@ export interface Decision {
   effectiveSpeedMps: number | null; maximumQualityPerWeek: number; reasons: ReasonCode[];
 }
 export interface EngineState {
+  methodology?: {id:'V4_8W_1430'; performanceDate:string; raceDate:string};
   version: 1; profile: Profile; cycleStartDate: string; asOf: string; decision: Decision;
   queue: Workout[]; history: HistoryEntry[]; skippedIds: string[]; skippedWorkouts: Workout[]; movedWorkouts: Workout[];
   successfulQuality: number; successfulIntro: number; successfulSpecificPartial: number;

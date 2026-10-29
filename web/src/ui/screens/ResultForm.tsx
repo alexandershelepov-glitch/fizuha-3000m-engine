@@ -9,7 +9,7 @@ import type {KeyValueStorage} from '../../application/storage.ts';
 import type {Workout, WorkoutResult} from '../../application/engineGateway.ts';
 import {copyForError} from '../copy/errors.ts';
 import {resultForm as copy} from '../copy/text.ts';
-import {workoutIntervalsText, workoutPaceRange, workoutRpe, workoutTitle} from '../display.ts';
+import {workoutRest, workoutIntervalsText, workoutPaceRange, workoutRpe, workoutTitle} from '../display.ts';
 import {Button} from '../components/Button.tsx';
 import {Card, Notice} from '../components/Layout.tsx';
 import {Choice, Field, TextInput, Toggle} from '../components/Field.tsx';
@@ -243,6 +243,7 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
         )}
         {workout.main.mode === 'INTERVALS' ? (
           <Field id="restSeconds" label={copy.rest.label} error={errorFor('restSeconds')}>
+            {workout.protocol?.recovery?.dose.unit === 'METERS' ? <p className="hint">По плану: {workoutRest(workout)}. Здесь можно указать фактическое время восстановления в секундах.</p> : null}
             <TextInput id="restSeconds" value={draft.restSeconds} onChange={(value) => update({restSeconds: value})} inputMode="numeric" />
           </Field>
         ) : null}

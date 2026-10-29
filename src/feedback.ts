@@ -13,11 +13,16 @@ export function classify(w: Workout, r: WorkoutResult): ClassifiedResult {
     ? r.distanceMeters / (r.durationMinutes * 60) : null;
   const speeds = measuredTotalSpeed !== null ? [measuredTotalSpeed] :
     r.repeats.map(rep => rep.distanceMeters / rep.seconds);
-  const inRangeFraction = w.speedRangeMps
+  // Approved V4 times are whole-second working guides. Accept stopwatch rounding
+  // to the nearest second, not an impossible zero-width floating-point interval.
+  const roundedGuideFraction = w.protocol && w.countsAsQuality && w.speedRangeMps && r.repeats.length
+    ? r.repeats.filter(rep => rep.seconds >= rep.distanceMeters/w.speedRangeMps![1] - .5 - 1e-9 &&
+        rep.seconds <= rep.distanceMeters/w.speedRangeMps![0] + .5 + 1e-9).length/r.repeats.length : null;
+  const inRangeFraction = roundedGuideFraction ?? (w.speedRangeMps
     ? speeds.length
-      ? speeds.filter(v => v >= w.speedRangeMps![0] && v <= w.speedRangeMps![1]).length / speeds.length
+      ? speeds.filter(v => v >= w.speedRangeMps![0] - 1e-9 && v <= w.speedRangeMps![1] + 1e-9).length / speeds.length
       : easyContinuous ? 1 : 0
-    : 1;
+    : 1);
   const speedDropFraction = speeds.length >= 2 ? Math.max(0, 1 - speeds[speeds.length - 1]! / speeds[0]!) : 0;
   const base = {sessionLoad: r.sessionRpe * r.durationMinutes, inRangeFraction, speedDropFraction};
   if (assessSafety(r.safety) === 'STOP') return {...base, evaluation: 'RED', yellowReason: null};

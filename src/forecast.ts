@@ -1,3 +1,4 @@
+import {finalRaceWorkout, usesV4} from './methodologyV4.ts';
 /**
  * Многонедельный прогноз тренировочного цикла до даты норматива (issue #51).
  *
@@ -140,11 +141,20 @@ function conditionalResult(w: Workout): WorkoutResult {
   }
   const rests = w.main.mode === 'INTERVALS' ? Math.max(0, w.main.repeats - 1) : 0;
   // Итог не округляется ниже суммы измеренных отрезков (иначе RESULT_DISTANCE_CONFLICT).
-  const totalMeters = repeats.length > 0 ? repeats.reduce((n, r) => n + r.distanceMeters, 0) : Math.round(distance * 1000) / 1000;
+  let totalMeters = repeats.length > 0 ? repeats.reduce((n, r) => n + r.distanceMeters, 0) : Math.round(distance * 1000) / 1000;
+  let supplementMinutes = 0;
+  if (w.protocol) {
+    const p = w.protocol;
+    const recoveryMeters = p.recovery?.dose.unit === 'METERS' ? rests*p.recovery.dose.value : 0;
+    const extraMeters = p.warmupMeters+p.cooldownMeters+recoveryMeters;
+    const extraMinutes = extraMeters*385/1000/60 + (p.dynamicMinutes?.[0] ?? 0);
+    supplementMinutes = extraMinutes;
+    totalMeters += extraMeters;
+  }
   return {
     date: w.scheduledDate, completionFraction: 1, sessionRpe: (w.targetRpe[0] + w.targetRpe[1]) / 2,
     safety: assumedSafety(),
-    durationMinutes: w.warmupMinutes + w.cooldownMinutes + mainSeconds / 60 + rests * w.restSeconds / 60,
+    durationMinutes: w.warmupMinutes + w.cooldownMinutes + mainSeconds / 60 + rests * w.restSeconds / 60 + supplementMinutes,
     distanceMeters: totalMeters,
     repeats, restSeconds: Array.from({length: rests}, () => w.restSeconds),
     conditions: {}, unexpectedFatigue: false, feedbackConfirmed: true,
@@ -246,7 +256,7 @@ function forecastReservation(base: EngineState, asOf: string, digest: string): F
     const monday = addDays(base.cycleStartDate, W - cycleStart);
     // Правило rebuildQuery на момент фиксации слота в реальной 7-дневной очереди (понедельник − 6):
     const commitDay = W - 6;
-    const checkpointRequired = base.profile.canRun3Km &&
+    const checkpointRequired = !usesV4(base) && base.profile.canRun3Km &&
       (commitDay - day(base.lastAssessmentDate) >= 21 || base.profile.performanceMismatch === 'CLEAR');
     const planning: EngineState = {...base, checkpointRequired, decision: decide(base, monday)};
     let generated: Workout[];
@@ -292,6 +302,9 @@ function forecastReservation(base: EngineState, asOf: string, digest: string): F
     }
   }
   const raceDate = base.profile.raceDate;
+  const finalWorkout = finalRaceWorkout(base);
+  if (finalWorkout) entries.push(makeEntry('CONSERVATIVE',8,finalWorkout,base,false,null,[],
+    'Протокол итогового забега. Назначение события, не результат.'));
   events.push({date: raceDate, kind: 'RACE_DAY', detail: 'День норматива; итоговый результат без реального забега не вводится.', synthetic: false});
   return {
     mode: 'RESERVATION', asOf, cycleStartDate: base.cycleStartDate, raceDate,
@@ -371,6 +384,9 @@ function forecastConditional(base: EngineState, asOf: string, digest: string): F
 
   // День норматива: итог только как прежний известный результат; без измерения — не выдумывается.
   const raceDate = base.profile.raceDate;
+  const finalWorkout = finalRaceWorkout(state);
+  if (finalWorkout) entries.push(makeEntry('CONDITIONAL',8,finalWorkout,state,false,null,[],
+    'Протокол итогового забега. Результат не внесён; допуск зависит от состояния.'));
   const perf = state.profile.performance;
   let finalResultSeconds: number | null = null;
   if (perf === null) {

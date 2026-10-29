@@ -106,7 +106,7 @@ export function defaultResultDraft(workout: Workout): ResultDraft {
     safety: {pain: 0, painIncreasing: false, alteredMovement: false, painWalkingOrRest: false, swelling: false, acuteIllness: false, otherStop: false, needsAssessment: false},
     safetyResponse: 'UNANSWERED',
     // A scheduled five-minute walk is not evidence of a measured 10-minute session.
-    durationMinutes: workout.main.calibration === true ? '' : workout.main.mode === 'RUN_WALK' ? '0' : String(plannedDuration(workout)),
+    durationMinutes: workout.protocol || workout.main.calibration === true ? '' : workout.main.mode === 'RUN_WALK' ? '0' : String(plannedDuration(workout)),
     distanceMeters: '',
     repeats: defaultRepeats(workout),
     restSeconds: String(workout.restSeconds),
