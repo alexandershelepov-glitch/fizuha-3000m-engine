@@ -89,16 +89,13 @@ test('an invalid time is refused locally and never reaches the engine', async ({
   expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBeNull();
 });
 
-test('an engine rejection is reported by code, not by its English message', async ({page}) => {
+test('a race date before the training start is refused on the date step', async ({page}) => {
   await walkToGoal(page);
   await page.getByLabel('Желаемый результат на 3000 м').fill('14:30');
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await page.getByLabel('Дата итогового забега').fill('2020-01-01');
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
-  await page.getByRole('checkbox', {name: /Подтверждаю, что проверил исходные данные/}).check();
-  await page.getByRole('button', {name: 'Рассчитать план'}).click();
-
-  await expect(page.getByText('Дата старта уже прошла')).toBeVisible();
+  await expect(page.getByText('Дата начала должна быть раньше норматива.')).toBeVisible();
   await expect(page).toHaveURL(/step=RACE_DATE$/);
   await expect(page.getByText('EVENT_DATE_PASSED')).toHaveCount(0);
   expect(await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE)).toBeNull();

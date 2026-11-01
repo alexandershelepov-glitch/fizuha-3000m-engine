@@ -70,7 +70,7 @@ test('PROFILE-02 the answers are the only input: no label, hint or option text i
     'actualRunsPerWeek', 'availableRunsPerWeek', 'averageWeeklyKm4Weeks', 'breaks', 'canRun3Km',
     'experience', 'hasBreaks', 'hasResult', 'longestUsualRunKm', 'performanceMismatch',
     'qualityMostlyTolerated', 'qualityRecall', 'qualitySessions8Weeks', 'qualityWeeks8Weeks', 'raceDate', 'raceDateConfirmed',
-    'regularRunningWeeks', 'resultDate', 'resultSource', 'resultTime', 'safety', 'targetTime',
+    'regularRunningWeeks', 'resultDate', 'resultSource', 'resultTime', 'safety', 'startDate', 'targetTime',
   ]);
   for (const value of Object.values(ANSWERS)) {
     assert.notEqual(typeof value, 'undefined');

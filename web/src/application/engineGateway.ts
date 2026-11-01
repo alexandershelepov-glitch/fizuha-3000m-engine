@@ -10,6 +10,7 @@
  */
 import {
   finalRaceWorkout,
+  isV4Candidate,
   taperStartDate,
   EngineError,
   PERFORMANCE_SOURCES,
@@ -71,7 +72,7 @@ import type {
   YellowReason,
 } from '../../../src/index.ts';
 
-export {EngineError, PERFORMANCE_SOURCES, finalRaceWorkout, taperStartDate};
+export {EngineError, PERFORMANCE_SOURCES, finalRaceWorkout, taperStartDate, isV4Candidate};
 
 /** A safe, mechanical view of a thrown value. */
 export interface EngineErrorView {
@@ -90,8 +91,8 @@ export type {
 };
 
 /** Create the engine state for a new cycle. The engine decides everything sport-related. */
-export function createEngineState(profile: Profile, deviceToday: string): EngineState {
-  return createEngine(profile, deviceToday);
+export function createEngineState(profile: Profile, deviceToday: string, startDate = deviceToday): EngineState {
+  return createEngine(profile, deviceToday, startDate);
 }
 
 /** Validation of a profile through the public API, including the event-date rule. */

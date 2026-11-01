@@ -198,7 +198,7 @@ describe('cycle creation', () => {
     }
   });
 
-  test('a race date in the past is refused by the engine and reported on its own step', async () => {
+  test('a race date before the start is refused on its own step', async () => {
     const user = userEvent.setup();
     const storage = memoryStorage();
     render(<App storage={storage} />);
@@ -206,11 +206,10 @@ describe('cycle creation', () => {
     await user.type(screen.getByLabelText('Желаемый результат на 3000 м'), '14:30');
     await click(user, 'Продолжить');   // → RACE_DATE
     fireEvent.change(screen.getByLabelText('Дата итогового забега'), {target: {value: '2020-01-01'}});
-    await click(user, 'Продолжить');   // → REVIEW
-    await click(user, 'Рассчитать план');
+    await click(user, 'Продолжить');
 
     expect(path()).toBe('/questionnaire?step=RACE_DATE');
-    expect(screen.getByText('Дата старта уже прошла')).toBeInTheDocument();
+    expect(screen.getByText('Дата начала должна быть раньше норматива.')).toBeInTheDocument();
     expect(loadActiveCycle(createRepository(storage)).kind).toBe('EMPTY');
   });
 

@@ -55,6 +55,7 @@ export function weekDates(anyDay: string): string[] {
  * the "Весь период" view stacks these weeks without inventing days beyond the cycle.
  */
 export function periodWeeks(state: EngineState): string[] {
+  if (state.methodology && daysBetweenCycle(state) <= 55) return Array.from({length: 8}, (_, i) => addDays(state.cycleStartDate, i * 7));
   const first = mondayOf(state.cycleStartDate);
   const last = mondayOf(state.profile.raceDate);
   const count = Math.round((Date.parse(last + 'T00:00:00Z') - Date.parse(first + 'T00:00:00Z')) / 86400000) / 7 + 1;
@@ -72,6 +73,8 @@ export function monthDates(anyDay: string): string[] {
   const count = Math.round((Date.parse(end + 'T00:00:00Z') - Date.parse(begin + 'T00:00:00Z')) / 86400000) + 1;
   return Array.from({length: count}, (_, i) => addDays(begin, i));
 }
+
+function daysBetweenCycle(state: EngineState): number { return Math.round((Date.parse(state.profile.raceDate+'T00:00:00Z')-Date.parse(state.cycleStartDate+'T00:00:00Z'))/86400000); }
 
 /**
  * One day, three strictly separated sources of truth, in priority order:

@@ -17,6 +17,7 @@ import type {CycleRepository} from './storage.ts';
 export interface NewCycleRequest {
   profile: Profile;
   deviceToday: string;
+  startDate?: string;
   cycleId: string;
   createdAt: string;
   locale: string;
@@ -40,7 +41,7 @@ export function createCycle(repo: CycleRepository, request: NewCycleRequest): Ne
 
   let engineState: EngineState;
   try {
-    engineState = createEngineState(request.profile, request.deviceToday);
+    engineState = createEngineState(request.profile, request.deviceToday, request.startDate ?? request.deviceToday);
   } catch (error) {
     return {ok: false, error: toUiErrorFromUnknown(error), stage: 'CREATE'};
   }

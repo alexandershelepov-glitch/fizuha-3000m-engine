@@ -137,7 +137,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
   const weekBlocks = useMemo(() => {
     if (mode !== 'period') return null;
     return periodWeeks(engineState).map(monday =>
-      weekDates(monday).map(date => calendarDay(engineState, today, date, movedIds, forecastDays)));
+      (engineState.methodology && daysBetween(engineState.cycleStartDate,profile.raceDate) <= 55 ? Array.from({length:7},(_,i)=>addDays(monday,i)) : weekDates(monday)).map(date => calendarDay(engineState, today, date, movedIds, forecastDays)));
   }, [mode, engineState, today, movedIds, forecastDays]);
   const dates = mode === 'week' ? weekDates(viewDate) : mode === 'month' ? monthDates(viewDate) : [];
   const days: CalendarDay[] = weekBlocks ? [] : dates.map(date => calendarDay(engineState, today, date, movedIds, forecastDays));
@@ -205,7 +205,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
     }
   };
 
-  const dayCell = (day: CalendarDay, index: number): ReactNode => {
+  const dayCell = (day: CalendarDay, _index: number): ReactNode => {
     const label = dayName(day, busySet.has(day.date));
     const outside = mode === 'month' && day.date.slice(0, 7) !== viewDate.slice(0, 7);
     const preliminary = day.status === 'forecast' || day.status === 'control' || day.status === 'unresolved';
@@ -213,7 +213,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
       aria-pressed={day.date === selectedDate}
       aria-label={`${formatDateLong(day.date)}: ${day.workout && day.status !== 'unresolved' ? workoutTitle(day.workout) + ', ' : ''}${label}${busySet.has(day.date) ? ', рабочая смена или занят' : ''}`}
       onClick={() => chooseDate(day.date)}>
-      <span className="calendar-day-top"><small>{WEEKDAY[index % 7]}</small><strong>{Number(day.date.slice(-2))}</strong></span>
+      <span className="calendar-day-top"><small>{WEEKDAY[(new Date(day.date+'T00:00:00Z').getUTCDay()+6)%7]}</small><strong>{Number(day.date.slice(-2))}</strong></span>
       <span className="calendar-day-label">{day.status === 'unresolved' ? 'Требует уточнения' : day.workout ? workoutTitle(day.workout) : label}</span>
       {day.workout && day.status !== 'unresolved' ? <span className="calendar-day-volume">{workoutVolume(day.workout)}</span> : null}
       <span className="calendar-day-status">{day.date === today ? 'Сегодня · ' + label : day.workout ? label : (day.status === 'unformed' ? 'Ещё нет назначений' : '')}</span>
@@ -236,6 +236,8 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
           <div>
             <p className="calendar-eyebrow">ФИЗУХА · 3000 м</p>
             <h1>Календарь тренировок</h1>
+            <p>Начало тренировок: {formatDateLong(engineState.cycleStartDate)}</p>
+            {!engineState.methodology && !engineState.finalResultRecorded ? <p>Утверждённый цикл №4 не применён. Условия: результат 14:30 не старше 21 дня к началу, три привычные и доступные тренировки, не менее 8 недель регулярного бега, 15 км в неделю и длительная 6 км, подходящее состояние и отсутствие недавнего перерыва. Дата норматива должна находиться в последней неделе цикла. Показан другой план.</p> : null}
             <p className="calendar-muted">{plan.currentPhase}: {needsPerformanceReview(engineState) ? todayText.performanceReview.title : phaseText[decision.phase].label}</p>
           </div>
           <div className="calendar-deadline">До норматива: {Math.max(0, daysBetween(today, profile.raceDate))} дн.</div>

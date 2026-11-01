@@ -2,7 +2,7 @@ import {useState} from 'react';
 import type {ReactNode} from 'react';
 import {QUESTIONNAIRE_STEPS, STEP_INDEX, healthySafety, buildProfile} from '../../application/questionnaire.ts';
 import type {QualityRecall} from '../../application/questionnaire.ts';
-import {previewGoalDecision} from '../../application/engineGateway.ts';
+import {isV4Candidate, previewGoalDecision} from '../../application/engineGateway.ts';
 import {daysBetween, parseTime} from '../../application/format.ts';
 import {effectiveToday} from '../../application/qaMode.ts';
 import {feasibilityText} from '../copy/values.ts';
@@ -36,6 +36,16 @@ export function Questionnaire({step, store, onNavigate, engineError = null, onDi
   // Field errors appear after the first attempt, not while the user is still filling the step in.
   const [attempted, setAttempted] = useState(false);
   const problems = attempted ? problemsForStep(draft, step) : {};
+  const start = draft.startDate ?? effectiveToday();
+  const span = daysBetween(start, draft.raceDate);
+  const startMs = Date.parse(start + 'T00:00:00Z');
+  const validStart = /^\d{4}-\d{2}-\d{2}$/.test(start) && Number.isFinite(startMs) && new Date(startMs).toISOString().slice(0,10) === start;
+  const builtForDates = buildProfile(draft);
+  const v4Candidate = builtForDates.ok && validStart && isV4Candidate(builtForDates.profile,start);
+  const dateError = !validStart ? 'Укажите дату начала тренировок.' : start < effectiveToday() ? 'Дата начала не может быть раньше сегодняшнего дня.' :
+    start > draft.raceDate ? 'Дата начала должна быть раньше норматива.' :
+    v4Candidate && (span < 53 || span > 55)
+      ? 'Для восьминедельного цикла дата норматива должна приходиться на последнюю неделю: от 53 до 55 дней после начала.' : null;
   const index = STEP_INDEX[step];
   const meta = questionnaire.steps[step];
 
@@ -46,7 +56,7 @@ export function Questionnaire({step, store, onNavigate, engineError = null, onDi
 
   const goNext = (): void => {
     setAttempted(true);
-    if (Object.keys(problemsForStep(draft, step)).length > 0) return;
+    if (Object.keys(problemsForStep(draft, step)).length > 0 || step === 'RACE_DATE' && !!dateError) return;
     onDismissEngineError?.();
     if (step === 'RACE_DATE') update({raceDateConfirmed: true});
     const next = QUESTIONNAIRE_STEPS[QUESTIONNAIRE_STEPS.indexOf(step) + 1];
@@ -85,7 +95,7 @@ export function Questionnaire({step, store, onNavigate, engineError = null, onDi
         {step === 'BREAKS' ? <BreaksStep draft={draft} update={update} error={error} /> : null}
         {step === 'AVAILABILITY' ? <AvailabilityStep draft={draft} update={update} error={error} /> : null}
         {step === 'GOAL' ? <GoalStep draft={draft} update={update} error={error} /> : null}
-        {step === 'RACE_DATE' ? <><RaceDateStep draft={draft} update={update} error={error} />{draft.raceDateConfirmed === true ? <GoalPreview draft={draft} today={effectiveToday()} /> : <p className="hint">Предложена дата через 8 недель. Выберите другую дату или нажмите «Продолжить», чтобы подтвердить эту. Оценка цели появится после выбора срока.</p>}</> : null}
+        {step === 'RACE_DATE' ? <><RaceDateStep draft={draft} update={update} error={error} />{attempted && dateError ? <p role="alert">{dateError}</p> : null}{draft.raceDateConfirmed === true ? <GoalPreview draft={draft} today={effectiveToday()} /> : <p className="hint">Предложена дата через 8 недель. Выберите другую дату или нажмите «Продолжить», чтобы подтвердить эту. Оценка цели появится после выбора срока.</p>}</> : null}
       </Card>
 
       <div className="actions">
@@ -286,9 +296,11 @@ function GoalStep({draft, update, error}: StepProps): ReactNode {
 
 function RaceDateStep({draft, update, error}: StepProps): ReactNode {
   return (
-    <Field id="raceDate" label={questionnaire.fields.raceDate.label} hint="Выберите дату сдачи норматива. На разных устройствах порядок дня и месяца может отличаться." error={error('raceDate')}>
+    <><Field id="startDate" label="Дата начала тренировок" hint="До этой даты тренировки не назначаются.">
+      <TextInput id="startDate" type="date" value={draft.startDate ?? effectiveToday()} onChange={(value) => update({startDate:value})} />
+    </Field><Field id="raceDate" label={questionnaire.fields.raceDate.label} hint="Выберите дату сдачи норматива. На разных устройствах порядок дня и месяца может отличаться." error={error('raceDate')}>
       <TextInput id="raceDate" type="date" value={draft.raceDate} onChange={(value) => update({raceDate: value, raceDateConfirmed: true})} />
-    </Field>
+    </Field></>
   );
 }
 

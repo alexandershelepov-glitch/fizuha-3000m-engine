@@ -48,6 +48,7 @@ export interface QuestionnaireDraft {
   /** Null until the user answers: this decides whether the saved result still describes the runner. */
   readonly performanceMismatch: PerformanceMismatch | null;
   readonly targetTime: string;
+  readonly startDate?: string;
   readonly raceDate: string;
   /** Date explicitly reviewed by the user; the eight-week suggestion is not a decision. */
   readonly raceDateConfirmed?: boolean;
@@ -79,6 +80,7 @@ export function defaultDraft(today: string): QuestionnaireDraft {
     availableRunsPerWeek: '3',
     performanceMismatch: null,
     targetTime: '',
+    startDate: today,
     raceDate: addDaysIso(today, 56),
     raceDateConfirmed: false,
   };

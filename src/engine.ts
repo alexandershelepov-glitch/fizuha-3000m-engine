@@ -159,10 +159,15 @@ export function taperStartDate(state: EngineState): string {
   return usesV4(state) ? v4Coordinates(state).find(c=>c.week===7 && c.role===0)!.date :
     addDays(state.profile.raceDate,-taperDays(state.decision.capacity,state.decision.quality));
 }
-export function createEngine(profile: Profile, now: string): EngineState {
+/** Whether the eight-week template fits the profile when the event falls in week eight. */
+export function isV4Candidate(profile: Profile, startDate: string): boolean {
+  return eligibleForV4({...profile, raceDate:addDays(startDate,54)},startDate) && assessSafety(profile.safety) === 'OK';
+}
+export function createEngine(profile: Profile, now: string, startDate = now): EngineState {
   validateProfile(profile, now);
+  if (day(startDate) < day(now) || day(startDate) > day(profile.raceDate)) throw new EngineError('INVALID_CALENDAR_DATE');
   const state = {
-    version: 1, profile: structuredClone(profile), cycleStartDate: now, asOf: now,
+    version: 1, profile: structuredClone(profile), cycleStartDate: startDate, asOf: now,
     queue: [], history: [], skippedIds: [], skippedWorkouts: [], movedWorkouts: [], successfulQuality: 0, successfulIntro: 0, successfulSpecificPartial: 0,
     greenPlusIds: [], checkpointRequired: !profile.performance && profile.canRun3Km,
     lastAssessmentDate: profile.performance?.date ?? now, relatedYellow: false, reducedQualityUntilConfirmed: false, diagnosticHold: false, progressionBlocked: false,
@@ -170,7 +175,7 @@ export function createEngine(profile: Profile, now: string): EngineState {
     easyProgression: {approvedMetersPer7Days: profile.actualRunsPerWeek > 0 && profile.averageWeeklyKm4Weeks > 0 ? profile.averageWeeklyKm4Weeks * 1000 : 1000, lastReviewedBlock: -1, lastIncreaseDate: null},
     runWalkProgression: {stage:0},
   } as unknown as EngineState;
-  if (eligibleForV4(profile, now) && assessSafety(profile.safety) === 'OK') state.methodology = {id:'V4_8W_1430', performanceDate:profile.performance!.date, raceDate:profile.raceDate};
+  if (day(profile.raceDate) - day(startDate) <= 55 && eligibleForV4(profile, startDate) && assessSafety(profile.safety) === 'OK') state.methodology = {id:'V4_8W_1430', performanceDate:profile.performance!.date, raceDate:profile.raceDate};
   state.decision = decide(state, now);
   const latest = [...profile.breaks].sort((a, b) => day(b.endDate) - day(a.endDate))[0];
   if (latest && (!profile.performance || day(latest.endDate) >= day(profile.performance.date))) return applyBreak(state, latest, now, false);
@@ -331,6 +336,7 @@ export function updateTrainingData(state: EngineState, data: Partial<Omit<Profil
   // The date boundary outranks a prohibited field edit. An explicitly postponed
   // event is allowed if the NEW race date is still in the future (existing PWA behaviour).
   validateEventDate({...s.profile, raceDate:data.raceDate ?? s.profile.raceDate}, now);
+  if (day(data.raceDate ?? s.profile.raceDate) < day(s.cycleStartDate)) throw new EngineError('INVALID_CALENDAR_DATE');
   const before = s.profile.canRun3Km;
   // Runtime callers cannot bypass the dedicated performance/safety/break transitions.
   // Mileage and habitual frequency define the locked baseline for the running cycle.
@@ -432,7 +438,7 @@ export function deserialize(json: string): EngineState {
 export function moveWorkout(state: EngineState, id: string, date: string): EngineState {
   const s = copy(state); const w = s.queue.find(w => w.id === id);
   // A workout can never be moved onto or past the race day, which is the event itself.
-  if (!w || !w.movable || day(date) < day(s.asOf) || day(date) >= day(s.asOf) + 7 || day(date) >= day(s.profile.raceDate)) throw new EngineError('MOVE_OUTSIDE_HORIZON');
+  if (!w || !w.movable || day(date) < day(s.cycleStartDate) || day(date) < day(s.asOf) || day(date) >= day(s.asOf) + 7 || day(date) >= day(s.profile.raceDate)) throw new EngineError('MOVE_OUTSIDE_HORIZON');
   if (s.queue.some(other => other.id !== id && other.scheduledDate === date) || s.history.some(h => h.result.date === date)) throw new EngineError('MOVE_OCCUPIED_DATE');
   if (w.countsAsQuality) {
     const others = [...s.history.filter(h => h.workout.countsAsQuality).map(h => ({date: h.result.date, hours: h.workout.minimumRecoveryHoursBeforeQuality})), ...s.queue.filter(other => other.id !== id && other.countsAsQuality).map(other => ({date: other.scheduledDate, hours: other.minimumRecoveryHoursBeforeQuality}))];

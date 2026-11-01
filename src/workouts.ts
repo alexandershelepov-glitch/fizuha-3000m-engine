@@ -397,6 +397,7 @@ function buildQueue(s: EngineState, now: string, forcedEasy: ReadonlySet<string>
   const longOffset = longRunShares(s) !== null && offsets.length >= 3 ? Math.max(...offsets) : -1;
   for (let delta = 0; delta < 7; delta++) {
     const date = addDays(now, delta);
+    if (day(date) < day(s.cycleStartDate)) continue;
     // Approved decision C1: `raceDate` is the day of the final 3000 m race itself, which the UI
     // shows as a separate event. The ordinary training queue therefore covers only dates strictly
     // before it, so no EASY / LONG_EASY / STRIDES / INTRO_QUALITY / THRESHOLD / VO2 / SPECIFIC_3K /

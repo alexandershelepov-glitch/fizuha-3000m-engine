@@ -63,6 +63,7 @@ export function Review({draft, today, onCreate, onNavigate}: Props): ReactNode {
       <Card>
         <KeyValue label={review.rows.performance} value={draft.hasResult ? timeOrRaw(draft.resultTime) : review.rows.noPerformance} />
         <KeyValue label={review.rows.target} value={timeOrRaw(draft.targetTime)} />
+        <KeyValue label="Начало тренировок" value={formatDateLong(draft.startDate || today)} />
         <KeyValue label={review.rows.raceDate} value={`${formatDateLong(draft.raceDate)} · ${review.rows.daysToRace(daysBetween(today, draft.raceDate))}`} />
         <KeyValue label={review.rows.availability} value={draft.availableRunsPerWeek} />
         <KeyValue label={review.rows.volume} value={`${draft.averageWeeklyKm4Weeks} км`} />
