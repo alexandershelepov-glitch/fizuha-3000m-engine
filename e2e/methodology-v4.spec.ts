@@ -1,5 +1,5 @@
 import {expect,test} from '@playwright/test';
-import {reset,walkToGoal,createCycleAndReachToday,readEngineState,ACTIVE_CYCLE} from './app.ts';
+import {reset,walkToGoal,createCycleAndReachToday,readEngineState,ACTIVE_CYCLE,closeWorkoutCard} from './app.ts';
 
 async function startV4(page: import('@playwright/test').Page) {
   await page.clock.install({time:new Date('2026-11-02T09:00:00Z')});
@@ -37,7 +37,8 @@ test('V4: real questionnaire -> complete calendar, all 24 visible protocols, no 
     const cells=blocks.nth(week).locator('.calendar-day');
     for(const [role,offset] of [0,2,5].entries()) {
       await cells.nth(offset).click();
-      const params=page.locator('.calendar-detail .calendar-params');
+      // The tap opens the full card; its parameters are the same engine prescription.
+      const params=page.locator('.workout-card .calendar-params');
       await expect(params).toBeVisible();
       await expect(params).toContainText(role===0?expected[week]!:role===1?easy[week]!:long[week]!);
       if(role===0 || week===7&&role===2) {
@@ -52,6 +53,7 @@ test('V4: real questionnaire -> complete calendar, all 24 visible protocols, no 
       if(role===0&&[3,7].includes(week)) await expect(params).toContainText('150 м');
       if(week===7&&role===2) await expect(params).toContainText('3 × 80 м');
       checked++;
+      await closeWorkoutCard(page);
     }
   }
   expect(checked).toBe(24);
@@ -72,7 +74,9 @@ test('V4: user-entered T splits close a real workout and survive reload without 
   await page.locator('#durationMinutes').fill('32');
   await page.locator('#distanceMeters').fill('5000');
   for(const i of [0,1]){
-    await page.locator(`#repeat-seconds-${i}`).fill('6:00');
+    // Minutes and seconds are separate numeric fields: no colon has to be typed on the phone.
+    await page.locator(`#repeat-seconds-${i}-minutes`).fill('6');
+    await page.locator(`#repeat-seconds-${i}-seconds`).fill('00');
     await page.locator(`#repeat-meters-${i}`).fill('1143');
   }
   await page.getByRole('button',{name:'Сохранить результат',exact:true}).click();

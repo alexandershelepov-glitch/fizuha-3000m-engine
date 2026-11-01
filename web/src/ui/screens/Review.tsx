@@ -1,7 +1,10 @@
 import {useState} from 'react';
 import type {ReactNode} from 'react';
 import {daysBetween, formatDateLong, formatTime, parseTime} from '../../application/format.ts';
+import {buildProfile} from '../../application/questionnaire.ts';
 import type {QuestionnaireDraft} from '../../application/questionnaire.ts';
+import {pendingMethodologyView} from '../methodology.ts';
+import {methodologyCopy, reasonsSentence} from '../copy/methodology.ts';
 import {safetyHasFlags} from '../display.ts';
 import {copyForError} from '../copy/errors.ts';
 import {breakReasonText, mismatchText} from '../copy/values.ts';
@@ -43,6 +46,10 @@ export function Review({draft, today, onCreate, onNavigate}: Props): ReactNode {
 
   const engineError = outcome?.kind === 'ENGINE_ERROR' ? outcome.error : null;
   const copy = engineError ? copyForError(engineError) : null;
+  // The last checkpoint before the cycle exists: say exactly which methodology the button creates.
+  const startDate = draft.startDate || today;
+  const built = buildProfile(draft);
+  const methodology = built.ok ? pendingMethodologyView(built.profile, startDate) : null;
 
   return (
     <div className="screen">
@@ -65,6 +72,7 @@ export function Review({draft, today, onCreate, onNavigate}: Props): ReactNode {
         <KeyValue label={review.rows.target} value={timeOrRaw(draft.targetTime)} />
         <KeyValue label="Начало тренировок" value={formatDateLong(draft.startDate || today)} />
         <KeyValue label={review.rows.raceDate} value={`${formatDateLong(draft.raceDate)} · ${review.rows.daysToRace(daysBetween(today, draft.raceDate))}`} />
+        {methodology === null ? null : <KeyValue label={methodologyCopy.title} value={methodology.title} />}
         <KeyValue label={review.rows.availability} value={draft.availableRunsPerWeek} />
         <KeyValue label={review.rows.volume} value={`${draft.averageWeeklyKm4Weeks} км`} />
         <KeyValue label={review.rows.quality} value={draft.qualityRecall === 'EXACT' || draft.qualityRecall === undefined
@@ -77,6 +85,19 @@ export function Review({draft, today, onCreate, onNavigate}: Props): ReactNode {
         {/* Review is only reachable once the draft validates, so an unanswered mismatch cannot render. */}
         <KeyValue label={review.rows.mismatch} value={draft.performanceMismatch === null ? '—' : mismatchText[draft.performanceMismatch]} />
       </Card>
+
+      {methodology === null ? null : methodology.active ? (
+        <Notice tone="info" title={methodology.title}>
+          <p>{methodology.note}</p>
+          <p className="hint">{`${formatDateLong(startDate)} — ${formatDateLong(draft.raceDate)}. ${methodologyCopy.futureCycleNote}`}</p>
+        </Notice>
+      ) : (
+        <Notice tone="warn" title={methodology.title}>
+          <p>Причины: {reasonsSentence(methodology.reasons)}.</p>
+          <p className="hint">{methodologyCopy.windowRule}</p>
+          <p className="hint">{methodologyCopy.consequence}</p>
+        </Notice>
+      )}
 
       <Checkbox id="inputs-confirmed" checked={inputsConfirmed} onChange={setInputsConfirmed}
         label="Подтверждаю, что проверил исходные данные"

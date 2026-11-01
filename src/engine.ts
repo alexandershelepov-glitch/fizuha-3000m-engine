@@ -1,4 +1,5 @@
-import {eligibleForV4, usesV4, v4RecoveryAllowed, v4Coordinates, v4Workout} from './methodologyV4.ts';
+import {eligibleForV4, suggestedRaceDate, usesV4, v4Blockers, v4RecoveryAllowed, v4Coordinates, v4Workout} from './methodologyV4.ts';
+import type {V4Blocker} from './methodologyV4.ts';
 import type { EngineState, PerformanceSnapshot, Profile, SafetyData, TrainingBreak, Workout, WorkoutResult, WorkoutType } from './models.ts';
 import { PERFORMANCE_SOURCES } from './models.ts';
 import { assessConfidence, assessSafety, decide, taperDays } from './assessment.ts';
@@ -159,9 +160,47 @@ export function taperStartDate(state: EngineState): string {
   return usesV4(state) ? v4Coordinates(state).find(c=>c.week===7 && c.role===0)!.date :
     addDays(state.profile.raceDate,-taperDays(state.decision.capacity,state.decision.quality));
 }
+export interface V4Status {
+  /** True only when the approved cycle will actually be enrolled at creation. */
+  readonly eligible: boolean;
+  readonly blockers: readonly V4Blocker[];
+  /** Days from the start date to the event; 0 when the dates are not usable. */
+  readonly lengthDays: number;
+  /** Event date that makes the approved eight-week cycle applicable. */
+  readonly suggestedRaceDate: string;
+}
+
+/**
+ * Why methodology v4 would or would not be prescribed for a new cycle.
+ *
+ * The same reader feeds the questionnaire preview and the review screen, so the app can never say
+ * "eight weeks" and then create a legacy plan. Safety is added here because it is assessed by the
+ * engine, not by the calendar rules in `v4Blockers`.
+ */
+export function v4Status(profile: Profile, startDate: string): V4Status {
+  const blockers: V4Blocker[] = [...v4Blockers(profile, startDate)];
+  if (!blockers.includes('INVALID_DATES') && assessSafety(profile.safety) !== 'OK' && !blockers.includes('SAFETY')) {
+    blockers.push('SAFETY');
+  }
+  let lengthDays = 0;
+  try { lengthDays = day(profile.raceDate) - day(startDate); } catch { lengthDays = 0; }
+  // A malformed start date must not throw out of a read-only status reader.
+  let suggested = profile.raceDate;
+  try { suggested = suggestedRaceDate(startDate); } catch { suggested = profile.raceDate; }
+  return {eligible: blockers.length === 0, blockers, lengthDays, suggestedRaceDate: suggested};
+}
+
+/** Whether the approved eight-week methodology is actually driving the saved cycle right now.
+ * A saved cycle can keep its enrollment while protective logic temporarily replaces the plan; the
+ * UI must show which of the two is true instead of guessing from the stored label.
+ */
+export function v4InEffect(state: EngineState): boolean {
+  return usesV4(state);
+}
+
 /** Whether the eight-week template fits the profile when the event falls in week eight. */
 export function isV4Candidate(profile: Profile, startDate: string): boolean {
-  return eligibleForV4({...profile, raceDate:addDays(startDate,54)},startDate) && assessSafety(profile.safety) === 'OK';
+  return eligibleForV4({...profile, raceDate:suggestedRaceDate(startDate)},startDate) && assessSafety(profile.safety) === 'OK';
 }
 export function createEngine(profile: Profile, now: string, startDate = now): EngineState {
   validateProfile(profile, now);
@@ -175,7 +214,9 @@ export function createEngine(profile: Profile, now: string, startDate = now): En
     easyProgression: {approvedMetersPer7Days: profile.actualRunsPerWeek > 0 && profile.averageWeeklyKm4Weeks > 0 ? profile.averageWeeklyKm4Weeks * 1000 : 1000, lastReviewedBlock: -1, lastIncreaseDate: null},
     runWalkProgression: {stage:0},
   } as unknown as EngineState;
-  if (day(profile.raceDate) - day(startDate) <= 55 && eligibleForV4(profile, startDate) && assessSafety(profile.safety) === 'OK') state.methodology = {id:'V4_8W_1430', performanceDate:profile.performance!.date, raceDate:profile.raceDate};
+  // Enrollment reads the one shared entry rule: the calendar window is part of `eligibleForV4`,
+  // so a date the app suggests can never be a date this cycle refuses.
+  if (eligibleForV4(profile, startDate) && assessSafety(profile.safety) === 'OK') state.methodology = {id:'V4_8W_1430', performanceDate:profile.performance!.date, raceDate:profile.raceDate};
   state.decision = decide(state, now);
   const latest = [...profile.breaks].sort((a, b) => day(b.endDate) - day(a.endDate))[0];
   if (latest && (!profile.performance || day(latest.endDate) >= day(profile.performance.date))) return applyBreak(state, latest, now, false);

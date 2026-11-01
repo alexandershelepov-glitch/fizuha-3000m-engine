@@ -55,11 +55,26 @@ export function weekDates(anyDay: string): string[] {
  * the "Весь период" view stacks these weeks without inventing days beyond the cycle.
  */
 export function periodWeeks(state: EngineState): string[] {
-  if (state.methodology && daysBetweenCycle(state) <= 55) return Array.from({length: 8}, (_, i) => addDays(state.cycleStartDate, i * 7));
+  // An enrolled eight-week cycle owns its own week boundaries: eight consecutive weeks from its
+  // start date, regardless of the weekday it begins on.
+  if (state.methodology) return Array.from({length: 8}, (_, i) => addDays(state.cycleStartDate, i * 7));
   const first = mondayOf(state.cycleStartDate);
   const last = mondayOf(state.profile.raceDate);
   const count = Math.round((Date.parse(last + 'T00:00:00Z') - Date.parse(first + 'T00:00:00Z')) / 86400000) / 7 + 1;
   return Array.from({length: count}, (_, i) => addDays(first, i * 7));
+}
+
+/**
+ * The seven days of the cycle week that contains `anyDay`.
+ *
+ * An enrolled eight-week cycle owns its own week boundaries (it may start on any weekday), so the
+ * weekly summary must use the same week as the calendar blocks instead of the calendar Monday.
+ */
+export function cycleWeekDates(state: EngineState, anyDay: string): string[] {
+  if (!state.methodology) return weekDates(anyDay);
+  const offset = Math.floor((Date.parse(anyDay + 'T00:00:00Z') - Date.parse(state.cycleStartDate + 'T00:00:00Z')) / (7 * 86400000));
+  const start = addDays(state.cycleStartDate, offset * 7);
+  return Array.from({length: 7}, (_, i) => addDays(start, i));
 }
 
 /** The calendar always displays whole ISO weeks, including leading/trailing month days. */
@@ -74,7 +89,6 @@ export function monthDates(anyDay: string): string[] {
   return Array.from({length: count}, (_, i) => addDays(begin, i));
 }
 
-function daysBetweenCycle(state: EngineState): number { return Math.round((Date.parse(state.profile.raceDate+'T00:00:00Z')-Date.parse(state.cycleStartDate+'T00:00:00Z'))/86400000); }
 
 /**
  * One day, three strictly separated sources of truth, in priority order:

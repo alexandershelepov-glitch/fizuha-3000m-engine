@@ -1,5 +1,5 @@
 import {expect,test} from '@playwright/test';
-import {reset,createCycleAndReachToday,ACTIVE_CYCLE,readEngineState} from './app.ts';
+import {reset,createCycleAndReachToday,ACTIVE_CYCLE,readEngineState,closeWorkoutCard} from './app.ts';
 
 for(const scenario of [
   {today:'2026-11-01',start:'2026-11-02',race:'2026-12-26',label:'2 ноября 2026',km:'16',long:'6',eligible:true},
@@ -33,7 +33,9 @@ for(const scenario of [
   await page.getByRole('navigation',{name:'Основные разделы'}).getByText('План').click();
   await expect(page.getByText(/Начало тренировок:/)).toContainText(scenario.label);
   if(!scenario.eligible){
-    await expect(page.getByText(/Утверждённый цикл №4 не применён/)).toContainText('15 км в неделю');
+    const note=page.locator('.calendar-methodology-note');
+    await expect(note).toContainText('Общий план: методика №4 не применена');
+    await expect(note).toContainText('меньше 15 км в неделю');
     expect(raw.methodology).toBeUndefined();return;
   }
   const blocks=page.locator('.calendar-week-block');await expect(blocks).toHaveCount(8);
@@ -44,14 +46,17 @@ for(const scenario of [
   const long=['5500 м','6000 м','6500 м','6000 м','7000 м','7500 м','6000 м','3000 м'];
   for(let w=0;w<8;w++) for(const [role,offset] of [0,2,5].entries()){
     await blocks.nth(w).locator('.calendar-day').nth(offset).click();
-    const params=page.locator('.calendar-detail .calendar-params');
+    // Each tap opens the full card for that day.
+    const params=page.locator('.workout-card .calendar-params');
     await expect(params).toContainText(role===0?quality[w]!:role===1?easy[w]!:long[w]!);
     if(role===0){await expect(params).toContainText(w===7?'1200 м E':'1500 м E');await expect(params).toContainText(w===7?'600 м E':'800 м E');await expect(params).toContainText(paces[w]!);await expect(params).toContainText(recovery[w]!);}
     if(role!==0 && !(w===7&&role===2)) await expect(params).toContainText('6:05–6:45');
     if(role===1 && [0,2,4,6].includes(w)) await expect(params).toContainText('4 × 15 с');
     if(w===7&&role===2) await expect(params).toContainText('3 × 80 м');
+    await closeWorkoutCard(page);
   }
   await blocks.first().locator('.calendar-day').first().click();
+  await closeWorkoutCard(page);
   await page.locator('.calendar-detail').getByRole('button',{name:'Открыть тренировку'}).click();
   await expect(page.getByRole('button',{name:'Внести результат',exact:true})).toHaveCount(0);
   await page.getByRole('navigation',{name:'Основные разделы'}).getByText('План').click();

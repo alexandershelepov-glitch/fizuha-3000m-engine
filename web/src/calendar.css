@@ -160,3 +160,63 @@
 .calendar-stats--preliminary { margin-top: 8px; opacity: .9; border-top: 1px dashed currentColor; padding-top: 8px; }
 .calendar-day--unresolved { border-style: dashed; border-color: #c27c0e; }
 .calendar-params { display: grid; gap: 2px; margin-top: 6px; }
+
+/* Methodology status: which plan this cycle uses, and — when the approved one does not apply —
+   the concrete unmet conditions, read from the engine rather than guessed by the UI. */
+.calendar-methodology { margin: 6px 0 0; font-size: 12px; font-weight: 750; color: #116f63; }
+.calendar-methodology-note { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; padding: 10px 12px;
+  border: 1px solid #e6d9c2; background: #fdf9f1; border-radius: 10px; font-size: 12px; color: #7a5a2e; }
+.calendar-methodology-note strong { color: #8a5f1f; }
+.calendar-methodology-note .hint { color: #8a7150; }
+
+/* Full workout card, opened from a calendar day. It is an overlay so the reader never has to hunt
+   for the selected session at the bottom of a long mobile page, and it scrolls on its own. */
+.workout-card {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  background: #f4f7f9;
+  color: var(--calendar-ink, #1a3344);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.workout-card__bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fff;
+  border-bottom: 1px solid var(--calendar-line, #dfe7eb);
+}
+.workout-card__back {
+  border: 0;
+  background: transparent;
+  min-height: 44px;
+  padding: 10px 8px;
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 750;
+  color: #0f7c6f;
+  cursor: pointer;
+}
+.workout-card__back:focus-visible { outline: 3px solid #116e84; outline-offset: 2px; }
+.workout-card__status { font-size: 11px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; color: #6d8190; }
+.workout-card__body { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 720px; margin: 0 auto; padding: 14px 14px 48px; }
+.workout-card__head h1 { font-size: clamp(21px, 4.6vw, 28px); line-height: 1.2; letter-spacing: -.03em; margin: 4px 0; }
+.workout-card__type { font-size: 13px; color: #506779; margin: 0; }
+.workout-card .card { background: #fff; border: 1px solid var(--calendar-line, #dfe7eb); border-radius: 14px; box-shadow: 0 1px 2px #1b344308; }
+.workout-card .hint, .workout-card .paragraph, .workout-card .kv__label { color: #647e8d; }
+.workout-card .actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 4px; }
+.workout-card .steps, .workout-card .list { padding-left: 20px; }
+@media (min-width: 1024px) {
+  .workout-card { background: #18303d73; align-items: center; }
+  .workout-card__bar { width: 100%; border-radius: 0; }
+  .workout-card__body { background: #f4f7f9; border-radius: 16px; margin: 18px auto 48px; padding: 18px 20px 28px; box-shadow: 0 24px 60px #10222c40; }
+}

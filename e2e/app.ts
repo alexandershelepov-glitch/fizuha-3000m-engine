@@ -97,11 +97,21 @@ export async function readActiveCycle(page: Page): Promise<StoredCycle> {
   return JSON.parse(stored) as StoredCycle;
 }
 
-export async function readEngineState(page: Page): Promise<{history: unknown[]; queue: {id: string; scheduledDate: string; type: string}[]; asOf: string; checkpointRequired: boolean; profile: {performance: {timeSeconds: number} | null; raceDate: string}}> {
+export interface EngineSnapshot {
+  history: {workout: {id: string; scheduledDate: string; type: string}; result: {repeats: {seconds: number; distanceMeters: number}[]}}[];
+  queue: {id: string; scheduledDate: string; type: string}[];
+  asOf: string;
+  cycleStartDate: string;
+  checkpointRequired: boolean;
+  methodology?: {id: string; performanceDate: string; raceDate: string};
+  profile: {performance: {timeSeconds: number} | null; raceDate: string};
+}
+
+export async function readEngineState(page: Page): Promise<EngineSnapshot> {
   const stored = await page.evaluate((key) => window.localStorage.getItem(key), ACTIVE_CYCLE);
   if (stored === null) throw new Error('no active cycle is stored');
   const envelope = JSON.parse(stored) as {cycle: {engineState: string}};
-  return JSON.parse(envelope.cycle.engineState) as {history: unknown[]; queue: {id: string; scheduledDate: string; type: string}[]; asOf: string; checkpointRequired: boolean; profile: {performance: {timeSeconds: number} | null; raceDate: string}};
+  return JSON.parse(envelope.cycle.engineState) as EngineSnapshot;
 }
 
 /** The questionnaire answered without a current result, so the engine asks for a checkpoint. */
@@ -123,4 +133,12 @@ export async function fillQuestionnaireWithoutResult(page: Page): Promise<void> 
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await page.getByRole('button', {name: 'Продолжить', exact: true}).click();
   await expect(page.getByText('Проверьте данные')).toBeVisible();
+}
+
+/** Every calendar day with a workout opens a full card; close it to keep working on the calendar. */
+export async function closeWorkoutCard(page: Page): Promise<void> {
+  const card = page.getByRole('dialog');
+  if (await card.count() === 0) return;
+  await page.getByRole('button', {name: 'Вернуться к календарю'}).click();
+  await card.waitFor({state: 'detached'});
 }

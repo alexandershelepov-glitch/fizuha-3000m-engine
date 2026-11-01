@@ -1,4 +1,3 @@
-import {workoutInstruction} from '../workoutInstructions.ts';
 import '../../calendar.css';
 import {useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
@@ -8,13 +7,15 @@ import type {EngineState, ForecastResult} from '../../application/engineGateway.
 import {previewScheduledMove} from '../../application/workoutSchedule.ts';
 import type {AppStateV1} from '../../application/appState.ts';
 import type {KeyValueStorage} from '../../application/storage.ts';
-import {calendarDay, forecastByDate, monthDates, mondayOf, periodWeeks, weekDates, weekSummary} from '../../application/calendarModel.ts';
+import {calendarDay, cycleWeekDates, forecastByDate, monthDates, mondayOf, periodWeeks, weekDates, weekSummary} from '../../application/calendarModel.ts';
 import type {CalendarDay} from '../../application/calendarModel.ts';
 import {actionAvailability, hasPendingResults} from '../../application/invariants.ts';
 import {isSafetyHold, needsPerformanceReview} from '../../application/uiState.ts';
-import {workoutWarmup, workoutCooldown, workoutMainDose, workoutIntervalsText, workoutRest, workoutTitle, workoutVolume, workoutPaceRange, workoutSpeedRange, workoutRpe} from '../display.ts';
-import {effortCueText, mainModeText, phaseText, phaseWhy, workoutGoalText} from '../copy/values.ts';
-import type {Workout} from '../../application/engineGateway.ts';
+import {WorkoutCard, WorkoutParams} from './WorkoutCard.tsx';
+import {methodologyView} from '../methodology.ts';
+import {methodologyCopy, reasonsSentence} from '../copy/methodology.ts';
+import {workoutTitle, workoutVolume} from '../display.ts';
+import {phaseText, phaseWhy} from '../copy/values.ts';
 import {common, nav, plan, today as todayText} from '../copy/text.ts';
 import {copyForError} from '../copy/errors.ts';
 import {Button} from '../components/Button.tsx';
@@ -44,28 +45,6 @@ function readMode(storage: KeyValueStorage | null, cycleId: string | null): Mode
     const raw = storage.getItem(MODE_PREFIX + cycleId);
     return raw === 'week' || raw === 'month' || raw === 'period' ? raw : 'period';
   } catch { return 'period'; }
-}
-/** Every parameter the engine prescribed, read-only; the same fields as the workout card. */
-function WorkoutParams({workout}: {readonly workout: Workout}): ReactNode {
-  const intervals = workoutIntervalsText(workout);
-  const rest = workoutRest(workout);
-  const pace = workoutPaceRange(workout);
-  const speed = workoutSpeedRange(workout);
-  return <div className="calendar-params" aria-label="Параметры тренировки">
-    <KeyValue label={todayText.workout.task} value={workoutGoalText[workout.goal]} />
-    <KeyValue label={todayText.workout.warmup} value={workoutWarmup(workout)} />
-    <KeyValue label={todayText.workout.volume} value={workoutMainDose(workout)} />
-    <KeyValue label={todayText.workout.mode} value={mainModeText[workout.main.mode]} />
-    {intervals ? <KeyValue label={todayText.workout.intervals} value={intervals} /> : null}
-    {rest ? <KeyValue label={todayText.workout.rest} value={rest.replace('отдых ', '')} /> : null}
-    {pace ? <KeyValue label={todayText.workout.pace} value={pace} /> : null}
-    {speed ? <KeyValue label="Дорожка" value={speed} /> : null}
-    <KeyValue label={todayText.workout.rpe} value={`${workoutRpe(workout)} из 10`} />
-    <KeyValue label={todayText.workout.cooldown} value={workoutCooldown(workout)} />
-    {workout.effortCues.length > 0 ? <KeyValue label={todayText.workout.cues} value={workout.effortCues.map(cue => effortCueText[cue]).join(' · ')} /> : null}
-    {workout.protocol ? <><ol aria-label="Порядок выполнения">{workoutInstruction(workout).steps.map((step,i)=><li key={i}>{step}</li>)}</ol>
-      {workoutInstruction(workout).notes.map((note,i)=><p className="hint" key={i}>{note}</p>)}</> : null}
-  </div>;
 }
 function readBusy(storage: KeyValueStorage | null, cycleId: string): string[] {
   if (!storage) return [];
@@ -115,6 +94,9 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
   const [notice, setNotice] = useState<string | null>(null);
   const [busyDates, setBusyDates] = useState<string[]>(() => cycleId ? readBusy(storage ?? null, cycleId) : []);
   const [busyError, setBusyError] = useState(false);
+  /** The full card of the tapped day: the calendar never sends the reader to the bottom of a page. */
+  const [cardOpen, setCardOpen] = useState(false);
+  const methodology = useMemo(() => methodologyView(engineState), [engineState]);
   const busySet = useMemo(() => new Set(busyDates), [busyDates]);
   const movedIds = useMemo(() => new Set([
     ...(appState?.events.filter(event => event.type === 'WORKOUT_MOVED').map(event => event.workoutId) ?? []),
@@ -136,14 +118,16 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
   const forecastDays = useMemo(() => forecastByDate(forecast?.entries ?? []), [forecast]);
   const weekBlocks = useMemo(() => {
     if (mode !== 'period') return null;
-    return periodWeeks(engineState).map(monday =>
-      (engineState.methodology && daysBetween(engineState.cycleStartDate,profile.raceDate) <= 55 ? Array.from({length:7},(_,i)=>addDays(monday,i)) : weekDates(monday)).map(date => calendarDay(engineState, today, date, movedIds, forecastDays)));
+    return periodWeeks(engineState).map(weekStart =>
+      (engineState.methodology ? Array.from({length:7},(_,i)=>addDays(weekStart,i)) : weekDates(weekStart)).map(date => calendarDay(engineState, today, date, movedIds, forecastDays)));
   }, [mode, engineState, today, movedIds, forecastDays]);
   const dates = mode === 'week' ? weekDates(viewDate) : mode === 'month' ? monthDates(viewDate) : [];
   const days: CalendarDay[] = weekBlocks ? [] : dates.map(date => calendarDay(engineState, today, date, movedIds, forecastDays));
   const selected = calendarDay(engineState, today, selectedDate, movedIds, forecastDays);
   const summaryDate = mode === 'week' ? viewDate : selectedDate;
-  const summary = weekSummary(weekDates(summaryDate).map(date => calendarDay(engineState, today, date, movedIds, forecastDays)));
+  // The summary follows the same week as the blocks: an eight-week cycle may start on any weekday.
+  const summaryDates = cycleWeekDates(engineState, summaryDate);
+  const summary = weekSummary(summaryDates.map(date => calendarDay(engineState, today, date, movedIds, forecastDays)));
   const pending = hasPendingResults(engineState, today);
   const todayWorkout = queue.find(item => item.scheduledDate === today && item.type !== 'REST') ?? null;
   const hold = isSafetyHold(engineState);
@@ -212,7 +196,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
     return <button type="button" key={day.date} className={`calendar-day calendar-day--${day.status}${day.workout?.countsAsQuality ? ' calendar-day--quality' : ''}${day.date === today ? ' calendar-day--today' : ''}${selectedDate === day.date ? ' calendar-day--selected' : ''}${outside ? ' calendar-day--outside' : ''}${preliminary ? ' calendar-day--preliminary' : ''}`}
       aria-pressed={day.date === selectedDate}
       aria-label={`${formatDateLong(day.date)}: ${day.workout && day.status !== 'unresolved' ? workoutTitle(day.workout) + ', ' : ''}${label}${busySet.has(day.date) ? ', рабочая смена или занят' : ''}`}
-      onClick={() => chooseDate(day.date)}>
+      onClick={() => { chooseDate(day.date); if (day.workout && day.status !== 'unresolved') setCardOpen(true); }}>
       <span className="calendar-day-top"><small>{WEEKDAY[(new Date(day.date+'T00:00:00Z').getUTCDay()+6)%7]}</small><strong>{Number(day.date.slice(-2))}</strong></span>
       <span className="calendar-day-label">{day.status === 'unresolved' ? 'Требует уточнения' : day.workout ? workoutTitle(day.workout) : label}</span>
       {day.workout && day.status !== 'unresolved' ? <span className="calendar-day-volume">{workoutVolume(day.workout)}</span> : null}
@@ -237,7 +221,12 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
             <p className="calendar-eyebrow">ФИЗУХА · 3000 м</p>
             <h1>Календарь тренировок</h1>
             <p>Начало тренировок: {formatDateLong(engineState.cycleStartDate)}</p>
-            {!engineState.methodology && !engineState.finalResultRecorded ? <p>Утверждённый цикл №4 не применён. Условия: результат 14:30 не старше 21 дня к началу, три привычные и доступные тренировки, не менее 8 недель регулярного бега, 15 км в неделю и длительная 6 км, подходящее состояние и отсутствие недавнего перерыва. Дата норматива должна находиться в последней неделе цикла. Показан другой план.</p> : null}
+            {methodology.active ? <p className="calendar-methodology">{methodologyCopy.activeTitle}</p> : null}
+            {!methodology.active && !engineState.finalResultRecorded ? <div className="calendar-methodology-note" role="note">
+              <strong>{methodology.title}</strong>
+              {methodology.reasons.length > 0 ? <span>{methodologyCopy.consequence.split('. ')[0]}. Причины: {reasonsSentence(methodology.reasons)}. {methodologyCopy.windowRule}</span> : <span>{methodology.note}</span>}
+              <span className="hint">{methodologyCopy.consequence}</span>
+            </div> : null}
             <p className="calendar-muted">{plan.currentPhase}: {needsPerformanceReview(engineState) ? todayText.performanceReview.title : phaseText[decision.phase].label}</p>
           </div>
           <div className="calendar-deadline">До норматива: {Math.max(0, daysBetween(today, profile.raceDate))} дн.</div>
@@ -259,7 +248,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
         {todayWorkout ? <div className="calendar-today-action"><Button onClick={() => onNavigate({name:'WORKOUT', id: todayWorkout.id})}>{plan.openToday}</Button></div> : null}
 
         <section className="calendar-summary" aria-label="Итоги выбранной недели">
-          <div className="calendar-summary-title"><strong>Итоги недели</strong><span>{formatDateLong(mondayOf(summaryDate))} — {formatDateLong(addDays(mondayOf(summaryDate), 6))}</span></div>
+          <div className="calendar-summary-title"><strong>Итоги недели</strong><span>{formatDateLong(summaryDates[0]!)} — {formatDateLong(summaryDates[6]!)}</span></div>
           <div className="calendar-stats">
             <div><strong>{summary.assigned}</strong><span>Назначено движком</span></div>
             <div><strong>{summary.completed}</strong><span>Выполнено</span></div>
@@ -313,6 +302,9 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
             <p className="calendar-eyebrow">{selectedDate === today ? 'Сегодня · ' : ''}{dayName(selected, busySet.has(selectedDate))}</p>
             <h2>{selected.status === 'unresolved' ? 'Требует уточнения' : selected.workout ? workoutTitle(selected.workout) : selected.status === 'race' ? 'Сдача норматива' : selected.status === 'unformed' ? 'План ещё не сформирован' : 'День без тренировки'}</h2>
             <p className="calendar-muted">{formatDateLong(selectedDate)}</p>
+            {selected.workout && selected.status !== 'unresolved' ? <div className="calendar-detail-actions">
+              <Button onClick={() => setCardOpen(true)}>Открыть карточку занятия</Button>
+            </div> : null}
             {selected.status === 'unresolved' ? <>
               <Notice tone="warn" title={plan.unresolvedTitle}>
                 <p>{plan.unresolvedText}</p>
@@ -325,7 +317,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
               <p className="calendar-muted">{plan.preliminary}</p>
               {selected.workout ? <div className="calendar-prescription">
                 <strong>{workoutVolume(selected.workout)}</strong>
-                <span>Предварительные параметры: карточка занятия откроется, когда движок назначит тренировку.</span>
+                <span>Предварительные параметры. Полная карточка доступна по кнопке выше: просмотр не назначает тренировку и не меняет план.</span>
                 <WorkoutParams workout={selected.workout} />
                 <p className="hint">{plan.forecastResultUnavailable}</p>
               </div> : null}
@@ -376,6 +368,15 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
             ) : null}
           </section>
         </div>
+
+        {cardOpen && selected.workout ? <WorkoutCard
+          day={selected}
+          today={today}
+          onBack={() => setCardOpen(false)}
+          onOpenIssued={queue.some(item => item.id === selected.workout!.id) ? () => onNavigate({name:'WORKOUT', id:selected.workout!.id}) : null}
+          onOpenHistory={selected.result ? () => onNavigate({name:'HISTORY'}) : null}
+          onFinalResult={selected.status === 'race' && selectedDate <= today ? () => onNavigate({name:'FINAL_RESULT'}) : null}
+        /> : null}
 
         <div className="calendar-footer">
           <Card title={plan.horizon}>

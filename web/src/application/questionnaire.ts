@@ -6,6 +6,7 @@
  * Ranges, cross-field rules and calendar rules stay with the engine and are reported by code.
  */
 import {parseTime} from './format.ts';
+import {suggestedRaceDate} from './engineGateway.ts';
 import type {BreakReason, EngineErrorCode, PerformanceMismatch, PerformanceSource, Profile, SafetyData} from './engineGateway.ts';
 
 export const QUESTIONNAIRE_STEPS = Object.freeze(['RESULT', 'VOLUME', 'QUALITY', 'SAFETY', 'BREAKS', 'AVAILABILITY', 'GOAL', 'RACE_DATE'] as const);
@@ -81,13 +82,12 @@ export function defaultDraft(today: string): QuestionnaireDraft {
     performanceMismatch: null,
     targetTime: '',
     startDate: today,
-    raceDate: addDaysIso(today, 56),
+    // The app's own proposal must be a date its engine will actually serve: the event belongs to
+    // the last week of the approved eight-week cycle. A +56 default once fell one day outside the
+    // enrollment window, so accepting the suggestion silently produced the legacy plan.
+    raceDate: suggestedRaceDate(today),
     raceDateConfirmed: false,
   };
-}
-
-function addDaysIso(iso: string, days: number): string {
-  return new Date(Date.parse(`${iso}T00:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
 }
 
 /** Draft field that a problem refers to, used to focus the input and to report errors inline. */

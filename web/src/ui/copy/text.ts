@@ -503,6 +503,7 @@ export const resultForm = {
     planned: (structure: string | null, count: number): string => (structure === null ? `По плану: ${count} отрезков` : `По плану: ${structure}`),
     item: (index: number): string => `Отрезок ${index + 1}`,
     seconds: 'Время',
+    secondsHint: 'Минуты и секунды — отдельными полями, двоеточие не нужно',
     meters: 'Дистанция, м',
     empty: 'Результаты отрезков не заполнены',
     collapsed: 'Добавить отрезки',

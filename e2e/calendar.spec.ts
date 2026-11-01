@@ -1,6 +1,6 @@
 /** Issue #24: browser checks of real calendar UI and existing engine transitions. */
 import {expect, test} from '@playwright/test';
-import {reset, fillQuestionnaire, createCycleAndReachToday, readActiveCycle, readEngineState} from './app.ts';
+import {reset, fillQuestionnaire, createCycleAndReachToday, readActiveCycle, readEngineState, closeWorkoutCard} from './app.ts';
 
 test.beforeEach(async ({page}) => { await reset(page); });
 
@@ -33,14 +33,20 @@ test('calendar: week/month, full period with preliminary forecast, responsive sc
   const weekBlocks = page.locator('.calendar-week-block');
   expect(await weekBlocks.count()).toBeGreaterThanOrEqual(8);
   await expect(weekBlocks.first().getByRole('heading', {name:/Неделя 1/})).toBeVisible();
-  // A preliminary day opens read-only: no result entry, no move.
+  // A preliminary day opens its full card read-only: no result entry, no move.
   await weekBlocks.nth(3).locator('.calendar-day--forecast').first().click();
-  await expect(page.getByText('Предварительный план. Изменяется по результатам тренировок.')).toBeVisible();
-  await expect(page.getByRole('button', {name:'Открыть тренировку'})).toHaveCount(0);
-  await expect(page.getByRole('button', {name:'Перенести', exact:true})).toHaveCount(0);
-  // Review #4: every parameter incl. warm-up and cool-down; review #2: forecast counted apart.
+  const card = page.getByRole('dialog');
+  await expect(card).toBeVisible();
+  await expect(card.getByText('Предварительный план. Изменяется по результатам тренировок.')).toBeVisible();
+  await expect(card.getByRole('button', {name:'Внести результат'})).toHaveCount(0);
+  await expect(card.getByRole('button', {name:'Перенести', exact:true})).toHaveCount(0);
+  // Review #4: every parameter incl. warm-up and cool-down.
+  await expect(card.locator('.calendar-params')).toContainText('Разминка');
+  await expect(card.locator('.calendar-params')).toContainText('Заминка');
+  await expect(card.getByRole('heading', {name:'Параметры и объём'})).toBeVisible();
+  // The card returns to the very date it was opened from.
+  await closeWorkoutCard(page);
   await expect(page.locator('.calendar-detail .calendar-params')).toContainText('Разминка');
-  await expect(page.locator('.calendar-detail .calendar-params')).toContainText('Заминка');
   await expect(page.locator('.calendar-stats--preliminary')).toContainText('Предварительно (прогноз, ещё не назначено)');
   await page.getByRole('group', {name:'Режим календаря'}).getByRole('button',{name:'Неделя'}).click();
   // The later choice survives a reload.
@@ -78,6 +84,7 @@ test('calendar: inline move uses persisted engine transition and survives reload
   const label = new Intl.DateTimeFormat('ru-RU', {day:'numeric',month:'long',year:'numeric',timeZone:'UTC'})
     .format(new Date(original!.scheduledDate + 'T00:00:00Z'));
   await page.locator('.calendar-days--week .calendar-day').filter({has: page.locator('strong')}).and(page.locator(`[aria-label^="${label}"]`)).click();
+  await closeWorkoutCard(page);
   await page.getByRole('button',{name:'Перенести',exact:true}).click();
   const candidates = page.locator('.calendar-move-options button:not([disabled])');
   expect(await candidates.count()).toBeGreaterThan(0);

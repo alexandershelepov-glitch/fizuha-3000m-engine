@@ -5,15 +5,60 @@
 import type {EngineState, Profile, Workout, WorkoutProtocol} from './models.ts';
 import {addDays, day} from './validation.ts';
 
+/**
+ * The approved calendar window of methodology v4, and the single source of truth for it.
+ *
+ * The final 3000 m control is the third session of week eight, i.e. 53, 54 or 55 days after the
+ * cycle start. Day 56 is already the first day of a ninth week, so an event on that date cannot be
+ * served by this eight-week template. Every caller — enrollment at creation, the questionnaire
+ * preview and the calendar — reads these constants. A second copy of the rule is what once let the
+ * app suggest a date it would not enroll (default +56 vs. enrollment `<= 55`) and silently fall
+ * back to the legacy plan.
+ */
+export const V4_LENGTH_MIN = 53;
+export const V4_LENGTH_MAX = 55;
+/** Preferred event date of the approved cycle: the last week of week eight. */
+export const V4_RACE_OFFSET = 54;
+
+/** Why the approved eight-week methodology cannot be prescribed. Stable, explainable codes. */
+export type V4Blocker =
+  | 'RESULT_REQUIRED' | 'RESULT_FUTURE' | 'RESULT_STALE' | 'RESULT_TIME' | 'RESULT_MISMATCH'
+  | 'CANNOT_RUN_3KM' | 'QUALITY_NOT_TOLERATED'
+  | 'BASE_WEEKS' | 'BASE_VOLUME' | 'BASE_LONG_RUN'
+  | 'AVAILABILITY' | 'BREAK' | 'CYCLE_LENGTH' | 'SAFETY' | 'INVALID_DATES';
+
+/** All unmet entry conditions at once, so the runner sees every reason instead of one at a time. */
+export function v4Blockers(p: Profile, start: string): V4Blocker[] {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(p.raceDate)) return ['INVALID_DATES'];
+  let length: number;
+  try { length = day(p.raceDate) - day(start); } catch { return ['INVALID_DATES']; }
+  const out: V4Blocker[] = [];
+  if (!p.performance) out.push('RESULT_REQUIRED');
+  else {
+    const age = day(start) - day(p.performance.date);
+    if (age < 0) out.push('RESULT_FUTURE');
+    else if (age > 21) out.push('RESULT_STALE');
+    if (p.performance.timeSeconds !== 870) out.push('RESULT_TIME');
+  }
+  if (!p.canRun3Km) out.push('CANNOT_RUN_3KM');
+  if (p.qualitySessions8Weeks > 0 && !p.qualityMostlyTolerated) out.push('QUALITY_NOT_TOLERATED');
+  if (p.regularRunningWeeks < 8) out.push('BASE_WEEKS');
+  if (p.averageWeeklyKm4Weeks < 15) out.push('BASE_VOLUME');
+  if (p.longestUsualRunKm < 6) out.push('BASE_LONG_RUN');
+  if (p.actualRunsPerWeek !== 3 || p.availableRunsPerWeek !== 3) out.push('AVAILABILITY');
+  if (p.performanceMismatch !== 'NONE') out.push('RESULT_MISMATCH');
+  if (p.performance && p.breaks.some(b => day(b.endDate) >= day(p.performance!.date))) out.push('BREAK');
+  if (length < V4_LENGTH_MIN || length > V4_LENGTH_MAX) out.push('CYCLE_LENGTH');
+  return out;
+}
+
 export function eligibleForV4(p: Profile, start: string): boolean {
-  const age = p.performance ? day(start) - day(p.performance.date) : Infinity;
-  const length = day(p.raceDate) - day(start);
-  return p.performance?.timeSeconds === 870 && age >= 0 && age <= 21 &&
-    p.canRun3Km && p.actualRunsPerWeek === 3 && p.availableRunsPerWeek === 3 &&
-    p.regularRunningWeeks >= 8 && p.averageWeeklyKm4Weeks >= 15 && p.longestUsualRunKm >= 6 &&
-    length >= 53 && length <= 56 && p.performanceMismatch === 'NONE' &&
-    (p.qualitySessions8Weeks === 0 || p.qualityMostlyTolerated) &&
-    !p.breaks.some(b => day(b.endDate) >= day(p.performance!.date));
+  return v4Blockers(p, start).length === 0;
+}
+
+/** The event date that keeps the approved eight-week plan applicable. */
+export function suggestedRaceDate(start: string): string {
+  return addDays(start, V4_RACE_OFFSET);
 }
 
 /** A changed measurement/date/base or adverse feedback returns to existing protective logic.

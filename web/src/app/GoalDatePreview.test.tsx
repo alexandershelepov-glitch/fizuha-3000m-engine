@@ -30,7 +30,7 @@ describe('goal feasibility requires a selected race date', () => {
   });
   test('RACE_DATE calculates only after selection and updates immediately', () => {
     render(<Harness step="RACE_DATE"/>);
-    expect(screen.getByText(/Предложена дата через 8 недель/)).toBeInTheDocument();
+    expect(screen.getByText(/Предложена дата в конце восьмой недели/)).toBeInTheDocument();
     expect(screen.queryByText('Предварительная оценка цели')).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Дата итогового забега'), {target: {value: addDays(deviceToday(), 84)}});
     expect(screen.getByText('Предварительная оценка цели')).toBeInTheDocument();

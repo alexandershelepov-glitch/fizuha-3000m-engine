@@ -15,6 +15,7 @@ import {buildProfile, defaultDraft} from '../application/questionnaire.ts';
 import type {QuestionnaireDraft} from '../application/questionnaire.ts';
 import {workoutTypeText} from '../ui/copy/values.ts';
 import {resultAvailability} from '../application/invariants.ts';
+import {suggestedRaceDate} from '../application/engineGateway.ts';
 
 type User = ReturnType<typeof userEvent.setup>;
 
@@ -399,7 +400,8 @@ describe('navigation', () => {
 
     await clickIn(user, screen.getByRole('navigation', {name: 'Основные разделы'}), 'Профиль');
     // The race date appears both as a cycle parameter and in the initial snapshot.
-    expect(screen.getAllByText(formatDateLong(addDays(deviceToday(), 56))).length).toBeGreaterThan(0);
+    // The app's own suggestion is the date the approved eight-week cycle can actually serve.
+    expect(screen.getAllByText(formatDateLong(suggestedRaceDate(deviceToday()))).length).toBeGreaterThan(0);
     for (const label of ['Изменить этап', 'Изменить допуск', 'Изменить план', 'Изменить тренировку']) {
       expect(screen.queryByRole('button', {name: label})).not.toBeInTheDocument();
     }

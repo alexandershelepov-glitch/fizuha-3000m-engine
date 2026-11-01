@@ -13,6 +13,7 @@ import {workoutRest, workoutIntervalsText, workoutPaceRange, workoutRpe, workout
 import {Button} from '../components/Button.tsx';
 import {Card, Notice} from '../components/Layout.tsx';
 import {Choice, Field, TextInput, Toggle} from '../components/Field.tsx';
+import {SegmentTimeInput} from '../components/TimeFields.tsx';
 import {SafetyFields} from '../components/SafetyFields.tsx';
 import {scaleLabels} from '../copy/values.ts';
 
@@ -185,13 +186,11 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
             {draft.repeats.map((repeat, index) => (
               <div className="repeat" key={`repeat-${index}`}>
                 <p className="field__label">{copy.repeats.item(index)}</p>
-                <Field id={`repeat-seconds-${index}`} label={copy.repeats.seconds}>
-                  <TextInput
+                <Field id={`repeat-seconds-${index}`} label={copy.repeats.seconds} hint={copy.repeats.secondsHint}>
+                  <SegmentTimeInput
                     id={`repeat-seconds-${index}`}
                     value={repeat.seconds}
                     onChange={(value) => update({repeats: draft.repeats.map((item, position) => (position === index ? {...item, seconds: value} : item))})}
-                    inputMode="numeric"
-                    placeholder="2:00"
                   />
                 </Field>
                 <Field id={`repeat-meters-${index}`} label={copy.repeats.meters}>
@@ -221,12 +220,11 @@ export function ResultForm({workout, storage, submit, onCancel}: Props): ReactNo
             {hasRows ? draft.repeats.map((repeat, index) => (
               <div className="repeat" key={`repeat-${index}`}>
                 <p className="field__label">{copy.repeats.item(index)}</p>
-                <Field id={`repeat-seconds-${index}`} label={copy.repeats.seconds}>
-                  <TextInput
+                <Field id={`repeat-seconds-${index}`} label={copy.repeats.seconds} hint={copy.repeats.secondsHint}>
+                  <SegmentTimeInput
                     id={`repeat-seconds-${index}`}
                     value={repeat.seconds}
                     onChange={(value) => update({repeats: draft.repeats.map((item, position) => (position === index ? {...item, seconds: value} : item))})}
-                    inputMode="numeric"
                   />
                 </Field>
                 <Field id={`repeat-meters-${index}`} label={copy.repeats.meters}>

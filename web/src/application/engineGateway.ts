@@ -11,7 +11,13 @@
 import {
   finalRaceWorkout,
   isV4Candidate,
+  suggestedRaceDate,
   taperStartDate,
+  v4InEffect as engineV4InEffect,
+  v4Status as engineV4Status,
+  V4_LENGTH_MAX,
+  V4_LENGTH_MIN,
+  V4_RACE_OFFSET,
   EngineError,
   PERFORMANCE_SOURCES,
   createEngine,
@@ -70,9 +76,27 @@ import type {
   WorkoutResult,
   WorkoutType,
   YellowReason,
+  V4Blocker,
+  V4Status,
 } from '../../../src/index.ts';
 
 export {EngineError, PERFORMANCE_SOURCES, finalRaceWorkout, taperStartDate, isV4Candidate};
+/** The approved eight-week window, exported as values so no UI copy hard-codes a day count. */
+export {V4_LENGTH_MAX, V4_LENGTH_MIN, V4_RACE_OFFSET, suggestedRaceDate};
+
+/**
+ * Why methodology v4 would or would not be applied to a new cycle, and the event date that keeps it
+ * applicable. The questionnaire, the review screen and the calendar read this one answer, so the
+ * preview and the actual enrollment can never disagree.
+ */
+export function v4Status(profile: Profile, startDate: string): V4Status {
+  return engineV4Status(profile, startDate);
+}
+
+/** True while the saved cycle is still governed by the approved methodology, not by protective logic. */
+export function methodologyInEffect(state: EngineState): boolean {
+  return engineV4InEffect(state);
+}
 
 /** A safe, mechanical view of a thrown value. */
 export interface EngineErrorView {
@@ -87,7 +111,7 @@ export type {
   PerformanceSource, Phase, Profile, QualityExperience, ReasonCode, SafetyData, SafetyStatus, Workout,
   WorkoutGoal, WorkoutMainMode, WorkoutResult, WorkoutType, YellowReason,
   ForecastEntry, ForecastEntryStatus, ForecastEvent, ForecastMode, ForecastOptions, ForecastResult,
-  ForecastWindowViolation,
+  ForecastWindowViolation, V4Blocker, V4Status,
 };
 
 /** Create the engine state for a new cycle. The engine decides everything sport-related. */
