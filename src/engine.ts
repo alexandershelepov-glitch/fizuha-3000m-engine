@@ -1,8 +1,10 @@
+import {eligibleForV4, suggestedRaceDate, usesV4, v4Blockers, v4RecoveryAllowed, v4Coordinates, v4Workout} from './methodologyV4.ts';
+import type {V4Blocker} from './methodologyV4.ts';
 import type { EngineState, PerformanceSnapshot, Profile, SafetyData, TrainingBreak, Workout, WorkoutResult, WorkoutType } from './models.ts';
 import { PERFORMANCE_SOURCES } from './models.ts';
 import { assessConfidence, assessSafety, decide, taperDays } from './assessment.ts';
 import { classify, yellowFamily } from './feedback.ts';
-import { day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
+import { addDays, day, number, validateEventDate, validateProfile, validateProfileShape } from './validation.ts';
 import { EngineError } from './errors.ts';
 import { generateQueue, guardWeeklyLoad, qualityDoseCeiling } from './workouts.ts';
 import {withinRollingWeekBudget} from './weeklyLoad.ts';
@@ -42,6 +44,7 @@ function advanceTo(s: EngineState, now: string): void {
  * later can produce at most one step; missed and unclear weeks never create credits.
  */
 function reviewEasyProgression(s: EngineState, now: string): void {
+  if (usesV4(s)) return;
   const baselineMeters = s.profile.actualRunsPerWeek > 0 && s.profile.averageWeeklyKm4Weeks > 0
     ? s.profile.averageWeeklyKm4Weeks * 1000 : 1000;
   s.easyProgression ??= {approvedMetersPer7Days: baselineMeters, lastReviewedBlock: -1, lastIncreaseDate: null};
@@ -129,7 +132,7 @@ function reviewEasyProgression(s: EngineState, now: string): void {
   state.lastIncreaseDate = now;
 }
 function rebuildQueue(s: EngineState, now: string, preserve: Workout[] | null): EngineState {
-  if (day(now) - day(s.lastAssessmentDate) >= 21 || s.profile.performanceMismatch === 'CLEAR') s.checkpointRequired = true;
+  if ((!usesV4(s) && day(now) - day(s.lastAssessmentDate) >= 21) || s.profile.performanceMismatch === 'CLEAR') s.checkpointRequired = true;
   // A checkpoint is a 3000 m time trial: `recordCheckpoint` refuses it (CHECKPOINT_NOT_PERMITTED) until continuous
   // 3 km is confirmed, and `createEngine` already starts with `!performance && canRun3Km`. Demanding an unavailable
   // checkpoint left such users in a dead end (QA issue #23 DEF-002, 12-week audit D-01). The due-rules above are
@@ -152,10 +155,58 @@ export function replan(state: EngineState, now = state.asOf): EngineState {
   // decision 2), so a miss freezes the remaining prescriptions instead of replaying the session.
   return rebuildQueue(s, now, missed.length ? before : null);
 }
-export function createEngine(profile: Profile, now: string): EngineState {
+/** Read-only calendar metadata; the UI does not calculate sport phases. */
+export function taperStartDate(state: EngineState): string {
+  return usesV4(state) ? v4Coordinates(state).find(c=>c.week===7 && c.role===0)!.date :
+    addDays(state.profile.raceDate,-taperDays(state.decision.capacity,state.decision.quality));
+}
+export interface V4Status {
+  /** True only when the approved cycle will actually be enrolled at creation. */
+  readonly eligible: boolean;
+  readonly blockers: readonly V4Blocker[];
+  /** Days from the start date to the event; 0 when the dates are not usable. */
+  readonly lengthDays: number;
+  /** Event date that makes the approved eight-week cycle applicable. */
+  readonly suggestedRaceDate: string;
+}
+
+/**
+ * Why methodology v4 would or would not be prescribed for a new cycle.
+ *
+ * The same reader feeds the questionnaire preview and the review screen, so the app can never say
+ * "eight weeks" and then create a legacy plan. Safety is added here because it is assessed by the
+ * engine, not by the calendar rules in `v4Blockers`.
+ */
+export function v4Status(profile: Profile, startDate: string): V4Status {
+  const blockers: V4Blocker[] = [...v4Blockers(profile, startDate)];
+  if (!blockers.includes('INVALID_DATES') && assessSafety(profile.safety) !== 'OK' && !blockers.includes('SAFETY')) {
+    blockers.push('SAFETY');
+  }
+  let lengthDays = 0;
+  try { lengthDays = day(profile.raceDate) - day(startDate); } catch { lengthDays = 0; }
+  // A malformed start date must not throw out of a read-only status reader.
+  let suggested = profile.raceDate;
+  try { suggested = suggestedRaceDate(startDate); } catch { suggested = profile.raceDate; }
+  return {eligible: blockers.length === 0, blockers, lengthDays, suggestedRaceDate: suggested};
+}
+
+/** Whether the approved eight-week methodology is actually driving the saved cycle right now.
+ * A saved cycle can keep its enrollment while protective logic temporarily replaces the plan; the
+ * UI must show which of the two is true instead of guessing from the stored label.
+ */
+export function v4InEffect(state: EngineState): boolean {
+  return usesV4(state);
+}
+
+/** Whether the eight-week template fits the profile when the event falls in week eight. */
+export function isV4Candidate(profile: Profile, startDate: string): boolean {
+  return eligibleForV4({...profile, raceDate:suggestedRaceDate(startDate)},startDate) && assessSafety(profile.safety) === 'OK';
+}
+export function createEngine(profile: Profile, now: string, startDate = now): EngineState {
   validateProfile(profile, now);
+  if (day(startDate) < day(now) || day(startDate) > day(profile.raceDate)) throw new EngineError('INVALID_CALENDAR_DATE');
   const state = {
-    version: 1, profile: structuredClone(profile), cycleStartDate: now, asOf: now,
+    version: 1, profile: structuredClone(profile), cycleStartDate: startDate, asOf: now,
     queue: [], history: [], skippedIds: [], skippedWorkouts: [], movedWorkouts: [], successfulQuality: 0, successfulIntro: 0, successfulSpecificPartial: 0,
     greenPlusIds: [], checkpointRequired: !profile.performance && profile.canRun3Km,
     lastAssessmentDate: profile.performance?.date ?? now, relatedYellow: false, reducedQualityUntilConfirmed: false, diagnosticHold: false, progressionBlocked: false,
@@ -163,6 +214,9 @@ export function createEngine(profile: Profile, now: string): EngineState {
     easyProgression: {approvedMetersPer7Days: profile.actualRunsPerWeek > 0 && profile.averageWeeklyKm4Weeks > 0 ? profile.averageWeeklyKm4Weeks * 1000 : 1000, lastReviewedBlock: -1, lastIncreaseDate: null},
     runWalkProgression: {stage:0},
   } as unknown as EngineState;
+  // Enrollment reads the one shared entry rule: the calendar window is part of `eligibleForV4`,
+  // so a date the app suggests can never be a date this cycle refuses.
+  if (eligibleForV4(profile, startDate) && assessSafety(profile.safety) === 'OK') state.methodology = {id:'V4_8W_1430', performanceDate:profile.performance!.date, raceDate:profile.raceDate};
   state.decision = decide(state, now);
   const latest = [...profile.breaks].sort((a, b) => day(b.endDate) - day(a.endDate))[0];
   if (latest && (!profile.performance || day(latest.endDate) >= day(profile.performance.date))) return applyBreak(state, latest, now, false);
@@ -185,6 +239,7 @@ export function applyBreak(state: EngineState, b: TrainingBreak, now: string, ad
   return replan(s, now);
 }
 function progress(s: EngineState, type: WorkoutType): void {
+  if (usesV4(s)) return;
   const dose = s.confirmedDoses[type]; if (!dose) return;
   const step = dose.unit === 'MINUTES' ? s.decision.quality === 'Q2' ? 4 : s.decision.quality === 'Q1' ? 3 : 2 : s.decision.quality === 'Q2' ? 600 : 400;
   // Only volume changes. Speed, repeat length and recovery are preserved.
@@ -228,7 +283,7 @@ export function recordResult(state: EngineState, workoutId: string, result: Work
     if (w.countsAsQuality && w.type !== 'CONTROL') {
       s.reducedQualityUntilConfirmed = false; s.successfulQuality++; if (w.type === 'INTRO_QUALITY') s.successfulIntro++;
       if (w.type === 'SPECIFIC_3K' && w.gateAtPrescription === 'PARTIAL') s.successfulSpecificPartial++;
-      if (c.evaluation === 'GREEN_PLUS') { s.greenPlusIds.push(w.id); if (s.greenPlusIds.length >= 2) s.checkpointRequired = true; }
+      if (c.evaluation === 'GREEN_PLUS' && !usesV4(s)) { s.greenPlusIds.push(w.id); if (s.greenPlusIds.length >= 2) s.checkpointRequired = true; }
       s.confirmedDoses[w.type] = structuredClone(w.main.dose);
       s.doses[w.type] = structuredClone(w.main.dose);
       s.successStreak[w.type] = (s.successStreak[w.type] ?? 0) + 1;
@@ -322,6 +377,7 @@ export function updateTrainingData(state: EngineState, data: Partial<Omit<Profil
   // The date boundary outranks a prohibited field edit. An explicitly postponed
   // event is allowed if the NEW race date is still in the future (existing PWA behaviour).
   validateEventDate({...s.profile, raceDate:data.raceDate ?? s.profile.raceDate}, now);
+  if (day(data.raceDate ?? s.profile.raceDate) < day(s.cycleStartDate)) throw new EngineError('INVALID_CALENDAR_DATE');
   const before = s.profile.canRun3Km;
   // Runtime callers cannot bypass the dedicated performance/safety/break transitions.
   // Mileage and habitual frequency define the locked baseline for the running cycle.
@@ -423,7 +479,7 @@ export function deserialize(json: string): EngineState {
 export function moveWorkout(state: EngineState, id: string, date: string): EngineState {
   const s = copy(state); const w = s.queue.find(w => w.id === id);
   // A workout can never be moved onto or past the race day, which is the event itself.
-  if (!w || !w.movable || day(date) < day(s.asOf) || day(date) >= day(s.asOf) + 7 || day(date) >= day(s.profile.raceDate)) throw new EngineError('MOVE_OUTSIDE_HORIZON');
+  if (!w || !w.movable || day(date) < day(s.cycleStartDate) || day(date) < day(s.asOf) || day(date) >= day(s.asOf) + 7 || day(date) >= day(s.profile.raceDate)) throw new EngineError('MOVE_OUTSIDE_HORIZON');
   if (s.queue.some(other => other.id !== id && other.scheduledDate === date) || s.history.some(h => h.result.date === date)) throw new EngineError('MOVE_OCCUPIED_DATE');
   if (w.countsAsQuality) {
     const others = [...s.history.filter(h => h.workout.countsAsQuality).map(h => ({date: h.result.date, hours: h.workout.minimumRecoveryHoursBeforeQuality})), ...s.queue.filter(other => other.id !== id && other.countsAsQuality).map(other => ({date: other.scheduledDate, hours: other.minimumRecoveryHoursBeforeQuality}))];
@@ -432,6 +488,15 @@ export function moveWorkout(state: EngineState, id: string, date: string): Engin
     if (dates.some(end => dates.filter(d => d <= end && d > end - 7).length > s.decision.maximumQualityPerWeek)) throw new EngineError('MOVE_QUALITY_LIMIT_VIOLATION');
   }
   w.scheduledDate = date;
+  if (usesV4(s)) {
+    const known = [...s.history.map(h=>h.workout),...s.queue];
+    const ids = new Set([...known.map(w=>w.id),...s.skippedIds]);
+    // Known later cycle roles must also remain possible after this move: do not
+    // accept Sunday long running only to silently drop Monday's quality later.
+    const future = v4Coordinates(s).filter(c=>!(c.week===8 && c.role===2) &&
+      day(c.date)>=day(s.asOf) && !ids.has(`slot-${c.date}`)).map(c=>v4Workout(s,c.week,c.role));
+    if (!v4RecoveryAllowed([...known,...future])) throw new EngineError('MOVE_RECOVERY_VIOLATION');
+  }
   if (!withinRollingWeekBudget(s,[...s.history.map(h=>h.workout),...s.queue],date))
     throw new EngineError('MOVE_WEEKLY_LOAD_LIMIT');
   s.movedWorkouts = [...s.movedWorkouts.filter(other => other.id !== id), structuredClone(w)];

@@ -3,6 +3,8 @@ import type {ReactNode} from 'react';
 import {formatDateLong, formatTime} from '../../application/format.ts';
 import type {AppStateV1} from '../../application/appState.ts';
 import type {EngineState} from '../../application/engineGateway.ts';
+import {methodologyView} from '../methodology.ts';
+import {methodologyCopy, reasonsSentence} from '../copy/methodology.ts';
 import {phaseText} from '../copy/values.ts';
 import {Button} from '../components/Button.tsx';
 import {lifecycle, profile as profileText} from '../copy/text.ts';
@@ -24,6 +26,7 @@ export function Profile({appState, engineState, onEdit, onRecheck, onConfirm3k, 
   const [resetError, setResetError] = useState<UiError | null>(null);
   const [busy, setBusy] = useState(false);
   const {profile, decision} = engineState;
+  const methodology = methodologyView(engineState);
 
   const reset = (): void => {
     if (busy || !onReset) return;
@@ -64,7 +67,12 @@ export function Profile({appState, engineState, onEdit, onRecheck, onConfirm3k, 
         <KeyValue label={profileText.currentForm} value={profile.performance === null ? '—' : formatTime(profile.performance.timeSeconds)} />
         <KeyValue label={profileText.availability} value={String(profile.availableRunsPerWeek)} />
         <KeyValue label={profileText.phase} value={phaseText[decision.phase].label} />
+        <KeyValue label={methodologyCopy.title} value={methodology.title} />
         <Notice tone="info">{profileText.phaseNote}</Notice>
+        {methodology.reasons.length > 0 ? <Notice tone="warn" title={methodology.title}>
+          <p>Причины: {reasonsSentence(methodology.reasons)}.</p>
+          <p className="hint">{methodologyCopy.consequence}</p>
+        </Notice> : <Notice tone="info">{methodology.note}</Notice>}
       </Card>
 
       <Card title={profileText.initialData}>

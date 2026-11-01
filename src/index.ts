@@ -4,6 +4,12 @@ export * from './assessment.ts';
 export * from './feedback.ts';
 export * from './workouts.ts';
 export * from './engine.ts';
+export * from './forecast.ts';
 // Public validation surface for the future UI (approved decision 3). Re-exported from the single
 // existing implementation so no validation rule is ever duplicated; `number()` stays internal.
 export { day, addDays, validateEventDate, validateSafety, validateProfile, validateResult } from './validation.ts';
+
+export {
+  eligibleForV4, finalRaceWorkout, suggestedRaceDate, v4Blockers, V4_LENGTH_MAX, V4_LENGTH_MIN, V4_RACE_OFFSET,
+} from './methodologyV4.ts';
+export type {V4Blocker} from './methodologyV4.ts';

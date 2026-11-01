@@ -1,3 +1,4 @@
+import {workoutWarmup, workoutCooldown} from '../display.ts';
 import {useRef, useState} from 'react';
 import type {ReactNode} from 'react';
 import {formatDateLong} from '../../application/format.ts';
@@ -134,8 +135,8 @@ export function WorkoutDetails({workout, resultAvailability, moveAvailability, o
             : `${plan.estimatedDistanceText} (${instructionText.distanceEstimateDisclaimer})`} />
         ) : null}
         {plan.effortScale === '' ? null : <KeyValue label={todayText.workout.rpe} value={plan.effortScale.replace('Усилие: ', '')} />}
-        {workout.warmupMinutes > 0 ? <KeyValue label={todayText.workout.warmup} value={`${workout.warmupMinutes} мин`} /> : null}
-        {workout.cooldownMinutes > 0 ? <KeyValue label={todayText.workout.cooldown} value={`${workout.cooldownMinutes} мин`} /> : null}
+        {(workout.warmupMinutes > 0 || workout.protocol?.warmupMeters) ? <KeyValue label={todayText.workout.warmup} value={workoutWarmup(workout)} /> : null}
+        {(workout.cooldownMinutes > 0 || workout.protocol?.cooldownMeters) ? <KeyValue label={todayText.workout.cooldown} value={workoutCooldown(workout)} /> : null}
         {workout.effortCues.length > 0 ? <KeyValue label={todayText.workout.cues} value={workout.effortCues.map((cue) => effortCueText[cue]).join(' · ')} /> : null}
       </Card>
 

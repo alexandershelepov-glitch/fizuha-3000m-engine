@@ -136,6 +136,7 @@ export function App({storage: injected}: {storage?: KeyValueStorage} = {}): Reac
     const result = createCycle(repo, {
       profile: built.profile,
       deviceToday: store.today,
+      startDate: draft.startDate || store.today,
       cycleId: newCycleId(),
       createdAt: deviceTimestamp(),
       locale: LOCALE,

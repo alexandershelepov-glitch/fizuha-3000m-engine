@@ -1,9 +1,10 @@
+import {usesV4, v4Coordinates, v4Workout, v4RecoveryAllowed} from './methodologyV4.ts';
 import type { Dose, EngineState, Workout, WorkoutType } from './models.ts';
 import { decide } from './assessment.ts';
 import { addDays, day } from './validation.ts';
 import { EngineError } from './errors.ts';
 import { RUN_WALK_STAGES, LAST_RUN_WALK_STAGE } from './runWalk.ts';
-import {approvedWeekMeters,longRunShares,reservedMetres} from './weeklyLoad.ts';
+import {approvedWeekMeters,longRunShares,reservedMetres,withinRollingWeekBudget} from './weeklyLoad.ts';
 import {adaptEasyFromRecentResult, beginnerEasyPace, calibratedBeginnerDose, initialEasyPace, refineAfterEasySuccesses} from './easyPace.ts';
 const QUALITY: WorkoutType[] = ['INTRO_QUALITY', 'THRESHOLD', 'VO2', 'SPECIFIC_3K', 'CONTROL'];
 
@@ -206,6 +207,22 @@ function anticipatedCheckpoint(s: EngineState, date: number, later: readonly Wor
  * every rolling seven-day window within the approved weekly booking budget.
  */
 export function guardWeeklyLoad(s: EngineState, proposed: Workout[]): Workout[] {
+  if (usesV4(s) && proposed.every(w => w.protocol?.methodology === 'V4_8W_1430')) {
+    if (s.decision.safety !== 'OK') return [];
+    const accepted: Workout[] = [];
+    for (const w of [...proposed].sort((a,b)=>day(a.scheduledDate)-day(b.scheduledDate))) {
+      const coordinate = v4Coordinates(s).find(c => `slot-${c.date}` === w.id);
+      if (!coordinate || coordinate.role === 2 && coordinate.week === 8) continue;
+      const expected = v4Workout(s,coordinate.week,coordinate.role);
+      const normalized = {...w,scheduledDate:expected.scheduledDate,gateAtPrescription:expected.gateAtPrescription};
+      // Refuse altered doses/protocols rather than fitting them to spare kilometres.
+      if (JSON.stringify(normalized) !== JSON.stringify(expected)) continue;
+      const combined = [...s.history.map(h=>h.workout),...accepted,w];
+      if (!v4RecoveryAllowed(combined) || !withinRollingWeekBudget(s,combined,w.scheduledDate)) continue;
+      accepted.push(structuredClone(w));
+    }
+    return accepted;
+  }
   const baselineMeters = approvedWeekMeters(s);
   const alreadyDone = s.history.map(h => h.workout);
   const accepted: Workout[] = [];
@@ -380,6 +397,7 @@ function buildQueue(s: EngineState, now: string, forcedEasy: ReadonlySet<string>
   const longOffset = longRunShares(s) !== null && offsets.length >= 3 ? Math.max(...offsets) : -1;
   for (let delta = 0; delta < 7; delta++) {
     const date = addDays(now, delta);
+    if (day(date) < day(s.cycleStartDate)) continue;
     // Approved decision C1: `raceDate` is the day of the final 3000 m race itself, which the UI
     // shows as a separate event. The ordinary training queue therefore covers only dates strictly
     // before it, so no EASY / LONG_EASY / STRIDES / INTRO_QUALITY / THRESHOLD / VO2 / SPECIFIC_3K /
@@ -445,6 +463,15 @@ function buildQueue(s: EngineState, now: string, forcedEasy: ReadonlySet<string>
  * adds slots to `forcedEasy` and so ends after at most one pass per slot.
  */
 export function generateQueue(s: EngineState, now: string): Workout[] {
+  if (usesV4(s) && s.decision.safety === 'OK') {
+    const completed = new Set(s.history.map(h=>h.workout.id));
+    const fixed = v4Coordinates(s).filter(c => !(c.week === 8 && c.role === 2) &&
+      day(c.date) >= day(now) && day(c.date) < day(now)+7 &&
+      !completed.has(`slot-${c.date}`) && !s.skippedIds.includes(`slot-${c.date}`))
+      .map(c=>v4Workout(s,c.week,c.role));
+    const moved = s.movedWorkouts.filter(w=>!completed.has(w.id) && day(w.scheduledDate)>=day(now) && day(w.scheduledDate)<day(now)+7);
+    return guardWeeklyLoad(s,[...fixed,...moved]);
+  }
   const forced = new Set<string>();
   for (;;) {
     const {queue, slots} = buildQueue(s, now, forced);

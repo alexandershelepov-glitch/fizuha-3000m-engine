@@ -9,10 +9,20 @@
  * the only planner.
  */
 import {
+  finalRaceWorkout,
+  isV4Candidate,
+  suggestedRaceDate,
+  taperStartDate,
+  v4InEffect as engineV4InEffect,
+  v4Status as engineV4Status,
+  V4_LENGTH_MAX,
+  V4_LENGTH_MIN,
+  V4_RACE_OFFSET,
   EngineError,
   PERFORMANCE_SOURCES,
   createEngine,
   deserialize,
+  forecastCycle as engineForecastCycle,
   moveWorkout as engineMoveWorkout,
   recordCheckpoint as engineRecordCheckpoint,
   recordFinalResult as engineRecordFinalResult,
@@ -42,6 +52,13 @@ import type {
   Evaluation,
   Feasibility,
   FeedbackField,
+  ForecastEntry,
+  ForecastEntryStatus,
+  ForecastEvent,
+  ForecastMode,
+  ForecastOptions,
+  ForecastResult,
+  ForecastWindowViolation,
   Gate,
   HistoryEntry,
   PerformanceMismatch,
@@ -59,9 +76,27 @@ import type {
   WorkoutResult,
   WorkoutType,
   YellowReason,
+  V4Blocker,
+  V4Status,
 } from '../../../src/index.ts';
 
-export {EngineError, PERFORMANCE_SOURCES};
+export {EngineError, PERFORMANCE_SOURCES, finalRaceWorkout, taperStartDate, isV4Candidate};
+/** The approved eight-week window, exported as values so no UI copy hard-codes a day count. */
+export {V4_LENGTH_MAX, V4_LENGTH_MIN, V4_RACE_OFFSET, suggestedRaceDate};
+
+/**
+ * Why methodology v4 would or would not be applied to a new cycle, and the event date that keeps it
+ * applicable. The questionnaire, the review screen and the calendar read this one answer, so the
+ * preview and the actual enrollment can never disagree.
+ */
+export function v4Status(profile: Profile, startDate: string): V4Status {
+  return engineV4Status(profile, startDate);
+}
+
+/** True while the saved cycle is still governed by the approved methodology, not by protective logic. */
+export function methodologyInEffect(state: EngineState): boolean {
+  return engineV4InEffect(state);
+}
 
 /** A safe, mechanical view of a thrown value. */
 export interface EngineErrorView {
@@ -75,11 +110,13 @@ export type {
   EngineErrorCode, EngineState, Evaluation, Feasibility, FeedbackField, Gate, HistoryEntry, PerformanceMismatch, PerformanceSnapshot,
   PerformanceSource, Phase, Profile, QualityExperience, ReasonCode, SafetyData, SafetyStatus, Workout,
   WorkoutGoal, WorkoutMainMode, WorkoutResult, WorkoutType, YellowReason,
+  ForecastEntry, ForecastEntryStatus, ForecastEvent, ForecastMode, ForecastOptions, ForecastResult,
+  ForecastWindowViolation, V4Blocker, V4Status,
 };
 
 /** Create the engine state for a new cycle. The engine decides everything sport-related. */
-export function createEngineState(profile: Profile, deviceToday: string): EngineState {
-  return createEngine(profile, deviceToday);
+export function createEngineState(profile: Profile, deviceToday: string, startDate = deviceToday): EngineState {
+  return createEngine(profile, deviceToday, startDate);
 }
 
 /** Validation of a profile through the public API, including the event-date rule. */
@@ -181,4 +218,14 @@ export function resolveCurrentSafety(state: EngineState, safety: SafetyData, now
 /** Non-persisted preview of the real engine verdict. */
 export function previewGoalDecision(profile: Profile, today: string): Decision {
   return createEngineState(profile, today).decision;
+}
+
+/**
+ * Full-cycle forecast to the race date (issue #51). Pure read-only projection: the input state is
+ * never advanced or mutated, nothing is persisted, and the engine remains the only planner. The
+ * application refreshes this whenever the confirmed engine state changes; the UI never calls the
+ * engine directly and never writes forecast entries back.
+ */
+export function forecastCycle(state: EngineState, options: ForecastOptions): ForecastResult {
+  return engineForecastCycle(state, options);
 }

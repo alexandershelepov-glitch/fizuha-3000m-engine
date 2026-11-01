@@ -1,0 +1,48 @@
+{
+  "scope": "V4 eight-week 14:30 / three runs; simulated reports only",
+  "baseMain": "1e299b83ddedffafb5e047d6580eba5e6bae4308",
+  "calendarBase": "0ab760087b8378d46c44ac60ef76694c57b752ac",
+  "branch": "feature/methodology-v4-eight-week",
+  "acceptance": {
+    "matched": 24,
+    "total": 24,
+    "controls": 1,
+    "extraControls": 0,
+    "forecastErrors": 0,
+    "forecastWindowViolations": 0
+  },
+  "checks": {
+    "unitIntegration": {
+      "passed": 758,
+      "failed": 0
+    },
+    "ui": {
+      "passed": 130,
+      "failed": 0
+    },
+    "productionE2E": {
+      "passed": 50,
+      "failed": 0,
+      "skipped": 2,
+      "skipReason": "QA-only tests run separately"
+    },
+    "qaModeE2E": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 1,
+      "skipReason": "Production-only assertion covered by production E2E"
+    },
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "coreBuild": "PASS",
+    "webAndPwaBuild": "PASS",
+    "diffWhitespace": "PASS"
+  },
+  "limitations": [
+    "Scoped new cycles only; established base required",
+    "Legacy saves are not auto-migrated",
+    "4/12-week cycles and new adaptation rules not implemented",
+    "Browser QA only; no physical device or real athletic trials",
+    "No verified public preview at time of local verification"
+  ]
+}

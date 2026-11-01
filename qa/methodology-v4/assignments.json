@@ -1,0 +1,2285 @@
+{
+  "profile": {
+    "performance": {
+      "timeSeconds": 870,
+      "date": "2026-11-02",
+      "source": "TEST_3K"
+    },
+    "targetTimeSeconds": 840,
+    "raceDate": "2026-12-26",
+    "regularRunningWeeks": 20,
+    "actualRunsPerWeek": 3,
+    "availableRunsPerWeek": 3,
+    "averageWeeklyKm4Weeks": 16,
+    "longestUsualRunKm": 6,
+    "canRun3Km": true,
+    "qualitySessions8Weeks": 0,
+    "qualityWeeks8Weeks": 0,
+    "qualityMostlyTolerated": true,
+    "experience": {
+      "threshold": false,
+      "vo2": false,
+      "specific3k": false
+    },
+    "breaks": [],
+    "safety": {
+      "pain": 0,
+      "painIncreasing": false,
+      "alteredMovement": false,
+      "painWalkingOrRest": false,
+      "swelling": false,
+      "acuteIllness": false,
+      "otherStop": false,
+      "needsAssessment": false
+    },
+    "performanceMismatch": "NONE"
+  },
+  "simulation": true,
+  "notObservedPerformance": true,
+  "evidence": "23 ordinary public recordResult transitions with serialize/deserialize + dedicated final event; independent full oracle in tests/methodology-v4-oracle.ts",
+  "rows": [
+    {
+      "number": 1,
+      "week": 1,
+      "date": "2026-11-02",
+      "type": "THRESHOLD",
+      "intensity": "T",
+      "work": "2 × 6 мин",
+      "pace": "5:15/км",
+      "warmup": "1500 м E",
+      "dynamics": "3–5 мин",
+      "recovery": "150 с; трусца; только между",
+      "cooldown": "800 м E",
+      "strides": "—",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Разминка: 1,5 км E, 6:05–6:45 мин/км. Динамические упражнения — 3–5 мин. Выполните 2 отрезка. Каждый отрезок длится 6 минут. Целевой темп: 5:15 мин/км. На беговой дорожке: 11,4 км/ч. Между повторениями — 2 минуты 30 секунд очень лёгкой трусцой. Только между отрезками, без паузы после последнего. Заминка: 800 метров E, 6:05–6:45 мин/км.",
+      "workout": {
+        "id": "slot-2026-11-02",
+        "scheduledDate": "2026-11-02",
+        "type": "THRESHOLD",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 1,
+          "role": "QUALITY",
+          "intensity": "T",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 1500,
+          "dynamicMinutes": [
+            3,
+            5
+          ],
+          "cooldownMeters": 800,
+          "recovery": {
+            "dose": {
+              "unit": "SECONDS",
+              "value": 150
+            },
+            "mode": "JOG",
+            "betweenOnly": true
+          },
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "INTERVALS",
+          "dose": {
+            "unit": "MINUTES",
+            "value": 12
+          },
+          "repeats": 2,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          6,
+          7
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.1746031746031744,
+          3.1746031746031744
+        ],
+        "paceRangeSecondsPerKm": [
+          315,
+          315
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 150,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 2,
+      "week": 1,
+      "date": "2026-11-04",
+      "type": "EASY",
+      "intensity": "E",
+      "work": "4000 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "4×15 с внутри дистанции; ≥75 с E между",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Пробегите 4 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 24:20–27:00. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь. Внутри назначенной дистанции — 4 × 15 с плавных ускорений; между ними минимум 75 с лёгкого бега. Ускорения не увеличивают итоговую дистанцию.",
+      "workout": {
+        "id": "slot-2026-11-04",
+        "scheduledDate": "2026-11-04",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 1,
+          "role": "EASY",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": {
+            "repeats": 4,
+            "seconds": 15,
+            "meters": null,
+            "insideDistance": true,
+            "minimumRecoverySeconds": 75,
+            "fullRecovery": false
+          },
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 4000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 3,
+      "week": 1,
+      "date": "2026-11-07",
+      "type": "LONG_EASY",
+      "intensity": "E",
+      "work": "5500 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "—",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Пробегите 5,5 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 33:28–37:08. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь. Первый и последний километр особенно легко. Разминка и заминка входят в назначенную дистанцию.",
+      "workout": {
+        "id": "slot-2026-11-07",
+        "scheduledDate": "2026-11-07",
+        "type": "LONG_EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 1,
+          "role": "LONG",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": true,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 5500
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 4,
+      "week": 2,
+      "date": "2026-11-09",
+      "type": "VO2",
+      "intensity": "I",
+      "work": "3 × 600 м",
+      "pace": "173 с за 600 м",
+      "warmup": "1500 м E",
+      "dynamics": "3–5 мин",
+      "recovery": "180 с; трусца; только между",
+      "cooldown": "800 м E",
+      "strides": "—",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Разминка: 1,5 км E, 6:05–6:45 мин/км. Динамические упражнения — 3–5 мин. Выполните 3 отрезка по 600 метров. Каждый отрезок старайтесь пробежать за 2:53–2:53. Целевой темп: 4:48 мин/км. На беговой дорожке: 12,5 км/ч. Между повторениями — 3 минуты очень лёгкой трусцой. Только между отрезками, без паузы после последнего. Заминка: 800 метров E, 6:05–6:45 мин/км.",
+      "workout": {
+        "id": "slot-2026-11-09",
+        "scheduledDate": "2026-11-09",
+        "type": "VO2",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 2,
+          "role": "QUALITY",
+          "intensity": "I",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 1500,
+          "dynamicMinutes": [
+            3,
+            5
+          ],
+          "cooldownMeters": 800,
+          "recovery": {
+            "dose": {
+              "unit": "SECONDS",
+              "value": 180
+            },
+            "mode": "JOG",
+            "betweenOnly": true
+          },
+          "strides": null,
+          "repeatSeconds": 173,
+          "firstLastKmEasy": false,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "INTERVALS",
+          "dose": {
+            "unit": "METERS",
+            "value": 1800
+          },
+          "repeats": 3,
+          "repeatMeters": 600,
+          "finalRepeatMeters": 600
+        },
+        "targetRpe": [
+          8,
+          9
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.468208092485549,
+          3.468208092485549
+        ],
+        "paceRangeSecondsPerKm": [
+          288.3333333333333,
+          288.3333333333333
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 180,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 5,
+      "week": 2,
+      "date": "2026-11-11",
+      "type": "EASY",
+      "intensity": "E",
+      "work": "4500 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "—",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Пробегите 4,5 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 27:23–30:23. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь.",
+      "workout": {
+        "id": "slot-2026-11-11",
+        "scheduledDate": "2026-11-11",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 2,
+          "role": "EASY",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 4500
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 6,
+      "week": 2,
+      "date": "2026-11-14",
+      "type": "LONG_EASY",
+      "intensity": "E",
+      "work": "6000 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "—",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Пробегите 6 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 36:30–40:30. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь. Первый и последний километр особенно легко. Разминка и заминка входят в назначенную дистанцию.",
+      "workout": {
+        "id": "slot-2026-11-14",
+        "scheduledDate": "2026-11-14",
+        "type": "LONG_EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 2,
+          "role": "LONG",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": true,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 6000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 7,
+      "week": 3,
+      "date": "2026-11-16",
+      "type": "THRESHOLD",
+      "intensity": "T",
+      "work": "2 × 8 мин",
+      "pace": "5:15/км",
+      "warmup": "1500 м E",
+      "dynamics": "3–5 мин",
+      "recovery": "180 с; трусца; только между",
+      "cooldown": "800 м E",
+      "strides": "—",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Разминка: 1,5 км E, 6:05–6:45 мин/км. Динамические упражнения — 3–5 мин. Выполните 2 отрезка. Каждый отрезок длится 8 минут. Целевой темп: 5:15 мин/км. На беговой дорожке: 11,4 км/ч. Между повторениями — 3 минуты очень лёгкой трусцой. Только между отрезками, без паузы после последнего. Заминка: 800 метров E, 6:05–6:45 мин/км.",
+      "workout": {
+        "id": "slot-2026-11-16",
+        "scheduledDate": "2026-11-16",
+        "type": "THRESHOLD",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 3,
+          "role": "QUALITY",
+          "intensity": "T",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 1500,
+          "dynamicMinutes": [
+            3,
+            5
+          ],
+          "cooldownMeters": 800,
+          "recovery": {
+            "dose": {
+              "unit": "SECONDS",
+              "value": 180
+            },
+            "mode": "JOG",
+            "betweenOnly": true
+          },
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "INTERVALS",
+          "dose": {
+            "unit": "MINUTES",
+            "value": 16
+          },
+          "repeats": 2,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          6,
+          7
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.1746031746031744,
+          3.1746031746031744
+        ],
+        "paceRangeSecondsPerKm": [
+          315,
+          315
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 180,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 8,
+      "week": 3,
+      "date": "2026-11-18",
+      "type": "EASY",
+      "intensity": "E",
+      "work": "4500 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "4×15 с внутри дистанции; ≥75 с E между",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Пробегите 4,5 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 27:23–30:23. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь. Внутри назначенной дистанции — 4 × 15 с плавных ускорений; между ними минимум 75 с лёгкого бега. Ускорения не увеличивают итоговую дистанцию.",
+      "workout": {
+        "id": "slot-2026-11-18",
+        "scheduledDate": "2026-11-18",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 3,
+          "role": "EASY",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": {
+            "repeats": 4,
+            "seconds": 15,
+            "meters": null,
+            "insideDistance": true,
+            "minimumRecoverySeconds": 75,
+            "fullRecovery": false
+          },
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 4500
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 9,
+      "week": 3,
+      "date": "2026-11-21",
+      "type": "LONG_EASY",
+      "intensity": "E",
+      "work": "6500 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "—",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Пробегите 6,5 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 39:33–43:53. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь. Первый и последний километр особенно легко. Разминка и заминка входят в назначенную дистанцию.",
+      "workout": {
+        "id": "slot-2026-11-21",
+        "scheduledDate": "2026-11-21",
+        "type": "LONG_EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 3,
+          "role": "LONG",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": true,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 6500
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 10,
+      "week": 4,
+      "date": "2026-11-23",
+      "type": "STRIDES",
+      "intensity": "R",
+      "work": "4 × 150 м",
+      "pace": "41 с за 150 м",
+      "warmup": "1500 м E",
+      "dynamics": "3–5 мин",
+      "recovery": "150 м; трусца или шагом до восстановления; только между",
+      "cooldown": "800 м E",
+      "strides": "—",
+      "stage": "DELOAD",
+      "status": "PASS",
+      "instruction": "Разминка: 1,5 км E, 6:05–6:45 мин/км. Динамические упражнения — 3–5 мин. Выполните 4 отрезка по 150 метров. Каждый отрезок старайтесь пробежать за 0:41–0:41. Целевой темп: 4:33 мин/км. На беговой дорожке: 13,2 км/ч. Между повторениями — 150 метров очень лёгкой трусцой или шагом, до восстановления. Только между отрезками, без паузы после последнего. Заминка: 800 метров E, 6:05–6:45 мин/км.",
+      "workout": {
+        "id": "slot-2026-11-23",
+        "scheduledDate": "2026-11-23",
+        "type": "STRIDES",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 4,
+          "role": "QUALITY",
+          "intensity": "R",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 1500,
+          "dynamicMinutes": [
+            3,
+            5
+          ],
+          "cooldownMeters": 800,
+          "recovery": {
+            "dose": {
+              "unit": "METERS",
+              "value": 150
+            },
+            "mode": "JOG_OR_WALK_UNTIL_RECOVERED",
+            "betweenOnly": true
+          },
+          "strides": null,
+          "repeatSeconds": 41,
+          "firstLastKmEasy": false,
+          "stage": "DELOAD"
+        },
+        "main": {
+          "mode": "INTERVALS",
+          "dose": {
+            "unit": "METERS",
+            "value": 600
+          },
+          "repeats": 4,
+          "repeatMeters": 150,
+          "finalRepeatMeters": 150
+        },
+        "targetRpe": [
+          5,
+          6
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.658536585365854,
+          3.658536585365854
+        ],
+        "paceRangeSecondsPerKm": [
+          273.3333333333333,
+          273.3333333333333
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 11,
+      "week": 4,
+      "date": "2026-11-25",
+      "type": "EASY",
+      "intensity": "E",
+      "work": "5000 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "—",
+      "stage": "DELOAD",
+      "status": "PASS",
+      "instruction": "Пробегите 5 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 30:25–33:45. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь.",
+      "workout": {
+        "id": "slot-2026-11-25",
+        "scheduledDate": "2026-11-25",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 4,
+          "role": "EASY",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "DELOAD"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 5000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 12,
+      "week": 4,
+      "date": "2026-11-28",
+      "type": "LONG_EASY",
+      "intensity": "E",
+      "work": "6000 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "—",
+      "stage": "DELOAD",
+      "status": "PASS",
+      "instruction": "Пробегите 6 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 36:30–40:30. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь. Первый и последний километр особенно легко. Разминка и заминка входят в назначенную дистанцию.",
+      "workout": {
+        "id": "slot-2026-11-28",
+        "scheduledDate": "2026-11-28",
+        "type": "LONG_EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 4,
+          "role": "LONG",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": true,
+          "stage": "DELOAD"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 6000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 13,
+      "week": 5,
+      "date": "2026-11-30",
+      "type": "VO2",
+      "intensity": "I",
+      "work": "2 × 800 м",
+      "pace": "231 с за 800 м",
+      "warmup": "1500 м E",
+      "dynamics": "3–5 мин",
+      "recovery": "180 с; трусца; только между",
+      "cooldown": "800 м E",
+      "strides": "—",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Разминка: 1,5 км E, 6:05–6:45 мин/км. Динамические упражнения — 3–5 мин. Выполните 2 отрезка по 800 метров. Каждый отрезок старайтесь пробежать за 3:51–3:51. Целевой темп: 4:49 мин/км. На беговой дорожке: 12,5 км/ч. Между повторениями — 3 минуты очень лёгкой трусцой. Только между отрезками, без паузы после последнего. Заминка: 800 метров E, 6:05–6:45 мин/км.",
+      "workout": {
+        "id": "slot-2026-11-30",
+        "scheduledDate": "2026-11-30",
+        "type": "VO2",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 5,
+          "role": "QUALITY",
+          "intensity": "I",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 1500,
+          "dynamicMinutes": [
+            3,
+            5
+          ],
+          "cooldownMeters": 800,
+          "recovery": {
+            "dose": {
+              "unit": "SECONDS",
+              "value": 180
+            },
+            "mode": "JOG",
+            "betweenOnly": true
+          },
+          "strides": null,
+          "repeatSeconds": 231,
+          "firstLastKmEasy": false,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "INTERVALS",
+          "dose": {
+            "unit": "METERS",
+            "value": 1600
+          },
+          "repeats": 2,
+          "repeatMeters": 800,
+          "finalRepeatMeters": 800
+        },
+        "targetRpe": [
+          8,
+          9
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.463203463203463,
+          3.463203463203463
+        ],
+        "paceRangeSecondsPerKm": [
+          288.75,
+          288.75
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 180,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 14,
+      "week": 5,
+      "date": "2026-12-02",
+      "type": "EASY",
+      "intensity": "E",
+      "work": "5500 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "4×15 с внутри дистанции; ≥75 с E между",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Пробегите 5,5 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 33:28–37:08. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь. Внутри назначенной дистанции — 4 × 15 с плавных ускорений; между ними минимум 75 с лёгкого бега. Ускорения не увеличивают итоговую дистанцию.",
+      "workout": {
+        "id": "slot-2026-12-02",
+        "scheduledDate": "2026-12-02",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 5,
+          "role": "EASY",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": {
+            "repeats": 4,
+            "seconds": 15,
+            "meters": null,
+            "insideDistance": true,
+            "minimumRecoverySeconds": 75,
+            "fullRecovery": false
+          },
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 5500
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 15,
+      "week": 5,
+      "date": "2026-12-05",
+      "type": "LONG_EASY",
+      "intensity": "E",
+      "work": "7000 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "—",
+      "stage": "BUILD",
+      "status": "PASS",
+      "instruction": "Пробегите 7 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 42:35–47:15. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь. Первый и последний километр особенно легко. Разминка и заминка входят в назначенную дистанцию.",
+      "workout": {
+        "id": "slot-2026-12-05",
+        "scheduledDate": "2026-12-05",
+        "type": "LONG_EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 5,
+          "role": "LONG",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": true,
+          "stage": "BUILD"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 7000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 16,
+      "week": 6,
+      "date": "2026-12-07",
+      "type": "THRESHOLD",
+      "intensity": "T",
+      "work": "2 × 10 мин",
+      "pace": "5:15/км",
+      "warmup": "1500 м E",
+      "dynamics": "3–5 мин",
+      "recovery": "180 с; трусца; только между",
+      "cooldown": "800 м E",
+      "strides": "—",
+      "stage": "PEAK",
+      "status": "PASS",
+      "instruction": "Разминка: 1,5 км E, 6:05–6:45 мин/км. Динамические упражнения — 3–5 мин. Выполните 2 отрезка. Каждый отрезок длится 10 минут. Целевой темп: 5:15 мин/км. На беговой дорожке: 11,4 км/ч. Между повторениями — 3 минуты очень лёгкой трусцой. Только между отрезками, без паузы после последнего. Заминка: 800 метров E, 6:05–6:45 мин/км.",
+      "workout": {
+        "id": "slot-2026-12-07",
+        "scheduledDate": "2026-12-07",
+        "type": "THRESHOLD",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 6,
+          "role": "QUALITY",
+          "intensity": "T",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 1500,
+          "dynamicMinutes": [
+            3,
+            5
+          ],
+          "cooldownMeters": 800,
+          "recovery": {
+            "dose": {
+              "unit": "SECONDS",
+              "value": 180
+            },
+            "mode": "JOG",
+            "betweenOnly": true
+          },
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "PEAK"
+        },
+        "main": {
+          "mode": "INTERVALS",
+          "dose": {
+            "unit": "MINUTES",
+            "value": 20
+          },
+          "repeats": 2,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          6,
+          7
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.1746031746031744,
+          3.1746031746031744
+        ],
+        "paceRangeSecondsPerKm": [
+          315,
+          315
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 180,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 17,
+      "week": 6,
+      "date": "2026-12-09",
+      "type": "EASY",
+      "intensity": "E",
+      "work": "5000 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "—",
+      "stage": "PEAK",
+      "status": "PASS",
+      "instruction": "Пробегите 5 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 30:25–33:45. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь.",
+      "workout": {
+        "id": "slot-2026-12-09",
+        "scheduledDate": "2026-12-09",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 6,
+          "role": "EASY",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "PEAK"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 5000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 18,
+      "week": 6,
+      "date": "2026-12-12",
+      "type": "LONG_EASY",
+      "intensity": "E",
+      "work": "7500 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "—",
+      "stage": "PEAK",
+      "status": "PASS",
+      "instruction": "Пробегите 7,5 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 45:38–50:38. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь. Первый и последний километр особенно легко. Разминка и заминка входят в назначенную дистанцию.",
+      "workout": {
+        "id": "slot-2026-12-12",
+        "scheduledDate": "2026-12-12",
+        "type": "LONG_EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 6,
+          "role": "LONG",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": true,
+          "stage": "PEAK"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 7500
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 19,
+      "week": 7,
+      "date": "2026-12-14",
+      "type": "VO2",
+      "intensity": "I",
+      "work": "3 × 400 м",
+      "pace": "116 с за 400 м",
+      "warmup": "1500 м E",
+      "dynamics": "3–5 мин",
+      "recovery": "200 м; трусца; только между",
+      "cooldown": "800 м E",
+      "strides": "—",
+      "stage": "TAPER",
+      "status": "PASS",
+      "instruction": "Разминка: 1,5 км E, 6:05–6:45 мин/км. Динамические упражнения — 3–5 мин. Выполните 3 отрезка по 400 метров. Каждый отрезок старайтесь пробежать за 1:56–1:56. Целевой темп: 4:50 мин/км. На беговой дорожке: 12,4 км/ч. Между повторениями — 200 метров очень лёгкой трусцой. Только между отрезками, без паузы после последнего. Заминка: 800 метров E, 6:05–6:45 мин/км.",
+      "workout": {
+        "id": "slot-2026-12-14",
+        "scheduledDate": "2026-12-14",
+        "type": "VO2",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 7,
+          "role": "QUALITY",
+          "intensity": "I",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 1500,
+          "dynamicMinutes": [
+            3,
+            5
+          ],
+          "cooldownMeters": 800,
+          "recovery": {
+            "dose": {
+              "unit": "METERS",
+              "value": 200
+            },
+            "mode": "JOG",
+            "betweenOnly": true
+          },
+          "strides": null,
+          "repeatSeconds": 116,
+          "firstLastKmEasy": false,
+          "stage": "TAPER"
+        },
+        "main": {
+          "mode": "INTERVALS",
+          "dose": {
+            "unit": "METERS",
+            "value": 1200
+          },
+          "repeats": 3,
+          "repeatMeters": 400,
+          "finalRepeatMeters": 400
+        },
+        "targetRpe": [
+          8,
+          9
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.4482758620689653,
+          3.4482758620689653
+        ],
+        "paceRangeSecondsPerKm": [
+          290,
+          290
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 20,
+      "week": 7,
+      "date": "2026-12-16",
+      "type": "EASY",
+      "intensity": "E",
+      "work": "4500 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "4×15 с внутри дистанции; ≥75 с E между",
+      "stage": "TAPER",
+      "status": "PASS",
+      "instruction": "Пробегите 4,5 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 27:23–30:23. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь. Внутри назначенной дистанции — 4 × 15 с плавных ускорений; между ними минимум 75 с лёгкого бега. Ускорения не увеличивают итоговую дистанцию.",
+      "workout": {
+        "id": "slot-2026-12-16",
+        "scheduledDate": "2026-12-16",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 7,
+          "role": "EASY",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": {
+            "repeats": 4,
+            "seconds": 15,
+            "meters": null,
+            "insideDistance": true,
+            "minimumRecoverySeconds": 75,
+            "fullRecovery": false
+          },
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "TAPER"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 4500
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 21,
+      "week": 7,
+      "date": "2026-12-19",
+      "type": "LONG_EASY",
+      "intensity": "E",
+      "work": "6000 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "—",
+      "stage": "TAPER",
+      "status": "PASS",
+      "instruction": "Пробегите 6 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 36:30–40:30. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь. Первый и последний километр особенно легко. Разминка и заминка входят в назначенную дистанцию.",
+      "workout": {
+        "id": "slot-2026-12-19",
+        "scheduledDate": "2026-12-19",
+        "type": "LONG_EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 7,
+          "role": "LONG",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": true,
+          "stage": "TAPER"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 6000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 22,
+      "week": 8,
+      "date": "2026-12-21",
+      "type": "STRIDES",
+      "intensity": "R",
+      "work": "3 × 150 м",
+      "pace": "41 с за 150 м",
+      "warmup": "1200 м E",
+      "dynamics": "3–5 мин",
+      "recovery": "150 м; трусца или шагом до восстановления; только между",
+      "cooldown": "600 м E",
+      "strides": "—",
+      "stage": "TAPER",
+      "status": "PASS",
+      "instruction": "Разминка: 1,2 км E, 6:05–6:45 мин/км. Динамические упражнения — 3–5 мин. Выполните 3 отрезка по 150 метров. Каждый отрезок старайтесь пробежать за 0:41–0:41. Целевой темп: 4:33 мин/км. На беговой дорожке: 13,2 км/ч. Между повторениями — 150 метров очень лёгкой трусцой или шагом, до восстановления. Только между отрезками, без паузы после последнего. Заминка: 600 метров E, 6:05–6:45 мин/км.",
+      "workout": {
+        "id": "slot-2026-12-21",
+        "scheduledDate": "2026-12-21",
+        "type": "STRIDES",
+        "goal": "QUALITY_ADAPTATION",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 8,
+          "role": "QUALITY",
+          "intensity": "R",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 1200,
+          "dynamicMinutes": [
+            3,
+            5
+          ],
+          "cooldownMeters": 600,
+          "recovery": {
+            "dose": {
+              "unit": "METERS",
+              "value": 150
+            },
+            "mode": "JOG_OR_WALK_UNTIL_RECOVERED",
+            "betweenOnly": true
+          },
+          "strides": null,
+          "repeatSeconds": 41,
+          "firstLastKmEasy": false,
+          "stage": "TAPER"
+        },
+        "main": {
+          "mode": "INTERVALS",
+          "dose": {
+            "unit": "METERS",
+            "value": 450
+          },
+          "repeats": 3,
+          "repeatMeters": 150,
+          "finalRepeatMeters": 150
+        },
+        "targetRpe": [
+          5,
+          6
+        ],
+        "effortCues": [],
+        "speedRangeMps": [
+          3.658536585365854,
+          3.658536585365854
+        ],
+        "paceRangeSecondsPerKm": [
+          273.3333333333333,
+          273.3333333333333
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 23,
+      "week": 8,
+      "date": "2026-12-23",
+      "type": "EASY",
+      "intensity": "E",
+      "work": "3000 м",
+      "pace": "6:05–6:45/км",
+      "warmup": "внутри дистанции E",
+      "dynamics": "—",
+      "recovery": "—",
+      "cooldown": "внутри дистанции E",
+      "strides": "—",
+      "stage": "TAPER",
+      "status": "PASS",
+      "instruction": "Пробегите 3 км. Держите темп 6:05–6:45 мин/км. На дорожке установите скорость 8,9–9,8 км/ч. Ожидаемое время на дистанции при этом темпе: 18:15–20:15. Не бегите быстрее 6:05 мин/км: задача — лёгкая тренировка, а не проверка скорости. На улице проверяйте темп по каждому километру, не ускоряйтесь к финишу. Если становится тяжело поддерживать такой режим — замедлитесь.",
+      "workout": {
+        "id": "slot-2026-12-23",
+        "scheduledDate": "2026-12-23",
+        "type": "EASY",
+        "goal": "AEROBIC_BASE",
+        "priority": 2,
+        "countsAsQuality": false,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 8,
+          "role": "EASY",
+          "intensity": "E",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 0,
+          "dynamicMinutes": null,
+          "cooldownMeters": 0,
+          "recovery": null,
+          "strides": null,
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "TAPER"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 3000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          2,
+          4
+        ],
+        "effortCues": [
+          "FULL_SENTENCES",
+          "CONTROLLED_BREATHING"
+        ],
+        "speedRangeMps": [
+          2.4691358024691357,
+          2.73972602739726
+        ],
+        "paceRangeSecondsPerKm": [
+          365,
+          405
+        ],
+        "anchor": "CURRENT",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 0,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": true,
+        "movable": true,
+        "volumeFactor": 1
+      }
+    },
+    {
+      "number": 24,
+      "week": 8,
+      "date": "2026-12-26",
+      "type": "CONTROL",
+      "intensity": "CONTROL",
+      "work": "3000 м",
+      "pace": "по фактическому результату; целевой темп не навязывается",
+      "warmup": "1500 м E",
+      "dynamics": "3–5 мин",
+      "recovery": "—",
+      "cooldown": "800 м E",
+      "strides": "3×80 м перед контролем; полный отдых",
+      "stage": "TAPER",
+      "status": "PASS",
+      "instruction": "Разминка: 1,5 км E, 6:05–6:45 мин/км. Динамические упражнения — 3–5 мин. Перед контролем: 3 × 80 м плавных ускорений с полным отдыхом между ними. Пробегите 3000 метров на результат. Конкретный темп не задан. Ориентир по усилию указан ниже. Заминка: 800 метров E, 6:05–6:45 мин/км.",
+      "workout": {
+        "id": "final-2026-12-26",
+        "scheduledDate": "2026-12-26",
+        "type": "CONTROL",
+        "goal": "ASSESS_CURRENT_PERFORMANCE",
+        "priority": 1,
+        "countsAsQuality": true,
+        "warmupMinutes": 0,
+        "cooldownMinutes": 0,
+        "protocol": {
+          "methodology": "V4_8W_1430",
+          "week": 8,
+          "role": "FINAL",
+          "intensity": "CONTROL",
+          "easyPaceSecondsPerKm": [
+            365,
+            405
+          ],
+          "warmupMeters": 1500,
+          "dynamicMinutes": [
+            3,
+            5
+          ],
+          "cooldownMeters": 800,
+          "recovery": null,
+          "strides": {
+            "repeats": 3,
+            "seconds": null,
+            "meters": 80,
+            "insideDistance": false,
+            "minimumRecoverySeconds": null,
+            "fullRecovery": true
+          },
+          "repeatSeconds": null,
+          "firstLastKmEasy": false,
+          "stage": "TAPER"
+        },
+        "main": {
+          "mode": "CONTINUOUS",
+          "dose": {
+            "unit": "METERS",
+            "value": 3000
+          },
+          "repeats": 1,
+          "repeatMeters": null,
+          "finalRepeatMeters": null
+        },
+        "targetRpe": [
+          8,
+          9
+        ],
+        "effortCues": [],
+        "speedRangeMps": null,
+        "paceRangeSecondsPerKm": null,
+        "anchor": "NONE",
+        "gateAtPrescription": "CLOSED",
+        "restSeconds": 0,
+        "minimumRecoveryHoursBeforeQuality": 48,
+        "requiredFeedback": [
+          "completionFraction",
+          "sessionRpe",
+          "safety",
+          "durationMinutes",
+          "distanceMeters",
+          "repeats",
+          "restSeconds",
+          "conditions",
+          "unexpectedFatigue"
+        ],
+        "removable": false,
+        "movable": false,
+        "volumeFactor": 1
+      }
+    }
+  ],
+  "historyCount": 23,
+  "performanceAfterSimulation": {
+    "timeSeconds": 870,
+    "date": "2026-11-02",
+    "source": "TEST_3K"
+  },
+  "forecasts": [
+    {
+      "mode": "CONDITIONAL",
+      "count": 24,
+      "errors": [],
+      "windowViolations": [],
+      "seedUnchanged": true
+    },
+    {
+      "mode": "RESERVATION",
+      "count": 24,
+      "errors": [],
+      "windowViolations": [],
+      "seedUnchanged": true
+    }
+  ]
+}

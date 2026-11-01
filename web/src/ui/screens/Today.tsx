@@ -1,3 +1,5 @@
+import {finalRaceWorkout} from '../../application/engineGateway.ts';
+import {workoutInstruction} from '../workoutInstructions.ts';
 import type {ReactNode} from 'react';
 import {formatDateLong, formatTime} from '../../application/format.ts';
 import {calendarDay, weekDates, weekSummary} from '../../application/calendarModel.ts';
@@ -110,6 +112,7 @@ export function Today({engineState, today, onNavigate, onRefreshPlan, refreshing
           <KeyValue label={todayText.raceDay.goal} value={formatTime(profile.targetTimeSeconds)} />
           <KeyValue label={todayText.raceDay.date} value={formatDateLong(profile.raceDate)} />
           <p className="hint">{todayText.raceDay.note}</p>
+          {finalRaceWorkout(engineState) ? <ol aria-label="Протокол итогового забега">{workoutInstruction(finalRaceWorkout(engineState)!).steps.map((step,i)=><li key={i}>{step}</li>)}</ol> : null}
           <KeyValue label={lifecycle.form} value={profile.performance ? formatTime(profile.performance.timeSeconds) : '—'} />
           <Button onClick={() => onNavigate({name: 'FINAL_RESULT'})}>{lifecycle.finalCta}</Button>
           <Button variant="ghost" onClick={() => onNavigate({name: 'HISTORY'})}>{lifecycle.later}</Button>

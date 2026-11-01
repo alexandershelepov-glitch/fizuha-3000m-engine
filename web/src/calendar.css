@@ -136,3 +136,87 @@
 .calendar-day--quality .calendar-day-label { color: #b87532; }
 .calendar-days--month .calendar-day--quality::after { content: '●'; color: #c68a3e; font-size: 9px; position: absolute; bottom: 2px; left: 8px; }
 .calendar-day--today:not(.calendar-day--selected) { border-color: #8bb9b0; }
+
+/* Issue #51: preliminary forecast days and checkpoint controls. They must read as "planned, but not
+   issued yet" — lighter than a committed prescription, never identical to a fact. */
+.calendar-day--forecast { background: #fbfdfd; border-style: dashed; border-color: #a9c8c1; }
+.calendar-day--forecast .calendar-day-label { color: #4f8b81; }
+.calendar-day--control { background: #fdf9f1; border-style: dashed; border-color: #d8b98a; }
+.calendar-day--control .calendar-day-label { color: #a06c26; }
+.calendar-day-badge { position: absolute; top: 4px; right: 4px; font-size: 8.5px; font-weight: 700;
+  letter-spacing: .02em; color: #6f9790; background: #ecf4f2; border: 1px solid #cfe3df; border-radius: 7px; padding: 1px 4px; }
+.calendar-day--control .calendar-day-badge { color: #a3742f; background: #f7efdf; border-color: #e3cfa8; }
+.calendar-days--month .calendar-day--forecast::after { content: '◌'; color: #7fa8a0; font-size: 9px; position: absolute; bottom: 2px; left: 8px; }
+.calendar-days--month .calendar-day--control::after { content: '◆'; color: #c68a3e; font-size: 9px; position: absolute; bottom: 2px; left: 8px; }
+
+/* "Весь период": the same week grid stacked week by week with a compact caption. */
+.calendar-period-list { display: flex; flex-direction: column; gap: 14px; max-height: 72vh; overflow-y: auto; padding-right: 4px; }
+.calendar-week-caption { margin: 0; font-size: 12px; font-weight: 700; color: #5d7482; letter-spacing: .02em; }
+.calendar-week-block { display: flex; flex-direction: column; gap: 5px; }
+@media(max-width:440px) {
+  .calendar-period-list { max-height: none; }
+  .calendar-days--week .calendar-day-badge { display: none; }
+}
+.calendar-stats--preliminary { margin-top: 8px; opacity: .9; border-top: 1px dashed currentColor; padding-top: 8px; }
+.calendar-day--unresolved { border-style: dashed; border-color: #c27c0e; }
+.calendar-params { display: grid; gap: 2px; margin-top: 6px; }
+
+/* Methodology status: which plan this cycle uses, and — when the approved one does not apply —
+   the concrete unmet conditions, read from the engine rather than guessed by the UI. */
+.calendar-methodology { margin: 6px 0 0; font-size: 12px; font-weight: 750; color: #116f63; }
+.calendar-methodology-note { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; padding: 10px 12px;
+  border: 1px solid #e6d9c2; background: #fdf9f1; border-radius: 10px; font-size: 12px; color: #7a5a2e; }
+.calendar-methodology-note strong { color: #8a5f1f; }
+.calendar-methodology-note .hint { color: #8a7150; }
+
+/* Full workout card, opened from a calendar day. It is an overlay so the reader never has to hunt
+   for the selected session at the bottom of a long mobile page, and it scrolls on its own. */
+.workout-card {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  background: #f4f7f9;
+  color: var(--calendar-ink, #1a3344);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.workout-card__bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fff;
+  border-bottom: 1px solid var(--calendar-line, #dfe7eb);
+}
+.workout-card__back {
+  border: 0;
+  background: transparent;
+  min-height: 44px;
+  padding: 10px 8px;
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 750;
+  color: #0f7c6f;
+  cursor: pointer;
+}
+.workout-card__back:focus-visible { outline: 3px solid #116e84; outline-offset: 2px; }
+.workout-card__status { font-size: 11px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; color: #6d8190; }
+.workout-card__body { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 720px; margin: 0 auto; padding: 14px 14px 48px; }
+.workout-card__head h1 { font-size: clamp(21px, 4.6vw, 28px); line-height: 1.2; letter-spacing: -.03em; margin: 4px 0; }
+.workout-card__type { font-size: 13px; color: #506779; margin: 0; }
+.workout-card .card { background: #fff; border: 1px solid var(--calendar-line, #dfe7eb); border-radius: 14px; box-shadow: 0 1px 2px #1b344308; }
+.workout-card .hint, .workout-card .paragraph, .workout-card .kv__label { color: #647e8d; }
+.workout-card .actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 4px; }
+.workout-card .steps, .workout-card .list { padding-left: 20px; }
+@media (min-width: 1024px) {
+  .workout-card { background: #18303d73; align-items: center; }
+  .workout-card__bar { width: 100%; border-radius: 0; }
+  .workout-card__body { background: #f4f7f9; border-radius: 16px; margin: 18px auto 48px; padding: 18px 20px 28px; box-shadow: 0 24px 60px #10222c40; }
+}

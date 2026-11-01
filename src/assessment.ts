@@ -1,3 +1,4 @@
+import {usesV4, v4Week} from './methodologyV4.ts';
 import type { Capacity, Confidence, EngineState, Feasibility, Profile, QualityExperience, SafetyData, SafetyStatus, Decision, Phase, Gate } from './models.ts';
 import { day } from './validation.ts';
 export function assessSafety(s: SafetyData): SafetyStatus {
@@ -50,7 +51,11 @@ export function assessFeasibility(gap: number | null, weeks: number, t: Capacity
 export function taperDays(t: Capacity, q: QualityExperience): number { return t === 'T3' && q === 'Q2' ? 10 : t === 'T2' || t === 'T3' ? 7 : 5; }
 export function decide(s: EngineState, now: string): Decision {
   const p = s.profile; const safety = assessSafety(p.safety);
-  const capacity = assessCapacity(p); const quality = assessQuality(p); const confidence = assessConfidence(p, now);
+  const capacity = assessCapacity(p); const quality = assessQuality(p);
+  // Explicit eight-week prescription validity, scoped to the unchanged baseline.
+  // The dated measurement is preserved; this does not manufacture a fresh checkpoint.
+  const v4 = usesV4(s);
+  const confidence = v4 && day(now) <= day(p.raceDate) ? (day(now)-day(p.performance!.date) > 21 ? 'MEDIUM' : 'HIGH') : assessConfidence(p, now);
   const currentSpeedMps = p.performance ? 3000 / p.performance.timeSeconds : null;
   const goalGap = p.performance ? p.performance.timeSeconds / p.targetTimeSeconds - 1 : null;
   const feasibility = assessFeasibility(goalGap, (day(p.raceDate) - day(now)) / 7, capacity, quality, p.availableRunsPerWeek);
@@ -66,6 +71,7 @@ export function decide(s: EngineState, now: string): Decision {
   // Explicit conservative resolution of scenario 11 / section 11 conflict (approved as a general rule).
   else if (feasibility === 'LONG_TERM' && (capacity === 'T1') && quality === 'Q0') { phase = 'FOUNDATION'; reasons.push('FOUNDATION_LONG_TERM_CONFLICT'); }
   else if (s.reentry && s.reentry.breakDays >= 8) phase = 'RE_ENTRY';
+  else if (v4) phase = v4Week(s,now) >= 7 ? 'TAPER' : 'DEVELOPMENT';
   else if (confidence === 'LOW') phase = capacity === 'T1' ? 'FOUNDATION' : 'HOLD_DIAGNOSTIC';
   else if (day(p.raceDate) - day(now) <= taperDays(capacity, quality)) phase = 'TAPER';
   else if ((capacity === 'T2' || capacity === 'T3') && quality !== 'Q0' && goalGap !== null && goalGap <= 0.08 + 1e-12 && (confidence === 'HIGH' || confidence === 'MEDIUM') && s.successfulQuality >= 2) phase = 'SPECIFIC';

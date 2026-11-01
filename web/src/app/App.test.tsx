@@ -15,6 +15,7 @@ import {buildProfile, defaultDraft} from '../application/questionnaire.ts';
 import type {QuestionnaireDraft} from '../application/questionnaire.ts';
 import {workoutTypeText} from '../ui/copy/values.ts';
 import {resultAvailability} from '../application/invariants.ts';
+import {suggestedRaceDate} from '../application/engineGateway.ts';
 
 type User = ReturnType<typeof userEvent.setup>;
 
@@ -198,7 +199,7 @@ describe('cycle creation', () => {
     }
   });
 
-  test('a race date in the past is refused by the engine and reported on its own step', async () => {
+  test('a race date before the start is refused on its own step', async () => {
     const user = userEvent.setup();
     const storage = memoryStorage();
     render(<App storage={storage} />);
@@ -206,11 +207,10 @@ describe('cycle creation', () => {
     await user.type(screen.getByLabelText('Желаемый результат на 3000 м'), '14:30');
     await click(user, 'Продолжить');   // → RACE_DATE
     fireEvent.change(screen.getByLabelText('Дата итогового забега'), {target: {value: '2020-01-01'}});
-    await click(user, 'Продолжить');   // → REVIEW
-    await click(user, 'Рассчитать план');
+    await click(user, 'Продолжить');
 
     expect(path()).toBe('/questionnaire?step=RACE_DATE');
-    expect(screen.getByText('Дата старта уже прошла')).toBeInTheDocument();
+    expect(screen.getByText('Дата начала должна быть раньше норматива.')).toBeInTheDocument();
     expect(loadActiveCycle(createRepository(storage)).kind).toBe('EMPTY');
   });
 
@@ -353,7 +353,7 @@ describe('navigation', () => {
 
     await clickIn(user, nav, 'План');
     expect(path()).toBe('/plan');
-    expect(screen.getByText(/Показан фактический горизонт плана/)).toBeInTheDocument();
+    expect(screen.getByText(/Будущие тренировки — предварительный план/)).toBeInTheDocument();
 
     await clickIn(user, nav, 'История');
     expect(path()).toBe('/history');
@@ -400,7 +400,8 @@ describe('navigation', () => {
 
     await clickIn(user, screen.getByRole('navigation', {name: 'Основные разделы'}), 'Профиль');
     // The race date appears both as a cycle parameter and in the initial snapshot.
-    expect(screen.getAllByText(formatDateLong(addDays(deviceToday(), 56))).length).toBeGreaterThan(0);
+    // The app's own suggestion is the date the approved eight-week cycle can actually serve.
+    expect(screen.getAllByText(formatDateLong(suggestedRaceDate(deviceToday()))).length).toBeGreaterThan(0);
     for (const label of ['Изменить этап', 'Изменить допуск', 'Изменить план', 'Изменить тренировку']) {
       expect(screen.queryByRole('button', {name: label})).not.toBeInTheDocument();
     }

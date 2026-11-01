@@ -2,16 +2,19 @@ import '../../calendar.css';
 import {useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
 import {addDays, formatDateLong, formatTime, daysBetween} from '../../application/format.ts';
-import {taperDaysFor} from '../../application/engineGateway.ts';
+import {finalRaceWorkout, forecastCycle, taperStartDate} from '../../application/engineGateway.ts';
+import type {EngineState, ForecastResult} from '../../application/engineGateway.ts';
 import {previewScheduledMove} from '../../application/workoutSchedule.ts';
-import type {EngineState} from '../../application/engineGateway.ts';
 import type {AppStateV1} from '../../application/appState.ts';
 import type {KeyValueStorage} from '../../application/storage.ts';
-import {calendarDay, monthDates, mondayOf, weekDates, weekSummary} from '../../application/calendarModel.ts';
+import {calendarDay, cycleWeekDates, forecastByDate, monthDates, mondayOf, periodWeeks, weekDates, weekSummary} from '../../application/calendarModel.ts';
 import type {CalendarDay} from '../../application/calendarModel.ts';
 import {actionAvailability, hasPendingResults} from '../../application/invariants.ts';
 import {isSafetyHold, needsPerformanceReview} from '../../application/uiState.ts';
-import {workoutTitle, workoutVolume, workoutPaceRange, workoutSpeedRange, workoutRpe} from '../display.ts';
+import {WorkoutCard, WorkoutParams} from './WorkoutCard.tsx';
+import {methodologyView} from '../methodology.ts';
+import {methodologyCopy, reasonsSentence} from '../copy/methodology.ts';
+import {workoutTitle, workoutVolume} from '../display.ts';
 import {phaseText, phaseWhy} from '../copy/values.ts';
 import {common, nav, plan, today as todayText} from '../copy/text.ts';
 import {copyForError} from '../copy/errors.ts';
@@ -31,9 +34,18 @@ interface Props {
   readonly refreshing: boolean;
 }
 
-type Mode = 'week' | 'month';
+type Mode = 'week' | 'month' | 'period';
 const WEEKDAY = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'] as const;
 const BUSY_PREFIX = 'fizuha.calendar.unavailable.';
+/** Per-cycle calendar view. Absent for a freshly created cycle: the first open shows the whole period. */
+const MODE_PREFIX = 'fizuha.calendar.mode.';
+function readMode(storage: KeyValueStorage | null, cycleId: string | null): Mode {
+  if (!storage || !cycleId) return 'period';
+  try {
+    const raw = storage.getItem(MODE_PREFIX + cycleId);
+    return raw === 'week' || raw === 'month' || raw === 'period' ? raw : 'period';
+  } catch { return 'period'; }
+}
 function readBusy(storage: KeyValueStorage | null, cycleId: string): string[] {
   if (!storage) return [];
   try {
@@ -58,6 +70,9 @@ function dayName(day: CalendarDay, busy: boolean): string {
   if (day.status === 'skipped') return 'Пропущено';
   if (day.status === 'moved') return 'Перенесено';
   if (day.status === 'planned') return 'Назначено';
+  if (day.status === 'forecast') return 'Предварительно';
+  if (day.status === 'control') return 'Контрольная точка';
+  if (day.status === 'unresolved') return 'Требует уточнения';
   if (day.status === 'unformed') return 'План ещё не сформирован';
   if (day.status === 'race') return 'День норматива';
   return busy ? 'Занят рабочей сменой' : 'Отдых';
@@ -65,32 +80,61 @@ function dayName(day: CalendarDay, busy: boolean): string {
 
 export function Plan({engineState, appState, storage, today, onNavigate, onRefreshPlan, onMove, refreshing}: Props): ReactNode {
   const {profile, decision, queue} = engineState;
-  const [mode, setMode] = useState<Mode>('week');
+  const cycleId = appState?.cycle.cycleId ?? null;
+  const [mode, setModeState] = useState<Mode>(() => readMode(storage ?? null, cycleId));
+  const setMode = (next: Mode): void => {
+    setModeState(next);
+    try { if (storage && cycleId) storage.setItem(MODE_PREFIX + cycleId, next); } catch { /* the view choice is optional */ }
+  };
   const [viewDate, setViewDate] = useState(today);
   const [selectedDate, setSelectedDate] = useState(today);
   const [moving, setMoving] = useState(false);
   const [moveTo, setMoveTo] = useState<string | null>(null);
   const [moveError, setMoveError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const cycleId = appState?.cycle.cycleId ?? null;
   const [busyDates, setBusyDates] = useState<string[]>(() => cycleId ? readBusy(storage ?? null, cycleId) : []);
   const [busyError, setBusyError] = useState(false);
+  /** The full card of the tapped day: the calendar never sends the reader to the bottom of a page. */
+  const [cardOpen, setCardOpen] = useState(false);
+  const methodology = useMemo(() => methodologyView(engineState), [engineState]);
   const busySet = useMemo(() => new Set(busyDates), [busyDates]);
   const movedIds = useMemo(() => new Set([
     ...(appState?.events.filter(event => event.type === 'WORKOUT_MOVED').map(event => event.workoutId) ?? []),
     ...engineState.movedWorkouts.map(item => item.id),
   ]), [appState?.events, engineState.movedWorkouts]);
-  const dates = mode === 'week' ? weekDates(viewDate) : monthDates(viewDate);
-  const days = dates.map(date => calendarDay(engineState, today, date, movedIds));
-  const selected = calendarDay(engineState, today, selectedDate, movedIds);
+  /**
+   * Full-cycle forecast, recomputed from the confirmed engine state on every real change. The clock
+   * stays at engineState.asOf: viewing the calendar never advances the engine, never writes off
+   * past-due sessions and never records anything. A broken forecast degrades to an honest
+   * "unformed" calendar instead of a crash.
+   */
+  const forecast: ForecastResult | null = useMemo(() => {
+    try {
+      return forecastCycle(engineState, {mode: 'CONDITIONAL', asOf: engineState.asOf});
+    } catch {
+      return null;
+    }
+  }, [engineState]);
+  const forecastDays = useMemo(() => forecastByDate(forecast?.entries ?? []), [forecast]);
+  const weekBlocks = useMemo(() => {
+    if (mode !== 'period') return null;
+    return periodWeeks(engineState).map(weekStart =>
+      (engineState.methodology ? Array.from({length:7},(_,i)=>addDays(weekStart,i)) : weekDates(weekStart)).map(date => calendarDay(engineState, today, date, movedIds, forecastDays)));
+  }, [mode, engineState, today, movedIds, forecastDays]);
+  const dates = mode === 'week' ? weekDates(viewDate) : mode === 'month' ? monthDates(viewDate) : [];
+  const days: CalendarDay[] = weekBlocks ? [] : dates.map(date => calendarDay(engineState, today, date, movedIds, forecastDays));
+  const selected = calendarDay(engineState, today, selectedDate, movedIds, forecastDays);
   const summaryDate = mode === 'week' ? viewDate : selectedDate;
-  const summary = weekSummary(weekDates(summaryDate).map(date => calendarDay(engineState, today, date, movedIds)));
+  // The summary follows the same week as the blocks: an eight-week cycle may start on any weekday.
+  const summaryDates = cycleWeekDates(engineState, summaryDate);
+  const summary = weekSummary(summaryDates.map(date => calendarDay(engineState, today, date, movedIds, forecastDays)));
   const pending = hasPendingResults(engineState, today);
   const todayWorkout = queue.find(item => item.scheduledDate === today && item.type !== 'REST') ?? null;
   const hold = isSafetyHold(engineState);
-  const taperStart = addDays(profile.raceDate, -taperDaysFor(decision.capacity, decision.quality));
+  const taperStart = taperStartDate(engineState);
   const canMove = onMove !== undefined && selected.workout !== null && selected.status !== 'completed' &&
-    selected.status !== 'skipped' && selected.workout.movable &&
+    selected.status !== 'skipped' && selected.status !== 'forecast' && selected.status !== 'control' && selected.status !== 'unresolved' &&
+    selected.workout.movable &&
     actionAvailability(engineState, selected.workout.id, today, 'MOVE') === 'AVAILABLE';
   const moveCandidates = selected.workout && canMove
     ? Array.from({length: 7}, (_, i) => addDays(engineState.asOf, i))
@@ -123,6 +167,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
     setNotice(null);
   };
   const changePeriod = (direction: number): void => {
+    if (mode === 'period') return; // Весь период показан целиком; листать нечего.
     const next = mode === 'week' ? addDays(mondayOf(viewDate), direction * 7) : adjacentMonth(viewDate, direction);
     setViewDate(next);
     chooseDate(next);
@@ -144,6 +189,23 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
     }
   };
 
+  const dayCell = (day: CalendarDay, _index: number): ReactNode => {
+    const label = dayName(day, busySet.has(day.date));
+    const outside = mode === 'month' && day.date.slice(0, 7) !== viewDate.slice(0, 7);
+    const preliminary = day.status === 'forecast' || day.status === 'control' || day.status === 'unresolved';
+    return <button type="button" key={day.date} className={`calendar-day calendar-day--${day.status}${day.workout?.countsAsQuality ? ' calendar-day--quality' : ''}${day.date === today ? ' calendar-day--today' : ''}${selectedDate === day.date ? ' calendar-day--selected' : ''}${outside ? ' calendar-day--outside' : ''}${preliminary ? ' calendar-day--preliminary' : ''}`}
+      aria-pressed={day.date === selectedDate}
+      aria-label={`${formatDateLong(day.date)}: ${day.workout && day.status !== 'unresolved' ? workoutTitle(day.workout) + ', ' : ''}${label}${busySet.has(day.date) ? ', рабочая смена или занят' : ''}`}
+      onClick={() => { chooseDate(day.date); if (day.workout && day.status !== 'unresolved') setCardOpen(true); }}>
+      <span className="calendar-day-top"><small>{WEEKDAY[(new Date(day.date+'T00:00:00Z').getUTCDay()+6)%7]}</small><strong>{Number(day.date.slice(-2))}</strong></span>
+      <span className="calendar-day-label">{day.status === 'unresolved' ? 'Требует уточнения' : day.workout ? workoutTitle(day.workout) : label}</span>
+      {day.workout && day.status !== 'unresolved' ? <span className="calendar-day-volume">{workoutVolume(day.workout)}</span> : null}
+      <span className="calendar-day-status">{day.date === today ? 'Сегодня · ' + label : day.workout ? label : (day.status === 'unformed' ? 'Ещё нет назначений' : '')}</span>
+      {preliminary ? <span className="calendar-day-badge" aria-hidden="true">{day.status === 'control' ? 'Контроль' : day.status === 'unresolved' ? '?' : 'План*'}</span> : null}
+      {busySet.has(day.date) ? <span className="calendar-day-busy">Смена / занят</span> : null}
+    </button>;
+  };
+
   return (
     <div className="screen calendar-screen">
       <aside className="calendar-sidebar" aria-label="Разделы приложения">
@@ -158,6 +220,13 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
           <div>
             <p className="calendar-eyebrow">ФИЗУХА · 3000 м</p>
             <h1>Календарь тренировок</h1>
+            <p>Начало тренировок: {formatDateLong(engineState.cycleStartDate)}</p>
+            {methodology.active ? <p className="calendar-methodology">{methodologyCopy.activeTitle}</p> : null}
+            {!methodology.active && !engineState.finalResultRecorded ? <div className="calendar-methodology-note" role="note">
+              <strong>{methodology.title}</strong>
+              {methodology.reasons.length > 0 ? <span>{methodologyCopy.consequence.split('. ')[0]}. Причины: {reasonsSentence(methodology.reasons)}. {methodologyCopy.windowRule}</span> : <span>{methodology.note}</span>}
+              <span className="hint">{methodologyCopy.consequence}</span>
+            </div> : null}
             <p className="calendar-muted">{plan.currentPhase}: {needsPerformanceReview(engineState) ? todayText.performanceReview.title : phaseText[decision.phase].label}</p>
           </div>
           <div className="calendar-deadline">До норматива: {Math.max(0, daysBetween(today, profile.raceDate))} дн.</div>
@@ -179,73 +248,98 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
         {todayWorkout ? <div className="calendar-today-action"><Button onClick={() => onNavigate({name:'WORKOUT', id: todayWorkout.id})}>{plan.openToday}</Button></div> : null}
 
         <section className="calendar-summary" aria-label="Итоги выбранной недели">
-          <div className="calendar-summary-title"><strong>Итоги недели</strong><span>{formatDateLong(mondayOf(summaryDate))} — {formatDateLong(addDays(mondayOf(summaryDate), 6))}</span></div>
+          <div className="calendar-summary-title"><strong>Итоги недели</strong><span>{formatDateLong(summaryDates[0]!)} — {formatDateLong(summaryDates[6]!)}</span></div>
           <div className="calendar-stats">
-            <div><strong>{summary.assigned}</strong><span>Назначено</span></div>
+            <div><strong>{summary.assigned}</strong><span>Назначено движком</span></div>
             <div><strong>{summary.completed}</strong><span>Выполнено</span></div>
             <div><strong>{summary.skipped}</strong><span>Пропущено</span></div>
-            <div><strong>{km(summary.knownMainMeters)}</strong><span>Основная часть по плану{summary.sessionsWithoutPrescribedMeters > 0 ? ' (не вся измерена в метрах)' : ''}</span></div>
+            <div><strong>{km(summary.knownMainMeters)}</strong><span>Основная часть назначенных{summary.sessionsWithoutPrescribedMeters > 0 ? ' (не вся измерена в метрах)' : ''}</span></div>
             <div><strong>{summary.reportedMeters ? km(summary.reportedMeters) : 'Нет данных'}</strong><span>Фактически внесено{summary.sessionsWithoutReportedMeters > 0 ? ' (не все дистанции указаны)' : ''}</span></div>
           </div>
+          {summary.preliminary > 0 || summary.unresolved > 0 ? <div className="calendar-stats calendar-stats--preliminary" aria-label="Предварительный план недели">
+            <div><strong>{summary.preliminary}</strong><span>Предварительно (прогноз, ещё не назначено)</span></div>
+            <div><strong>{km(summary.preliminaryMainMeters)}</strong><span>Прогнозный объём основной части{summary.preliminaryWithoutMeters > 0 ? ' (не весь измерен в метрах)' : ''}</span></div>
+            {summary.unresolved > 0 ? <div><strong>{summary.unresolved}</strong><span>Требует уточнения</span></div> : null}
+          </div> : null}
         </section>
 
         <div className="calendar-workspace">
           <section className="calendar-board" aria-label="Календарь тренировок">
             <div className="calendar-toolbar">
               <div className="calendar-period">
-                <button type="button" aria-label="Предыдущий период" onClick={() => changePeriod(-1)}>‹</button>
-                <strong>{mode === 'week' ? `${formatDateLong(mondayOf(viewDate))} — ${formatDateLong(addDays(mondayOf(viewDate), 6))}` : prettyMonth(viewDate)}</strong>
-                <button type="button" aria-label="Следующий период" onClick={() => changePeriod(1)}>›</button>
+                {mode === 'period' ? <strong>{plan.fullPeriod}: {formatDateLong(engineState.cycleStartDate)} — {formatDateLong(profile.raceDate)}</strong> : <>
+                  <button type="button" aria-label="Предыдущий период" onClick={() => changePeriod(-1)}>‹</button>
+                  <strong>{mode === 'week' ? `${formatDateLong(mondayOf(viewDate))} — ${formatDateLong(addDays(mondayOf(viewDate), 6))}` : prettyMonth(viewDate)}</strong>
+                  <button type="button" aria-label="Следующий период" onClick={() => changePeriod(1)}>›</button>
+                </>}
               </div>
               <div className="calendar-mode" role="group" aria-label="Режим календаря">
-                <button type="button" aria-pressed={mode === 'week'} onClick={() => setMode('week')}>Неделя</button>
-                <button type="button" aria-pressed={mode === 'month'} onClick={() => setMode('month')}>Месяц</button>
+                <button type="button" aria-pressed={mode === 'period'} onClick={() => setMode('period')}>{plan.fullPeriod}</button>
+                <button type="button" aria-pressed={mode === 'month'} onClick={() => setMode('month')}>{plan.monthMode}</button>
+                <button type="button" aria-pressed={mode === 'week'} onClick={() => setMode('week')}>{plan.weekMode}</button>
               </div>
             </div>
+            {forecast === null ? <Notice tone="warn" title="Прогноз недоступен">Календарь показывает только назначения текущей недели. Обновите план позже.</Notice> : null}
+            {forecast !== null && (forecast.windowViolations.length > 0 || forecast.engineErrors.length > 0) ? <Notice tone="warn" title="Прогноз рассчитан с предупреждениями">Часть будущих дней может отображаться неточно. Текущие назначения и история не затронуты.</Notice> : null}
             {mode === 'month' ? <div className="calendar-weekdays">{WEEKDAY.map(day => <span key={day}>{day}</span>)}</div> : null}
-            <div className={mode === 'week' ? 'calendar-days calendar-days--week' : 'calendar-days calendar-days--month'}>
-              {days.map((day, index) => {
-                const label = dayName(day, busySet.has(day.date));
-                const outside = mode === 'month' && day.date.slice(0,7) !== viewDate.slice(0,7);
-                return <button type="button" key={day.date} className={`calendar-day calendar-day--${day.status}${day.workout?.countsAsQuality ? ' calendar-day--quality' : ''}${day.date === today ? ' calendar-day--today' : ''}${selectedDate === day.date ? ' calendar-day--selected' : ''}${outside ? ' calendar-day--outside' : ''}`}
-                  aria-pressed={day.date === selectedDate}
-                  aria-label={`${formatDateLong(day.date)}: ${day.workout ? workoutTitle(day.workout) + ', ' : ''}${label}${busySet.has(day.date) ? ', рабочая смена или занят' : ''}`}
-                  onClick={() => chooseDate(day.date)}>
-                  <span className="calendar-day-top"><small>{WEEKDAY[index % 7]}</small><strong>{Number(day.date.slice(-2))}</strong></span>
-                  <span className="calendar-day-label">{day.workout ? workoutTitle(day.workout) : label}</span>
-                  {day.workout ? <span className="calendar-day-volume">{workoutVolume(day.workout)}</span> : null}
-                  <span className="calendar-day-status">{day.date === today ? 'Сегодня · ' + label : day.workout ? label : (day.status === 'unformed' ? 'Ещё нет назначений' : '')}</span>
-                  {busySet.has(day.date) ? <span className="calendar-day-busy">Смена / занят</span> : null}
-                </button>;
-              })}
-            </div>
-            <div className="calendar-legend"><span>● Лёгкая</span><span>● Интенсивная</span><span>✓ Выполнено</span><span>× Пропущено</span></div>
-            <p className="calendar-muted">{plan.horizonNote} Даты за пределами сформированной очереди не считаются назначенными тренировками.</p>
+            {weekBlocks ? <div className="calendar-period-list" aria-label="Весь тренировочный период">
+              {weekBlocks.map((block, blockIndex) => (
+                <section className="calendar-week-block" key={block[0]!.date} aria-label={`Неделя ${blockIndex + 1}`}>
+                  <h3 className="calendar-week-caption">Неделя {blockIndex + 1} · {formatDateLong(block[0]!.date)} — {formatDateLong(block[6]!.date)}</h3>
+                  <div className="calendar-days calendar-days--week">
+                    {block.map((day, index) => dayCell(day, index))}
+                  </div>
+                </section>
+              ))}
+            </div> : <div className={mode === 'week' ? 'calendar-days calendar-days--week' : 'calendar-days calendar-days--month'}>
+              {days.map((day, index) => dayCell(day, index))}
+            </div>}
+            <div className="calendar-legend"><span>● Лёгкая</span><span>● Интенсивная</span><span>✓ Выполнено</span><span>× Пропущено</span><span>◌ Предварительный план</span><span>◆ Контрольная точка</span><span>? Требует уточнения</span></div>
+            <p className="calendar-muted">{plan.horizonNote}</p>
           </section>
 
           <section className="calendar-detail" aria-label="Выбранный день">
             <p className="calendar-eyebrow">{selectedDate === today ? 'Сегодня · ' : ''}{dayName(selected, busySet.has(selectedDate))}</p>
-            <h2>{selected.workout ? workoutTitle(selected.workout) : selected.status === 'race' ? 'Сдача норматива' : selected.status === 'unformed' ? 'План ещё не сформирован' : 'День без тренировки'}</h2>
+            <h2>{selected.status === 'unresolved' ? 'Требует уточнения' : selected.workout ? workoutTitle(selected.workout) : selected.status === 'race' ? 'Сдача норматива' : selected.status === 'unformed' ? 'План ещё не сформирован' : 'День без тренировки'}</h2>
             <p className="calendar-muted">{formatDateLong(selectedDate)}</p>
-            {selected.workout ? <>
+            {selected.workout && selected.status !== 'unresolved' ? <div className="calendar-detail-actions">
+              <Button onClick={() => setCardOpen(true)}>Открыть карточку занятия</Button>
+            </div> : null}
+            {selected.status === 'unresolved' ? <>
+              <Notice tone="warn" title={plan.unresolvedTitle}>
+                <p>{plan.unresolvedText}</p>
+              </Notice>
+              {selected.workout ? <p className="calendar-muted">Слот: {workoutTitle(selected.workout)}. Параметры не показываются, пока занятие не уточнено.</p> : null}
+            </> : selected.status === 'forecast' || selected.status === 'control' || selected.status === 'race' && selected.forecast !== null ? <>
+              <Notice tone="info" title={selected.status === 'control' ? plan.controlTitle : plan.preliminaryTitle}>
+                <p>{selected.status === 'control' ? plan.controlText : plan.preliminaryText}</p>
+              </Notice>
+              <p className="calendar-muted">{plan.preliminary}</p>
+              {selected.workout ? <div className="calendar-prescription">
+                <strong>{workoutVolume(selected.workout)}</strong>
+                <span>Предварительные параметры. Полная карточка доступна по кнопке выше: просмотр не назначает тренировку и не меняет план.</span>
+                <WorkoutParams workout={selected.workout} />
+                <p className="hint">{plan.forecastResultUnavailable}</p>
+              </div> : null}
+            </> : selected.workout ? <>
               <div className="calendar-prescription">
                 <strong>{workoutVolume(selected.workout)}</strong>
-                <span>Назначение для основной части; разминка и заминка показаны в карточке занятия.</span>
-                {workoutPaceRange(selected.workout) ? <p>Темп <b>{workoutPaceRange(selected.workout)}</b></p> : null}
-                {workoutSpeedRange(selected.workout) ? <p>Дорожка <b>{workoutSpeedRange(selected.workout)}</b></p> : null}
-                <p>Усилие <b>{workoutRpe(selected.workout)} из 10</b></p>
+                <WorkoutParams workout={selected.workout} />
+                {selected.status === 'race' && selectedDate <= today ? <Button onClick={() => onNavigate({name:'FINAL_RESULT'})}>Внести итоговый результат</Button> : null}
               </div>
               {selected.result ? <p className="calendar-fact">Записано фактически: {selected.result.result.distanceMeters > 0 ? km(selected.result.result.distanceMeters) : 'дистанция не указана'}. Результат сохранён в истории.</p> : null}
               {selected.status === 'skipped' ? <p className="calendar-fact">Тренировка отмечена как пропущенная. Нагрузка не переносится автоматически.</p> : null}
               <div className="calendar-detail-actions">
-                <Button onClick={() => onNavigate(selected.result ? {name:'HISTORY'} : {name:'WORKOUT', id:selected.workout!.id})}>{selected.result ? 'Посмотреть историю' : 'Открыть тренировку'}</Button>
+                {/* Only cards that exist can be opened: history for results, the issued queue for workouts. */}
+                {selected.result ? <Button onClick={() => onNavigate({name:'HISTORY'})}>Посмотреть историю</Button>
+                  : queue.some(item => item.id === selected.workout!.id) ? <Button onClick={() => onNavigate({name:'WORKOUT', id:selected.workout!.id})}>Открыть тренировку</Button> : null}
                 {canMove ? <Button variant="secondary" onClick={() => {setMoving(!moving);setMoveTo(null);setMoveError(null);}}>Перенести</Button> : null}
               </div>
             </> : <p className="calendar-detail-empty">{selected.status === 'unformed'
               ? 'Дальнейшие занятия появятся после формирования следующей части плана. Это не день отдыха по назначению.'
               : selected.status === 'race' ? 'В этот день предусмотрен итоговый забег на 3000 м.'
               : 'Беговая тренировка на эту дату не назначена.'}</p>}
-            {selected.status !== 'completed' && selected.status !== 'skipped' && selected.status !== 'race' ? (
+            {selected.status !== 'completed' && selected.status !== 'skipped' && selected.status !== 'race' && selected.status !== 'unresolved' ? (
               <button className="calendar-busy-toggle" type="button" aria-pressed={busySet.has(selectedDate)} onClick={toggleBusy}>
                 {busySet.has(selectedDate) ? '✓ Рабочая смена / занят — убрать отметку' : '+ Отметить смену или занятый день'}
               </button>
@@ -275,6 +369,15 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
           </section>
         </div>
 
+        {cardOpen && selected.workout ? <WorkoutCard
+          day={selected}
+          today={today}
+          onBack={() => setCardOpen(false)}
+          onOpenIssued={queue.some(item => item.id === selected.workout!.id) ? () => onNavigate({name:'WORKOUT', id:selected.workout!.id}) : null}
+          onOpenHistory={selected.result ? () => onNavigate({name:'HISTORY'}) : null}
+          onFinalResult={selected.status === 'race' && selectedDate <= today ? () => onNavigate({name:'FINAL_RESULT'}) : null}
+        /> : null}
+
         <div className="calendar-footer">
           <Card title={plan.horizon}>
             {queue.filter(item => item.type !== 'REST').length ? (
@@ -291,7 +394,7 @@ export function Plan({engineState, appState, storage, today, onNavigate, onRefre
           </Card>
           <Card title={plan.taperLabel}><KeyValue label={plan.taper} value={formatDateLong(taperStart)} /><p className="hint">{plan.taperNote}</p></Card>
           <Card title={plan.race}><KeyValue label={plan.race} value={`3000 м · ${formatDateLong(profile.raceDate)}`} /><KeyValue label={plan.goalLabel} value={formatTime(profile.targetTimeSeconds)} /><p className="hint">{plan.raceNote}</p></Card>
-          <Card><p className="paragraph">{needsPerformanceReview(engineState) ? todayText.performanceReview.text : phaseWhy[decision.phase]}</p></Card>
+          <Card><p className="paragraph">{needsPerformanceReview(engineState) ? todayText.performanceReview.text : finalRaceWorkout(engineState) ? 'Восьминедельный цикл №4. Темпы назначены по исходному результату 14:30. Будущие занятия — предварительный план; выполнение и улучшение результата не предполагаются фактами.' : phaseWhy[decision.phase]}</p></Card>
           {pending ? <Notice tone="warn" title={todayText.pendingResult.title}>
             <p>{todayText.pendingResult.text}</p>
             <Button onClick={() => onNavigate({name:'TODAY'})}>{nav.today}</Button>
